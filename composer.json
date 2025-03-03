@@ -1,0 +1,23 @@
+{
+    "name": "drivejob/drivejob",
+    "description": "Platform for managing drivers and companies.",
+    "type": "project",
+    "require": {
+        "vlucas/phpdotenv": "^5.6",
+        "phpmailer/phpmailer": "^6.9",
+        "symfony/var-dumper": "^6.4",
+        "monolog/monolog": "^3.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Drivejob\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Κώστας",
+            "email": "kostas.michailidis@hotmail.gr"
+        }
+    ],
+    "license": "MIT"
+}
