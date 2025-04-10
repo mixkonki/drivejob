@@ -1,6 +1,10 @@
 <?php
 session_start();
-require_once '../config/config.php';
+require_once __DIR__ . '/../../../config/config.php';
+
+require_once __DIR__ . '/../../../vendor/autoload.php';
+
+
 
 // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
 if (!isset($_SESSION['user_id'])) {
@@ -213,20 +217,24 @@ function getError($field) {
                     <label for="expires_at">Ημερομηνία Λήξης</label>
                     <input type="date" id="expires_at" name="expires_at">
                 </div>
-                
                 <div class="form-group">
-                    <label>Ετικέτες</label>
-                    <div class="tags-container">
-                        <?php foreach ($tags as $tag): ?>
-                            <div class="tag-item">
-                                <label>
-                                    <input type="checkbox" name="tags[]" value="<?php echo $tag['id']; ?>">
-                                    <?php echo htmlspecialchars($tag['name']); ?>
-                                </label>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+    <label>Ετικέτες</label>
+    <div class="tags-container">
+        <?php if (is_array($tags) && !empty($tags)): ?>
+            <?php foreach ($tags as $tag): ?>
+                <div class="tag-item">
+                    <label>
+                        <input type="checkbox" name="tags[]" value="<?php echo $tag['id']; ?>">
+                        <?php echo htmlspecialchars($tag['name']); ?>
+                    </label>
                 </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p>Δεν υπάρχουν διαθέσιμες ετικέτες.</p>
+        <?php endif; ?>
+    </div>
+</div>
+
             </section>
             
             <div class="form-actions">

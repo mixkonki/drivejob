@@ -34,7 +34,7 @@ include ROOT_DIR . '/src/Views/header.php';
                 
                 <div class="profile-actions">
     <a href="<?php echo BASE_URL; ?>companies/edit_profile.php" class="btn-primary">Επεξεργασία Προφίλ</a>
-    <a href="<?php echo BASE_URL; ?>job-listings/create/" class="btn-secondary">Νέα Αγγελία</a>
+    <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-secondary">Νέα Αγγελία</a>
 </div>
             </div>
         </div>

@@ -1,4 +1,9 @@
 <?php
+
+// Προσθέστε αυτές τις γραμμές στην αρχή του αρχείου public/index.php
+ini_set('session.cookie_path', '/drivejob/');
+session_name('DRIVEJOBSESSION');
+session_start();
 // Ενεργοποίηση εμφάνισης σφαλμάτων
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);

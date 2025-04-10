@@ -1,5 +1,11 @@
 <?php
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+// Έλεγχος αν υπάρχει συνδεδεμένος χρήστης
+$isLoggedIn = isset($_SESSION['user_id']);
+
 // Ορισμός των Content Security Policy headers
 header("Content-Security-Policy: default-src 'self'; script-src 'self' https://maps.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://maps.googleapis.com; frame-src 'self' https://maps.google.com https://www.google.com;");
 header("X-Content-Type-Options: nosniff");
