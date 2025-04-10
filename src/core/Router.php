@@ -1,44 +1,55 @@
 <?php
-// Φυλάξτε αυτό ως src/Core/Router.php
-
 namespace Drivejob\Core;
 
 class Router
 {
     private $routes = [];
     private $notFoundCallback;
-
+    private $baseUrl;
+    
+    public function __construct($baseUrl = '')
+    {
+        $this->baseUrl = $baseUrl;
+    }
+    
     public function get($path, $callback)
     {
         $this->routes['GET'][$path] = $callback;
         return $this;
     }
-
+    
     public function post($path, $callback)
     {
         $this->routes['POST'][$path] = $callback;
         return $this;
     }
-
+    
     public function notFound($callback)
     {
         $this->notFoundCallback = $callback;
         return $this;
     }
-
+    
     public function resolve()
     {
         $method = $_SERVER['REQUEST_METHOD'];
         $path = $this->getPath();
+        
+        // Για αποσφαλμάτωση
+        // echo "<div style='background: #f0f0f0; padding: 10px; margin-bottom: 10px;'>";
+        // echo "Request Method: $method<br>";
+        // echo "Path: $path<br>";
+        // echo "Available Routes: <pre>" . print_r(array_keys($this->routes[$method] ?? []), true) . "</pre>";
+        // echo "</div>";
         
         // Έλεγχος αν υπάρχει ακριβής διαδρομή
         if (isset($this->routes[$method][$path])) {
             $callback = $this->routes[$method][$path];
             return $this->executeCallback($callback);
         }
-
+        
         // Έλεγχος για παραμετροποιημένες διαδρομές
-        foreach ($this->routes[$method] as $route => $callback) {
+        foreach ($this->routes[$method] ?? [] as $route => $callback) {
             $pattern = $this->convertRouteToRegex($route);
             
             if (preg_match($pattern, $path, $matches)) {
@@ -48,7 +59,7 @@ class Router
                 return $this->executeCallback($callback, $matches);
             }
         }
-
+        
         // Αν δεν βρέθηκε καμία διαδρομή
         if ($this->notFoundCallback) {
             return call_user_func($this->notFoundCallback);
@@ -59,7 +70,7 @@ class Router
         echo '404 Page Not Found';
         return null;
     }
-
+    
     private function getPath()
     {
         $path = $_SERVER['REQUEST_URI'] ?? '/';
@@ -69,12 +80,11 @@ class Router
             $path = substr($path, 0, $position);
         }
         
-        // Αφαίρεση του script path από το URI
-        $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
-        $scriptDir = $scriptDir === '/' ? '' : $scriptDir;
+        // Αφαίρεση του βασικού path της εφαρμογής
+        $basePath = '/drivejob/public';
         
-        if (strpos($path, $scriptDir) === 0) {
-            $path = substr($path, strlen($scriptDir));
+        if (strpos($path, $basePath) === 0) {
+            $path = substr($path, strlen($basePath));
         }
         
         // Καθαρισμός του path
@@ -83,7 +93,7 @@ class Router
         
         return $path ?: '/';
     }
-
+    
     private function convertRouteToRegex($route)
     {
         // Αντικατάσταση παραμέτρων της μορφής {id} με ομάδες regex
@@ -92,7 +102,7 @@ class Router
         // Προσθήκη ^ και $ για ακριβές ταίριασμα και προετοιμασία για preg_match
         return "#^{$pattern}$#";
     }
-
+    
     private function executeCallback($callback, $params = [])
     {
         if (is_callable($callback)) {

@@ -1,6 +1,4 @@
 <?php
-// src/Core/CSRF.php
-
 namespace Drivejob\Core;
 
 class CSRF
@@ -12,12 +10,10 @@ class CSRF
      */
     public static function generateToken()
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         
         $token = bin2hex(random_bytes(32));
-        $_SESSION['csrf_token'] = $token;
+        Session::set('csrf_token', $token);
         
         return $token;
     }
@@ -30,15 +26,13 @@ class CSRF
      */
     public static function validateToken($token)
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         
-        if (!isset($_SESSION['csrf_token'])) {
+        if (!Session::has('csrf_token')) {
             return false;
         }
         
-        return hash_equals($_SESSION['csrf_token'], $token);
+        return hash_equals(Session::get('csrf_token'), $token);
     }
     
     /**

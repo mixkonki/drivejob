@@ -1,10 +1,11 @@
 Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    
+    # Μην επανεγγράψεις αρχεία και φακέλους που υπάρχουν
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.+)$ index.php [QSA,L]
-    AddType text/css .css
-
-
+    
+    # Επανέγγραψε όλα τα άλλα στο index.php
+    RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>

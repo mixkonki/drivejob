@@ -1,19 +1,8 @@
 <?php
-
-// Προσθέστε αυτές τις γραμμές στην αρχή του αρχείου public/index.php
-ini_set('session.cookie_path', '/drivejob/');
-session_name('DRIVEJOBSESSION');
-session_start();
 // Ενεργοποίηση εμφάνισης σφαλμάτων
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
-// Debugging information
-echo "Request URI: " . $_SERVER['REQUEST_URI'] . "<br>";
-echo "Script Name: " . $_SERVER['SCRIPT_NAME'] . "<br>";
-echo "PHP_SELF: " . $_SERVER['PHP_SELF'] . "<br>";
-
 
 // Αυτόματη φόρτωση μέσω Composer
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -24,9 +13,17 @@ require_once __DIR__ . '/../config/config.php';
 // Σύνδεση στη βάση δεδομένων
 require_once ROOT_DIR . '/config/database.php';
 
+// Διασφάλιση ότι η συνεδρία ξεκινά
+use Drivejob\Core\Session;
+Session::start();
+
 // Φόρτωση των περιβαλλοντικών μεταβλητών
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../config');
-$dotenv->load();
+try {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../config');
+    $dotenv->load();
+} catch (Exception $e) {
+    // Αγνόηση σφαλμάτων αν δεν υπάρχει το .env αρχείο
+}
 
 use Drivejob\Core\Router;
 use Drivejob\Core\CSRFMiddleware;
@@ -48,11 +45,10 @@ $router->get('/job-listings', function() use ($pdo) {
     $controller->index();
 });
 
-
-    $router->get('/job-listings/create', function() use ($pdo) {
-        $controller = new JobListingController($pdo);
-        $controller->create();
-    });
+$router->get('/job-listings/create', function() use ($pdo) {
+    $controller = new JobListingController($pdo);
+    $controller->create();
+});
 
 $router->post('/job-listings/store', function() use ($pdo) {
     $controller = new JobListingController($pdo);

@@ -84,11 +84,11 @@ class JobListingController {
     }
 
     public function create() {
-       // Αποσφαλμάτωση
-    echo "Συνεδρία πριν τον έλεγχο: ";
-    echo "<pre>";
-    print_r($_SESSION);
-    echo "</pre>";
+        // Βεβαιωθείτε ότι η συνεδρία έχει ξεκινήσει
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
             header('Location: ' . BASE_URL . 'login.php');

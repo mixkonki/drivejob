@@ -1,6 +1,4 @@
 <?php
-// src/Core/CSRFMiddleware.php
-
 namespace Drivejob\Core;
 
 class CSRFMiddleware
@@ -10,6 +8,8 @@ class CSRFMiddleware
      */
     public static function handle()
     {
+        Session::start();
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Έλεγχος αν υπάρχει το CSRF token
             if (!isset($_POST['csrf_token'])) {

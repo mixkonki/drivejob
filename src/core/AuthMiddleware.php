@@ -1,6 +1,4 @@
 <?php
-// src/Core/AuthMiddleware.php
-
 namespace Drivejob\Core;
 
 class AuthMiddleware
@@ -10,11 +8,9 @@ class AuthMiddleware
      */
     public static function isLoggedIn()
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         
-        if (!isset($_SESSION['user_id'])) {
+        if (!Session::has('user_id')) {
             header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
@@ -25,11 +21,9 @@ class AuthMiddleware
      */
     public static function hasRole($role)
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         
-        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== $role) {
+        if (!Session::has('user_id') || !Session::has('role') || Session::get('role') !== $role) {
             header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
@@ -40,11 +34,9 @@ class AuthMiddleware
      */
     public static function hasAnyRole($roles)
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        Session::start();
         
-        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || !in_array($_SESSION['role'], $roles)) {
+        if (!Session::has('user_id') || !Session::has('role') || !in_array(Session::get('role'), $roles)) {
             header('Location: ' . BASE_URL . 'login.php');
             exit();
         }

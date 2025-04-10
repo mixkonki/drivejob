@@ -1,16 +1,4 @@
-<?php
-session_start();
-require_once __DIR__ . '/../../../config/config.php';
-
-require_once __DIR__ . '/../../../vendor/autoload.php';
-
-
-
-// Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ' . BASE_URL . 'login.php');
-    exit();
-} 
+<?php 
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php'; 
 ?>
@@ -20,30 +8,33 @@ include ROOT_DIR . '/src/Views/header.php';
         <h1>Δημιουργία Νέας Αγγελίας</h1>
         
         <?php
-// Ανάκτηση σφαλμάτων και παλιών τιμών από το session
-$errors = $_SESSION['errors'] ?? [];
-$oldInput = $_SESSION['old_input'] ?? [];
-
-// Καθαρισμός των session μεταβλητών μετά την ανάκτησή τους
-unset($_SESSION['errors'], $_SESSION['old_input']);
-
-// Βοηθητική συνάρτηση για την εμφάνιση των παλιών τιμών
-function old($field, $default = '') {
-    global $oldInput;
-    return $oldInput[$field] ?? $default;
-}
-
-// Βοηθητική συνάρτηση για την εμφάνιση των σφαλμάτων
-function hasError($field) {
-    global $errors;
-    return isset($errors[$field]);
-}
-
-function getError($field) {
-    global $errors;
-    return $errors[$field] ?? '';
-}
-?>
+        use Drivejob\Core\Session;
+        
+        // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
+        $errors = Session::get('errors', []);
+        $oldInput = Session::get('old_input', []);
+        
+        // Καθαρισμός των session μεταβλητών μετά την ανάκτησή τους
+        Session::remove('errors');
+        Session::remove('old_input');
+        
+        // Βοηθητική συνάρτηση για την εμφάνιση των παλιών τιμών
+        function old($field, $default = '') {
+            global $oldInput;
+            return $oldInput[$field] ?? $default;
+        }
+        
+        // Βοηθητική συνάρτηση για την εμφάνιση των σφαλμάτων
+        function hasError($field) {
+            global $errors;
+            return isset($errors[$field]);
+        }
+        
+        function getError($field) {
+            global $errors;
+            return $errors[$field] ?? '';
+        }
+        ?>
 
 <form action="<?php echo BASE_URL; ?>job-listings/store" method="POST" class="job-listing-form">
     <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
