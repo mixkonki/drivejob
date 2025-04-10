@@ -15,12 +15,8 @@ class JobListingController {
     }
 
     public function index() {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: ' . BASE_URL . 'login.php');
-            exit();
-        }
-
+        // Επιτρέπουμε σε όλους να βλέπουν τις αγγελίες - δεν απαιτείται σύνδεση
+        
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $limit = 10;
         $params = [];
@@ -58,7 +54,7 @@ class JobListingController {
         $listings = $this->jobListingModel->getActiveListings($params, $page, $limit);
 
         // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/job-listings/index.php';
+        require ROOT_DIR . '/src/Views/job-listings/index.php';
     }
 
     public function show($id) {
@@ -88,6 +84,11 @@ class JobListingController {
     }
 
     public function create() {
+       // Αποσφαλμάτωση
+    echo "Συνεδρία πριν τον έλεγχο: ";
+    echo "<pre>";
+    print_r($_SESSION);
+    echo "</pre>";
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
             header('Location: ' . BASE_URL . 'login.php');
@@ -114,37 +115,28 @@ class JobListingController {
             exit();
         }
         
-         // Επικύρωση δεδομένων
-    $validator = new \Drivejob\Core\Validator($_POST);
-    $validator->required('title', 'Ο τίτλος είναι υποχρεωτικός.')
-              ->required('description', 'Η περιγραφή είναι υποχρεωτική.')
-              ->required('location', 'Η τοποθεσία είναι υποχρεωτική.')
-              ->required('vehicle_type', 'Ο τύπος οχήματος είναι υποχρεωτικός.')
-              ->required('required_license', 'Η απαιτούμενη άδεια είναι υποχρεωτική.');
-    
-    if (isset($_POST['contact_email']) && $_POST['contact_email']) {
-        $validator->email('contact_email', 'Το email επικοινωνίας δεν είναι έγκυρο.');
-    }
-    
-    if (!$validator->isValid()) {
-        // Αποθήκευση των σφαλμάτων και των δεδομένων στο session για να τα εμφανίσουμε στη φόρμα
-        $_SESSION['errors'] = $validator->getErrors();
-        $_SESSION['old_input'] = $_POST;
+        // Επικύρωση δεδομένων
+        $validator = new \Drivejob\Core\Validator($_POST);
+        $validator->required('title', 'Ο τίτλος είναι υποχρεωτικός.')
+                ->required('description', 'Η περιγραφή είναι υποχρεωτική.')
+                ->required('location', 'Η τοποθεσία είναι υποχρεωτική.')
+                ->required('vehicle_type', 'Ο τύπος οχήματος είναι υποχρεωτικός.')
+                ->required('required_license', 'Η απαιτούμενη άδεια είναι υποχρεωτική.');
         
-        // Ανακατεύθυνση πίσω στη φόρμα
-        header('Location: ' . BASE_URL . 'job-listings/create');
-        exit();
-    }
-    
-    // Αν περάσει την επικύρωση, συνεχίζουμε με την αποθήκευση
-    // Επεξεργασία και επικύρωση δεδομένων
-    $data = [
-        // ... (όπως πριν)
-    ];
-    
-    // Δημιουργία της αγγελίας
-    $jobListingId = $this->jobListingModel->create($data);
-
+        if (isset($_POST['contact_email']) && $_POST['contact_email']) {
+            $validator->email('contact_email', 'Το email επικοινωνίας δεν είναι έγκυρο.');
+        }
+        
+        if (!$validator->isValid()) {
+            // Αποθήκευση των σφαλμάτων και των δεδομένων στο session για να τα εμφανίσουμε στη φόρμα
+            $_SESSION['errors'] = $validator->getErrors();
+            $_SESSION['old_input'] = $_POST;
+            
+            // Ανακατεύθυνση πίσω στη φόρμα
+            header('Location: ' . BASE_URL . 'job-listings/create');
+            exit();
+        }
+        
         // Επεξεργασία και επικύρωση δεδομένων
         $data = [
             'title' => trim($_POST['title']),
@@ -331,67 +323,67 @@ class JobListingController {
         exit();
     }
 
-  // Προβολή αγγελιών μιας εταιρείας
-  public function companyListings($companyId) {
-    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $limit = 10;
-    
-    // Λήψη των αγγελιών της εταιρείας
-    $listings = $this->jobListingModel->getCompanyListings($companyId, true, $page, $limit);
-    
-    // Λήψη πληροφοριών για την εταιρεία
-    $companyModel = new \Drivejob\Models\CompaniesModel($this->pdo);
-    $company = $companyModel->getCompanyById($companyId);
-    
-    if (!$company) {
-        header('Location: ' . BASE_URL . 'job-listings');
-        exit();
+    // Προβολή αγγελιών μιας εταιρείας
+    public function companyListings($companyId) {
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = 10;
+        
+        // Λήψη των αγγελιών της εταιρείας
+        $listings = $this->jobListingModel->getCompanyListings($companyId, true, $page, $limit);
+        
+        // Λήψη πληροφοριών για την εταιρεία
+        $companyModel = new \Drivejob\Models\CompaniesModel($this->pdo);
+        $company = $companyModel->getCompanyById($companyId);
+        
+        if (!$company) {
+            header('Location: ' . BASE_URL . 'job-listings');
+            exit();
+        }
+        
+        // Φόρτωση του view
+        include ROOT_DIR . '/src/Views/job-listings/company-listings.php';
     }
-    
-    // Φόρτωση του view
-    include ROOT_DIR . '/src/Views/job-listings/company-listings.php';
-}
 
-// Προβολή αγγελιών ενός οδηγού
-public function driverListings($driverId) {
-    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $limit = 10;
-    
-    // Λήψη των αγγελιών του οδηγού
-    $listings = $this->jobListingModel->getDriverListings($driverId, true, $page, $limit);
-    
-    // Λήψη πληροφοριών για τον οδηγό
-    $driverModel = new \Drivejob\Models\DriversModel($this->pdo);
-    $driver = $driverModel->getDriverById($driverId);
-    
-    if (!$driver) {
-        header('Location: ' . BASE_URL . 'job-listings');
-        exit();
+    // Προβολή αγγελιών ενός οδηγού
+    public function driverListings($driverId) {
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = 10;
+        
+        // Λήψη των αγγελιών του οδηγού
+        $listings = $this->jobListingModel->getDriverListings($driverId, true, $page, $limit);
+        
+        // Λήψη πληροφοριών για τον οδηγό
+        $driverModel = new \Drivejob\Models\DriversModel($this->pdo);
+        $driver = $driverModel->getDriverById($driverId);
+        
+        if (!$driver) {
+            header('Location: ' . BASE_URL . 'job-listings');
+            exit();
+        }
+        
+        // Φόρτωση του view
+        include ROOT_DIR . '/src/Views/job-listings/driver-listings.php';
     }
-    
-    // Φόρτωση του view
-    include ROOT_DIR . '/src/Views/job-listings/driver-listings.php';
-}
 
-// Dashboard αγγελιών του συνδεδεμένου χρήστη
-public function myListings() {
-    // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-    if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
-        header('Location: ' . BASE_URL . 'login.php');
-        exit();
+    // Dashboard αγγελιών του συνδεδεμένου χρήστη
+    public function myListings() {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+            header('Location: ' . BASE_URL . 'login.php');
+            exit();
+        }
+        
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = 10;
+        
+        // Λήψη των αγγελιών του χρήστη ανάλογα με τον ρόλο του
+        if ($_SESSION['role'] === 'company') {
+            $listings = $this->jobListingModel->getCompanyListings($_SESSION['user_id'], null, $page, $limit);
+        } else {
+            $listings = $this->jobListingModel->getDriverListings($_SESSION['user_id'], null, $page, $limit);
+        }
+        
+        // Φόρτωση του view
+        include ROOT_DIR . '/src/Views/job-listings/my-listings.php';
     }
-    
-    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $limit = 10;
-    
-    // Λήψη των αγγελιών του χρήστη ανάλογα με τον ρόλο του
-    if ($_SESSION['role'] === 'company') {
-        $listings = $this->jobListingModel->getCompanyListings($_SESSION['user_id'], false, $page, $limit);
-    } else {
-        $listings = $this->jobListingModel->getDriverListings($_SESSION['user_id'], false, $page, $limit);
-    }
-    
-    // Φόρτωση του view
-    include ROOT_DIR . '/src/Views/job-listings/my-listings.php';
-}
 }

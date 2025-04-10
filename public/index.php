@@ -43,10 +43,11 @@ $router->get('/job-listings', function() use ($pdo) {
     $controller->index();
 });
 
-$router->get('/job-listings/create', function() use ($pdo) {
-    $controller = new JobListingController($pdo);
-    $controller->create();
-});
+
+    $router->get('/job-listings/create', function() use ($pdo) {
+        $controller = new JobListingController($pdo);
+        $controller->create();
+    });
 
 $router->post('/job-listings/store', function() use ($pdo) {
     $controller = new JobListingController($pdo);

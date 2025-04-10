@@ -22,7 +22,7 @@ include ROOT_DIR . '/src/Views/header.php';
             <img src="<?php echo BASE_URL; ?>img/driver_icon.png" alt="Εικονίδιο Οδηγού">
             Εγγραφή Οδηγού
         </a>
-        <a href="./company/company_registration.php" class="btn-secondary" aria-label="Εγγραφή Επιχείρησης">
+        <a href="./companies/company_registration.php" class="btn-secondary" aria-label="Εγγραφή Επιχείρησης">
         <img src="<?php echo BASE_URL; ?>img/company_icon.png" alt="Εικονίδιο Επιχείρησης">
             Εγγραφή Επιχείρησης
         </a>

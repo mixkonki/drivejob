@@ -1,4 +1,12 @@
-<?php 
+<?php
+session_start();
+require_once '../config/config.php';
+
+// Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ' . BASE_URL . 'login.php');
+    exit();
+} 
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php'; 
 ?>

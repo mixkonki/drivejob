@@ -60,7 +60,7 @@
 
                     <button type="submit" class="btn-primary">Εγγραφή</button>
                 </form>
-                <p class="login-link">Έχετε ήδη λογαριασμό; <a href="#">Συνδεθείτε</a></p>
+                <p class="login-link">Έχετε ήδη λογαριασμό; <a href="../login.php">Συνδεθείτε</a></p>
                 <hr class="divider">    
                 <div class="google-signup">
                     <button class="btn-google">

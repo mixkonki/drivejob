@@ -1,4 +1,5 @@
 <?php
+// Φυλάξτε αυτό ως src/Core/Router.php
 
 namespace Drivejob\Core;
 
@@ -26,44 +27,38 @@ class Router
     }
 
     public function resolve()
-{
-    $method = $_SERVER['REQUEST_METHOD'];
-    $path = $this->getPath();
-    
-    // Debugging
-    error_log("Resolved path: " . $path);
-    
-    // Έλεγχος αν υπάρχει ακριβής διαδρομή
-    if (isset($this->routes[$method][$path])) {
-        $callback = $this->routes[$method][$path];
-        return $this->executeCallback($callback);
-    }
-
-    // Έλεγχος για παραμετροποιημένες διαδρομές
-    foreach ($this->routes[$method] as $route => $callback) {
-        $pattern = $this->convertRouteToRegex($route);
+    {
+        $method = $_SERVER['REQUEST_METHOD'];
+        $path = $this->getPath();
         
-        // Debugging
-        error_log("Checking route: " . $route . " with pattern: " . $pattern);
-        
-        if (preg_match($pattern, $path, $matches)) {
-            // Αφαίρεση του πρώτου στοιχείου (ολόκληρο το ταίριασμα)
-            array_shift($matches);
-            
-            return $this->executeCallback($callback, $matches);
+        // Έλεγχος αν υπάρχει ακριβής διαδρομή
+        if (isset($this->routes[$method][$path])) {
+            $callback = $this->routes[$method][$path];
+            return $this->executeCallback($callback);
         }
-    }
 
-    // Αν δεν βρέθηκε καμία διαδρομή
-    if ($this->notFoundCallback) {
-        return call_user_func($this->notFoundCallback);
+        // Έλεγχος για παραμετροποιημένες διαδρομές
+        foreach ($this->routes[$method] as $route => $callback) {
+            $pattern = $this->convertRouteToRegex($route);
+            
+            if (preg_match($pattern, $path, $matches)) {
+                // Αφαίρεση του πρώτου στοιχείου (ολόκληρο το ταίριασμα)
+                array_shift($matches);
+                
+                return $this->executeCallback($callback, $matches);
+            }
+        }
+
+        // Αν δεν βρέθηκε καμία διαδρομή
+        if ($this->notFoundCallback) {
+            return call_user_func($this->notFoundCallback);
+        }
+        
+        // Προεπιλεγμένη συμπεριφορά για 404
+        header("HTTP/1.0 404 Not Found");
+        echo '404 Page Not Found';
+        return null;
     }
-    
-    // Προεπιλεγμένη συμπεριφορά για 404
-    header("HTTP/1.0 404 Not Found");
-    echo '404 Page Not Found';
-    return null;
-}
 
     private function getPath()
     {
@@ -74,27 +69,18 @@ class Router
             $path = substr($path, 0, $position);
         }
         
-       // Αφαίρεση του script path από το URI
-    $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
-    $scriptDir = $scriptDir === '/' ? '' : $scriptDir;
-    
-    if (strpos($path, $scriptDir) === 0) {
-        $path = substr($path, strlen($scriptDir));
-    }
-    
-    // Καθαρισμός του path
-    $path = trim($path, '/');
-    $path = '/' . $path;
+        // Αφαίρεση του script path από το URI
+        $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
+        $scriptDir = $scriptDir === '/' ? '' : $scriptDir;
         
-         // Debugging output
-    error_log("Request URI: " . $path);
-    error_log("Base Path: " . $basePath);
-    
-    if ($basePath && strpos($path, $basePath) === 0) {
-        $path = substr($path, strlen($basePath));
-        error_log("Processed Path: " . $path);
-    }
-
+        if (strpos($path, $scriptDir) === 0) {
+            $path = substr($path, strlen($scriptDir));
+        }
+        
+        // Καθαρισμός του path
+        $path = trim($path, '/');
+        $path = '/' . $path;
+        
         return $path ?: '/';
     }
 

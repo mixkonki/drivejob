@@ -1,7 +1,7 @@
 <?php
 
 // Ορισμός των Content Security Policy headers
-header("Content-Security-Policy: default-src 'self'; script-src 'self' https://maps.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://maps.googleapis.com; frame-src 'self' https://maps.google.com;");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' https://maps.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://maps.googleapis.com; frame-src 'self' https://maps.google.com https://www.google.com;");
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
