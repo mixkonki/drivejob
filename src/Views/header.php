@@ -1,4 +1,10 @@
 <?php
+
+// Ορισμός των Content Security Policy headers
+header("Content-Security-Policy: default-src 'self'; script-src 'self' https://maps.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://maps.googleapis.com; frame-src 'self' https://maps.google.com;");
+header("X-Content-Type-Options: nosniff");
+header("X-Frame-Options: SAMEORIGIN");
+header("X-XSS-Protection: 1; mode=block");
 // Βοηθητική συνάρτηση για να ελέγχουμε την τρέχουσα σελίδα
 function isCurrentPage($page) {
     $currentPage = basename($_SERVER['PHP_SELF']);
@@ -41,25 +47,31 @@ $isLoggedIn = isset($_SESSION['user_id']); // Ελέγχουμε αν υπάρχ
         </div>
         
         <!-- Μενού πλοήγησης -->
-        <nav class="nav-menu">
-            <ul>
-                <li>
-                    <a href="<?php echo BASE_URL; ?>index.view.php" class="<?php echo isCurrentPage('index.view.php') ? 'active' : ''; ?>">
-                        Αρχική
-                    </a>
-                </li>
-                <li>
-                    <a href="<?php echo BASE_URL; ?>about.php" class="<?php echo isCurrentPage('about.php') ? 'active' : ''; ?>">
-                        Σχετικά
-                    </a>
-                </li>
-                <li>
-                    <a href="<?php echo BASE_URL; ?>contact.php" class="<?php echo isCurrentPage('contact.php') ? 'active' : ''; ?>">
-                        Επικοινωνία
-                    </a>
-                </li>
-            </ul>
-        </nav>
+        <!-- Μενού πλοήγησης -->
+<nav class="nav-menu">
+    <ul>
+        <li>
+            <a href="<?php echo BASE_URL; ?>index.view.php" class="<?php echo isCurrentPage('index.view.php') ? 'active' : ''; ?>">
+                Αρχική
+            </a>
+        </li>
+        <li>
+            <a href="<?php echo BASE_URL; ?>job-listings/" class="<?php echo isCurrentPage('job-listings/') ? 'active' : ''; ?>">
+                Αγγελίες
+            </a>
+        </li>
+        <li>
+            <a href="<?php echo BASE_URL; ?>about.php" class="<?php echo isCurrentPage('about.php') ? 'active' : ''; ?>">
+                Σχετικά
+            </a>
+        </li>
+        <li>
+            <a href="<?php echo BASE_URL; ?>contact.php" class="<?php echo isCurrentPage('contact.php') ? 'active' : ''; ?>">
+                Επικοινωνία
+            </a>
+        </li>
+    </ul>
+</nav>
 
         <!-- Ενέργειες χρήστη -->
         <div class="user-actions">

@@ -1,0 +1,458 @@
+/* Γενικά στυλ για το προφίλ εταιρείας */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Επικεφαλίδα προφίλ */
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+    margin-right: 30px;
+    border: 5px solid #f0f0f0;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-image img {
+    max-width: 20px;
+    max-height: 20px;
+    object-fit: contain;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-info h1 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.profile-location {
+    display: flex;
+    align-items: center;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.profile-location img {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Μηνύματα επιτυχίας και σφάλματος */
+.success-message,
+.error-message {
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Περιεχόμενο προφίλ */
+.profile-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.profile-main {
+    flex: 2 1 600px;
+}
+
+.profile-sidebar {
+    flex: 1 1 300px;
+}
+
+/* Ενότητες προφίλ */
+.profile-section {
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.profile-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 18px;
+}
+
+.profile-about {
+    line-height: 1.6;
+    color: #444;
+}
+
+.profile-empty {
+    color: #888;
+    font-style: italic;
+}
+
+.profile-empty a {
+    color: #aa3636;
+    text-decoration: none;
+}
+
+.profile-empty a:hover {
+    text-decoration: underline;
+}
+
+/* Πληροφορίες εταιρείας */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.info-item {
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.info-label {
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    color: #333;
+}
+
+/* Αγγελίες στο προφίλ */
+.profile-listings {
+    margin-bottom: 20px;
+}
+
+.listing-item {
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.listing-item h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.listing-item h3 a {
+    color: #aa3636;
+    text-decoration: none;
+}
+
+.listing-item h3 a:hover {
+    text-decoration: underline;
+}
+
+.listing-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.listing-type {
+    background-color: #6c757d;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.listing-status {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.listing-status.active {
+    color: #28a745;
+}
+
+.listing-status.inactive {
+    color: #dc3545;
+}
+
+.profile-section-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+/* Λίστα επικοινωνίας */
+.contact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.contact-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.contact-list li img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.contact-list li a {
+    color: #aa3636;
+    text-decoration: none;
+}
+
+.contact-list li a:hover {
+    text-decoration: underline;
+}
+
+/* Υπεύθυνος επικοινωνίας */
+.contact-person h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.contact-position {
+    color: #666;
+    font-style: italic;
+    margin: 0;
+}
+
+/* Χάρτης προφίλ */
+.profile-map {
+    border-radius: 5px;
+    overflow: hidden;
+    height: 200px;
+}
+
+/* Στυλ για τη φόρμα επεξεργασίας */
+.edit-profile-form {
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-tabs {
+    margin-bottom: 20px;
+}
+
+.tab-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.tab-btn {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    color: #555;
+}
+
+.tab-btn:hover {
+    background-color: #e5e5e5;
+}
+
+.tab-btn.active {
+    background-color: #aa3636;
+    color: white;
+    border-color: #aa3636;
+}
+
+.tab-pane {
+    display: none;
+    padding: 20px 0;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="url"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+    border-color: #dc3545;
+}
+
+.form-hint {
+    color: #777;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.current-logo {
+    margin-bottom: 10px;
+    text-align: center;
+    max-width: 200px;
+}
+
+.current-logo img {
+    max-width: 100%;
+    border: 1px solid #ddd;
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+.current-logo p {
+    font-size: 12px;
+    color: #666;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.btn-primary,
+.btn-secondary {
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.btn-primary {
+    background-color: #aa3636;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #bb4747;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .profile-image {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+    
+    .profile-actions {
+        justify-content: center;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-section-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .profile-section-footer .btn-primary,
+    .profile-section-footer .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .tab-nav {
+        flex-direction: column;
+    }
+    
+    .tab-btn {
+        width: 100%;
+        text-align: center;
+    }
+}

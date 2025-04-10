@@ -1,4 +1,7 @@
 <?php
+// public/login.php
+// Αυτόματη φόρτωση μέσω Composer
+require_once __DIR__ . '/../vendor/autoload.php';
 // Συμπερίληψη του config.php για σταθερές BASE_URL και ROOT_DIR
 require_once '../config/config.php';
 
@@ -12,7 +15,18 @@ echo '<main>'; // Έναρξη του main
 <div class="container">
 <div class="login-form-container">
         <h1>Σύνδεση</h1>
+        
+        <?php if (isset($_SESSION['login_error'])): ?>
+            <div class="error-message">
+                <?php echo $_SESSION['login_error']; ?>
+                <?php unset($_SESSION['login_error']); ?>
+            </div>
+        <?php endif; ?>
+        
         <form class="login-form" action="login_process.php" method="POST">
+            <!-- CSRF token -->
+            <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
+            
             <!-- Πεδίο Email -->
            <div>
             <label for="email"></label>

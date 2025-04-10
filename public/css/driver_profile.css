@@ -1,93 +1,357 @@
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    margin: 0;
+/* public/css/driver_profile.css */
+
+/* Γενικά στυλ για το προφίλ */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-main {
-    flex-grow: 1;
+/* Επικεφαλίδα προφίλ */
+.profile-header {
     display: flex;
-    flex-direction: column;
-    margin-left: 2%;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
 }
 
-.profile-section h1 {
-    text-align: center;
-    font-size: 24px;
+.profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 30px;
+    border: 5px solid #f0f0f0;
+    flex-shrink: 0;
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-info h1 {
+    margin: 0 0 10px 0;
     color: #333;
 }
 
-form {
-    margin-top: 20px;
+.profile-location {
+    display: flex;
+    align-items: center;
+    color: #666;
+    margin-bottom: 15px;
 }
 
-fieldset {
-    border: 1px solid #ccc;
+.profile-location img {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Μηνύματα επιτυχίας και σφάλματος */
+.success-message,
+.error-message {
+    padding: 10px 15px;
     border-radius: 5px;
     margin-bottom: 20px;
-    padding: 10px;
 }
 
-legend {
+/* public/css/driver_profile.css */
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Περιεχόμενο προφίλ */
+.profile-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.profile-main {
+    flex: 2 1 600px;
+}
+
+.profile-sidebar {
+    flex: 1 1 300px;
+}
+
+/* Ενότητες προφίλ */
+.profile-section {
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.profile-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 18px;
+}
+
+.profile-about {
+    line-height: 1.6;
+    color: #444;
+}
+
+.profile-empty {
+    color: #888;
+    font-style: italic;
+}
+
+.profile-empty a {
+    color: #aa3636;
+    text-decoration: none;
+}
+
+.profile-empty a:hover {
+    text-decoration: underline;
+}
+
+/* Προσόντα και πιστοποιήσεις */
+.profile-qualifications {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.qualification-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.qualification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.qualification-icon img {
+    width: 24px;
+    height: 24px;
+}
+
+.qualification-info h3 {
+    margin: 0 0 5px 0;
     font-size: 16px;
-    font-weight: bold;
     color: #333;
 }
 
-.form-group {
-    margin-bottom: 10px;
+.qualification-info p {
+    margin: 0;
+    color: #666;
 }
 
-.form-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #555;
+.expiry-date {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
 }
 
-.form-group input {
-    width: 95%;
-    padding: 8px;
-    border: 1px solid #ddd;
+.training-details {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f0f0f0;
     border-radius: 4px;
     font-size: 14px;
 }
 
-.form-actions {
-    text-align: center;
+/* Αγγελίες στο προφίλ */
+.profile-listings {
+    margin-bottom: 20px;
 }
 
-.btn-save {
-    background-color: #007BFF;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
+.listing-item {
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
     border-radius: 5px;
-    cursor: pointer;
+    background-color: #f9f9f9;
+}
+
+.listing-item h3 {
+    margin: 0 0 10px 0;
     font-size: 16px;
 }
 
-.btn-save:hover {
-    background-color: #0056b3;
+.listing-item h3 a {
+    color: #aa3636;
+    text-decoration: none;
 }
 
-.form-columns {
+.listing-item h3 a:hover {
+    text-decoration: underline;
+}
+
+.listing-meta {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #666;
 }
 
-.form-columns fieldset {
-    flex: 1;
+.listing-type {
+    background-color: #6c757d;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 12px;
 }
 
-.map-container {
+.listing-status {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.listing-status.active {
+    color: #28a745;
+}
+
+.listing-status.inactive {
+    color: #dc3545;
+}
+
+.profile-section-footer {
+    display: flex;
+    justify-content: space-between;
     margin-top: 20px;
 }
 
-.map-container iframe {
-    width: 100%;
-    height: 300px;
-    border: none;
+/* Λίστα επικοινωνίας */
+.contact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.contact-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.contact-list li img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.contact-list li a {
+    color: #aa3636;
+    text-decoration: none;
+}
+
+.contact-list li a:hover {
+    text-decoration: underline;
+}
+
+/* Λίστα προτιμήσεων */
+.preferences-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.preferences-list li {
+    margin-bottom: 10px;
+}
+
+.preferences-list li strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.availability-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.availability-status.available {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.availability-status.unavailable {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Χάρτης προφίλ */
+.profile-map {
+    border-radius: 5px;
+    overflow: hidden;
+    height: 200px;
+}
+
+/* Προσαρμογή για μικρές οθόνες */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .profile-image {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+    
+    .profile-actions {
+        justify-content: center;
+    }
+    
+    .profile-qualifications {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-section-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .profile-section-footer .btn-primary,
+    .profile-section-footer .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
 }

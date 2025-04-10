@@ -1,4 +1,7 @@
 <?php
+
+// Αυτόματη φόρτωση μέσω Composer
+require_once __DIR__ . '/../vendor/autoload.php';
 // Συμπερίληψη του config.php για να οριστούν οι σταθερές
 require_once __DIR__ . '/../config/config.php';
 

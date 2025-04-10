@@ -6,4 +6,5 @@ Options -Indexes
     RewriteRule ^(.+)$ index.php [QSA,L]
     AddType text/css .css
 
+
 </IfModule>

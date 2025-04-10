@@ -1,11 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     const dropdown = document.querySelector('.dropdown');
+    
+    // Εάν το dropdown δεν υπάρχει, επιστρέφουμε πρόωρα
+    if (!dropdown) {
+        return;
+    }
+    
     const dropdownMenu = dropdown.querySelector('.dropdown-menu');
     const dropdownButton = dropdown.querySelector('.dropdown-toggle');
-
-    // Εάν το dropdown ή το dropdownButton δεν υπάρχουν, επιστρέφουμε πρόωρα
-    if (!dropdown || !dropdownMenu || !dropdownButton) {
-        console.error("Dropdown elements not found.");
+    
+    // Εάν το dropdownMenu ή το dropdownButton δεν υπάρχουν, επιστρέφουμε πρόωρα
+    if (!dropdownMenu || !dropdownButton) {
         return;
     }
 
