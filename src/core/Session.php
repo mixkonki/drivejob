@@ -10,7 +10,8 @@ class Session
     {
         if (session_status() === PHP_SESSION_NONE) {
             // Ρύθμιση των επιλογών της συνεδρίας
-            ini_set('session.cookie_path', '/drivejob/');
+            // Αφαίρεση του συγκεκριμένου cookie path γιατί μπορεί να προκαλέσει προβλήματα
+            // ini_set('session.cookie_path', '/drivejob/');
             
             // Ορισμός ενός μοναδικού ονόματος συνεδρίας
             session_name('DRIVEJOBSESSION');

@@ -1,16 +1,19 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-var_dump($_POST);
-
-
-
+// Αφαίρεση των συναρτήσεων εμφάνισης σφαλμάτων στην παραγωγή
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
+// var_dump($_POST); // Αφαίρεση αυτής της γραμμής
 
 require_once __DIR__ . '/../../config/config.php'; // Πρώτα το config.php για να οριστούν οι σταθερές
 require_once ROOT_DIR . '/config/database.php'; // Σύνδεση με τη βάση δεδομένων
 require_once '../../src/helpers/email_helper.php'; // Εισαγωγή helper για το email
 require_once '../../templates/email_template.php'; // Εισαγωγή template για το email
+
+use Drivejob\Core\Session;
+
+Session::start();
+
 include ROOT_DIR . '/src/Views/header.php'; // Header
 
 echo '<main>'; // Έναρξη του main
@@ -25,11 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $first_name = $_POST['first_name'];
     $phone = $_POST['phone'];
 
-    var_dump($_POST);
-
-
     // Ορισμός του ρόλου (στατική τιμή για οδηγούς)
-    $role = 'driver'; // Μπορεί να αλλάξει σε 'company' για την εγγραφή επιχείρησης
+    $role = 'driver';
 
     // Έλεγχος αν υπάρχει ήδη ο χρήστης με το ίδιο email
     $checkSql = "SELECT * FROM drivers WHERE email = ?";

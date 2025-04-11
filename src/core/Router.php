@@ -80,7 +80,7 @@ class Router
             $path = substr($path, 0, $position);
         }
         
-        // Αφαίρεση του βασικού path της εφαρμογής
+        // Αφαίρεση του βασικού path της εφαρμογής - διόρθωση για το WAMP
         $basePath = '/drivejob/public';
         
         if (strpos($path, $basePath) === 0) {
@@ -90,6 +90,10 @@ class Router
         // Καθαρισμός του path
         $path = trim($path, '/');
         $path = '/' . $path;
+        
+        // Αποσφαλμάτωση
+        // echo "Original path: {$_SERVER['REQUEST_URI']}<br>";
+        // echo "Processed path: {$path}<br>";
         
         return $path ?: '/';
     }

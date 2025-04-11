@@ -1,5 +1,13 @@
 <?php
-// Αποθηκεύστε αυτό το αρχείο ως public/session_debug.php
+// Αποθήκευσε αυτό το αρχείο ως public/session_debug.php
+
+// Ενεργοποίηση εμφάνισης σφαλμάτων
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Αυτόματη φόρτωση μέσω Composer
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // Συμπερίληψη του config.php για να οριστούν οι σταθερές
 require_once __DIR__ . '/../config/config.php';
@@ -18,11 +26,18 @@ include ROOT_DIR . '/src/Views/header.php';
         <h1>Πληροφορίες Συνεδρίας</h1>
         
         <div class="debug-section">
+            <h2>ID & Όνομα Συνεδρίας</h2>
+            <p><strong>ID Συνεδρίας:</strong> <?php echo session_id(); ?></p>
+            <p><strong>Όνομα Συνεδρίας:</strong> <?php echo session_name(); ?></p>
+        </div>
+        
+        <div class="debug-section">
             <h2>Κατάσταση Σύνδεσης</h2>
             <?php if (isset($_SESSION['user_id'])): ?>
                 <p><strong>Κατάσταση:</strong> <span style="color: green;">Συνδεδεμένος</span></p>
                 <p><strong>ID Χρήστη:</strong> <?php echo $_SESSION['user_id']; ?></p>
                 <p><strong>Ρόλος:</strong> <?php echo $_SESSION['role']; ?></p>
+                <p><strong>Όνομα:</strong> <?php echo $_SESSION['user_name'] ?? 'Δεν έχει οριστεί'; ?></p>
             <?php else: ?>
                 <p><strong>Κατάσταση:</strong> <span style="color: red;">Μη Συνδεδεμένος</span></p>
             <?php endif; ?>
@@ -37,23 +52,20 @@ include ROOT_DIR . '/src/Views/header.php';
             <h2>Cookies</h2>
             <pre><?php print_r($_COOKIE); ?></pre>
         </div>
-        
+
         <div class="debug-section">
-            <h2>Server Info</h2>
-            <p><strong>PHP_SELF:</strong> <?php echo $_SERVER['PHP_SELF']; ?></p>
-            <p><strong>REQUEST_URI:</strong> <?php echo $_SERVER['REQUEST_URI']; ?></p>
-            <p><strong>SCRIPT_NAME:</strong> <?php echo $_SERVER['SCRIPT_NAME']; ?></p>
-            <p><strong>REQUEST_METHOD:</strong> <?php echo $_SERVER['REQUEST_METHOD']; ?></p>
+            <h2>Δοκιμές Συνάρτησης Header</h2>
+            <p>Η παρακάτω δοκιμή δείχνει αν η συνάρτηση header() λειτουργεί σωστά.</p>
+            <form action="redirect_test.php" method="post">
+                <button type="submit">Δοκιμή Ανακατεύθυνσης</button>
+            </form>
         </div>
         
         <div class="debug-section">
-            <h2>Προσομοίωση Δημιουργίας Νέας Αγγελίας</h2>
-            <p>Δοκιμάστε τους παρακάτω συνδέσμους:</p>
-            <ul>
-                <li><a href="<?php echo BASE_URL; ?>job-listings/create/">Link 1: job-listings/create/</a></li>
-                <li><a href="<?php echo BASE_URL; ?>job-listings/create">Link 2: job-listings/create</a></li>
-                <li><a href="<?php echo BASE_URL; ?>job-listings/create.php">Link 3: job-listings/create.php</a></li>
-            </ul>
+            <h2>Δοκιμή Δημιουργίας Συνεδρίας</h2>
+            <form action="set_session_test.php" method="post">
+                <button type="submit">Δημιουργία Δοκιμαστικής Συνεδρίας</button>
+            </form>
         </div>
     </div>
 </main>

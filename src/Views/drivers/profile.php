@@ -2,7 +2,7 @@
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php'; 
 ?>
-<!-- Σύνδεση με το CSS αρχείο του προφίλ εταιρείας -->
+<!-- Σύνδεση με το CSS αρχείο του προφίλ οδηγού -->
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
 
 <main>

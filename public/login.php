@@ -5,6 +5,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // Συμπερίληψη του config.php για σταθερές BASE_URL και ROOT_DIR
 require_once '../config/config.php';
 
+use Drivejob\Core\Session;
+
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php';
 
@@ -16,10 +18,10 @@ echo '<main>'; // Έναρξη του main
 <div class="login-form-container">
         <h1>Σύνδεση</h1>
         
-        <?php if (isset($_SESSION['login_error'])): ?>
+        <?php if (Session::has('login_error')): ?>
             <div class="error-message">
-                <?php echo $_SESSION['login_error']; ?>
-                <?php unset($_SESSION['login_error']); ?>
+                <?php echo Session::get('login_error'); ?>
+                <?php Session::remove('login_error'); ?>
             </div>
         <?php endif; ?>
         

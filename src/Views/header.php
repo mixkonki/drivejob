@@ -119,4 +119,4 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                 </a>
             <?php endif; ?>
         </div>
-    </header>
+    </header>   

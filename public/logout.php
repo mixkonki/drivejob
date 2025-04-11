@@ -1,12 +1,11 @@
 <?php
 require_once '../config/config.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-// Ξεκινάμε την συνεδρία για να τερματίσουμε την σύνδεση
-session_start();
+use Drivejob\Core\Session;
 
-// Τερματισμός συνεδρίας
-session_unset();
-session_destroy();
+// Καταστροφή της συνεδρίας
+Session::destroy();
 
 // Αφού ολοκληρωθεί η αποσύνδεση, θα προσφέρουμε την επιλογή επιστροφής στην αρχική ή σύνδεσης ξανά
 ?>

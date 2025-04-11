@@ -2,7 +2,7 @@
 
 // Ορισμός σταθερών
 define('ROOT_DIR', dirname(__DIR__)); // Ριζικός φάκελος του project
-define('BASE_URL', 'http://localhost/drivejob/public/'); // URL για τα public assets
+define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . '/drivejob/public/'); // URL για τα public assets
 
 // Επιστρέφει τις ρυθμίσεις της βάσης δεδομένων
 return [

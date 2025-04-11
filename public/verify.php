@@ -5,6 +5,10 @@ require_once __DIR__ . '/../config/config.php';
 // Συμπερίληψη του database.php για τη σύνδεση με τη βάση δεδομένων
 require_once ROOT_DIR . '/config/database.php';
 
+use Drivejob\Core\Session;
+
+Session::start();
+
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php';
 
@@ -25,7 +29,10 @@ if (isset($_GET['email'], $_GET['role'])) {
         $sql = "UPDATE companies SET is_verified = 1 WHERE email = ?";
     } else {
         // Αν ο ρόλος δεν είναι έγκυρος
-        die("<div class='error'>Μη έγκυρος ρόλος.</div>");
+        echo "<div class='error'>Μη έγκυρος ρόλος.</div>";
+        echo '</main>';
+        include ROOT_DIR . '/src/Views/footer.php';
+        exit();
     }
 
     // Προετοιμασία και εκτέλεση του SQL ερωτήματος
@@ -46,3 +53,4 @@ echo '</main>'; // Κλείσιμο του main
 
 // Συμπερίληψη του footer
 include ROOT_DIR . '/src/Views/footer.php';
+?>
