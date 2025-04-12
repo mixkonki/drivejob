@@ -4,6 +4,20 @@ namespace Drivejob\Core;
 class Session
 {
     private static $started = false;
+    private static $handler = null;
+    
+    /**
+     * Ορίζει έναν προσαρμοσμένο session handler
+     */
+    public static function setHandler($handler)
+    {
+        if (self::$started) {
+            throw new \RuntimeException('Δεν μπορείτε να αλλάξετε τον session handler αφού έχει ξεκινήσει η συνεδρία.');
+        }
+        
+        self::$handler = $handler;
+        session_set_save_handler($handler, true);
+    }
     
     /**
      * Ξεκινά τη συνεδρία αν δεν έχει ήδη ξεκινήσει.
@@ -38,6 +52,32 @@ class Session
         
         self::$started = true;
         return true;
+    }
+    
+     
+    /**
+     * Έλεγχος ασφάλειας συνεδρίας (IP, User Agent)
+     */
+    private static function checkSessionSecurity()
+    {
+        // Έλεγχος αλλαγής IP (προαιρετικό, μπορεί να προκαλέσει προβλήματα με δυναμικές IP)
+        if (isset($_SESSION['_user_ip']) && $_SESSION['_user_ip'] !== $_SERVER['REMOTE_ADDR']) {
+            // Ύποπτη αλλαγή IP - Καταγραφή για αποσφαλμάτωση και πιθανή αναγέννηση συνεδρίας
+            error_log("Suspicious session activity: IP change from {$_SESSION['_user_ip']} to {$_SERVER['REMOTE_ADDR']}");
+            // self::regenerate(true); // Αν θέλετε πιο αυστηρό έλεγχο, ανανεώστε τη συνεδρία
+        }
+        
+        // Έλεγχος αλλαγής User Agent
+        if (isset($_SESSION['_user_agent']) && $_SESSION['_user_agent'] !== ($_SERVER['HTTP_USER_AGENT'] ?? '')) {
+            // Ύποπτη αλλαγή User Agent - Καταγραφή και αναγέννηση συνεδρίας
+            error_log("Suspicious session activity: User Agent change");
+            self::regenerate(true);
+        }
+        
+        // Αποθήκευση των τρεχόντων στοιχείων για μελλοντικούς ελέγχους
+        $_SESSION['_user_ip'] = $_SERVER['REMOTE_ADDR'] ?? '';
+        $_SESSION['_user_agent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        $_SESSION['_last_activity'] = time();
     }
     
     /**
@@ -149,6 +189,28 @@ class Session
     }
     
     /**
+     * Ελέγχει αν η συνεδρία έχει λήξει λόγω αδράνειας
+     * 
+     * @param int $maxIdleTime Μέγιστος χρόνος αδράνειας σε δευτερόλεπτα
+     * @return bool True αν η συνεδρία έχει λήξει, false διαφορετικά
+     */
+    public static function isExpired($maxIdleTime = 1800) // 30 λεπτά προεπιλογή
+    {
+        self::start();
+        if (!isset($_SESSION['_last_activity'])) {
+            $_SESSION['_last_activity'] = time();
+            return false;
+        }
+        
+        if ((time() - $_SESSION['_last_activity']) > $maxIdleTime) {
+            return true;
+        }
+        
+        $_SESSION['_last_activity'] = time();
+        return false;
+    }
+    
+    /**
      * Διαγνωστική μέθοδος που επιστρέφει πληροφορίες για τη συνεδρία
      */
     public static function getDebugInfo()
@@ -161,7 +223,8 @@ class Session
             'status' => session_status(),
             'save_path' => session_save_path(),
             'cookie_params' => session_get_cookie_params(),
-            'data' => $_SESSION
+            'data' => $_SESSION,
+            'using_database' => self::$useDatabase
         ];
     }
 }

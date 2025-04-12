@@ -15,3 +15,10 @@ return [
     'db_user' => $_ENV['DB_USERNAME'] ?? 'root',
     'db_pass' => $_ENV['DB_PASSWORD'] ?? '',
 ];
+define('USE_DB_SESSIONS', true); // Χρήση βάσης δεδομένων για τις συνεδρίες
+define('SESSION_LIFETIME', 86400); // 24 ώρες
+define('SESSION_PATH', '/');
+define('SESSION_DOMAIN', '');
+define('SESSION_SECURE', false); // Αλλάξτε σε true για παραγωγικό περιβάλλον με HTTPS
+define('SESSION_HTTPONLY', true);
+define('SESSION_SAMESITE', 'Lax');

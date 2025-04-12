@@ -1,7 +1,4 @@
 <?php
-// ΔΕΝ χρειάζεται να φορτώσουμε το autoload.php ξανά εδώ, έχει ήδη φορτωθεί στο public/index.php
-// Αφαιρούμε αυτή τη γραμμή: require_once __DIR__ . '/../../vendor/autoload.php';
-
 // Συμπερίληψη του config.php για να οριστούν οι σταθερές
 require_once __DIR__ . '/../../../config/config.php';
 
@@ -25,11 +22,12 @@ include ROOT_DIR . '/src/Views/header.php';
 $css_files = ['css/job-listings.css'];
 
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
-$errors = $_SESSION['errors'] ?? [];
-$oldInput = $_SESSION['old_input'] ?? [];
+use Drivejob\Core\Session;
 
-// Καθαρισμός των session μεταβλητών μετά την ανάκτησή τους
-unset($_SESSION['errors'], $_SESSION['old_input']);
+$errors = Session::get('errors', []);
+$oldInput = Session::get('old_input', []);
+Session::remove('errors');
+Session::remove('old_input');
 
 // Βοηθητική συνάρτηση για την εμφάνιση των παλιών τιμών
 function old($field, $default = '') {

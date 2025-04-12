@@ -1,7 +1,7 @@
 <?php 
 // Αυτό πρέπει να υπάρχει στην αρχή του αρχείου
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+    Session::start();
 }
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php'; 

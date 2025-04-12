@@ -149,9 +149,8 @@ class JobListingController {
         
         if (!$validator->isValid()) {
             // Αποθήκευση των σφαλμάτων και των δεδομένων στο session για να τα εμφανίσουμε στη φόρμα
-            $_SESSION['errors'] = $validator->getErrors();
-            $_SESSION['old_input'] = $_POST;
-            
+            Session::set('errors', $validator->getErrors());
+            Session::set('old_input', $_POST);
             // Ανακατεύθυνση πίσω στη φόρμα
             header('Location: ' . BASE_URL . 'job-listings/create');
             exit();

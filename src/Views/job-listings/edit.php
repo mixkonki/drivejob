@@ -1,6 +1,14 @@
 <?php 
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php'; 
+
+use Drivejob\Core\Session;
+
+$errors = Session::get('errors', []);
+$oldInput = Session::get('old_input', []);
+Session::remove('errors');
+Session::remove('old_input');
+
 ?>
 
 <main>

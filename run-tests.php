@@ -1,0 +1,29 @@
+<?php
+// Εκτέλεση των αυτοματοποιημένων δοκιμών για τις συνεδρίες
+echo "Εκτέλεση των αυτοματοποιημένων δοκιμών για τις συνεδρίες...\n";
+
+// Βεβαιωθείτε ότι δεν έχουν ξεκινήσει headers
+if (headers_sent($file, $line)) {
+    echo "Προσοχή: Οι headers έχουν ήδη σταλεί ($file:$line) πριν από την εκτέλεση των δοκιμών.\n";
+    echo "Αυτό μπορεί να προκαλέσει προβλήματα με τις δοκιμές συνεδριών.\n";
+}
+
+// Βεβαιωθείτε ότι οι συνεδρίες δεν είναι ενεργές
+if (session_status() === PHP_SESSION_ACTIVE) {
+    session_write_close();
+    echo "Προσοχή: Οι συνεδρίες ήταν ήδη ενεργές. Έχουν κλείσει για τις δοκιμές.\n";
+}
+
+// Προσδιορισμός της σωστής διαδρομής για το phpunit ανάλογα με το λειτουργικό σύστημα
+$phpunitPath = __DIR__ . '/vendor/bin/phpunit';
+
+// Σε περιβάλλον Windows, χρησιμοποιούμε το phpunit.bat
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    $phpunitPath = 'vendor\\bin\\phpunit.bat';
+    
+    // Εκτέλεση με cmd για αποφυγή προβλημάτων με PowerShell
+    passthru("cmd /c $phpunitPath");
+} else {
+    // Σε άλλα λειτουργικά συστήματα
+    passthru($phpunitPath);
+}
