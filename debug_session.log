@@ -52,3 +52,25 @@ PHP_SESSION_ID: dr254t41ev2s0hhesqdrjejmpe
 
 PHP_SESSION_ID: tiikibbkoccf24q29qlm10a154
 
+[2025-04-12 19:31:15] Session Info: Array
+(
+    [csrf_token] => 30c90408a9bfdac3d680853ae7309b65eb644cc36cc21c3436ef5cc275409eaf
+    [csrf_token_time] => 1744475470
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: cl13p8np4kgr0pfbtuvu9v2hpf
+
+[2025-04-12 19:31:31] Session Info: Array
+(
+    [csrf_token] => 44714d0ba082b1d4450df35a4a39b929a287c9d0f9be98aab263a1519ac40b63
+    [csrf_token_time] => 1744475487
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: uo5br0kc5q8hrqiick1tgv2und
+

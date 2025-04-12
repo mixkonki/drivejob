@@ -144,3 +144,24 @@
 )
 
 [2025-04-12 18:18:53] Session destroyed, redirecting to home page
+[2025-04-12 19:31:09] Logout started - Session before destruction: Array
+(
+    [csrf_token] => bda8997baf934ccc94e4088cf507c85791f6f681c1fbad0b952b3ff6a594bced
+    [csrf_token_time] => 1744475078
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [some_key] => some_value
+)
+
+[2025-04-12 19:31:09] Session destroyed, redirecting to home page
+[2025-04-12 19:31:20] Logout started - Session before destruction: Array
+(
+    [csrf_token] => 8b548f01a09bb5252b102c4f956fa0c716adc48174fa1b0a38c822f3982452ed
+    [csrf_token_time] => 1744475477
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 19:31:20] Session destroyed, redirecting to home page

@@ -625,3 +625,48 @@ Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
 )
 
 [2025-04-12 18:18:57] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+[2025-04-12 19:31:13] Login attempt - Email: info@thessdrive.gr
+[2025-04-12 19:31:13] New session started. Session ID: cl13p8np4kgr0pfbtuvu9v2hpf
+[2025-04-12 19:31:13] Login attempt - Email: info@thessdrive.gr
+[2025-04-12 19:31:13] Driver lookup result: Not found
+[2025-04-12 19:31:13] Company lookup result: Found
+[2025-04-12 19:31:13] Company password verification: Success
+[2025-04-12 19:31:13] Company login successful - ID: 2 - Name: Thessdrive IKE
+[2025-04-12 19:31:13] Session before update: Array
+(
+    [csrf_token] => 30c90408a9bfdac3d680853ae7309b65eb644cc36cc21c3436ef5cc275409eaf
+    [csrf_token_time] => 1744475470
+)
+
+[2025-04-12 19:31:13] Session after update: Array
+(
+    [csrf_token] => 30c90408a9bfdac3d680853ae7309b65eb644cc36cc21c3436ef5cc275409eaf
+    [csrf_token_time] => 1744475470
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 19:31:13] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+[2025-04-12 19:31:26] Login attempt - Email: kostas.michailidis@hotmail.gr
+[2025-04-12 19:31:26] New session started. Session ID: uo5br0kc5q8hrqiick1tgv2und
+[2025-04-12 19:31:26] Login attempt - Email: kostas.michailidis@hotmail.gr
+[2025-04-12 19:31:26] Driver lookup result: Found
+[2025-04-12 19:31:26] Driver password verification: Success
+[2025-04-12 19:31:26] Driver login successful - ID: 26
+[2025-04-12 19:31:26] Session before update: Array
+(
+    [csrf_token] => bb4c3acc2709de184c95bfd023f380023cb17331d6962cdbf6410391200c825e
+    [csrf_token_time] => 1744475483
+)
+
+[2025-04-12 19:31:26] Session after update: Array
+(
+    [csrf_token] => bb4c3acc2709de184c95bfd023f380023cb17331d6962cdbf6410391200c825e
+    [csrf_token_time] => 1744475483
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+[2025-04-12 19:31:26] Redirecting to driver profile.
