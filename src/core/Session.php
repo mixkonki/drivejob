@@ -7,24 +7,45 @@ class Session
      * Ξεκινά τη συνεδρία αν δεν έχει ήδη ξεκινήσει
      */
     public static function start()
-{
-    if (session_status() === PHP_SESSION_NONE) {
-        // Ορισμός ενός μοναδικού ονόματος συνεδρίας
-        session_name('DRIVEJOBSESSION');
-        
-        // Ρυθμίσεις για τα cookies της συνεδρίας
-        session_set_cookie_params([
-            'lifetime' => 86400, // 24 ώρες
-            'path' => '/',       // Χρησιμοποιούμε το root path
-            'domain' => '',      // Κενό για localhost
-            'secure' => false,   // false για HTTP, true για HTTPS
-            'httponly' => true,  // true για ασφάλεια
-            'samesite' => 'Lax' // Lax επιτρέπει τις ανακατευθύνσεις
-        ]);
-        
-        session_start();
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            // Χρησιμοποιούμε τον προεπιλεγμένο φάκελο συνεδριών της PHP αντί για προσαρμοσμένο
+            // Αυτό θα παρακάμψει τα προβλήματα δικαιωμάτων με τον φάκελο tmp/sessions
+            
+            // Ρυθμίσεις για το όνομα και τα cookies της συνεδρίας
+            session_name('DRIVEJOBSESSION');
+            
+            session_set_cookie_params([
+                'lifetime' => 86400, // 24 ώρες
+                'path' => '/',      
+                'domain' => '',     
+                'secure' => false,  
+                'httponly' => true, 
+                'samesite' => 'Lax'
+            ]);
+            
+            // Καταγραφή πριν την έναρξη της συνεδρίας
+            file_put_contents(
+                ROOT_DIR . '/session_start_debug.log', 
+                date('[Y-m-d H:i:s] ') . 
+                "About to start session, status: " . session_status() . "\n", 
+                FILE_APPEND
+            );
+            
+            // Έναρξη συνεδρίας
+            session_start();
+            
+            // Καταγραφή μετά την έναρξη της συνεδρίας
+            file_put_contents(
+                ROOT_DIR . '/session_start_debug.log', 
+                date('[Y-m-d H:i:s] ') . 
+                "Session started, ID: " . session_id() . ", Data: " . print_r($_SESSION, true) . "\n", 
+                FILE_APPEND
+            );
+        }
     }
-}
+    
+
     /**
      * Θέτει μια τιμή στη συνεδρία
      */

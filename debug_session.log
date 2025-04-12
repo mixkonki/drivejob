@@ -1,0 +1,20 @@
+[2025-04-12 09:56:22] Session Info: Array
+(
+    [csrf_token] => 19e09253f5a8e6549704facb5bd1197021eec010a665967eb241de0db52b9335
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ohetjbopclt3gn4jlujkiuoppv
+
+[2025-04-12 09:56:37] Session Info: Array
+(
+    [csrf_token] => af2fbeedb51cccc8b3e8d3684b6a2fdbf282b155706e9eef011084b8fc18d809
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: 57oqgsqqnui03q3jdl7p37nb2a
+

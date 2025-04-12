@@ -4,8 +4,40 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Drivejob\Core\Session;
 
+// Έναρξη συνεδρίας αν δεν έχει ξεκινήσει
+Session::start();
+
+// Αποσφαλμάτωση - καταγραφή της συνεδρίας πριν την καταστροφή
+file_put_contents('logout_debug.log', 
+    date('[Y-m-d H:i:s] ') . 
+    "Logout started - Session before destruction: " . print_r($_SESSION, true) . "\n", 
+    FILE_APPEND
+);
+
+// Καθαρισμός όλων των μεταβλητών συνεδρίας
+$_SESSION = array();
+
+// Διαγραφή του cookie συνεδρίας
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000,
+        $params["path"], $params["domain"],
+        $params["secure"], $params["httponly"]
+    );
+}
+
 // Καταστροφή της συνεδρίας
-Session::destroy();
+session_destroy();
+
+file_put_contents('logout_debug.log', 
+    date('[Y-m-d H:i:s] ') . 
+    "Session destroyed, redirecting to home page\n", 
+    FILE_APPEND
+);
+
+// Ανακατεύθυνση στην αρχική σελίδα
+header('Location: ' . BASE_URL);
+exit();
 
 // Αφού ολοκληρωθεί η αποσύνδεση, θα προσφέρουμε την επιλογή επιστροφής στην αρχική ή σύνδεσης ξανά
 ?>

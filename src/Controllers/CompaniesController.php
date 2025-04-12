@@ -24,11 +24,37 @@ class CompaniesController {
         
         // Λήψη των στοιχείων της εταιρείας
         $companyId = $_SESSION['user_id'];
+        
+        // Αποσφαλμάτωση
+        file_put_contents(
+            ROOT_DIR . '/company_controller_debug.log', 
+            date('[Y-m-d H:i:s] ') . 
+            "Company Controller Profile Method - Company ID: {$companyId}, Session: " . print_r($_SESSION, true) . "\n", 
+            FILE_APPEND
+        );
+        
         $companyData = $this->companiesModel->getCompanyById($companyId);
+        
+        // Αποσφαλμάτωση των δεδομένων εταιρείας
+        file_put_contents(
+            ROOT_DIR . '/company_controller_debug.log', 
+            date('[Y-m-d H:i:s] ') . 
+            "Company Data Retrieved: " . print_r($companyData, true) . "\n", 
+            FILE_APPEND
+        );
         
         // Λήψη των αγγελιών της εταιρείας
         $jobListingModel = new \Drivejob\Models\JobListingModel($this->pdo);
         $listings = $jobListingModel->getCompanyListings($companyId, null, 1, 5);
+        
+        // Έλεγχος διαδρομής του view
+        $viewPath = ROOT_DIR . '/src/Views/companies/profile.php';
+        file_put_contents(
+            ROOT_DIR . '/company_controller_debug.log', 
+            date('[Y-m-d H:i:s] ') . 
+            "View Path: {$viewPath}, Exists: " . (file_exists($viewPath) ? 'Yes' : 'No') . "\n", 
+            FILE_APPEND
+        );
         
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/companies/profile.php';

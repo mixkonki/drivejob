@@ -123,3 +123,682 @@ Required role: company
 PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
 Required role: company
 
+[2025-04-12 09:10:36] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:10:43] HasRole check - Session: Array
+(
+    [csrf_token] => 400cad77efa7edcacf9825491c52572074964279e06ab35bcf1716416751b5d8
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: driver
+
+[2025-04-12 09:10:43] Role check failed: user not logged in - redirecting to login
+
+[2025-04-12 09:10:45] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:10:53] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:10:54] HasRole check - Session: Array
+(
+    [csrf_token] => 150c2781eb9ac20ef0999bd2d29991f4db9fc68503fbdd07b7ed41c98a7d9980
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: company
+
+[2025-04-12 09:10:54] Role check failed: user not logged in - redirecting to login
+
+[2025-04-12 09:11:05] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:11:06] HasRole check - Session: Array
+(
+    [csrf_token] => 9c83d0b7363fed3e6329036a439247d29e6f5b55c9a2c5aee3a081723524362d
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: company
+
+[2025-04-12 09:11:06] Role check failed: user not logged in - redirecting to login
+
+[2025-04-12 09:11:28] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:11:38] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:11:42] HasRole check - Session: Array
+(
+    [csrf_token] => cf8308d803b912407bee47f632325e5974600877fd37b9907295dd9c459acf40
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: company
+
+[2025-04-12 09:11:42] Role check failed: user not logged in - redirecting to login
+
+[2025-04-12 09:11:50] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:14:04] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:14:20] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:14:22] HasRole check - Session: Array
+(
+    [csrf_token] => 794493cecd9dd33c73c8c57e59b7980197fef24a01c832f75681843ea87bf6d1
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: company
+
+[2025-04-12 09:14:22] Role check failed: user not logged in - redirecting to login
+
+[2025-04-12 09:14:23] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:14:32] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:14:40] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:14:44] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:14:45] HasRole check - Session: Array
+(
+    [csrf_token] => 4bc7b80e247e3d452b68a925798f68c6c1d233f543201b4e1bb8a755a7bc8daf
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: company
+
+[2025-04-12 09:14:45] Role check failed: user not logged in - redirecting to login
+
+[2025-04-12 09:14:57] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:15:00] HasRole check - Session: Array
+(
+    [csrf_token] => 8610d2e4b7fb27d4443b080d2f837b8ff96b7c2849e2ca8dfc6f90f532c2c173
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: driver
+
+[2025-04-12 09:15:00] Role check failed: user not logged in - redirecting to login
+
+[2025-04-12 09:15:02] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:15:06] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:18:19] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:18:25] HasRole check - Session: Array
+(
+    [csrf_token] => 5007fd96e9219cfad29f7a66d21b9222bbee5ae28f4d32c6f439337eb4ccc912
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: driver
+
+[2025-04-12 09:18:32] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:18:42] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:18:45] HasRole check - Session: Array
+(
+    [csrf_token] => d07c617491bd2d9035ed0b1f9db15a6c9a825e08542cdc0ec260de85f0fd2705
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: driver
+
+[2025-04-12 09:21:46] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:21:59] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:22:00] HasRole check - Session: Array
+(
+    [csrf_token] => 23815dcdb39c7b47286a89e50d835acd8172822f784f6e4dbf70a2434361dc81
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: driver
+
+[2025-04-12 09:22:59] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:26:31] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:26:34] HasRole check - Session: Array
+(
+    [csrf_token] => dfdfd80a275f23ffe96744a0c4a25e309cc0741cba970aa8671eca3873d96bfe
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: driver
+
+[2025-04-12 09:26:37] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:28:11] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:28:14] HasRole check - Session: Array
+(
+    [csrf_token] => 426d55420c9d560ff5d0af2cf5ef31fc53775a553c48ed086c13b1f06bfe66b0
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: driver
+
+[2025-04-12 09:28:15] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:28:21] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:31:13] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:31:38] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:37:52] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:37:53] HasRole check - Session: Array
+(
+    [csrf_token] => c60e0be2cb65cb72a40eb195c7e5a7303aec3af5310befbaf0e2ed706c4be5f1
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: bqve123vctonqe3p2e28j2komf
+Required role: driver
+
+[2025-04-12 09:37:56] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:38:01] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:42:58] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:43:18] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:56:15] HasRole check - Session: Array
+(
+    [csrf_token] => dee64ba4fb5d0b913b0de98d9dbf92d670c802d8d172e7f0d3f829ff61e150bb
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ohetjbopclt3gn4jlujkiuoppv
+Required role: company
+
+[2025-04-12 09:56:17] HasRole check - Session: Array
+(
+    [csrf_token] => dee64ba4fb5d0b913b0de98d9dbf92d670c802d8d172e7f0d3f829ff61e150bb
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ohetjbopclt3gn4jlujkiuoppv
+Required role: company
+
+[2025-04-12 09:56:21] HasRole check - Session: Array
+(
+    [csrf_token] => 19e09253f5a8e6549704facb5bd1197021eec010a665967eb241de0db52b9335
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ohetjbopclt3gn4jlujkiuoppv
+Required role: company
+
+[2025-04-12 09:56:24] HasRole check - Session: Array
+(
+    [csrf_token] => d4fe4f43b9c0f510f3eee2bc4aa5689680804f5fba22e149d881286360134160
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ohetjbopclt3gn4jlujkiuoppv
+Required role: company
+
+[2025-04-12 09:56:32] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+    [test_value] => Test Session Value - 2025-04-12 06:49:30
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:56:33] HasRole check - Session: Array
+(
+    [csrf_token] => 21d0eb1fde062cd795ec25d70780b434559fd3d90f8a132bb4110a3a2db8e180
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: 57oqgsqqnui03q3jdl7p37nb2a
+Required role: driver
+
+[2025-04-12 09:56:34] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+    [test_value] => Test Session Value - 2025-04-12 06:49:30
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:56:38] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+    [test_value] => Test Session Value - 2025-04-12 06:49:30
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:58:56] HasRole check - Session: Array
+(
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+    [login_error] => Δεν βρέθηκε χρήστης με αυτό το email.
+    [test_value] => Test Session Value - 2025-04-12 06:49:30
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: driver
+
+[2025-04-12 09:59:02] HasRole check - Session: Array
+(
+    [csrf_token] => f6efd7985628ae5d6f3991e67471d1c5893eba625e6e6814f5a00675bda35d58
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: 57oqgsqqnui03q3jdl7p37nb2a
+Required role: driver
+
+[2025-04-12 10:00:18] HasRole check - Session: Array
+(
+    [csrf_token] => 8cf1bec3743752b89b43216a46a1d7e0549443a504c1c0e557f15baa90629608
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+PHP_SESSION_ID: 57oqgsqqnui03q3jdl7p37nb2a
+Required role: driver
+
+[2025-04-12 10:00:28] HasRole check - Session: Array
+(
+    [csrf_token] => 2445c67ba4230a467db15c9a94a9781279077edcc5b068426f7f91be57c21b83
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ols812k3gc6afabbobqfvrk2gp
+Required role: company
+
+[2025-04-12 10:00:40] HasRole check - Session: Array
+(
+    [csrf_token] => 2445c67ba4230a467db15c9a94a9781279077edcc5b068426f7f91be57c21b83
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ols812k3gc6afabbobqfvrk2gp
+Required role: company
+
+[2025-04-12 10:00:57] HasRole check - Session: Array
+(
+    [csrf_token] => ce7bf1d41ec6dbc960a85705776133ee2afe5f630f44a9991e1f30dc8dd0f00e
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ols812k3gc6afabbobqfvrk2gp
+Required role: company
+
+[2025-04-12 10:01:16] HasRole check - Session: Array
+(
+    [csrf_token] => ce7bf1d41ec6dbc960a85705776133ee2afe5f630f44a9991e1f30dc8dd0f00e
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ols812k3gc6afabbobqfvrk2gp
+Required role: company
+

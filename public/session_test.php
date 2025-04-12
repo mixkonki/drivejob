@@ -1,35 +1,19 @@
 <?php
-// Αυτόματη φόρτωση μέσω Composer
-require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../config/config.php';
+// Αποθήκευση χωρίς namespaces για δοκιμή
+session_start();
 
-use Drivejob\Core\Session;
+echo "<h1>Δοκιμή Απλής Συνεδρίας (Χωρίς namespace)</h1>";
 
-Session::start();
+// Ορισμός μιας τιμής δοκιμής
+$_SESSION['test_value'] = 'Test Session Value - ' . date('Y-m-d H:i:s');
 
-echo "<h1>Δοκιμή Συνεδρίας</h1>";
 echo "<pre>";
-echo "Current Session ID: " . session_id() . "\n";
-echo "Session Data:\n";
+echo "Session ID: " . session_id() . "\n";
+echo "Session Name: " . session_name() . "\n";
+echo "Session Path: " . session_save_path() . "\n";
+echo "Session Data: \n";
 print_r($_SESSION);
 echo "</pre>";
 
-// Ορισμός δοκιμαστικών δεδομένων
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
-    echo "<p>Δεν είσαι συνδεδεμένος. Ορισμός δοκιμαστικών δεδομένων...</p>";
-    
-    $_SESSION['user_id'] = 1;
-    $_SESSION['role'] = 'company';
-    $_SESSION['user_name'] = 'Δοκιμαστικός Χρήστης';
-    
-    echo "<p>Δοκιμαστικά δεδομένα προστέθηκαν. <a href='session_test.php'>Ανανέωση</a></p>";
-}
-
-// Δοκιμαστικοί σύνδεσμοι
-echo "<p>Δοκιμή συνδέσμων:</p>";
-echo "<ul>";
-echo "<li><a href='" . BASE_URL . "job-listings/create'>Δημιουργία Αγγελίας</a></li>";
-echo "<li><a href='" . BASE_URL . "companies/edit_profile.php'>Επεξεργασία Προφίλ Εταιρείας</a></li>";
-echo "<li><a href='" . BASE_URL . "drivers/edit_profile.php'>Επεξεργασία Προφίλ Οδηγού</a></li>";
-echo "</ul>";
-?>
+echo "<h2>Ανανεώστε τη σελίδα για να δείτε αν η τιμή παραμένει</h2>";
+echo "<a href='login.php'>Δοκιμή Σύνδεσης</a>";

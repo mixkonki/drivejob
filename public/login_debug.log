@@ -60,3 +60,266 @@ Login attempt - Email: kostas.michailidis@hotmail.gr
 Driver login successful - ID: 26
 Login attempt - Email: kostas.michailidis@hotmail.gr
 Driver login successful - ID: 26
+Login attempt - Email: kostas.michailidis@hotmail.gr
+Driver login successful - ID: 26
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: kostas.michailidis@hotmail.gr
+Driver login successful - ID: 26
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: kostas.michailidis@hotmail.gr
+Driver login successful - ID: 26
+Login attempt - Email: kostas.michailidis@hotmail.gr
+Driver login successful - ID: 26
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: kostas.michailidis@hotmail.gr
+Driver login successful - ID: 26
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: kostas.michailidis@hotmail.gr
+Driver login successful - ID: 26
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: kostas.michailidis@hotmail.gr
+Driver login successful - ID: 26
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: kostas.michailidis@hotmail.gr
+Driver login successful - ID: 26
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: kostas.michailidis@hotmail.gr
+Driver login successful - ID: 26
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: kostas.michailidis1@gmail.com
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+Login attempt - Email: kostas.michailidis@hotmail.gr
+Driver login successful - ID: 26
+Login attempt - Email: info@thessdrive.gr
+Company login successful - ID: 2
+Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+[2025-04-12 09:42:54] Login process started. Session status: 1
+[2025-04-12 09:42:54] New session started. Session ID: q3anuasre3k4n4fvuena0po7jt
+[2025-04-12 09:42:54] Login attempt - Email: info@thessdrive.gr
+[2025-04-12 09:42:54] Driver lookup result: Not found
+[2025-04-12 09:42:54] Company lookup result: Found
+[2025-04-12 09:42:54] Company password verification: Success
+[2025-04-12 09:42:54] Company login successful - ID: 2 - Name: Thessdrive IKE
+[2025-04-12 09:42:54] Session before update: Array
+(
+    [csrf_token] => 4c75cad7bba37e49afe50bd551da562cd77f12e2cf33e6bce24cd6a2908e0557
+)
+
+[2025-04-12 09:42:54] Session after update: Array
+(
+    [csrf_token] => 4c75cad7bba37e49afe50bd551da562cd77f12e2cf33e6bce24cd6a2908e0557
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:42:54] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+[2025-04-12 09:42:58] Login process started. Session status: 1
+[2025-04-12 09:42:58] New session started. Session ID: q3anuasre3k4n4fvuena0po7jt
+[2025-04-12 09:42:58] Login attempt - Email: kostas.michailidis@hotmail.gr
+[2025-04-12 09:42:58] Driver lookup result: Found
+[2025-04-12 09:42:58] Driver password verification: Success
+[2025-04-12 09:42:58] Driver login successful - ID: 26
+[2025-04-12 09:42:58] Session before update: Array
+(
+    [csrf_token] => dd1243bdc8919893f64f6323df25cbfba539ef8bf2f1dcbaef2bca97c9331f05
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:42:58] Session after update: Array
+(
+    [csrf_token] => dd1243bdc8919893f64f6323df25cbfba539ef8bf2f1dcbaef2bca97c9331f05
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+[2025-04-12 09:42:58] Redirecting to driver profile.
+[2025-04-12 09:43:30] Login process started. Session status: 1
+[2025-04-12 09:43:30] New session started. Session ID: bfvfrdnjjtj4ia25fgfl7i2bur
+[2025-04-12 09:43:30] Login attempt - Email: info@thessdrive.gr
+[2025-04-12 09:43:30] Driver lookup result: Not found
+[2025-04-12 09:43:30] Company lookup result: Found
+[2025-04-12 09:43:30] Company password verification: Success
+[2025-04-12 09:43:30] Company login successful - ID: 2 - Name: Thessdrive IKE
+[2025-04-12 09:43:30] Session before update: Array
+(
+)
+
+[2025-04-12 09:43:30] Session after update: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:43:30] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+[2025-04-12 09:49:22] Login process started. Session status: 1
+[2025-04-12 09:49:22] New session started. Session ID: bfvfrdnjjtj4ia25fgfl7i2bur
+[2025-04-12 09:49:22] Login attempt - Email: info@thessdrive.gr
+[2025-04-12 09:49:22] Driver lookup result: Not found
+[2025-04-12 09:49:22] Company lookup result: Found
+[2025-04-12 09:49:22] Company password verification: Success
+[2025-04-12 09:49:22] Company login successful - ID: 2 - Name: Thessdrive IKE
+[2025-04-12 09:49:22] Session before update: Array
+(
+    [csrf_token] => 21460cab853b8028b7937fec84da3eb758ccedf5af7e26b36ca82c2822be4efc
+)
+
+[2025-04-12 09:49:22] Session after update: Array
+(
+    [csrf_token] => 21460cab853b8028b7937fec84da3eb758ccedf5af7e26b36ca82c2822be4efc
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:49:22] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+[2025-04-12 09:50:05] Login process started. Session status: 1
+[2025-04-12 09:50:05] New session started. Session ID: 8qp4fcbqr2erc5amrtn4giu0sk
+[2025-04-12 09:50:05] Login attempt - Email: info@thessdrive.gr
+[2025-04-12 09:50:05] Driver lookup result: Not found
+[2025-04-12 09:50:05] Company lookup result: Found
+[2025-04-12 09:50:05] Company password verification: Success
+[2025-04-12 09:50:05] Company login successful - ID: 2 - Name: Thessdrive IKE
+[2025-04-12 09:50:05] Session before update: Array
+(
+    [csrf_token] => 18179b5b024512d160416b4224ea3e4b7716d07b39702be9dffeb5ca01f6aec5
+)
+
+[2025-04-12 09:50:05] Session after update: Array
+(
+    [csrf_token] => 18179b5b024512d160416b4224ea3e4b7716d07b39702be9dffeb5ca01f6aec5
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:50:05] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+[2025-04-12 09:51:36] Login process started. Session status: 1
+[2025-04-12 09:51:36] New session started. Session ID: 5d3232eg5ksingklv22q8uedel
+[2025-04-12 09:51:36] Login attempt - Email: info@thessdrive.gr
+[2025-04-12 09:51:36] Driver lookup result: Not found
+[2025-04-12 09:51:36] Company lookup result: Found
+[2025-04-12 09:51:36] Company password verification: Success
+[2025-04-12 09:51:36] Company login successful - ID: 2 - Name: Thessdrive IKE
+[2025-04-12 09:51:36] Session before update: Array
+(
+    [csrf_token] => 48dd30172780229cd7b167f354d19b3229016ea1a92cfec813accb7d50e53dbe
+)
+
+[2025-04-12 09:51:36] Session after update: Array
+(
+    [csrf_token] => 48dd30172780229cd7b167f354d19b3229016ea1a92cfec813accb7d50e53dbe
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:51:36] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+[2025-04-12 09:54:29] Login process started. Session status: 1
+[2025-04-12 09:54:29] New session started. Session ID: ohetjbopclt3gn4jlujkiuoppv
+[2025-04-12 09:54:29] Login attempt - Email: info@thessdrive.gr
+[2025-04-12 09:54:29] Driver lookup result: Not found
+[2025-04-12 09:54:29] Company lookup result: Found
+[2025-04-12 09:54:29] Company password verification: Success
+[2025-04-12 09:54:29] Company login successful - ID: 2 - Name: Thessdrive IKE
+[2025-04-12 09:54:29] Session before update: Array
+(
+    [csrf_token] => dee64ba4fb5d0b913b0de98d9dbf92d670c802d8d172e7f0d3f829ff61e150bb
+)
+
+[2025-04-12 09:54:29] Session after update: Array
+(
+    [csrf_token] => dee64ba4fb5d0b913b0de98d9dbf92d670c802d8d172e7f0d3f829ff61e150bb
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:54:29] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+[2025-04-12 09:56:32] Login process started. Session status: 1
+[2025-04-12 09:56:32] New session started. Session ID: 57oqgsqqnui03q3jdl7p37nb2a
+[2025-04-12 09:56:32] Login attempt - Email: kostas.michailidis@hotmail.gr
+[2025-04-12 09:56:32] Driver lookup result: Found
+[2025-04-12 09:56:32] Driver password verification: Success
+[2025-04-12 09:56:32] Driver login successful - ID: 26
+[2025-04-12 09:56:32] Session before update: Array
+(
+    [csrf_token] => 21d0eb1fde062cd795ec25d70780b434559fd3d90f8a132bb4110a3a2db8e180
+)
+
+[2025-04-12 09:56:32] Session after update: Array
+(
+    [csrf_token] => 21d0eb1fde062cd795ec25d70780b434559fd3d90f8a132bb4110a3a2db8e180
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+[2025-04-12 09:56:32] Redirecting to driver profile.
+[2025-04-12 10:00:28] Login process started. Session status: 1
+[2025-04-12 10:00:28] New session started. Session ID: ols812k3gc6afabbobqfvrk2gp
+[2025-04-12 10:00:28] Login attempt - Email: info@thessdrive.gr
+[2025-04-12 10:00:28] Driver lookup result: Not found
+[2025-04-12 10:00:28] Company lookup result: Found
+[2025-04-12 10:00:28] Company password verification: Success
+[2025-04-12 10:00:28] Company login successful - ID: 2 - Name: Thessdrive IKE
+[2025-04-12 10:00:28] Session before update: Array
+(
+    [csrf_token] => 2445c67ba4230a467db15c9a94a9781279077edcc5b068426f7f91be57c21b83
+)
+
+[2025-04-12 10:00:28] Session after update: Array
+(
+    [csrf_token] => 2445c67ba4230a467db15c9a94a9781279077edcc5b068426f7f91be57c21b83
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 10:00:28] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php

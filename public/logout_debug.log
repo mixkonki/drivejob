@@ -1,0 +1,45 @@
+[2025-04-12 09:50:01] Logout started - Session before destruction: Array
+(
+    [csrf_token] => f24cef8da596a02f659d02401472700fd6990c4f138369e074a417d5c27ec128
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:50:01] Session destroyed, redirecting to home page
+[2025-04-12 09:51:23] Logout started - Session before destruction: Array
+(
+    [csrf_token] => 8e032efc4a103015c47b40b0f47c6342fa90e3141df7ba2d199c8b105fe0ec6d
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:51:23] Session destroyed, redirecting to home page
+[2025-04-12 09:54:12] Logout started - Session before destruction: Array
+(
+    [csrf_token] => e29d16102fd7aab59278f942ab407f1c5df856814a162edcbdb6c6275ec36d64
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:54:12] Session destroyed, redirecting to home page
+[2025-04-12 09:56:26] Logout started - Session before destruction: Array
+(
+    [csrf_token] => d4fe4f43b9c0f510f3eee2bc4aa5689680804f5fba22e149d881286360134160
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 09:56:26] Session destroyed, redirecting to home page
+[2025-04-12 10:00:24] Logout started - Session before destruction: Array
+(
+    [csrf_token] => 4bc4e8c7b3ea3a7919f8daae9f3592d633c530f016b7cf282c93c520e03d5ee9
+    [user_id] => 26
+    [role] => driver
+    [user_name] => hotmail Κώστας
+)
+
+[2025-04-12 10:00:24] Session destroyed, redirecting to home page

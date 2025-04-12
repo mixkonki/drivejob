@@ -14,9 +14,8 @@ require_once __DIR__ . '/../../config/config.php';
 require_once ROOT_DIR . '/config/database.php';
 
 // Ξεκίνημα ή συνέχιση session
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+use Drivejob\Core\Session;
+Session::start();
 
 // Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι εταιρεία
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'company') {
