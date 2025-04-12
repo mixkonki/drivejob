@@ -1,8 +1,9 @@
 <?php 
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php';
+include ROOT_DIR . '/src/Views/header.php'; 
 
-// Αποσφαλμάτωση
+// Διαγραφή των σχολίων αποσφαλμάτωσης για καθαρότητα
+/*
 echo "<div style='background: #f5f5f5; padding: 10px; margin-bottom: 10px; font-size: 12px;'>";
 echo "<h3>Debug Info</h3>";
 echo "<p>CompanyData:</p>";
@@ -14,6 +15,7 @@ echo "<pre>";
 print_r($_SESSION);
 echo "</pre>";
 echo "</div>";
+*/
 
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
 $errors = $_SESSION['errors'] ?? [];
@@ -23,40 +25,26 @@ $oldInput = $_SESSION['old_input'] ?? [];
 unset($_SESSION['errors'], $_SESSION['old_input']);
 
 // Βοηθητική συνάρτηση για την εμφάνιση των παλιών τιμών
-if (!function_exists('old')) {
-    function old($field, $default = '') {
-        global $oldInput, $companyData;
-        if (isset($oldInput[$field])) {
-            return $oldInput[$field];
-        } elseif (isset($companyData[$field])) {
-            return $companyData[$field];
-        }
-        return $default;
+function old($field, $default = '') {
+    global $oldInput, $companyData;
+    if (isset($oldInput[$field])) {
+        return $oldInput[$field];
+    } elseif (isset($companyData[$field])) {
+        return $companyData[$field];
     }
+    return $default;
 }
 
 // Βοηθητική συνάρτηση για την εμφάνιση των σφαλμάτων
-if (!function_exists('hasError')) {
-    function hasError($field) {
-        global $errors;
-        return isset($errors[$field]);
-    }
+function hasError($field) {
+    global $errors;
+    return isset($errors[$field]);
 }
 
-if (!function_exists('getError')) {
-    function getError($field) {
-        global $errors;
-        return $errors[$field] ?? '';
-    }
+function getError($field) {
+    global $errors;
+    return $errors[$field] ?? '';
 }
-
-// Για αποσφαλμάτωση - προσθέτω κώδικα για να δούμε αν τα δεδομένα φτάνουν εδώ
-/*
-echo "<div style='background: #f5f5f5; padding: 10px; margin-bottom: 10px;'>";
-echo "CompanyData: <pre>" . print_r($companyData ?? 'Not set', true) . "</pre>";
-echo "SESSION: <pre>" . print_r($_SESSION, true) . "</pre>";
-echo "</div>";
-*/
 ?>
 
 <main>

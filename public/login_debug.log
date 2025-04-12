@@ -323,3 +323,24 @@ Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
 )
 
 [2025-04-12 10:00:28] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php
+[2025-04-12 10:08:04] Login process started. Session status: 1
+[2025-04-12 10:08:04] New session started. Session ID: 8teqd93rvgmv5qoo1mertuicqi
+[2025-04-12 10:08:04] Login attempt - Email: info@thessdrive.gr
+[2025-04-12 10:08:04] Driver lookup result: Not found
+[2025-04-12 10:08:04] Company lookup result: Found
+[2025-04-12 10:08:04] Company password verification: Success
+[2025-04-12 10:08:04] Company login successful - ID: 2 - Name: Thessdrive IKE
+[2025-04-12 10:08:04] Session before update: Array
+(
+    [csrf_token] => 8e6ae8d5cfe8d6fd321ed9423187147eb4d6fdf1a8797799f4090070e549bd42
+)
+
+[2025-04-12 10:08:04] Session after update: Array
+(
+    [csrf_token] => 8e6ae8d5cfe8d6fd321ed9423187147eb4d6fdf1a8797799f4090070e549bd42
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 10:08:04] Redirecting to: http://localhost/drivejob/public/companies/company_profile.php

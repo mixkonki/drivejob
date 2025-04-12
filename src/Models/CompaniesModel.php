@@ -6,7 +6,13 @@ class CompaniesModel {
     private $pdo;
 
     public function __construct($pdo) {
-        $this->pdo = $pdo;
+        $this->pdo = $pdo; // Αρχικοποιήστε την ιδιότητα
+    }
+
+    public function getCompanyById($id) {
+        $stmt = $this->pdo->prepare("SELECT * FROM companies WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -45,16 +51,6 @@ class CompaniesModel {
             'company_name' => $data['company_name'],
             'phone' => $data['phone']
         ]);
-    }
-
-    /**
-     * Επιστρέφει τα στοιχεία μιας εταιρείας με βάση το ID
-     */
-    public function getCompanyById($id) {
-        $sql = "SELECT * FROM companies WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**

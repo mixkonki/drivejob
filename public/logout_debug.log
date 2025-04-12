@@ -43,3 +43,12 @@
 )
 
 [2025-04-12 10:00:24] Session destroyed, redirecting to home page
+[2025-04-12 10:08:01] Logout started - Session before destruction: Array
+(
+    [csrf_token] => 01ab0f73679f6e0e421b22fe9e9c0ae43e63bb8d4565683dbf6bbf65aa2c6e0c
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 10:08:01] Session destroyed, redirecting to home page

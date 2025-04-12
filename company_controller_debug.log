@@ -193,3 +193,237 @@
 )
 
 [2025-04-12 10:00:57] View Path: C:\wamp64\www\drivejob/src/Views/companies/profile.php, Exists: Yes
+[2025-04-12 10:07:49] Company Controller Profile Method - Company ID: 2, Session: Array
+(
+    [csrf_token] => 35fd8e13372fcdb816e051fc4b9c5eadd1b2274d5b6ab19e9dbc0311a855acdb
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 10:07:49] Company Data Retrieved: Array
+(
+    [id] => 2
+    [email] => info@thessdrive.gr
+    [password] => $2y$10$Zscjuuz7ScI25i1Wl35qce5nrUc8itkV7IecVLiIf9Siig58mtqTa
+    [company_name] => Thessdrive IKE
+    [phone] => 2310529803
+    [address] => Κλαυδιανου
+    [is_verified] => 1
+    [created_at] => 2025-04-09 22:10:27
+    [description] => 
+    [website] => https://www.thessdrive.gr/
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [postal_code] => 54632
+    [contact_person] => Κώστας Μιχαηλίδης
+    [position] => Διευθυντής
+    [vat_number] => 999476150
+    [company_size] => 1-10 εργαζόμενοι
+    [foundation_year] => 1997
+    [industry] => Μεταφορές & Logistics
+    [company_logo] => uploads/company_logos/2_1744264679_t_180x180.png
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [rating] => 
+    [rating_count] => 0
+    [last_login] => 2025-04-12 10:00:28
+)
+
+[2025-04-12 10:07:49] View Path: C:\wamp64\www\drivejob/src/Views/companies/profile.php, Exists: Yes
+[2025-04-12 10:07:50] Company Controller Profile Method - Company ID: 2, Session: Array
+(
+    [csrf_token] => 35fd8e13372fcdb816e051fc4b9c5eadd1b2274d5b6ab19e9dbc0311a855acdb
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 10:07:50] Company Data Retrieved: Array
+(
+    [id] => 2
+    [email] => info@thessdrive.gr
+    [password] => $2y$10$Zscjuuz7ScI25i1Wl35qce5nrUc8itkV7IecVLiIf9Siig58mtqTa
+    [company_name] => Thessdrive IKE
+    [phone] => 2310529803
+    [address] => Κλαυδιανου
+    [is_verified] => 1
+    [created_at] => 2025-04-09 22:10:27
+    [description] => 
+    [website] => https://www.thessdrive.gr/
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [postal_code] => 54632
+    [contact_person] => Κώστας Μιχαηλίδης
+    [position] => Διευθυντής
+    [vat_number] => 999476150
+    [company_size] => 1-10 εργαζόμενοι
+    [foundation_year] => 1997
+    [industry] => Μεταφορές & Logistics
+    [company_logo] => uploads/company_logos/2_1744264679_t_180x180.png
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [rating] => 
+    [rating_count] => 0
+    [last_login] => 2025-04-12 10:00:28
+)
+
+[2025-04-12 10:07:50] View Path: C:\wamp64\www\drivejob/src/Views/companies/profile.php, Exists: Yes
+[2025-04-12 10:07:58] Company Controller Profile Method - Company ID: 2, Session: Array
+(
+    [csrf_token] => 01ab0f73679f6e0e421b22fe9e9c0ae43e63bb8d4565683dbf6bbf65aa2c6e0c
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 10:07:58] Company Data Retrieved: Array
+(
+    [id] => 2
+    [email] => info@thessdrive.gr
+    [password] => $2y$10$Zscjuuz7ScI25i1Wl35qce5nrUc8itkV7IecVLiIf9Siig58mtqTa
+    [company_name] => Thessdrive IKE
+    [phone] => 2310529803
+    [address] => Κλαυδιανου
+    [is_verified] => 1
+    [created_at] => 2025-04-09 22:10:27
+    [description] => 
+    [website] => https://www.thessdrive.gr/
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [postal_code] => 54632
+    [contact_person] => Κώστας Μιχαηλίδης
+    [position] => Διευθυντής
+    [vat_number] => 999476150
+    [company_size] => 1-10 εργαζόμενοι
+    [foundation_year] => 1997
+    [industry] => Μεταφορές & Logistics
+    [company_logo] => uploads/company_logos/2_1744264679_t_180x180.png
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [rating] => 
+    [rating_count] => 0
+    [last_login] => 2025-04-12 10:00:28
+)
+
+[2025-04-12 10:07:58] View Path: C:\wamp64\www\drivejob/src/Views/companies/profile.php, Exists: Yes
+[2025-04-12 10:08:04] Company Controller Profile Method - Company ID: 2, Session: Array
+(
+    [csrf_token] => 8e6ae8d5cfe8d6fd321ed9423187147eb4d6fdf1a8797799f4090070e549bd42
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 10:08:04] Company Data Retrieved: Array
+(
+    [id] => 2
+    [email] => info@thessdrive.gr
+    [password] => $2y$10$Zscjuuz7ScI25i1Wl35qce5nrUc8itkV7IecVLiIf9Siig58mtqTa
+    [company_name] => Thessdrive IKE
+    [phone] => 2310529803
+    [address] => Κλαυδιανου
+    [is_verified] => 1
+    [created_at] => 2025-04-09 22:10:27
+    [description] => 
+    [website] => https://www.thessdrive.gr/
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [postal_code] => 54632
+    [contact_person] => Κώστας Μιχαηλίδης
+    [position] => Διευθυντής
+    [vat_number] => 999476150
+    [company_size] => 1-10 εργαζόμενοι
+    [foundation_year] => 1997
+    [industry] => Μεταφορές & Logistics
+    [company_logo] => uploads/company_logos/2_1744264679_t_180x180.png
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [rating] => 
+    [rating_count] => 0
+    [last_login] => 2025-04-12 10:08:04
+)
+
+[2025-04-12 10:08:04] View Path: C:\wamp64\www\drivejob/src/Views/companies/profile.php, Exists: Yes
+[2025-04-12 10:08:11] Company Controller Profile Method - Company ID: 2, Session: Array
+(
+    [csrf_token] => c279d60f54361b802037892332c4b0b9fcc4a01203685a2cf118a82657b9bf52
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 10:08:11] Company Data Retrieved: Array
+(
+    [id] => 2
+    [email] => info@thessdrive.gr
+    [password] => $2y$10$Zscjuuz7ScI25i1Wl35qce5nrUc8itkV7IecVLiIf9Siig58mtqTa
+    [company_name] => Thessdrive IKE
+    [phone] => 2310529803
+    [address] => Κλαυδιανου
+    [is_verified] => 1
+    [created_at] => 2025-04-09 22:10:27
+    [description] => 
+    [website] => https://www.thessdrive.gr/
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [postal_code] => 54632
+    [contact_person] => Κώστας Μιχαηλίδης
+    [position] => Διευθυντής
+    [vat_number] => 999476150
+    [company_size] => 1-10 εργαζόμενοι
+    [foundation_year] => 1997
+    [industry] => Μεταφορές & Logistics
+    [company_logo] => uploads/company_logos/2_1744264679_t_180x180.png
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [rating] => 
+    [rating_count] => 0
+    [last_login] => 2025-04-12 10:08:04
+)
+
+[2025-04-12 10:08:11] View Path: C:\wamp64\www\drivejob/src/Views/companies/profile.php, Exists: Yes
+[2025-04-12 10:09:20] Company Controller Profile Method - Company ID: 2, Session: Array
+(
+    [csrf_token] => 6e423d538d9d2aa79d2f057e9f4f979e07f06ea993106695af2e6a80277a671c
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+[2025-04-12 10:09:20] Company Data Retrieved: Array
+(
+    [id] => 2
+    [email] => info@thessdrive.gr
+    [password] => $2y$10$Zscjuuz7ScI25i1Wl35qce5nrUc8itkV7IecVLiIf9Siig58mtqTa
+    [company_name] => Thessdrive IKE
+    [phone] => 2310529803
+    [address] => Κλαυδιανου
+    [is_verified] => 1
+    [created_at] => 2025-04-09 22:10:27
+    [description] => 
+    [website] => https://www.thessdrive.gr/
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [postal_code] => 54632
+    [contact_person] => Κώστας Μιχαηλίδης
+    [position] => Διευθυντής
+    [vat_number] => 999476150
+    [company_size] => 1-10 εργαζόμενοι
+    [foundation_year] => 1997
+    [industry] => Μεταφορές & Logistics
+    [company_logo] => uploads/company_logos/2_1744264679_t_180x180.png
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [rating] => 
+    [rating_count] => 0
+    [last_login] => 2025-04-12 10:08:04
+)
+
+[2025-04-12 10:09:20] View Path: C:\wamp64\www\drivejob/src/Views/companies/profile.php, Exists: Yes

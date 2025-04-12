@@ -10,6 +10,7 @@ use Drivejob\Core\Session;
 class JobListingController {
     private $jobListingModel;
     private $jobTagModel;
+    private $pdo;
 
     public function __construct($pdo) {
         $this->jobListingModel = new JobListingModel($pdo);

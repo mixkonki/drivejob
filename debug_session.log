@@ -18,3 +18,13 @@ PHP_SESSION_ID: ohetjbopclt3gn4jlujkiuoppv
 
 PHP_SESSION_ID: 57oqgsqqnui03q3jdl7p37nb2a
 
+[2025-04-12 10:09:21] Session Info: Array
+(
+    [csrf_token] => 6e423d538d9d2aa79d2f057e9f4f979e07f06ea993106695af2e6a80277a671c
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 8teqd93rvgmv5qoo1mertuicqi
+
