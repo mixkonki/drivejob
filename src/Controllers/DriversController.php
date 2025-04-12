@@ -163,23 +163,14 @@ class DriversController {
      */
     public function edit() {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        AuthMiddleware::hasRole('company');
+        AuthMiddleware::hasRole('driver');
         
-        // Λήψη των στοιχείων
-        $companyId = $_SESSION['user_id'];
-        $companyData = $this->companiesModel->getCompanyById($companyId);
-        
-        // Αποσφαλμάτωση - επιβεβαίωση ότι τα δεδομένα ανακτήθηκαν
-        file_put_contents(
-            ROOT_DIR . '/edit_profile_debug.log', 
-            date('[Y-m-d H:i:s] ') . 
-            "Edit Method Called - Company ID: {$companyId}\n" .
-            "Company Data: " . print_r($companyData, true) . "\n", 
-            FILE_APPEND
-        );
+        // Λήψη των στοιχείων του οδηγού
+        $driverId = $_SESSION['user_id'];
+        $driverData = $this->driversModel->getDriverById($driverId);
         
         // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/companies/edit_profile.php';
+        include ROOT_DIR . '/src/Views/drivers/edit_profile.php';
     }
 
     /**

@@ -901,3 +901,212 @@ Required role: company
 PHP_SESSION_ID: 8teqd93rvgmv5qoo1mertuicqi
 Required role: company
 
+[2025-04-12 17:34:34] HasRole check - Session: Array
+(
+    [csrf_token] => a4b57512b384f367fee79d1ff96df5b568db205291f4ee31e14b53016b77faf6
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 8teqd93rvgmv5qoo1mertuicqi
+Required role: company
+
+[2025-04-12 17:34:35] HasRole check - Session: Array
+(
+    [csrf_token] => a4b57512b384f367fee79d1ff96df5b568db205291f4ee31e14b53016b77faf6
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 8teqd93rvgmv5qoo1mertuicqi
+Required role: company
+
+[2025-04-12 17:34:37] HasRole check - Session: Array
+(
+    [csrf_token] => e67979e4971c53cf73402450b8ba2e1100917a0d87b21815185cfa2d24a8a887
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 8teqd93rvgmv5qoo1mertuicqi
+Required role: company
+
+[2025-04-12 17:34:40] HasRole check - Session: Array
+(
+    [csrf_token] => a046e3f03ee43d57008ed389a934f2567ca4b0fecb4a36c24d4e492a635d988c
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 8teqd93rvgmv5qoo1mertuicqi
+Required role: company
+
+[2025-04-12 17:34:41] HasRole check - Session: Array
+(
+    [csrf_token] => a046e3f03ee43d57008ed389a934f2567ca4b0fecb4a36c24d4e492a635d988c
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 8teqd93rvgmv5qoo1mertuicqi
+Required role: company
+
+[2025-04-12 17:34:43] HasRole check - Session: Array
+(
+    [csrf_token] => 95147ddf916bd043738ae60376e184f989c2d37c5e7c93c821c6f739eabd46b4
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 8teqd93rvgmv5qoo1mertuicqi
+Required role: company
+
+[2025-04-12 17:37:22] HasRole check - Session: Array
+(
+    [csrf_token] => dfec8fea10db83af3f422ee2760591744122f2f01ad03efda728156d8b3d727b
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: bntgjvrgc6rarb5kv3d5mh38bb
+Required role: company
+
+[2025-04-12 17:37:25] HasRole check - Session: Array
+(
+    [csrf_token] => dfec8fea10db83af3f422ee2760591744122f2f01ad03efda728156d8b3d727b
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: bntgjvrgc6rarb5kv3d5mh38bb
+Required role: company
+
+[2025-04-12 17:45:13] HasRole check - Session: Array
+(
+    [csrf_token] => 69034806b3c4c2117d578edbea2e66c2b7601bb1192fe01cd692c3ec4c134458
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: bntgjvrgc6rarb5kv3d5mh38bb
+Required role: company
+
+[2025-04-12 17:45:21] HasRole check - Session: Array
+(
+    [csrf_token] => e6cf86043d997dd92b9d98cb962e16ecb30ee4cc5457b6d6d34e6ad6a6bce72d
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ugo19r8murps2768hljam6om7a
+Required role: company
+
+[2025-04-12 17:45:23] HasRole check - Session: Array
+(
+    [csrf_token] => e6cf86043d997dd92b9d98cb962e16ecb30ee4cc5457b6d6d34e6ad6a6bce72d
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ugo19r8murps2768hljam6om7a
+Required role: company
+
+[2025-04-12 17:45:24] HasRole check - Session: Array
+(
+    [csrf_token] => 4e346b8e82c34f7a1293ada6111d653267783b150124daac1af30e1094950726
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: ugo19r8murps2768hljam6om7a
+Required role: company
+
+[2025-04-12 17:54:02] HasRole check - Session: Array
+(
+    [csrf_token] => 3c414f2ab31542eeda59dedad5d65b7118b947e1174f0f0b785b03ea62fba64c
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: iqcomen6jrgpfsf9coj25fjqvn
+Required role: company
+
+[2025-04-12 17:54:04] HasRole check - Session: Array
+(
+    [csrf_token] => 3c414f2ab31542eeda59dedad5d65b7118b947e1174f0f0b785b03ea62fba64c
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: iqcomen6jrgpfsf9coj25fjqvn
+Required role: company
+
+[2025-04-12 17:54:05] HasRole check - Session: Array
+(
+    [csrf_token] => 95e6c41612cf36308e4eb8c18ea53f4fab2596d4a39aef1fb4b751cb3298d541
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: iqcomen6jrgpfsf9coj25fjqvn
+Required role: company
+
+[2025-04-12 17:54:07] HasRole check - Session: Array
+(
+    [csrf_token] => 19d84470cbffaf024cd4d9d13c0556ab3eea6db5b576f11b4f9493a22e0084b5
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: iqcomen6jrgpfsf9coj25fjqvn
+Required role: company
+
+[2025-04-12 17:58:24] HasRole check - Session: Array
+(
+    [csrf_token] => 1c5de3db3d5c65cd86fc1fa74f81a4299097f32b9f06f4edf46737e52a11d0a7
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 1u9hmn5sjkr8qitr8t64vi4pkr
+Required role: company
+
+[2025-04-12 17:58:25] HasRole check - Session: Array
+(
+    [csrf_token] => 1c5de3db3d5c65cd86fc1fa74f81a4299097f32b9f06f4edf46737e52a11d0a7
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 1u9hmn5sjkr8qitr8t64vi4pkr
+Required role: company
+
+[2025-04-12 17:58:27] HasRole check - Session: Array
+(
+    [csrf_token] => 1aad159a8445e30871bab67250d730d3659e4f0320a25846d7e5814694639b49
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 1u9hmn5sjkr8qitr8t64vi4pkr
+Required role: company
+

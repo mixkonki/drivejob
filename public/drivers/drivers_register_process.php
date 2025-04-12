@@ -1,9 +1,6 @@
 <?php
-// Αφαίρεση των συναρτήσεων εμφάνισης σφαλμάτων στην παραγωγή
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
-// var_dump($_POST); // Αφαίρεση αυτής της γραμμής
+// Αρχικοποίηση της εφαρμογής
+require_once __DIR__ . '/../src/bootstrap.php';
 
 require_once __DIR__ . '/../../config/config.php'; // Πρώτα το config.php για να οριστούν οι σταθερές
 require_once ROOT_DIR . '/config/database.php'; // Σύνδεση με τη βάση δεδομένων

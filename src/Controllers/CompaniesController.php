@@ -4,6 +4,7 @@ namespace Drivejob\Controllers;
 use Drivejob\Models\CompaniesModel;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
+use Drivejob\Core\Session;
 use Drivejob\Core\AuthMiddleware;
 
 class CompaniesController {

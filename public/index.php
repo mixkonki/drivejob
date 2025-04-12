@@ -1,31 +1,8 @@
 <?php
+// public/index.php
 
-
-// Ενεργοποίηση εμφάνισης σφαλμάτων
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Αυτόματη φόρτωση μέσω Composer
-require_once __DIR__ . '/../vendor/autoload.php';
-
-// Συμπερίληψη του config.php για να οριστούν οι σταθερές ROOT_DIR και BASE_URL
-require_once __DIR__ . '/../config/config.php';
-
-// Σύνδεση στη βάση δεδομένων
-require_once ROOT_DIR . '/config/database.php';
-
-// Διασφάλιση ότι η συνεδρία ξεκινά
-use Drivejob\Core\Session;
-Session::start();
-
-// Φόρτωση των περιβαλλοντικών μεταβλητών
-try {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../config');
-    $dotenv->load();
-} catch (Exception $e) {
-    // Αγνόηση σφαλμάτων αν δεν υπάρχει το .env αρχείο
-}
+// Αρχικοποίηση της εφαρμογής
+require_once __DIR__ . '/../src/bootstrap.php';
 
 use Drivejob\Core\Router;
 use Drivejob\Core\CSRFMiddleware;

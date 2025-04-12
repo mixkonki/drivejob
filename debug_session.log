@@ -1,30 +1,54 @@
-[2025-04-12 09:56:22] Session Info: Array
+[2025-04-12 17:54:06] Session Info: Array
 (
-    [csrf_token] => 19e09253f5a8e6549704facb5bd1197021eec010a665967eb241de0db52b9335
+    [csrf_token] => 95e6c41612cf36308e4eb8c18ea53f4fab2596d4a39aef1fb4b751cb3298d541
     [user_id] => 2
     [role] => company
     [user_name] => Thessdrive IKE
 )
 
-PHP_SESSION_ID: ohetjbopclt3gn4jlujkiuoppv
+PHP_SESSION_ID: iqcomen6jrgpfsf9coj25fjqvn
 
-[2025-04-12 09:56:37] Session Info: Array
+[2025-04-12 17:58:28] Session Info: Array
 (
-    [csrf_token] => af2fbeedb51cccc8b3e8d3684b6a2fdbf282b155706e9eef011084b8fc18d809
+    [csrf_token] => 1aad159a8445e30871bab67250d730d3659e4f0320a25846d7e5814694639b49
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 1u9hmn5sjkr8qitr8t64vi4pkr
+
+[2025-04-12 18:08:30] Session Info: Array
+(
+    [csrf_token] => 1207f1cc0ccd80f6fdd3a3ee0976d02c98cdb2a0b4a6d4ee040ce2515d77d340
+    [csrf_token_time] => 1744470508
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: hpntau957jsd3nd1tppstr6mu9
+
+[2025-04-12 18:09:08] Session Info: Array
+(
+    [csrf_token] => 6e46f14823df8d2b34f5a97570d5da372512c96d05bcc37b821a11e5c65a795a
+    [csrf_token_time] => 1744470545
     [user_id] => 26
     [role] => driver
     [user_name] => hotmail Κώστας
 )
 
-PHP_SESSION_ID: 57oqgsqqnui03q3jdl7p37nb2a
+PHP_SESSION_ID: dr254t41ev2s0hhesqdrjejmpe
 
-[2025-04-12 10:09:21] Session Info: Array
+[2025-04-12 18:19:55] Session Info: Array
 (
-    [csrf_token] => 6e423d538d9d2aa79d2f057e9f4f979e07f06ea993106695af2e6a80277a671c
+    [csrf_token] => 66a6045b9691be6812bbb098e40e7a25f956053ca1f14fac5ae5a379ac78a202
+    [csrf_token_time] => 1744471135
     [user_id] => 2
     [role] => company
     [user_name] => Thessdrive IKE
+    [some_key] => some_value
 )
 
-PHP_SESSION_ID: 8teqd93rvgmv5qoo1mertuicqi
+PHP_SESSION_ID: tiikibbkoccf24q29qlm10a154
 

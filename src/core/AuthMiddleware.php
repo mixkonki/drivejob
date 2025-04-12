@@ -11,25 +11,25 @@ class AuthMiddleware
         // Βεβαιωνόμαστε ότι η συνεδρία έχει ξεκινήσει
         Session::start();
         
-        // Αποσφαλμάτωση
-        file_put_contents(
-            ROOT_DIR . '/auth_debug.log', 
-            date('[Y-m-d H:i:s] ') . 
-            "IsLoggedIn check - Session: " . print_r($_SESSION, true) . 
-            "\nPHP_SESSION_ID: " . session_id() . "\n\n", 
-            FILE_APPEND
-        );
-        
         if (!Session::has('user_id')) {
+            // Καταγραφή αποσφαλμάτωσης
             file_put_contents(
                 ROOT_DIR . '/auth_debug.log', 
                 date('[Y-m-d H:i:s] ') . 
                 "Login check failed - redirecting to login\n\n", 
                 FILE_APPEND
             );
+            
+            // Αποθήκευση της τρέχουσας URL για επιστροφή μετά τη σύνδεση
+            if (isset($_SERVER['REQUEST_URI'])) {
+                Session::set('redirect_after_login', $_SERVER['REQUEST_URI']);
+            }
+            
             header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
+        
+        return true;
     }
     
     /**
@@ -40,39 +40,42 @@ class AuthMiddleware
         // Βεβαιωνόμαστε ότι η συνεδρία έχει ξεκινήσει
         Session::start();
         
-        // Αποσφαλμάτωση
-        file_put_contents(
-            ROOT_DIR . '/auth_debug.log', 
-            date('[Y-m-d H:i:s] ') . 
-            "HasRole check - Session: " . print_r($_SESSION, true) . 
-            "\nPHP_SESSION_ID: " . session_id() . 
-            "\nRequired role: " . $role . "\n\n", 
-            FILE_APPEND
-        );
-        
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+        if (!Session::has('user_id') || !Session::has('role')) {
+            // Καταγραφή αποσφαλμάτωσης
             file_put_contents(
                 ROOT_DIR . '/auth_debug.log', 
                 date('[Y-m-d H:i:s] ') . 
                 "Role check failed: user not logged in - redirecting to login\n\n", 
                 FILE_APPEND
             );
+            
+            // Αποθήκευση της τρέχουσας URL για επιστροφή μετά τη σύνδεση
+            if (isset($_SERVER['REQUEST_URI'])) {
+                Session::set('redirect_after_login', $_SERVER['REQUEST_URI']);
+            }
+            
             header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
         
         // Έλεγχος αν ο χρήστης έχει τον απαιτούμενο ρόλο
-        if ($_SESSION['role'] !== $role) {
+        if (Session::get('role') !== $role) {
+            // Καταγραφή αποσφαλμάτωσης
             file_put_contents(
                 ROOT_DIR . '/auth_debug.log', 
                 date('[Y-m-d H:i:s] ') . 
-                "Role check failed: user has role '" . $_SESSION['role'] . "', required '" . $role . "' - redirecting to login\n\n", 
+                "Role check failed: user has role '" . Session::get('role') . 
+                "', required '" . $role . "' - redirecting to login\n\n", 
                 FILE_APPEND
             );
-            header('Location: ' . BASE_URL . 'login.php');
+            
+            // Ανακατεύθυνση στην αρχική σελίδα ή σε σελίδα πρόσβασης άρνησης
+            header('Location: ' . BASE_URL . 'access-denied.php');
             exit();
         }
+        
+        return true;
     }
     
     /**
@@ -83,25 +86,42 @@ class AuthMiddleware
         // Βεβαιωνόμαστε ότι η συνεδρία έχει ξεκινήσει
         Session::start();
         
-        // Αποσφαλμάτωση
-        file_put_contents(
-            ROOT_DIR . '/auth_debug.log', 
-            date('[Y-m-d H:i:s] ') . 
-            "HasAnyRole check - Session: " . print_r($_SESSION, true) . 
-            "\nPHP_SESSION_ID: " . session_id() . 
-            "\nRequired roles: " . implode(', ', $roles) . "\n\n", 
-            FILE_APPEND
-        );
-        
-        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || !in_array($_SESSION['role'], $roles)) {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        if (!Session::has('user_id') || !Session::has('role')) {
+            // Καταγραφή αποσφαλμάτωσης
             file_put_contents(
                 ROOT_DIR . '/auth_debug.log', 
                 date('[Y-m-d H:i:s] ') . 
                 "AnyRole check failed - redirecting to login\n\n", 
                 FILE_APPEND
             );
+            
+            // Αποθήκευση της τρέχουσας URL για επιστροφή μετά τη σύνδεση
+            if (isset($_SERVER['REQUEST_URI'])) {
+                Session::set('redirect_after_login', $_SERVER['REQUEST_URI']);
+            }
+            
             header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
+        
+        // Έλεγχος αν ο χρήστης έχει έναν από τους απαιτούμενους ρόλους
+        if (!in_array(Session::get('role'), $roles)) {
+            // Καταγραφή αποσφαλμάτωσης
+            file_put_contents(
+                ROOT_DIR . '/auth_debug.log', 
+                date('[Y-m-d H:i:s] ') . 
+                "AnyRole check failed - user has role '" . Session::get('role') . 
+                "', required one of: " . implode(', ', $roles) . 
+                " - redirecting to access denied\n\n", 
+                FILE_APPEND
+            );
+            
+            // Ανακατεύθυνση στην αρχική σελίδα ή σε σελίδα πρόσβασης άρνησης
+            header('Location: ' . BASE_URL . 'access-denied.php');
+            exit();
+        }
+        
+        return true;
     }
 }

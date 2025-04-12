@@ -1,4 +1,7 @@
 <?php
+
+// Αρχικοποίηση της εφαρμογής
+require_once __DIR__ . '/../src/bootstrap.php';
 require_once __DIR__ . '/../../config/config.php'; // Πρώτα το config.php για να οριστούν οι σταθερές
 require_once ROOT_DIR . '/config/database.php'; // Σύνδεση με τη βάση δεδομένων
 require_once '../../src/helpers/email_helper.php'; // Εισαγωγή helper για το email

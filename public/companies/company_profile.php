@@ -1,4 +1,7 @@
 <?php
+
+// Αρχικοποίηση της εφαρμογής
+require_once __DIR__ . '/../../src/bootstrap.php';
 // Αυτές πρέπει να είναι οι πρώτες γραμμές του αρχείου
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);

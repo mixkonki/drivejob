@@ -3,48 +3,50 @@ namespace Drivejob\Core;
 
 class Session
 {
+    private static $started = false;
+    
     /**
-     * Ξεκινά τη συνεδρία αν δεν έχει ήδη ξεκινήσει
+     * Ξεκινά τη συνεδρία αν δεν έχει ήδη ξεκινήσει.
+     * Επιστρέφει true αν η συνεδρία ξεκίνησε επιτυχώς.
      */
     public static function start()
     {
+        if (self::$started) {
+            return true;
+        }
+        
         if (session_status() === PHP_SESSION_NONE) {
-            // Χρησιμοποιούμε τον προεπιλεγμένο φάκελο συνεδριών της PHP αντί για προσαρμοσμένο
-            // Αυτό θα παρακάμψει τα προβλήματα δικαιωμάτων με τον φάκελο tmp/sessions
-            
-            // Ρυθμίσεις για το όνομα και τα cookies της συνεδρίας
+            // Ρυθμίσεις ασφαλείας για τις συνεδρίες
             session_name('DRIVEJOBSESSION');
             
+            // Ρύθμιση των cookies που χρησιμοποιούνται για τις συνεδρίες
             session_set_cookie_params([
                 'lifetime' => 86400, // 24 ώρες
                 'path' => '/',      
-                'domain' => '',     
-                'secure' => false,  
-                'httponly' => true, 
-                'samesite' => 'Lax'
+                'domain' => '',     // Άδειο σημαίνει το τρέχον domain
+                'secure' => false,  // Θέστε το σε true σε παραγωγικό περιβάλλον με HTTPS
+                'httponly' => true, // Προστασία από XSS
+                'samesite' => 'Lax' // Προστασία από CSRF
             ]);
             
-            // Καταγραφή πριν την έναρξη της συνεδρίας
-            file_put_contents(
-                ROOT_DIR . '/session_start_debug.log', 
-                date('[Y-m-d H:i:s] ') . 
-                "About to start session, status: " . session_status() . "\n", 
-                FILE_APPEND
-            );
-            
             // Έναρξη συνεδρίας
-            session_start();
+            $result = session_start();
+            self::$started = $result;
             
-            // Καταγραφή μετά την έναρξη της συνεδρίας
-            file_put_contents(
-                ROOT_DIR . '/session_start_debug.log', 
-                date('[Y-m-d H:i:s] ') . 
-                "Session started, ID: " . session_id() . ", Data: " . print_r($_SESSION, true) . "\n", 
-                FILE_APPEND
-            );
+            return $result;
         }
+        
+        self::$started = true;
+        return true;
     }
     
+    /**
+     * Ελέγχει αν η συνεδρία έχει ξεκινήσει
+     */
+    public static function isStarted()
+    {
+        return self::$started || session_status() === PHP_SESSION_ACTIVE;
+    }
 
     /**
      * Θέτει μια τιμή στη συνεδρία
@@ -81,7 +83,9 @@ class Session
         self::start();
         if (isset($_SESSION[$key])) {
             unset($_SESSION[$key]);
+            return true;
         }
+        return false;
     }
     
     /**
@@ -89,33 +93,75 @@ class Session
      */
     public static function destroy()
     {
-        self::start();
-        session_unset();
-        session_destroy();
+        if (self::isStarted() || session_status() === PHP_SESSION_ACTIVE) {
+            // Καθαρισμός όλων των μεταβλητών συνεδρίας
+            $_SESSION = [];
+            
+            // Διαγραφή του cookie συνεδρίας
+            if (ini_get("session.use_cookies")) {
+                $params = session_get_cookie_params();
+                setcookie(
+                    session_name(),
+                    '',
+                    time() - 42000,
+                    $params["path"],
+                    $params["domain"],
+                    $params["secure"],
+                    $params["httponly"]
+                );
+            }
+            
+            // Καταστροφή της συνεδρίας
+            session_destroy();
+            self::$started = false;
+            return true;
+        }
+        
+        return false;
     }
     
     /**
      * Ανανεώνει το ID της συνεδρίας
      */
-    public static function regenerate()
+    public static function regenerate($deleteOldSession = true)
     {
         self::start();
-        session_regenerate_id(true);
+        return session_regenerate_id($deleteOldSession);
     }
     
     /**
-     * Εμφανίζει πληροφορίες αποσφαλμάτωσης για τη συνεδρία
+     * Καθαρίζει όλα τα δεδομένα της συνεδρίας διατηρώντας την ίδια
      */
-    public static function debug()
+    public static function clear()
     {
         self::start();
-        echo "<h3>Session Debug</h3>";
-        echo "<pre>";
-        echo "Session ID: " . session_id() . "\n";
-        echo "Session Name: " . session_name() . "\n";
-        echo "Session Cookie: " . (isset($_COOKIE[session_name()]) ? $_COOKIE[session_name()] : 'not set') . "\n";
-        echo "Session Data: \n";
-        print_r($_SESSION);
-        echo "</pre>";
+        $_SESSION = [];
+        return true;
+    }
+    
+    /**
+     * Επιστρέφει το τρέχον ID της συνεδρίας
+     */
+    public static function getId()
+    {
+        self::start();
+        return session_id();
+    }
+    
+    /**
+     * Διαγνωστική μέθοδος που επιστρέφει πληροφορίες για τη συνεδρία
+     */
+    public static function getDebugInfo()
+    {
+        self::start();
+        return [
+            'id' => session_id(),
+            'name' => session_name(),
+            'started' => self::$started,
+            'status' => session_status(),
+            'save_path' => session_save_path(),
+            'cookie_params' => session_get_cookie_params(),
+            'data' => $_SESSION
+        ];
     }
 }

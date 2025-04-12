@@ -23,7 +23,6 @@ $isLoggedIn = Session::has('user_id');
 $userName = Session::has('user_name') ? Session::get('user_name') : '';
 $userRole = Session::has('role') ? Session::get('role') : '';
 ?>
-
 <!DOCTYPE html>
 <html lang="el">
 <head>
@@ -32,7 +31,8 @@ $userRole = Session::has('role') ? Session::get('role') : '';
     <meta name="description" content="DriveJob - Ψηφιακή Πλατφόρμα Πρόσληψης Οδηγών και Επιχειρήσεων.">
     <meta name="keywords" content="εργασία, οδηγοί, εταιρείες, πρόσληψη, πλατφόρμα">
     <meta name="author" content="DriveJob">
-
+    <meta name="csrf-token" content="<?php echo \Drivejob\Core\CSRF::getCurrentToken(); ?>">
+    
     <!-- Δυναμικός τίτλος σελίδας -->
     <title>DriveJob - <?php echo isset($pageTitle) ? $pageTitle : 'Καλώς Ήρθατε'; ?></title>
 
@@ -94,12 +94,12 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                         </div>
                         <!-- Επιλογές προφίλ, αποσύνδεσης -->
                         <?php if ($userRole === 'company'): ?>
-                        <a href="<?php echo BASE_URL; ?>companies/company_profile.php">
+                        <a href="<?php echo BASE_URL; ?>companies/company_profile">
                             <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
                             Προφίλ
                         </a>
                         <?php else: ?>
-                        <a href="<?php echo BASE_URL; ?>drivers/driver_profile.php">
+                        <a href="<?php echo BASE_URL; ?>drivers/driver_profile">
                             <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
                             Προφίλ
                         </a>

@@ -1,32 +1,30 @@
 <?php
-// Αυτόματη φόρτωση μέσω Composer
-require_once __DIR__ . '/../vendor/autoload.php';
+// public/login_process.php
 
-// Συμπερίληψη του config.php για τις σταθερές BASE_URL και ROOT_DIR
-require_once '../config/config.php';
+// Αρχικοποίηση της εφαρμογής
+require_once __DIR__ . '/../src/bootstrap.php';
 
-// Συμπερίληψη του database.php για τη σύνδεση στη βάση δεδομένων
-require_once ROOT_DIR . '/config/database.php';
-
-// Εισαγωγή της κλάσης Session
 use Drivejob\Core\Session;
 
-// Αποσφαλμάτωση αρχικής κατάστασης πριν την έναρξη συνεδρίας
-file_put_contents('login_debug.log', 
-    date('[Y-m-d H:i:s] ') . 
-    "Login process started. Session status: " . session_status() . "\n", 
-    FILE_APPEND
-);
-
-// Καταστροφή προηγούμενης συνεδρίας για καθαρή εκκίνηση
-if (session_status() === PHP_SESSION_ACTIVE) {
-    session_unset();
-    session_destroy();
+// Έλεγχος αν το αίτημα είναι POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Λήψη των δεδομένων από τη φόρμα
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    
+    // Καταγραφή για αποσφαλμάτωση
     file_put_contents('login_debug.log', 
         date('[Y-m-d H:i:s] ') . 
-        "Previous session destroyed.\n", 
+        "Login attempt - Email: $email\n", 
         FILE_APPEND
     );
+    
+    // Αναζήτηση στον πίνακα drivers
+    $sql = "SELECT * FROM drivers WHERE email = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
 }
 
 // Ξεκίνημα νέας συνεδρίας
@@ -235,6 +233,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
     
     header('Location: ' . BASE_URL . 'login.php');
+    exit();
+}
+// Στο τέλος του αρχείου, μετά την επιτυχή σύνδεση:
+if ($password_verify_result) {
+    // ... (αποθήκευση δεδομένων συνεδρίας)
+
+    // Ελέγχουμε αν υπάρχει σελίδα ανακατεύθυνσης
+    $redirectUrl = Session::has('redirect_after_login')
+        ? Session::get('redirect_after_login')
+        : BASE_URL . ($driverLogin ? 'drivers/driver_profile.php' : 'companies/company_profile.php');
+    
+    // Αφαιρούμε το redirect από τη συνεδρία
+    Session::remove('redirect_after_login');
+    
+    // Ανακατεύθυνση
+    header('Location: ' . $redirectUrl);
     exit();
 }
 ?>

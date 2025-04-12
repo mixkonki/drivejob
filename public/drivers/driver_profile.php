@@ -1,4 +1,7 @@
 <?php
+
+// Αρχικοποίηση της εφαρμογής
+require_once __DIR__ . '/../../src/bootstrap.php';
 // Αυτόματη φόρτωση μέσω Composer
 require_once __DIR__ . '/../../vendor/autoload.php';
 
