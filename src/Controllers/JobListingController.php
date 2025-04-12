@@ -4,6 +4,8 @@ namespace Drivejob\Controllers;
 
 use Drivejob\Models\JobListingModel;
 use Drivejob\Models\JobTagModel;
+use Drivejob\Core\Session;
+
 
 class JobListingController {
     private $jobListingModel;
@@ -13,6 +15,41 @@ class JobListingController {
         $this->jobListingModel = new JobListingModel($pdo);
         $this->jobTagModel = new JobTagModel($pdo);
     }
+
+    public function create() {
+        // Βεβαιωθείτε ότι η συνεδρία έχει ξεκινήσει
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        // DEBUG: Αποθήκευση πληροφοριών συνεδρίας στο log
+        file_put_contents(
+            ROOT_DIR . '/debug_session.log', 
+            date('[Y-m-d H:i:s] ') . 
+            "Session Info: " . print_r($_SESSION, true) . 
+            "\nPHP_SESSION_ID: " . session_id() . "\n\n", 
+            FILE_APPEND
+        );
+        
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+            file_put_contents(
+                ROOT_DIR . '/debug_session.log', 
+                date('[Y-m-d H:i:s] ') . 
+                "Session validation failed - Redirecting to login\n\n", 
+                FILE_APPEND
+            );
+            header('Location: ' . BASE_URL . 'login.php');
+            exit();
+        }
+        
+        // Λήψη όλων των διαθέσιμων tags
+        $tags = $this->jobTagModel->getAllTags();
+        
+        // Φόρτωση του view με τη φόρμα δημιουργίας
+        include ROOT_DIR . '/src/Views/job-listings/create.php';
+    }
+
 
     public function index() {
         // Επιτρέπουμε σε όλους να βλέπουν τις αγγελίες - δεν απαιτείται σύνδεση
@@ -83,25 +120,7 @@ class JobListingController {
         include ROOT_DIR . '/src/Views/job-listings/show.php';
     }
 
-    public function create() {
-        // Βεβαιωθείτε ότι η συνεδρία έχει ξεκινήσει
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
-            header('Location: ' . BASE_URL . 'login.php');
-            exit();
-        }
-        
-        // Λήψη όλων των διαθέσιμων tags
-        $tags = $this->jobTagModel->getAllTags();
-        
-        // Φόρτωση του view με τη φόρμα δημιουργίας
-        include ROOT_DIR . '/src/Views/job-listings/create.php';
-    }
-
+   
     public function store() {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {

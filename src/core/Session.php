@@ -7,19 +7,24 @@ class Session
      * Ξεκινά τη συνεδρία αν δεν έχει ήδη ξεκινήσει
      */
     public static function start()
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            // Ρύθμιση των επιλογών της συνεδρίας
-            // Αφαίρεση του συγκεκριμένου cookie path γιατί μπορεί να προκαλέσει προβλήματα
-            // ini_set('session.cookie_path', '/drivejob/');
-            
-            // Ορισμός ενός μοναδικού ονόματος συνεδρίας
-            session_name('DRIVEJOBSESSION');
-            
-            session_start();
-        }
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        // Ορισμός ενός μοναδικού ονόματος συνεδρίας
+        session_name('DRIVEJOBSESSION');
+        
+        // Ρυθμίσεις για τα cookies της συνεδρίας
+        session_set_cookie_params([
+            'lifetime' => 86400, // 24 ώρες
+            'path' => '/',       // Χρησιμοποιούμε το root path
+            'domain' => '',      // Κενό για localhost
+            'secure' => false,   // false για HTTP, true για HTTPS
+            'httponly' => true,  // true για ασφάλεια
+            'samesite' => 'Lax' // Lax επιτρέπει τις ανακατευθύνσεις
+        ]);
+        
+        session_start();
     }
-    
+}
     /**
      * Θέτει μια τιμή στη συνεδρία
      */

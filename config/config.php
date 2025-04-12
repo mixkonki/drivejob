@@ -1,8 +1,12 @@
 <?php
 
+// Ορισμός της χρονικής ζώνης
+date_default_timezone_set('Europe/Athens');
+
 // Ορισμός σταθερών
 define('ROOT_DIR', dirname(__DIR__)); // Ριζικός φάκελος του project
 define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . '/drivejob/public/'); // URL για τα public assets
+define('SESSION_NAMESPACE', 'drivejob'); // Namespace για τη συνεδρία
 
 // Επιστρέφει τις ρυθμίσεις της βάσης δεδομένων
 return [

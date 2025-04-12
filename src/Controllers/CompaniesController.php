@@ -1,5 +1,4 @@
 <?php
-
 namespace Drivejob\Controllers;
 
 use Drivejob\Models\CompaniesModel;
@@ -42,7 +41,7 @@ class CompaniesController {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         AuthMiddleware::hasRole('company');
         
-        // Λήψη των στοιχείων της εταιρείας
+        // Λήψη των στοιχείων
         $companyId = $_SESSION['user_id'];
         $companyData = $this->companiesModel->getCompanyById($companyId);
         

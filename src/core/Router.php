@@ -36,11 +36,11 @@ class Router
         $path = $this->getPath();
         
         // Για αποσφαλμάτωση
-        // echo "<div style='background: #f0f0f0; padding: 10px; margin-bottom: 10px;'>";
-        // echo "Request Method: $method<br>";
-        // echo "Path: $path<br>";
-        // echo "Available Routes: <pre>" . print_r(array_keys($this->routes[$method] ?? []), true) . "</pre>";
-        // echo "</div>";
+  echo "<div style='background: #f0f0f0; padding: 10px; margin-bottom: 10px;'>";
+  echo "Request Method: $method<br>";
+  echo "Path: $path<br>";
+  echo "Available Routes: <pre>" . print_r(array_keys($this->routes[$method] ?? []), true) . "</pre>";
+  echo "</div>";
         
         // Έλεγχος αν υπάρχει ακριβής διαδρομή
         if (isset($this->routes[$method][$path])) {

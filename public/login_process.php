@@ -47,9 +47,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             file_put_contents('login_debug.log', "Driver login successful - ID: {$user['id']}\n", FILE_APPEND);
             
             // Αποθήκευση στο session
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['role'] = 'driver';
-            $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+            Session::set('user_id', $user['id']);
+            Session::set('role', 'driver'); // ή 'company'
+            Session::set('user_name', $user['first_name'] . ' ' . $user['last_name']);
             
             // Ενημέρωση τελευταίας σύνδεσης
             $updateSql = "UPDATE drivers SET last_login = NOW() WHERE id = ?";

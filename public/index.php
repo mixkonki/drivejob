@@ -1,4 +1,6 @@
 <?php
+
+
 // Ενεργοποίηση εμφάνισης σφαλμάτων
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -88,6 +90,28 @@ $router->get('/job-listings/driver/{id}', function($id) use ($pdo) {
 $router->get('/my-listings', function() use ($pdo) {
     $controller = new JobListingController($pdo);
     $controller->myListings();
+});
+
+// Διαδρομές για επεξεργασία προφίλ εταιρείας
+$router->get('/companies/edit-profile', function() use ($pdo) {
+    $controller = new \Drivejob\Controllers\CompaniesController($pdo);
+    $controller->edit();
+});
+
+$router->post('/companies/update-profile', function() use ($pdo) {
+    $controller = new \Drivejob\Controllers\CompaniesController($pdo);
+    $controller->update();
+});
+
+// Διαδρομές για επεξεργασία προφίλ οδηγού
+$router->get('/drivers/edit-profile', function() use ($pdo) {
+    $controller = new \Drivejob\Controllers\DriversController($pdo);
+    $controller->edit();
+});
+
+$router->post('/drivers/update-profile', function() use ($pdo) {
+    $controller = new \Drivejob\Controllers\DriversController($pdo);
+    $controller->update();
 });
 
 // Διαδρομή για 404 Not Found

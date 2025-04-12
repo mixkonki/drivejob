@@ -1,0 +1,125 @@
+[2025-04-11 19:21:42] Role check failed: user_id=not set, role=not set, required=company
+[2025-04-12 05:56:28] Role check failed: user_id=not set, role=not set, required=company
+[2025-04-12 06:02:34] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 06:02:36] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 06:02:37] HasRole check - Session: Array
+(
+    [csrf_token] => a40a0df4fcee06194aad9ac695b2820ac399cbbb0a447f076bd1b914b94f68ec
+    [user_id] => 1
+    [role] => company
+    [user_name] => Δοκιμαστικός Χρήστης
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: company
+
+[2025-04-12 06:02:39] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 06:04:01] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 06:04:03] HasRole check - Session: Array
+(
+    [csrf_token] => 931f9ded0cc23e1d14dfc124faa5034f51b2757a17e59ea003f6c647b5758c10
+    [user_id] => 1
+    [role] => company
+    [user_name] => Δοκιμαστικός Χρήστης
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: company
+
+[2025-04-12 06:04:04] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 06:04:07] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:04:48] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:04:50] HasRole check - Session: Array
+(
+    [csrf_token] => 88ddc80e02b4bd3ce8ca3de2d292227b58bf09ef91ed1f196de7c0e1d0a6a856
+    [user_id] => 1
+    [role] => company
+    [user_name] => Δοκιμαστικός Χρήστης
+)
+
+PHP_SESSION_ID: 979203hrctvontb1d1j48ekgif
+Required role: company
+
+[2025-04-12 09:04:52] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+
+[2025-04-12 09:04:55] HasRole check - Session: Array
+(
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: 7r3654827a7bhm842l77tv9e0r
+Required role: company
+

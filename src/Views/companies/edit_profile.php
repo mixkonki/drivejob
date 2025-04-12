@@ -2,6 +2,19 @@
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php';
 
+// Αποσφαλμάτωση
+echo "<div style='background: #f5f5f5; padding: 10px; margin-bottom: 10px; font-size: 12px;'>";
+echo "<h3>Debug Info</h3>";
+echo "<p>CompanyData:</p>";
+echo "<pre>";
+print_r($companyData ?? 'Not set');
+echo "</pre>";
+echo "<p>Session:</p>";
+echo "<pre>";
+print_r($_SESSION);
+echo "</pre>";
+echo "</div>";
+
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
 $errors = $_SESSION['errors'] ?? [];
 $oldInput = $_SESSION['old_input'] ?? [];
@@ -10,26 +23,40 @@ $oldInput = $_SESSION['old_input'] ?? [];
 unset($_SESSION['errors'], $_SESSION['old_input']);
 
 // Βοηθητική συνάρτηση για την εμφάνιση των παλιών τιμών
-function old($field, $default = '') {
-    global $oldInput, $companyData;
-    if (isset($oldInput[$field])) {
-        return $oldInput[$field];
-    } elseif (isset($companyData[$field])) {
-        return $companyData[$field];
+if (!function_exists('old')) {
+    function old($field, $default = '') {
+        global $oldInput, $companyData;
+        if (isset($oldInput[$field])) {
+            return $oldInput[$field];
+        } elseif (isset($companyData[$field])) {
+            return $companyData[$field];
+        }
+        return $default;
     }
-    return $default;
 }
 
 // Βοηθητική συνάρτηση για την εμφάνιση των σφαλμάτων
-function hasError($field) {
-    global $errors;
-    return isset($errors[$field]);
+if (!function_exists('hasError')) {
+    function hasError($field) {
+        global $errors;
+        return isset($errors[$field]);
+    }
 }
 
-function getError($field) {
-    global $errors;
-    return $errors[$field] ?? '';
+if (!function_exists('getError')) {
+    function getError($field) {
+        global $errors;
+        return $errors[$field] ?? '';
+    }
 }
+
+// Για αποσφαλμάτωση - προσθέτω κώδικα για να δούμε αν τα δεδομένα φτάνουν εδώ
+/*
+echo "<div style='background: #f5f5f5; padding: 10px; margin-bottom: 10px;'>";
+echo "CompanyData: <pre>" . print_r($companyData ?? 'Not set', true) . "</pre>";
+echo "SESSION: <pre>" . print_r($_SESSION, true) . "</pre>";
+echo "</div>";
+*/
 ?>
 
 <main>
@@ -50,7 +77,7 @@ function getError($field) {
             </div>
         <?php endif; ?>
         
-        <form action="<?php echo BASE_URL; ?>companies/update_profile.php" method="POST" enctype="multipart/form-data" class="edit-profile-form">
+        <form action="<?php echo BASE_URL; ?>companies/update-profile" method="POST" enctype="multipart/form-data" class="edit-profile-form">
             <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
             
             <div class="form-tabs">

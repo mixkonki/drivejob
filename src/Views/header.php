@@ -11,9 +11,11 @@ header("X-Frame-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
 
 // Βοηθητική συνάρτηση για να ελέγχουμε την τρέχουσα σελίδα
-function isCurrentPage($page) {
-    $currentPage = basename($_SERVER['PHP_SELF']);
-    return $currentPage === $page;
+if (!function_exists('isCurrentPage')) {
+    function isCurrentPage($page) {
+        $currentPage = basename($_SERVER['PHP_SELF']);
+        return $currentPage === $page;
+    }
 }
 
 // Έλεγχος για συνδεδεμένο χρήστη
@@ -119,4 +121,4 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                 </a>
             <?php endif; ?>
         </div>
-    </header>   
+    </header>

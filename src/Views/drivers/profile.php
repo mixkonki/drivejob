@@ -27,7 +27,7 @@ include ROOT_DIR . '/src/Views/header.php';
                 <?php endif; ?>
                 
                 <div class="profile-actions">
-                    <a href="<?php echo BASE_URL; ?>drivers/edit-profile" class="btn-primary">Επεξεργασία Προφίλ</a>
+                <a href="<?php echo BASE_URL; ?>drivers/edit-profile" class="btn-primary">Επεξεργασία Προφίλ</a>
                     <?php if (isset($driverData['resume_file']) && $driverData['resume_file']): ?>
                         <a href="<?php echo BASE_URL . htmlspecialchars($driverData['resume_file']); ?>" class="btn-secondary" target="_blank">Προβολή Βιογραφικού</a>
                     <?php endif; ?>

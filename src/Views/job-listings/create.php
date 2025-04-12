@@ -35,6 +35,7 @@ include ROOT_DIR . '/src/Views/header.php';
             return $errors[$field] ?? '';
         }
         ?>
+        
 
 <form action="<?php echo BASE_URL; ?>job-listings/store" method="POST" class="job-listing-form">
     <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
