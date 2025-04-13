@@ -13,30 +13,15 @@ class DatabaseSessionHandler implements \SessionHandlerInterface {
         ], $options);
     }
 
-    /**
-     * @param string $savePath
-     * @param string $sessionName
-     * @return bool
-     */
-    #[\ReturnTypeWillChange]
-    public function open($savePath, $sessionName) {
+    public function open(string $savePath, string $sessionName): bool {
         return true;
     }
 
-    /**
-     * @return bool
-     */
-    #[\ReturnTypeWillChange]
-    public function close() {
+    public function close(): bool {
         return true;
     }
 
-    /**
-     * @param string $id
-     * @return string|false
-     */
-    #[\ReturnTypeWillChange]
-    public function read($id) {
+    public function read(string $id): string|false {
         try {
             $stmt = $this->pdo->prepare(
                 "SELECT payload FROM {$this->options['table']} WHERE id = :id"
@@ -56,13 +41,7 @@ class DatabaseSessionHandler implements \SessionHandlerInterface {
         }
     }
 
-    /**
-     * @param string $id
-     * @param string $data
-     * @return bool
-     */
-    #[\ReturnTypeWillChange]
-    public function write($id, $data) {
+    public function write(string $id, string $data): bool {
         try {
             // Λήψη πρόσθετων πληροφοριών
             $userId = Session::get('user_id', null);
@@ -112,12 +91,7 @@ class DatabaseSessionHandler implements \SessionHandlerInterface {
         }
     }
 
-    /**
-     * @param string $id
-     * @return bool
-     */
-    #[\ReturnTypeWillChange]
-    public function destroy($id) {
+    public function destroy(string $id): bool {
         try {
             $stmt = $this->pdo->prepare(
                 "DELETE FROM {$this->options['table']} WHERE id = :id"
@@ -130,12 +104,7 @@ class DatabaseSessionHandler implements \SessionHandlerInterface {
         }
     }
 
-    /**
-     * @param int $maxlifetime
-     * @return int|false
-     */
-    #[\ReturnTypeWillChange]
-    public function gc($maxlifetime) {
+    public function gc(int $maxlifetime): int|false {
         try {
             $time = time() - $maxlifetime;
             $stmt = $this->pdo->prepare(

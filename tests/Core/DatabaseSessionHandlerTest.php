@@ -1,8 +1,8 @@
 <?php
 namespace Tests\Core;
 
-use PHPUnit\Framework\TestCase;
 use Drivejob\Core\DatabaseSessionHandler;
+use PHPUnit\Framework\TestCase;
 
 class DatabaseSessionHandlerTest extends TestCase {
     private $pdo;
@@ -10,108 +10,114 @@ class DatabaseSessionHandlerTest extends TestCase {
     private $tableName = 'test_sessions';
     
     protected function setUp(): void {
-        // Βεβαιωθείτε ότι δεν έχουμε ενεργή συνεδρία
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_write_close();
-        }
-        
-        // Δημιουργία σύνδεσης με τη βάση δεδομένων
         $this->pdo = new \PDO('sqlite::memory:');
-        $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        
-        // Δημιουργία προσωρινού πίνακα
-        $this->pdo->exec("CREATE TABLE IF NOT EXISTS {$this->tableName} (
-            id VARCHAR(128) NOT NULL PRIMARY KEY,
-            user_id INT NULL,
+        $this->pdo->exec("CREATE TABLE {$this->tableName} (
+            id VARCHAR(128) PRIMARY KEY,
+            user_id VARCHAR(128) NULL,
             ip_address VARCHAR(45) NULL,
             user_agent TEXT NULL,
             payload TEXT NOT NULL,
-            last_activity INT NOT NULL
+            last_activity INTEGER NOT NULL
         )");
         
-        // Δημιουργία του handler
         $this->handler = new DatabaseSessionHandler($this->pdo, [
             'table' => $this->tableName
         ]);
     }
     
-    protected function tearDown(): void {
-        // Διαγραφή του προσωρινού πίνακα
-        $this->pdo->exec("DROP TABLE IF EXISTS {$this->tableName}");
-        
-        // Κλείσιμο της σύνδεσης
-        $this->pdo = null;
-    }
-    
     public function testReadAndWrite() {
-        $id = 'test_session_id';
-        $data = 'test_session_data';
+        $sessionId = 'test_session_id';
+        $sessionData = 'test_session_data';
         
-        // Βεβαιωθείτε ότι η συνεδρία δεν υπάρχει
-        $this->assertEquals('', $this->handler->read($id));
+        // Δοκιμή εγγραφής
+        $result = $this->handler->write($sessionId, $sessionData);
+        $this->assertTrue($result);
         
-        // Γράψτε τη συνεδρία
-        $this->assertTrue($this->handler->write($id, $data));
+        // Έλεγχος άμεσα στη βάση δεδομένων
+        $stmt = $this->pdo->prepare("SELECT payload FROM {$this->tableName} WHERE id = :id");
+        $stmt->bindParam(':id', $sessionId);
+        $stmt->execute();
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $this->assertEquals($sessionData, $row['payload']);
         
-        // Διαβάστε τη συνεδρία
-        $this->assertEquals($data, $this->handler->read($id));
+        // Δοκιμή ανάγνωσης
+        $readData = $this->handler->read($sessionId);
+        $this->assertEquals($sessionData, $readData);
     }
     
     public function testUpdateExistingSession() {
-        $id = 'test_session_id';
-        $data1 = 'test_session_data_1';
-        $data2 = 'test_session_data_2';
+        $sessionId = 'test_session_id';
+        $initialData = 'initial_data';
+        $updatedData = 'updated_data';
         
-        // Γράψτε την αρχική συνεδρία
-        $this->assertTrue($this->handler->write($id, $data1));
+        // Αρχική εγγραφή
+        $this->handler->write($sessionId, $initialData);
         
-        // Ενημερώστε τη συνεδρία
-        $this->assertTrue($this->handler->write($id, $data2));
+        // Ενημέρωση δεδομένων
+        $result = $this->handler->write($sessionId, $updatedData);
+        $this->assertTrue($result);
         
-        // Διαβάστε τη συνεδρία
-        $this->assertEquals($data2, $this->handler->read($id));
+        // Έλεγχος ότι τα δεδομένα ενημερώθηκαν
+        $readData = $this->handler->read($sessionId);
+        $this->assertEquals($updatedData, $readData);
     }
     
     public function testDestroy() {
-        $id = 'test_session_id';
-        $data = 'test_session_data';
+        $sessionId = 'test_session_id';
+        $sessionData = 'test_session_data';
         
-        // Γράψτε τη συνεδρία
-        $this->assertTrue($this->handler->write($id, $data));
+        // Δημιουργία συνεδρίας
+        $this->handler->write($sessionId, $sessionData);
         
-        // Βεβαιωθείτε ότι η συνεδρία υπάρχει
-        $this->assertEquals($data, $this->handler->read($id));
+        // Καταστροφή συνεδρίας
+        $result = $this->handler->destroy($sessionId);
+        $this->assertTrue($result);
         
-        // Καταστρέψτε τη συνεδρία
-        $this->assertTrue($this->handler->destroy($id));
-        
-        // Βεβαιωθείτε ότι η συνεδρία διαγράφηκε
-        $this->assertEquals('', $this->handler->read($id));
+        // Έλεγχος ότι η συνεδρία διαγράφηκε
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM {$this->tableName} WHERE id = :id");
+        $stmt->bindParam(':id', $sessionId);
+        $stmt->execute();
+        $count = $stmt->fetchColumn();
+        $this->assertEquals(0, $count);
     }
     
     public function testGarbageCollection() {
-        $id1 = 'test_session_id_1';
-        $id2 = 'test_session_id_2';
-        $data = 'test_session_data';
+        $currentTime = time();
+        $maxlifetime = 3600; // 1 ώρα
+        $oldTime = $currentTime - $maxlifetime - 100; // Παλιότερο από το όριο
         
-        // Γράψτε τις συνεδρίες
-        $this->assertTrue($this->handler->write($id1, $data));
-        $this->assertTrue($this->handler->write($id2, $data));
+        // Δημιουργία μιας παλιάς και μιας νέας συνεδρίας
+        $oldSessionId = 'old_session';
+        $newSessionId = 'new_session';
         
-        // Ορίστε την τελευταία δραστηριότητα για το id1 στο παρελθόν
+        // Χειροκίνητη εισαγωγή με συγκεκριμένο χρόνο
         $stmt = $this->pdo->prepare(
-            "UPDATE {$this->tableName} SET last_activity = :time WHERE id = :id"
+            "INSERT INTO {$this->tableName} 
+             (id, user_id, ip_address, user_agent, payload, last_activity) 
+             VALUES (:id, NULL, '127.0.0.1', 'test', 'old_data', :time)"
         );
-        $stmt->execute([
-            ':id' => $id1,
-            ':time' => time() - 3600 // 1 ώρα πριν
-        ]);
+        $stmt->execute([':id' => $oldSessionId, ':time' => $oldTime]);
         
-        // Εκτελέστε το garbage collection με χρόνο 30 λεπτών
-        $this->handler->gc(1800);
+        // Δημιουργία νέας συνεδρίας (θα χρησιμοποιήσει τον τρέχοντα χρόνο)
+        $this->handler->write($newSessionId, 'new_data');
         
-        // Βεβαιωθείτε ότι το id1 διαγράφηκε και το id2 υπάρχει ακόμα
-        $this->assertEquals('', $this->handler->read($id1));
-        $this->assertEquals($data, $this->handler->read($id2));
+        // Εκτέλεση της συλλογής απορριμμάτων
+        $deletedCount = $this->handler->gc($maxlifetime);
+        
+        // Αναμένουμε ότι καθαρίστηκε μία συνεδρία
+        $this->assertEquals(1, $deletedCount);
+        
+        // Επιβεβαίωση ότι μόνο η παλιά συνεδρία αφαιρέθηκε
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM {$this->tableName} WHERE id = :id");
+        
+        $stmt->bindParam(':id', $oldSessionId);
+        $stmt->execute();
+        $oldCount = $stmt->fetchColumn();
+        $this->assertEquals(0, $oldCount);
+        
+        $stmt->bindParam(':id', $newSessionId);
+        $stmt->execute();
+        $newCount = $stmt->fetchColumn();
+        $this->assertEquals(1, $newCount);
     }
 }
