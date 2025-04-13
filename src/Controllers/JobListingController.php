@@ -13,6 +13,7 @@ class JobListingController {
     private $pdo;
 
     public function __construct($pdo) {
+        $this->pdo = $pdo; // Προσθέστε αυτή τη γραμμή
         $this->jobListingModel = new JobListingModel($pdo);
         $this->jobTagModel = new JobTagModel($pdo);
     }
@@ -110,7 +111,7 @@ class JobListingController {
         
         // Λήψη στοιχείων για την εταιρεία ή τον οδηγό
         if ($listing['company_id']) {
-            $companyModel = new \Drivejob\Models\CompaniesModel($this->pdo);
+            $companyModel = new \Drivejob\Models\CompaniesModel($this->pdo);  // Περνάμε το $pdo
             $author = $companyModel->getCompanyById($listing['company_id']);
         } else {
             $driverModel = new \Drivejob\Models\DriversModel($this->pdo);

@@ -2,8 +2,7 @@
 // Συμπερίληψη του config.php για τη χρήση των σταθερών ROOT_DIR και BASE_URL
 require_once __DIR__ . '/../config/config.php';
 
-// Συμπερίληψη του database.php για τη σύνδεση με τη βάση δεδομένων
-require_once ROOT_DIR . '/config/database.php';
+require_once __DIR__ . '/../src/bootstrap.php';
 
 use Drivejob\Core\Session;
 

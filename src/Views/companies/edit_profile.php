@@ -1,32 +1,6 @@
 <?php 
-// Αποσφαλμάτωση - εμφάνιση δεδομένων
-echo "<div style='background: #f5f5f5; padding: 10px; margin-bottom: 10px; font-size: 12px;'>";
-echo "<h3>Debug Info</h3>";
-echo "<p>CompanyData:</p>";
-echo "<pre>";
-print_r($companyData ?? 'Not set');
-echo "</pre>";
-echo "</div>";
-
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php'; 
-
-// Διαγραφή των σχολίων αποσφαλμάτωσης για καθαρότητα
-/*
-echo "<div style='background: #f5f5f5; padding: 10px; margin-bottom: 10px; font-size: 12px;'>";
-echo "<h3>Debug Info</h3>";
-echo "<p>CompanyData:</p>";
-echo "<pre>";
-print_r($companyData ?? 'Not set');
-echo "</pre>";
-echo "<p>Session:</p>";
-echo "<pre>";
-print_r($_SESSION);
-echo "</pre>";
-echo "</div>";
-
-*/
-// Έλεγχος αν ο χρήστης είναι συνδεδεμένος
 
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
 $errors = $_SESSION['errors'] ?? [];
@@ -35,22 +9,8 @@ $oldInput = $_SESSION['old_input'] ?? [];
 // Καθαρισμός των session μεταβλητών μετά την ανάκτησή τους
 unset($_SESSION['errors'], $_SESSION['old_input']);
 
-// Βοηθητική συνάρτηση για την εμφάνιση των παλιών τιμών
-//function old($field, $default = '') {
-  //  global $companyData;
-    //return $companyData[$field] ?? $default;
-//}
-
-// Βοηθητική συνάρτηση για την εμφάνιση των σφαλμάτων
-//function hasError($field) {
-  //  global $errors;
-    //return isset($errors[$field]);
-//}
-
-//function getError($field) {
-  //  global $errors;
-  //return $errors[$field] ?? '';
-//}
+// Σημείωση: Οι συναρτήσεις old(), hasError() και getError() ήδη ορίζονται στο form_helpers.php
+// και δεν πρέπει να οριστούν ξανά εδώ
 ?>
 
 <main>
@@ -90,7 +50,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         
                         <div class="form-group <?php echo hasError('company_name') ? 'has-error' : ''; ?>">
                             <label for="company_name">Όνομα Εταιρείας</label>
-                            <input type="text" id="company_name" name="company_name" value="<?php echo old('company_name'); ?>" required>
+                            <input type="text" id="company_name" name="company_name" value="<?php echo old('company_name', $companyData['company_name'] ?? ''); ?>" required>
                             <?php if (hasError('company_name')): ?>
                                 <div class="error-message"><?php echo getError('company_name'); ?></div>
                             <?php endif; ?>
@@ -110,7 +70,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         
                         <div class="form-group">
                             <label for="description">Περιγραφή Εταιρείας</label>
-                            <textarea id="description" name="description" rows="6"><?php echo old('description'); ?></textarea>
+                            <textarea id="description" name="description" rows="6"><?php echo old('description', $companyData['description'] ?? ''); ?></textarea>
                             <p class="form-hint">Περιγράψτε την εταιρεία σας, τις δραστηριότητες και το όραμά σας.</p>
                         </div>
                     </div>
@@ -123,13 +83,13 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             <label for="industry">Κλάδος</label>
                             <select id="industry" name="industry">
                                 <option value="">Επιλέξτε Κλάδο</option>
-                                <option value="Μεταφορές & Logistics" <?php echo old('industry') === 'Μεταφορές & Logistics' ? 'selected' : ''; ?>>Μεταφορές & Logistics</option>
-                                <option value="Κατασκευές" <?php echo old('industry') === 'Κατασκευές' ? 'selected' : ''; ?>>Κατασκευές</option>
-                                <option value="Βιομηχανία" <?php echo old('industry') === 'Βιομηχανία' ? 'selected' : ''; ?>>Βιομηχανία</option>
-                                <option value="Τρόφιμα & Ποτά" <?php echo old('industry') === 'Τρόφιμα & Ποτά' ? 'selected' : ''; ?>>Τρόφιμα & Ποτά</option>
-                                <option value="Λιανεμπόριο" <?php echo old('industry') === 'Λιανεμπόριο' ? 'selected' : ''; ?>>Λιανεμπόριο</option>
-                                <option value="Υπηρεσίες" <?php echo old('industry') === 'Υπηρεσίες' ? 'selected' : ''; ?>>Υπηρεσίες</option>
-                                <option value="Άλλο" <?php echo old('industry') === 'Άλλο' ? 'selected' : ''; ?>>Άλλο</option>
+                                <option value="Μεταφορές & Logistics" <?php echo old('industry', $companyData['industry'] ?? '') === 'Μεταφορές & Logistics' ? 'selected' : ''; ?>>Μεταφορές & Logistics</option>
+                                <option value="Κατασκευές" <?php echo old('industry', $companyData['industry'] ?? '') === 'Κατασκευές' ? 'selected' : ''; ?>>Κατασκευές</option>
+                                <option value="Βιομηχανία" <?php echo old('industry', $companyData['industry'] ?? '') === 'Βιομηχανία' ? 'selected' : ''; ?>>Βιομηχανία</option>
+                                <option value="Τρόφιμα & Ποτά" <?php echo old('industry', $companyData['industry'] ?? '') === 'Τρόφιμα & Ποτά' ? 'selected' : ''; ?>>Τρόφιμα & Ποτά</option>
+                                <option value="Λιανεμπόριο" <?php echo old('industry', $companyData['industry'] ?? '') === 'Λιανεμπόριο' ? 'selected' : ''; ?>>Λιανεμπόριο</option>
+                                <option value="Υπηρεσίες" <?php echo old('industry', $companyData['industry'] ?? '') === 'Υπηρεσίες' ? 'selected' : ''; ?>>Υπηρεσίες</option>
+                                <option value="Άλλο" <?php echo old('industry', $companyData['industry'] ?? '') === 'Άλλο' ? 'selected' : ''; ?>>Άλλο</option>
                             </select>
                         </div>
                         
@@ -137,22 +97,22 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             <label for="company_size">Μέγεθος Εταιρείας</label>
                             <select id="company_size" name="company_size">
                                 <option value="">Επιλέξτε Μέγεθος</option>
-                                <option value="1-10 εργαζόμενοι" <?php echo old('company_size') === '1-10 εργαζόμενοι' ? 'selected' : ''; ?>>1-10 εργαζόμενοι</option>
-                                <option value="11-50 εργαζόμενοι" <?php echo old('company_size') === '11-50 εργαζόμενοι' ? 'selected' : ''; ?>>11-50 εργαζόμενοι</option>
-                                <option value="51-200 εργαζόμενοι" <?php echo old('company_size') === '51-200 εργαζόμενοι' ? 'selected' : ''; ?>>51-200 εργαζόμενοι</option>
-                                <option value="201-500 εργαζόμενοι" <?php echo old('company_size') === '201-500 εργαζόμενοι' ? 'selected' : ''; ?>>201-500 εργαζόμενοι</option>
-                                <option value="501+ εργαζόμενοι" <?php echo old('company_size') === '501+ εργαζόμενοι' ? 'selected' : ''; ?>>501+ εργαζόμενοι</option>
+                                <option value="1-10 εργαζόμενοι" <?php echo old('company_size', $companyData['company_size'] ?? '') === '1-10 εργαζόμενοι' ? 'selected' : ''; ?>>1-10 εργαζόμενοι</option>
+                                <option value="11-50 εργαζόμενοι" <?php echo old('company_size', $companyData['company_size'] ?? '') === '11-50 εργαζόμενοι' ? 'selected' : ''; ?>>11-50 εργαζόμενοι</option>
+                                <option value="51-200 εργαζόμενοι" <?php echo old('company_size', $companyData['company_size'] ?? '') === '51-200 εργαζόμενοι' ? 'selected' : ''; ?>>51-200 εργαζόμενοι</option>
+                                <option value="201-500 εργαζόμενοι" <?php echo old('company_size', $companyData['company_size'] ?? '') === '201-500 εργαζόμενοι' ? 'selected' : ''; ?>>201-500 εργαζόμενοι</option>
+                                <option value="501+ εργαζόμενοι" <?php echo old('company_size', $companyData['company_size'] ?? '') === '501+ εργαζόμενοι' ? 'selected' : ''; ?>>501+ εργαζόμενοι</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
                             <label for="foundation_year">Έτος Ίδρυσης</label>
-                            <input type="number" id="foundation_year" name="foundation_year" min="1900" max="<?php echo date('Y'); ?>" value="<?php echo old('foundation_year'); ?>">
+                            <input type="number" id="foundation_year" name="foundation_year" min="1900" max="<?php echo date('Y'); ?>" value="<?php echo old('foundation_year', $companyData['foundation_year'] ?? ''); ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="vat_number">ΑΦΜ</label>
-                            <input type="text" id="vat_number" name="vat_number" value="<?php echo old('vat_number'); ?>">
+                            <input type="text" id="vat_number" name="vat_number" value="<?php echo old('vat_number', $companyData['vat_number'] ?? ''); ?>">
                         </div>
                     </div>
                     
@@ -162,22 +122,22 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         
                         <div class="form-group">
                             <label for="address">Διεύθυνση</label>
-                            <input type="text" id="address" name="address" value="<?php echo old('address'); ?>">
+                            <input type="text" id="address" name="address" value="<?php echo old('address', $companyData['address'] ?? ''); ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="city">Πόλη</label>
-                            <input type="text" id="city" name="city" value="<?php echo old('city'); ?>">
+                            <input type="text" id="city" name="city" value="<?php echo old('city', $companyData['city'] ?? ''); ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="country">Χώρα</label>
-                            <input type="text" id="country" name="country" value="<?php echo old('country'); ?>">
+                            <input type="text" id="country" name="country" value="<?php echo old('country', $companyData['country'] ?? ''); ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="postal_code">Ταχυδρομικός Κώδικας</label>
-                            <input type="text" id="postal_code" name="postal_code" value="<?php echo old('postal_code'); ?>">
+                            <input type="text" id="postal_code" name="postal_code" value="<?php echo old('postal_code', $companyData['postal_code'] ?? ''); ?>">
                         </div>
                     </div>
                     
@@ -187,7 +147,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         
                         <div class="form-group <?php echo hasError('phone') ? 'has-error' : ''; ?>">
                             <label for="phone">Τηλέφωνο</label>
-                            <input type="tel" id="phone" name="phone" value="<?php echo old('phone'); ?>" required>
+                            <input type="tel" id="phone" name="phone" value="<?php echo old('phone', $companyData['phone'] ?? ''); ?>" required>
                             <?php if (hasError('phone')): ?>
                                 <div class="error-message"><?php echo getError('phone'); ?></div>
                             <?php endif; ?>
@@ -195,7 +155,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         
                         <div class="form-group <?php echo hasError('website') ? 'has-error' : ''; ?>">
                             <label for="website">Ιστοσελίδα</label>
-                            <input type="url" id="website" name="website" value="<?php echo old('website'); ?>" placeholder="https://www.example.com">
+                            <input type="url" id="website" name="website" value="<?php echo old('website', $companyData['website'] ?? ''); ?>" placeholder="https://www.example.com">
                             <?php if (hasError('website')): ?>
                                 <div class="error-message"><?php echo getError('website'); ?></div>
                             <?php endif; ?>
@@ -203,12 +163,12 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         
                         <div class="form-group">
                             <label for="contact_person">Υπεύθυνος Επικοινωνίας</label>
-                            <input type="text" id="contact_person" name="contact_person" value="<?php echo old('contact_person'); ?>">
+                            <input type="text" id="contact_person" name="contact_person" value="<?php echo old('contact_person', $companyData['contact_person'] ?? ''); ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="position">Θέση</label>
-                            <input type="text" id="position" name="position" value="<?php echo old('position'); ?>" placeholder="π.χ. Διευθυντής HR">
+                            <input type="text" id="position" name="position" value="<?php echo old('position', $companyData['position'] ?? ''); ?>" placeholder="π.χ. Διευθυντής HR">
                         </div>
                     </div>
                     
@@ -218,17 +178,17 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         
                         <div class="form-group">
                             <label for="social_linkedin">LinkedIn</label>
-                            <input type="url" id="social_linkedin" name="social_linkedin" value="<?php echo old('social_linkedin'); ?>" placeholder="https://www.linkedin.com/company/yourcompany">
+                            <input type="url" id="social_linkedin" name="social_linkedin" value="<?php echo old('social_linkedin', $companyData['social_linkedin'] ?? ''); ?>" placeholder="https://www.linkedin.com/company/yourcompany">
                         </div>
                         
                         <div class="form-group">
                             <label for="social_facebook">Facebook</label>
-                            <input type="url" id="social_facebook" name="social_facebook" value="<?php echo old('social_facebook'); ?>" placeholder="https://www.facebook.com/yourcompany">
+                            <input type="url" id="social_facebook" name="social_facebook" value="<?php echo old('social_facebook', $companyData['social_facebook'] ?? ''); ?>" placeholder="https://www.facebook.com/yourcompany">
                         </div>
                         
                         <div class="form-group">
                             <label for="social_twitter">Twitter</label>
-                            <input type="url" id="social_twitter" name="social_twitter" value="<?php echo old('social_twitter'); ?>" placeholder="https://twitter.com/yourcompany">
+                            <input type="url" id="social_twitter" name="social_twitter" value="<?php echo old('social_twitter', $companyData['social_twitter'] ?? ''); ?>" placeholder="https://twitter.com/yourcompany">
                         </div>
                     </div>
                 </div>
@@ -236,7 +196,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
             
             <div class="form-actions">
                 <button type="submit" class="btn-primary">Αποθήκευση Αλλαγών</button>
-                <a href="<?php echo BASE_URL; ?>companies/company_profile.php" class="btn-secondary">Ακύρωση</a>
+                <a href="<?php echo BASE_URL; ?>companies/company_profile" class="btn-secondary">Ακύρωση</a>
             </div>
         </form>
     </div>

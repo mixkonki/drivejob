@@ -29,22 +29,6 @@ $oldInput = Session::get('old_input', []);
 Session::remove('errors');
 Session::remove('old_input');
 
-// Βοηθητική συνάρτηση για την εμφάνιση των παλιών τιμών
-function old($field, $default = '') {
-    global $oldInput;
-    return $oldInput[$field] ?? $default;
-}
-
-// Βοηθητική συνάρτηση για την εμφάνιση των σφαλμάτων
-function hasError($field) {
-    global $errors;
-    return isset($errors[$field]);
-}
-
-function getError($field) {
-    global $errors;
-    return $errors[$field] ?? '';
-}
 ?>
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/job-listings.css">
 <main>

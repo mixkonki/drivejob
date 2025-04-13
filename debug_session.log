@@ -98,3 +98,27 @@ PHP_SESSION_ID: otnmuplfj33qphk2o8c50f8768
 
 PHP_SESSION_ID: s2i8o92hf75h74lor35313ii6f
 
+[2025-04-13 08:36:54] Session Info: Array
+(
+    [_last_activity] => 1744522614
+    [csrf_token] => ef3f26a0e5f45c4154c1b0a5c856b49f5d68cd40b0e1aec72037c20e61ad0fbc
+    [csrf_token_time] => 1744522188
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: hknceiuvcs86n33c0b92vpqtn6
+
+[2025-04-13 08:37:20] Session Info: Array
+(
+    [_last_activity] => 1744522640
+    [csrf_token] => ef3f26a0e5f45c4154c1b0a5c856b49f5d68cd40b0e1aec72037c20e61ad0fbc
+    [csrf_token_time] => 1744522188
+    [user_id] => 2
+    [role] => company
+    [user_name] => Thessdrive IKE
+)
+
+PHP_SESSION_ID: hknceiuvcs86n33c0b92vpqtn6
+
