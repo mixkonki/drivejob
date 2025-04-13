@@ -3,6 +3,7 @@ namespace Tests\Core;
 
 use Drivejob\Core\DatabaseSessionHandler;
 use PHPUnit\Framework\TestCase;
+use Tests\Mocks\MockSession; // Εισαγωγή του mock session
 
 class DatabaseSessionHandlerTest extends TestCase {
     private $pdo;

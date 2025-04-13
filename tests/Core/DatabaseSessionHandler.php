@@ -13,6 +13,8 @@ class DatabaseSessionHandler implements \SessionHandlerInterface {
         ], $options);
     }
 
+
+    
     public function open(string $savePath, string $sessionName): bool {
         return true;
     }
@@ -44,7 +46,7 @@ class DatabaseSessionHandler implements \SessionHandlerInterface {
     public function write(string $id, string $data): bool {
         try {
             // Λήψη πρόσθετων πληροφοριών
-            $userId = Session::get('user_id', null);
+            $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
             $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
             $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
             $time = time();

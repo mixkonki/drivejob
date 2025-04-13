@@ -1,5 +1,6 @@
 <?php
 // tests/bootstrap.php
+ob_start(); // Έναρξη output buffering
 
 // Βεβαιωθείτε ότι δεν έχουν ξεκινήσει οι headers πριν τις δοκιμές
 if (headers_sent()) {
