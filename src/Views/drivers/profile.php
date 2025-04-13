@@ -1,3 +1,6 @@
+# Αναβαθμισμένο Προφίλ Οδηγού (driver_profile.php)
+
+```php
 <?php 
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php'; 
@@ -7,6 +10,7 @@ include ROOT_DIR . '/src/Views/header.php';
 
 <main>
     <div class="container">
+        <!-- Επικεφαλίδα προφίλ με βασικές πληροφορίες -->
         <div class="profile-header">
             <div class="profile-image">
                 <?php if (isset($driverData['profile_image']) && $driverData['profile_image']): ?>
@@ -26,8 +30,40 @@ include ROOT_DIR . '/src/Views/header.php';
                     </p>
                 <?php endif; ?>
                 
+                <div class="driver-rating">
+                    <div class="rating-stars">
+                        <?php 
+                        $rating = isset($driverData['rating']) ? floatval($driverData['rating']) : 0;
+                        $fullStars = floor($rating);
+                        $halfStar = $rating - $fullStars >= 0.5;
+                        $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
+                        
+                        for ($i = 0; $i < $fullStars; $i++): ?>
+                            <i class="star full"></i>
+                        <?php endfor; ?>
+                        
+                        <?php if ($halfStar): ?>
+                            <i class="star half"></i>
+                        <?php endif; ?>
+                        
+                        <?php for ($i = 0; $i < $emptyStars; $i++): ?>
+                            <i class="star empty"></i>
+                        <?php endfor; ?>
+                        
+                        <span class="rating-value"><?php echo number_format($rating, 1); ?></span>
+                    </div>
+                    <span class="rating-count">(<?php echo $driverData['rating_count'] ?? 0; ?> αξιολογήσεις)</span>
+                </div>
+                
+                <?php if (isset($driverData['experience_years']) && $driverData['experience_years']): ?>
+                    <div class="experience-badge">
+                        <img src="<?php echo BASE_URL; ?>img/experience_icon.png" alt="Εμπειρία">
+                        <span><?php echo $driverData['experience_years']; ?> έτη εμπειρίας</span>
+                    </div>
+                <?php endif; ?>
+                
                 <div class="profile-actions">
-                <a href="<?php echo BASE_URL; ?>drivers/edit-profile" class="btn-primary">Επεξεργασία Προφίλ</a>
+                    <a href="<?php echo BASE_URL; ?>drivers/edit-profile" class="btn-primary">Επεξεργασία Προφίλ</a>
                     <?php if (isset($driverData['resume_file']) && $driverData['resume_file']): ?>
                         <a href="<?php echo BASE_URL . htmlspecialchars($driverData['resume_file']); ?>" class="btn-secondary" target="_blank">Προβολή Βιογραφικού</a>
                     <?php endif; ?>
@@ -49,20 +85,162 @@ include ROOT_DIR . '/src/Views/header.php';
             </div>
         <?php endif; ?>
         
-        <div class="profile-content">
-            <div class="profile-main">
-                <section class="profile-section">
-                    <h2>Σχετικά με εμένα</h2>
-                    <div class="profile-about">
-                        <?php if (isset($driverData['about_me']) && $driverData['about_me']): ?>
-                            <?php echo nl2br(htmlspecialchars($driverData['about_me'])); ?>
-                        <?php else: ?>
-                            <p class="profile-empty">Δεν έχετε προσθέσει πληροφορίες για τον εαυτό σας. <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Προσθέστε τώρα!</a></p>
-                        <?php endif; ?>
+        <!-- Καρτέλες (tabs) με περιεχόμενο προφίλ -->
+        <div class="profile-tabs">
+            <nav class="tabs-nav">
+                <button class="tab-btn active" data-tab="overview">Επισκόπηση</button>
+                <button class="tab-btn" data-tab="qualifications">Προσόντα & Πιστοποιήσεις</button>
+                <button class="tab-btn" data-tab="job-matches">Ταιριάσματα Εργασίας</button>
+                <button class="tab-btn" data-tab="self-assessment">Αυτοαξιολόγηση</button>
+                <button class="tab-btn" data-tab="my-listings">Αγγελίες</button>
+            </nav>
+            
+            <div class="tab-content">
+                <!-- Καρτέλα Επισκόπησης -->
+                <div class="tab-pane active" id="overview">
+                    <div class="profile-content">
+                        <div class="profile-main">
+                            <section class="profile-section">
+                                <h2>Σχετικά με εμένα</h2>
+                                <div class="profile-about">
+                                    <?php if (isset($driverData['about_me']) && $driverData['about_me']): ?>
+                                        <?php echo nl2br(htmlspecialchars($driverData['about_me'])); ?>
+                                    <?php else: ?>
+                                        <p class="profile-empty">Δεν έχετε προσθέσει πληροφορίες για τον εαυτό σας. <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Προσθέστε τώρα!</a></p>
+                                    <?php endif; ?>
+                                </div>
+                            </section>
+                            
+                            <!-- Σύνοψη προσόντων -->
+                            <section class="profile-section">
+                                <h2>Βασικά προσόντα</h2>
+                                <div class="qualifications-summary">
+                                    <div class="qualification-badges">
+                                        <?php if (isset($driverData['driving_license']) && $driverData['driving_license']): ?>
+                                            <div class="badge badge-active" title="Άδεια οδήγησης: <?php echo htmlspecialchars($driverData['driving_license']); ?>">
+                                                <img src="<?php echo BASE_URL; ?>img/license_icon.png" alt="Άδεια Οδήγησης">
+                                                <span>Άδεια οδήγησης</span>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="badge badge-inactive" title="Δεν έχει καταχωρηθεί άδεια οδήγησης">
+                                                <img src="<?php echo BASE_URL; ?>img/license_icon.png" alt="Άδεια Οδήγησης">
+                                                <span>Άδεια οδήγησης</span>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($driverData['adr_certificate']): ?>
+                                            <div class="badge badge-active" title="Πιστοποιητικό ADR">
+                                                <img src="<?php echo BASE_URL; ?>img/adr_icon.png" alt="Πιστοποιητικό ADR">
+                                                <span>ADR</span>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="badge badge-inactive" title="Δεν διαθέτει πιστοποιητικό ADR">
+                                                <img src="<?php echo BASE_URL; ?>img/adr_icon.png" alt="Πιστοποιητικό ADR">
+                                                <span>ADR</span>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($driverData['operator_license']): ?>
+                                            <div class="badge badge-active" title="Άδεια χειριστή μηχανημάτων">
+                                                <img src="<?php echo BASE_URL; ?>img/operator_icon.png" alt="Άδεια Χειριστή">
+                                                <span>Άδεια χειριστή</span>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="badge badge-inactive" title="Δεν διαθέτει άδεια χειριστή μηχανημάτων">
+                                                <img src="<?php echo BASE_URL; ?>img/operator_icon.png" alt="Άδεια Χειριστή">
+                                                <span>Άδεια χειριστή</span>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($driverData['training_seminars']): ?>
+                                            <div class="badge badge-active" title="Συμμετοχή σε σεμινάρια κατάρτισης">
+                                                <img src="<?php echo BASE_URL; ?>img/training_icon.png" alt="Σεμινάρια">
+                                                <span>Σεμινάρια</span>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="badge badge-inactive" title="Δεν έχει παρακολουθήσει σεμινάρια κατάρτισης">
+                                                <img src="<?php echo BASE_URL; ?>img/training_icon.png" alt="Σεμινάρια">
+                                                <span>Σεμινάρια</span>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        
+                        <div class="profile-sidebar">
+                            <section class="profile-section">
+                                <h2>Στοιχεία Επικοινωνίας</h2>
+                                <ul class="contact-list">
+                                    <li>
+                                        <img src="<?php echo BASE_URL; ?>img/email_icon.png" alt="Email">
+                                        <span><?php echo htmlspecialchars($driverData['email']); ?></span>
+                                    </li>
+                                    <li>
+                                        <img src="<?php echo BASE_URL; ?>img/phone_icon.png" alt="Τηλέφωνο">
+                                        <span><?php echo htmlspecialchars($driverData['phone']); ?></span>
+                                    </li>
+                                    <?php if (isset($driverData['landline']) && $driverData['landline']): ?>
+                                        <li>
+                                            <img src="<?php echo BASE_URL; ?>img/landline_icon.png" alt="Σταθερό Τηλέφωνο">
+                                            <span><?php echo htmlspecialchars($driverData['landline']); ?></span>
+                                        </li>
+                                    <?php endif; ?>
+                                    <?php if (isset($driverData['social_linkedin']) && $driverData['social_linkedin']): ?>
+                                        <li>
+                                            <img src="<?php echo BASE_URL; ?>img/linkedin_icon.png" alt="LinkedIn">
+                                            <a href="<?php echo htmlspecialchars($driverData['social_linkedin']); ?>" target="_blank">LinkedIn Προφίλ</a>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </section>
+                            
+                            <section class="profile-section">
+                                <h2>Προτιμήσεις Εργασίας</h2>
+                                <ul class="preferences-list">
+                                    <li>
+                                        <strong>Διαθεσιμότητα:</strong>
+                                        <span class="availability-status <?php echo $driverData['available_for_work'] ? 'available' : 'unavailable'; ?>">
+                                            <?php echo $driverData['available_for_work'] ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία'; ?>
+                                        </span>
+                                    </li>
+                                    <?php if (isset($driverData['preferred_job_type']) && $driverData['preferred_job_type']): ?>
+                                        <li>
+                                            <strong>Προτιμώμενος τύπος εργασίας:</strong>
+                                            <span><?php echo htmlspecialchars($driverData['preferred_job_type']); ?></span>
+                                        </li>
+                                    <?php endif; ?>
+                                    <?php if (isset($driverData['preferred_location']) && $driverData['preferred_location']): ?>
+                                        <li>
+                                            <strong>Προτιμώμενη τοποθεσία:</strong>
+                                            <span><?php echo htmlspecialchars($driverData['preferred_location']); ?></span>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </section>
+                            
+                            <?php if (isset($driverData['address']) && $driverData['address'] && isset($driverData['city']) && $driverData['city']): ?>
+                                <section class="profile-section">
+                                    <h2>Τοποθεσία</h2>
+                                    <div class="profile-map">
+                                        <iframe
+                                            width="100%"
+                                            height="200"
+                                            frameborder="0"
+                                            scrolling="no"
+                                            marginheight="0"
+                                            marginwidth="0"
+                                            src="https://maps.google.com/maps?q=<?php echo urlencode($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']); ?>&output=embed"
+                                        ></iframe>
+                                    </div>
+                                </section>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </section>
+                </div>
                 
-                <section class="profile-section">
+                <!-- Καρτέλα Προσόντων & Πιστοποιήσεων -->
+                <div class="tab-pane" id="qualifications">
                     <h2>Προσόντα & Πιστοποιήσεις</h2>
                     <div class="profile-qualifications">
                         <div class="qualification-item">
@@ -149,10 +327,180 @@ include ROOT_DIR . '/src/Views/header.php';
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
                 
-                <section class="profile-section">
+                <!-- Καρτέλα Ταιριασμάτων Εργασίας -->
+                <div class="tab-pane" id="job-matches">
+                    <h2>Προτεινόμενες Αγγελίες Εργασίας</h2>
+                    
+                    <div class="job-matches-container">
+                        <div class="job-matches-map">
+                            <h3>Αγγελίες Εργασίας στην περιοχή σας</h3>
+                            <div class="map-container">
+                                <div id="jobMatchesMap" style="width: 100%; height: 400px;"></div>
+                            </div>
+                            <div class="map-options">
+                                <label for="searchRadius">Ακτίνα αναζήτησης:</label>
+                                <select id="searchRadius" name="searchRadius">
+                                    <option value="5">5 χλμ</option>
+                                    <option value="10" selected>10 χλμ</option>
+                                    <option value="20">20 χλμ</option>
+                                    <option value="50">50 χλμ</option>
+                                    <option value="100">100 χλμ</option>
+                                </select>
+                                
+                                <button id="refreshJobMatches" class="btn-primary">Ανανέωση</button>
+                            </div>
+                        </div>
+                        
+                        <div class="job-matches-list">
+                            <h3>Προτεινόμενες θέσεις εργασίας</h3>
+                            <div id="matchedJobsList">
+                                <p class="loading-message">Φόρτωση προτεινόμενων θέσεων εργασίας...</p>
+                                <!-- Τα ταιριάσματα θα φορτωθούν εδώ με JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Καρτέλα Αυτοαξιολόγησης -->
+                <div class="tab-pane" id="self-assessment">
+                    <h2>Αυτοαξιολόγηση Οδηγού</h2>
+                    
+                    <div class="assessment-container">
+                        <div class="assessment-intro">
+                            <p>Αξιολογήστε τις οδηγικές σας ικανότητες και δείτε την συνολική βαθμολογία σας ως επαγγελματίας οδηγός. Οι εργοδότες μπορούν να δουν αυτή την αξιολόγηση.</p>
+                        </div>
+                        
+                        <div class="driver-score-summary">
+                            <div class="score-circle">
+                                <svg viewBox="0 0 100 100">
+                                    <circle class="score-background" cx="50" cy="50" r="45"></circle>
+                                    <circle class="score-progress" cx="50" cy="50" r="45" style="stroke-dashoffset: calc(283.5 - (283.5 * <?php echo isset($driverAssessment) ? $driverAssessment['total_score'] / 100 : 0; ?>) / 100)"></circle>
+                                </svg>
+                                <div class="score-text">
+                                    <span class="score-value"><?php echo isset($driverAssessment) ? $driverAssessment['total_score'] : 0; ?></span>
+                                    <span class="score-label">Βαθμολογία</span>
+                                </div>
+                            </div>
+                            
+                            <div class="score-breakdown">
+                                <h3>Ανάλυση Βαθμολογίας</h3>
+                                <div class="score-categories">
+                                    <div class="score-category">
+                                        <h4>Οδηγικές Ικανότητες</h4>
+                                        <div class="progress-bar">
+                                            <div class="progress" style="width: <?php echo isset($driverAssessment) ? $driverAssessment['driving_skills'] : 0; ?>%"></div>
+                                        </div>
+                                        <span class="category-score"><?php echo isset($driverAssessment) ? $driverAssessment['driving_skills'] : 0; ?>%</span>
+                                    </div>
+                                    
+                                    <div class="score-category">
+                                        <h4>Ασφάλεια & Συμμόρφωση</h4>
+                                        <div class="progress-bar">
+                                            <div class="progress" style="width: <?php echo isset($driverAssessment) ? $driverAssessment['safety_compliance'] : 0; ?>%"></div>
+                                        </div>
+                                        <span class="category-score"><?php echo isset($driverAssessment) ? $driverAssessment['safety_compliance'] : 0; ?>%</span>
+                                    </div>
+                                    
+                                    <div class="score-category">
+                                        <h4>Επαγγελματισμός</h4>
+                                        <div class="progress-bar">
+                                            <div class="progress" style="width: <?php echo isset($driverAssessment) ? $driverAssessment['professionalism'] : 0; ?>%"></div>
+                                        </div>
+                                        <span class="category-score"><?php echo isset($driverAssessment) ? $driverAssessment['professionalism'] : 0; ?>%</span>
+                                    </div>
+                                    
+                                    <div class="score-category">
+                                        <h4>Τεχνικές Γνώσεις</h4>
+                                        <div class="progress-bar">
+                                            <div class="progress" style="width: <?php echo isset($driverAssessment) ? $driverAssessment['technical_knowledge'] : 0; ?>%"></div>
+                                        </div>
+                                        <span class="category-score"><?php echo isset($driverAssessment) ? $driverAssessment['technical_knowledge'] : 0; ?>%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="self-assessment-form">
+                            <h3>Ενημέρωση Αυτοαξιολόγησης</h3>
+                            <p>Συμπληρώστε την παρακάτω φόρμα για να ενημερώσετε την αυτοαξιολόγησή σας.</p>
+                            
+                            <form id="assessmentForm" action="<?php echo BASE_URL; ?>drivers/update-assessment" method="POST">
+                                <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
+                                
+                                <div class="assessment-section">
+                                    <h4>Οδηγικές Ικανότητες</h4>
+                                    
+                                    <div class="assessment-question">
+                                        <label>Πόσα χρόνια οδηγείτε επαγγελματικά;</label>
+                                        <select name="driving_experience" required>
+                                            <option value="">Επιλέξτε</option>
+                                            <option value="1">Λιγότερο από 1 έτος</option>
+                                            <option value="2">1-3 έτη</option>
+                                            <option value="3">3-5 έτη</option>
+                                            <option value="4">5-10 έτη</option>
+                                            <option value="5">Περισσότερο από 10 έτη</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="assessment-question">
+                                        <label>Πόσα χιλιόμετρα οδηγείτε ετησίως;</label>
+                                        <select name="annual_kilometers" required>
+                                            <option value="">Επιλέξτε</option>
+                                            <option value="1">Λιγότερα από 10.000 χλμ</option>
+                                            <option value="2">10.000-30.000 χλμ</option>
+                                            <option value="3">30.000-50.000 χλμ</option>
+                                            <option value="4">50.000-100.000 χλμ</option>
+                                            <option value="5">Περισσότερα από 100.000 χλμ</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Περισσότερες ερωτήσεις για οδηγικές ικανότητες -->
+                                </div>
+                                
+                                <div class="assessment-section">
+                                    <h4>Ασφάλεια & Συμμόρφωση</h4>
+                                    
+                                    <div class="assessment-question">
+                                        <label>Πόσα ατυχήματα είχατε τα τελευταία 3 χρόνια;</label>
+                                        <select name="accidents" required>
+                                            <option value="">Επιλέξτε</option>
+                                            <option value="5">Κανένα</option>
+                                            <option value="4">1 μικρό ατύχημα</option>
+                                            <option value="3">1-2 ατυχήματα</option>
+                                            <option value="2">3-4 ατυχήματα</option>
+                                            <option value="1">Περισσότερα από 4 ατυχήματα</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="assessment-question">
+                                        <label>Πόσες παραβάσεις του Κ.Ο.Κ. είχατε τα τελευταία 3 χρόνια;</label>
+                                        <select name="traffic_violations" required>
+                                            <option value="">Επιλέξτε</option>
+                                            <option value="5">Καμία</option>
+                                            <option value="4">1-2 μικρές παραβάσεις</option>
+                                            <option value="3">3-5 παραβάσεις</option>
+                                            <option value="2">6-10 παραβάσεις</option>
+                                            <option value="1">Περισσότερες από 10 παραβάσεις</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Περισσότερες ερωτήσεις για ασφάλεια -->
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">Ενημέρωση Αξιολόγησης</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Καρτέλα Αγγελιών -->
+                <div class="tab-pane" id="my-listings">
                     <h2>Οι Αγγελίες μου</h2>
+                    
                     <?php if (count($listings['results']) > 0): ?>
                         <div class="profile-listings">
                             <?php foreach ($listings['results'] as $listing): ?>
@@ -175,76 +523,16 @@ include ROOT_DIR . '/src/Views/header.php';
                     <?php else: ?>
                         <p class="profile-empty">Δεν έχετε δημιουργήσει ακόμα αγγελίες. <a href="<?php echo BASE_URL; ?>job-listings/create">Δημιουργήστε την πρώτη σας αγγελία!</a></p>
                     <?php endif; ?>
-                </section>
-            </div>
-            
-            <div class="profile-sidebar">
-                <section class="profile-section">
-                    <h2>Στοιχεία Επικοινωνίας</h2>
-                    <ul class="contact-list">
-                        <li>
-                            <img src="<?php echo BASE_URL; ?>img/email_icon.png" alt="Email">
-                            <span><?php echo htmlspecialchars($driverData['email']); ?></span>
-                        </li>
-                        <li>
-                            <img src="<?php echo BASE_URL; ?>img/phone_icon.png" alt="Τηλέφωνο">
-                            <span><?php echo htmlspecialchars($driverData['phone']); ?></span>
-                        </li>
-                        <?php if (isset($driverData['social_linkedin']) && $driverData['social_linkedin']): ?>
-                            <li>
-                                <img src="<?php echo BASE_URL; ?>img/linkedin_icon.png" alt="LinkedIn">
-                                <a href="<?php echo htmlspecialchars($driverData['social_linkedin']); ?>" target="_blank">LinkedIn Προφίλ</a>
-                            </li>
-                        <?php endif; ?>
-                    </ul>
-                </section>
-                
-                <section class="profile-section">
-                    <h2>Προτιμήσεις Εργασίας</h2>
-                    <ul class="preferences-list">
-                        <li>
-                            <strong>Διαθεσιμότητα:</strong>
-                            <span class="availability-status <?php echo $driverData['available_for_work'] ? 'available' : 'unavailable'; ?>">
-                                <?php echo $driverData['available_for_work'] ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία'; ?>
-                            </span>
-                        </li>
-                        <?php if (isset($driverData['preferred_job_type']) && $driverData['preferred_job_type']): ?>
-                            <li>
-                                <strong>Προτιμώμενος τύπος εργασίας:</strong>
-                                <span><?php echo htmlspecialchars($driverData['preferred_job_type']); ?></span>
-                            </li>
-                        <?php endif; ?>
-                        <?php if (isset($driverData['preferred_location']) && $driverData['preferred_location']): ?>
-                            <li>
-                                <strong>Προτιμώμενη τοποθεσία:</strong>
-                                <span><?php echo htmlspecialchars($driverData['preferred_location']); ?></span>
-                            </li>
-                        <?php endif; ?>
-                    </ul>
-                </section>
-                
-                <?php if (isset($driverData['address']) && $driverData['address'] && isset($driverData['city']) && $driverData['city']): ?>
-                    <section class="profile-section">
-                        <h2>Τοποθεσία</h2>
-                        <div class="profile-map">
-                            <iframe
-                                width="100%"
-                                height="200"
-                                frameborder="0"
-                                scrolling="no"
-                                marginheight="0"
-                                marginwidth="0"
-                                src="https://maps.google.com/maps?q=<?php echo urlencode($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']); ?>&output=embed"
-                            ></iframe>
-                        </div>
-                    </section>
-                <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
 </main>
 
+<script src="<?php echo BASE_URL; ?>js/driver_profile.js"></script>
+
 <?php 
 // Συμπερίληψη του footer
 include ROOT_DIR . '/src/Views/footer.php'; 
 ?>
+```

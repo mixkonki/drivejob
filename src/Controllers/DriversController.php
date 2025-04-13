@@ -3,137 +3,21 @@
 namespace Drivejob\Controllers;
 
 use Drivejob\Models\DriversModel;
+use Drivejob\Models\DriverAssessmentModel;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
 
 class DriversController {
     private $driversModel;
+    private $driverAssessmentModel;
     private $pdo;
 
     public function __construct($pdo) {
         $this->pdo = $pdo;
         $this->driversModel = new DriversModel($pdo);
-    }
-
-    /**
-     * Εμφανίζει τη φόρμα εγγραφής για οδηγούς
-     */
-    public function showRegistrationForm() {
-        include ROOT_DIR . '/src/Views/drivers/drivers_registration.php';
-    }
-
-    /**
-     * Επεξεργάζεται την εγγραφή ενός οδηγού
-     */
-    public function register() {
-        // Έλεγχος αν η μέθοδος είναι POST
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASE_URL . 'drivers/drivers_registration.php');
-            exit();
-        }
-
-        // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-            $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
-            header('Location: ' . BASE_URL . 'drivers/drivers_registration.php');
-            exit();
-        }
-
-        // Επικύρωση δεδομένων
-        $validator = new Validator($_POST);
-        $validator->required('email', 'Το email είναι υποχρεωτικό.')
-                  ->email('email', 'Παρακαλώ εισάγετε ένα έγκυρο email.')
-                  ->required('password', 'Ο κωδικός είναι υποχρεωτικός.')
-                  ->minLength('password', 8, 'Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.')
-                  ->pattern('password', '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', 'Ο κωδικός πρέπει να περιέχει τουλάχιστον ένα πεζό γράμμα, ένα κεφαλαίο γράμμα, έναν αριθμό και έναν ειδικό χαρακτήρα.')
-                  ->required('last_name', 'Το επώνυμο είναι υποχρεωτικό.')
-                  ->required('first_name', 'Το όνομα είναι υποχρεωτικό.')
-                  ->required('phone', 'Το τηλέφωνο είναι υποχρεωτικό.')
-                  ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
-
-        // Έλεγχος αν το email υπάρχει ήδη
-        if ($this->driversModel->emailExists($_POST['email'])) {
-            $validator->getErrors()['email'] = 'Το email υπάρχει ήδη. Παρακαλώ χρησιμοποιήστε άλλο email.';
-        }
-
-        if (!$validator->isValid()) {
-            $_SESSION['errors'] = $validator->getErrors();
-            $_SESSION['old_input'] = $_POST;
-            header('Location: ' . BASE_URL . 'drivers/drivers_registration.php');
-            exit();
-        }
-
-        // Δημιουργία hash για το συνθηματικό
-        $hashedPassword = password_hash($_POST['password'], PASSWORD_BCRYPT);
-
-        // Προετοιμασία των δεδομένων
-        $data = [
-            'email' => $_POST['email'],
-            'password' => $hashedPassword,
-            'last_name' => $_POST['last_name'],
-            'first_name' => $_POST['first_name'],
-            'phone' => $_POST['phone'],
-            'is_verified' => 0 // Ο λογαριασμός θα χρειαστεί επαλήθευση
-        ];
-
-        // Εισαγωγή στη βάση δεδομένων
-        $driverId = $this->driversModel->create($data);
-
-        if ($driverId) {
-            // Δημιουργία συνδέσμου επαλήθευσης
-            $verificationToken = bin2hex(random_bytes(32));
-            $_SESSION['verification_token'][$_POST['email']] = $verificationToken;
-            
-            $verificationLink = BASE_URL . "verify.php?email=" . urlencode($_POST['email']) . "&token=" . $verificationToken . "&role=driver";
-
-            // Αποστολή email επαλήθευσης
-            $subject = "Επαλήθευση Λογαριασμού DriveJob";
-            $message = "Καλωσορίσατε στο DriveJob! Παρακαλώ επιβεβαιώστε το email σας πατώντας στον παρακάτω σύνδεσμο:\n\n" . $verificationLink;
-            
-            // Ελέγχουμε αν έχουμε συμπεριλάβει το email_helper.php
-            if (function_exists('sendEmail')) {
-                sendEmail($_POST['email'], $subject, $message);
-            } else {
-                // Για σκοπούς ανάπτυξης, απλά εμφανίζουμε τον σύνδεσμο
-                $_SESSION['verification_link'] = $verificationLink;
-            }
-
-            // Ανακατεύθυνση σε μια σελίδα επιτυχίας
-            $_SESSION['success_message'] = 'Η εγγραφή ολοκληρώθηκε με επιτυχία. Παρακαλώ ελέγξτε το email σας για να επαληθεύσετε τον λογαριασμό σας.';
-            header('Location: ' . BASE_URL . 'registration_success.php');
-            exit();
-        } else {
-            $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την εγγραφή. Παρακαλώ δοκιμάστε ξανά.';
-            header('Location: ' . BASE_URL . 'drivers/drivers_registration.php');
-            exit();
-        }
-    }
-
-    /**
-     * Επαληθεύει έναν λογαριασμό οδηγού
-     */
-    public function verify($email, $token) {
-        // Έλεγχος αν το token είναι έγκυρο
-        if (!isset($_SESSION['verification_token'][$email]) || $_SESSION['verification_token'][$email] !== $token) {
-            $_SESSION['error_message'] = 'Άκυρος σύνδεσμος επαλήθευσης.';
-            header('Location: ' . BASE_URL . 'login.php');
-            exit();
-        }
-
-        // Επαλήθευση του λογαριασμού
-        if ($this->driversModel->verifyDriver($email)) {
-            // Διαγραφή του token
-            unset($_SESSION['verification_token'][$email]);
-            
-            $_SESSION['success_message'] = 'Ο λογαριασμός σας επαληθεύτηκε με επιτυχία. Μπορείτε τώρα να συνδεθείτε.';
-            header('Location: ' . BASE_URL . 'login.php');
-            exit();
-        } else {
-            $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την επαλήθευση του λογαριασμού σας. Παρακαλώ δοκιμάστε ξανά.';
-            header('Location: ' . BASE_URL . 'login.php');
-            exit();
-        }
+        // Θεωρητικά θα δημιουργήσουμε ένα μοντέλο για την αυτοαξιολόγηση του οδηγού
+        // $this->driverAssessmentModel = new DriverAssessmentModel($pdo);
     }
 
     /**
@@ -151,13 +35,27 @@ class DriversController {
         $jobListingModel = new \Drivejob\Models\JobListingModel($this->pdo);
         $listings = $jobListingModel->getDriverListings($driverId, null, 1, 5);
         
+        // Λήψη των συντεταγμένων της τοποθεσίας του οδηγού για τον χάρτη
+        $driverLocation = null;
+        if (!empty($driverData['address']) && !empty($driverData['city'])) {
+            $address = urlencode($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']);
+            $driverLocation = $this->getGeocodingData($address);
+        }
+        
+        // Λήψη δεδομένων αυτοαξιολόγησης
+        // Προς το παρόν επιστρέφουμε ψευδή δεδομένα για επίδειξη
+        $driverAssessment = [
+            'total_score' => 75,
+            'driving_skills' => 80,
+            'safety_compliance' => 70,
+            'professionalism' => 85,
+            'technical_knowledge' => 65
+        ];
+        
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/drivers/profile.php';
     }
 
-    /**
-     * Προβάλλει τη φόρμα επεξεργασίας προφίλ
-     */
     /**
      * Προβάλλει τη φόρμα επεξεργασίας προφίλ
      */
@@ -187,15 +85,57 @@ class DriversController {
             exit();
         }
         
-        // Επικύρωση δεδομένων
+        // Επικύρωση βασικών δεδομένων
         $validator = new Validator($_POST);
         $validator->required('first_name', 'Το όνομα είναι υποχρεωτικό.')
                   ->required('last_name', 'Το επώνυμο είναι υποχρεωτικό.')
                   ->required('phone', 'Το τηλέφωνο είναι υποχρεωτικό.')
                   ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
         
-        if (isset($_POST['social_linkedin']) && $_POST['social_linkedin']) {
+        // Επιπλέον επικύρωση για προαιρετικά πεδία
+        if (!empty($_POST['landline'])) {
+            $validator->pattern('landline', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο σταθερό τηλέφωνο.');
+        }
+        
+        if (!empty($_POST['postal_code'])) {
+            $validator->pattern('postal_code', '/^[0-9a-zA-Z\s-]{3,10}$/', 'Μη έγκυρος ταχυδρομικός κώδικας.');
+        }
+        
+        if (!empty($_POST['social_linkedin'])) {
             $validator->pattern('social_linkedin', '/^https?:\/\/(?:www\.)?linkedin\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL LinkedIn.');
+        }
+        
+        if (!empty($_POST['social_facebook'])) {
+            $validator->pattern('social_facebook', '/^https?:\/\/(?:www\.)?facebook\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL Facebook.');
+        }
+        
+        if (!empty($_POST['social_twitter'])) {
+            $validator->pattern('social_twitter', '/^https?:\/\/(?:www\.)?twitter\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL Twitter.');
+        }
+        
+        if (!empty($_POST['social_instagram'])) {
+            $validator->pattern('social_instagram', '/^https?:\/\/(?:www\.)?instagram\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL Instagram.');
+        }
+        
+        // Επικύρωση πεδίων ημερομηνίας
+        $dateFields = ['birth_date', 'driving_license_expiry', 'adr_certificate_expiry', 'operator_license_expiry'];
+        foreach ($dateFields as $field) {
+            if (!empty($_POST[$field])) {
+                $date = date_create_from_format('Y-m-d', $_POST[$field]);
+                if (!$date) {
+                    $validator->getErrors()[$field] = 'Μη έγκυρη ημερομηνία.';
+                }
+            }
+        }
+        
+        // Επικύρωση αλλαγής κωδικού αν έχουν συμπληρωθεί τα σχετικά πεδία
+        if (!empty($_POST['current_password']) || !empty($_POST['new_password']) || !empty($_POST['confirm_password'])) {
+            $validator->required('current_password', 'Ο τρέχων κωδικός είναι υποχρεωτικός για την αλλαγή.')
+                      ->required('new_password', 'Ο νέος κωδικός είναι υποχρεωτικός.')
+                      ->minLength('new_password', 8, 'Ο νέος κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.')
+                      ->pattern('new_password', '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', 'Ο νέος κωδικός πρέπει να περιέχει τουλάχιστον ένα πεζό γράμμα, ένα κεφαλαίο γράμμα, έναν αριθμό και έναν ειδικό χαρακτήρα.')
+                      ->required('confirm_password', 'Η επιβεβαίωση του νέου κωδικού είναι υποχρεωτική.')
+                      ->matches('confirm_password', 'new_password', 'Οι κωδικοί δεν ταιριάζουν.');
         }
         
         if (!$validator->isValid()) {
@@ -208,11 +148,27 @@ class DriversController {
         // Λήψη ID του συνδεδεμένου οδηγού
         $driverId = $_SESSION['user_id'];
         
+        // Έλεγχος κωδικού αν ζητήθηκε αλλαγή
+        if (!empty($_POST['current_password'])) {
+            $driver = $this->driversModel->getDriverById($driverId);
+            
+            if (!password_verify($_POST['current_password'], $driver['password'])) {
+                $_SESSION['error_message'] = 'Ο τρέχων κωδικός είναι λανθασμένος.';
+                header('Location: ' . BASE_URL . 'drivers/edit-profile');
+                exit();
+            }
+            
+            // Αλλαγή κωδικού
+            $hashedPassword = password_hash($_POST['new_password'], PASSWORD_BCRYPT);
+            $this->driversModel->updatePassword($driverId, $hashedPassword);
+        }
+        
         // Συλλογή των δεδομένων από τη φόρμα
         $data = [
             'first_name' => $_POST['first_name'],
             'last_name' => $_POST['last_name'],
             'phone' => $_POST['phone'],
+            'landline' => $_POST['landline'] ?? null,
             'birth_date' => $_POST['birth_date'] ?? null,
             'address' => $_POST['address'] ?? null,
             'house_number' => $_POST['house_number'] ?? null,
@@ -220,8 +176,8 @@ class DriversController {
             'country' => $_POST['country'] ?? null,
             'postal_code' => $_POST['postal_code'] ?? null,
             'about_me' => $_POST['about_me'] ?? null,
-            'experience_years' => $_POST['experience_years'] ?? null,
-            'driving_license' => $_POST['driving_license'] ?? null,
+            'experience_years' => $_POST['experience_years'] ? intval($_POST['experience_years']) : null,
+            'driving_license' => isset($_POST['driving_license']) ? $_POST['driving_license_type'] : null,
             'driving_license_expiry' => $_POST['driving_license_expiry'] ?? null,
             'adr_certificate' => isset($_POST['adr_certificate']) ? 1 : 0,
             'adr_certificate_expiry' => $_POST['adr_certificate_expiry'] ?? null,
@@ -231,9 +187,25 @@ class DriversController {
             'training_details' => $_POST['training_details'] ?? null,
             'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
             'preferred_job_type' => $_POST['preferred_job_type'] ?? null,
+            'preferred_vehicle_type' => $_POST['preferred_vehicle_type'] ?? null,
             'preferred_location' => $_POST['preferred_location'] ?? null,
-            'social_linkedin' => $_POST['social_linkedin'] ?? null
+            'social_linkedin' => $_POST['social_linkedin'] ?? null,
+            'social_facebook' => $_POST['social_facebook'] ?? null,
+            'social_twitter' => $_POST['social_twitter'] ?? null,
+            'social_instagram' => $_POST['social_instagram'] ?? null,
+            'willing_to_relocate' => isset($_POST['willing_to_relocate']) ? 1 : 0,
+            'willing_to_travel' => isset($_POST['willing_to_travel']) ? 1 : 0,
+            // Προσθήκη πεδίων που δεν υπάρχουν ακόμη στη βάση
+            // 'salary_min' => $_POST['salary_min'] ?? null,
+            // 'salary_max' => $_POST['salary_max'] ?? null,
+            // 'salary_period' => $_POST['salary_period'] ?? null,
+            // 'preferred_radius' => $_POST['preferred_radius'] ?? null,
         ];
+        
+        // Επεξεργασία ADR κλάσεων αν έχουν επιλεγεί
+        if (isset($_POST['adr_certificate_classes']) && is_array($_POST['adr_certificate_classes'])) {
+            $data['adr_classes'] = implode(',', $_POST['adr_certificate_classes']);
+        }
         
         // Ενημέρωση του προφίλ
         if ($this->driversModel->updateProfile($driverId, $data)) {
@@ -254,6 +226,237 @@ class DriversController {
         
         header('Location: ' . BASE_URL . 'drivers/driver_profile');
         exit();
+    }
+
+    /**
+     * Ενημέρωση της αυτοαξιολόγησης του οδηγού
+     */
+    public function updateAssessment() {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        AuthMiddleware::hasRole('driver');
+        
+        // Έλεγχος για CSRF token
+        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+            $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
+            header('Location: ' . BASE_URL . 'drivers/driver_profile');
+            exit();
+        }
+        
+        // Λήψη ID του συνδεδεμένου οδηγού
+        $driverId = $_SESSION['user_id'];
+        
+        // Υπολογισμός βαθμολογίας από τις απαντήσεις του οδηγού
+        $drivingSkills = $this->calculateCategoryScore([
+            'driving_experience' => $_POST['driving_experience'] ?? 0,
+            'annual_kilometers' => $_POST['annual_kilometers'] ?? 0,
+            // Άλλες μετρικές
+        ]);
+        
+        $safetyCompliance = $this->calculateCategoryScore([
+            'accidents' => $_POST['accidents'] ?? 0,
+            'traffic_violations' => $_POST['traffic_violations'] ?? 0,
+            // Άλλες μετρικές
+        ]);
+        
+        $professionalism = $this->calculateCategoryScore([
+            // Συμπλήρωση με τις κατάλληλες μετρικές
+            'professionalism' => 4 // Προσωρινή τιμή
+        ]);
+        
+        $technicalKnowledge = $this->calculateCategoryScore([
+            // Συμπλήρωση με τις κατάλληλες μετρικές
+            'technical_knowledge' => 3 // Προσωρινή τιμή
+        ]);
+        
+        // Υπολογισμός συνολικής βαθμολογίας
+        $totalScore = ($drivingSkills + $safetyCompliance + $professionalism + $technicalKnowledge) / 4;
+        
+        // Αποθήκευση της αξιολόγησης
+        // Εδώ θα χρησιμοποιούσαμε το DriverAssessmentModel
+        // $this->driverAssessmentModel->updateAssessment($driverId, $totalScore, $drivingSkills, $safetyCompliance, $professionalism, $technicalKnowledge);
+        
+        $_SESSION['success_message'] = 'Η αυτοαξιολόγησή σας ενημερώθηκε με επιτυχία.';
+        header('Location: ' . BASE_URL . 'drivers/driver_profile#self-assessment');
+        exit();
+    }
+    
+    /**
+     * Υπολογίζει τη βαθμολογία κατηγορίας από τις απαντήσεις (σε κλίμακα 0-100)
+     */
+    private function calculateCategoryScore($answers) {
+        $totalPoints = 0;
+        $maxPoints = 0;
+        
+        foreach ($answers as $answer) {
+            $totalPoints += intval($answer);
+            $maxPoints += 5; // Θεωρούμε ότι η μέγιστη βαθμολογία για κάθε απάντηση είναι 5
+        }
+        
+        if ($maxPoints === 0) return 0;
+        
+        return ($totalPoints / $maxPoints) * 100;
+    }
+
+    /**
+     * Προβάλλει τα ταιριάσματα εργασίας για τον οδηγό
+     */
+    public function showJobMatches() {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        AuthMiddleware::hasRole('driver');
+        
+        // Λήψη ID του συνδεδεμένου οδηγού
+        $driverId = $_SESSION['user_id'];
+        $driverData = $this->driversModel->getDriverById($driverId);
+        
+        // Εύρεση των συντεταγμένων της τοποθεσίας του οδηγού
+        $driverLocation = null;
+        if (!empty($driverData['address']) && !empty($driverData['city'])) {
+            $address = urlencode($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']);
+            $driverLocation = $this->getGeocodingData($address);
+        }
+        
+        // Παράμετροι αναζήτησης
+        $radius = isset($_GET['radius']) ? intval($_GET['radius']) : 10;
+        
+        // Εύρεση ταιριασμάτων εργασίας
+        $jobListingModel = new \Drivejob\Models\JobListingModel($this->pdo);
+        $matchedJobs = [];
+        
+        if ($driverLocation) {
+            $params = [
+                'latitude' => $driverLocation['lat'],
+                'longitude' => $driverLocation['lng'],
+                'search_radius' => $radius,
+                'listing_type' => 'job_offer',
+                'is_active' => 1
+            ];
+            
+            // Προσθήκη φίλτρων με βάση τα προσόντα του οδηγού
+            if ($driverData['driving_license']) {
+                $params['required_license'] = $driverData['driving_license'];
+            }
+            
+            if ($driverData['adr_certificate']) {
+                $params['adr_certificate'] = 1;
+            }
+            
+            if ($driverData['operator_license']) {
+                $params['operator_license'] = 1;
+            }
+            
+            if ($driverData['preferred_job_type']) {
+                $params['job_type'] = $driverData['preferred_job_type'];
+            }
+            
+            if ($driverData['preferred_vehicle_type']) {
+                $params['vehicle_type'] = $driverData['preferred_vehicle_type'];
+            }
+            
+            $matchedJobs = $jobListingModel->getActiveListings($params, 1, 10);
+            
+            // Υπολογισμός ποσοστού ταιριάσματος για κάθε θέση
+            foreach ($matchedJobs['results'] as &$job) {
+                $job['match_score'] = $this->calculateJobMatchScore($job, $driverData);
+                $job['distance'] = $this->calculateDistance(
+                    $driverLocation['lat'], 
+                    $driverLocation['lng'], 
+                    $job['latitude'], 
+                    $job['longitude']
+                );
+            }
+            
+            // Ταξινόμηση με βάση το ποσοστό ταιριάσματος (φθίνουσα σειρά)
+            usort($matchedJobs['results'], function($a, $b) {
+                return $b['match_score'] <=> $a['match_score'];
+            });
+        }
+        
+        // Επιστροφή των αποτελεσμάτων σε JSON
+        header('Content-Type: application/json');
+        echo json_encode($matchedJobs);
+        exit();
+    }
+    
+    /**
+     * Υπολογίζει το ποσοστό ταιριάσματος μεταξύ οδηγού και αγγελίας (0-100)
+     */
+    private function calculateJobMatchScore($job, $driverData) {
+        $score = 0;
+        $total = 0;
+        
+        // Έλεγχος άδειας οδήγησης
+        if (!empty($job['required_license']) && !empty($driverData['driving_license'])) {
+            $total += 25;
+            if ($job['required_license'] === $driverData['driving_license']) {
+                $score += 25;
+            }
+        }
+        
+        // Έλεγχος ADR
+        if ($job['adr_certificate']) {
+            $total += 15;
+            if ($driverData['adr_certificate']) {
+                $score += 15;
+            }
+        }
+        
+        // Έλεγχος άδειας χειριστή
+        if ($job['operator_license']) {
+            $total += 15;
+            if ($driverData['operator_license']) {
+                $score += 15;
+            }
+        }
+        
+        // Έλεγχος τύπου εργασίας
+        if (!empty($job['job_type']) && !empty($driverData['preferred_job_type'])) {
+            $total += 10;
+            if ($job['job_type'] === $driverData['preferred_job_type'] || $driverData['preferred_job_type'] === 'any') {
+                $score += 10;
+            }
+        }
+        
+        // Έλεγχος τύπου οχήματος
+        if (!empty($job['vehicle_type']) && !empty($driverData['preferred_vehicle_type'])) {
+            $total += 10;
+            if ($job['vehicle_type'] === $driverData['preferred_vehicle_type'] || $driverData['preferred_vehicle_type'] === 'any') {
+                $score += 10;
+            }
+        }
+        
+        // Έλεγχος ετών εμπειρίας
+        if (!empty($job['experience_years']) && !empty($driverData['experience_years'])) {
+            $total += 15;
+            if ($driverData['experience_years'] >= $job['experience_years']) {
+                $score += 15;
+            } else {
+                // Μερικό ταίριασμα
+                $ratio = $driverData['experience_years'] / $job['experience_years'];
+                $score += round(15 * $ratio);
+            }
+        }
+        
+        // Έλεγχος απόστασης
+        if (!empty($job['distance'])) {
+            $total += 10;
+            // Αντίστροφη κλιμάκωση με βάση την απόσταση
+            if ($job['distance'] <= 5) {
+                $score += 10;
+            } else if ($job['distance'] <= 10) {
+                $score += 8;
+            } else if ($job['distance'] <= 20) {
+                $score += 6;
+            } else if ($job['distance'] <= 50) {
+                $score += 4;
+            } else {
+                $score += 2;
+            }
+        }
+        
+        // Επιστροφή του ποσοστού
+        if ($total === 0) return 0;
+        
+        return round(($score / $total) * 100);
     }
 
     /**
@@ -339,161 +542,43 @@ class DriversController {
         $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση του βιογραφικού. Παρακαλώ δοκιμάστε ξανά.';
         return false;
     }
-
+    
     /**
-     * Προβάλλει το δημόσιο προφίλ ενός οδηγού (ορατό σε όλους)
+     * Λαμβάνει τις συντεταγμένες από μια διεύθυνση μέσω της υπηρεσίας Geocoding
      */
-    public function publicProfile($id) {
-        // Λήψη των στοιχείων του οδηγού
-        $driverData = $this->driversModel->getDriverById($id);
+    private function getGeocodingData($address) {
+        $apiKey = 'AIzaSyCgZpJWVYyrY0U8U1jBGelEWryur3vIrzc'; // Αντικαταστήστε με το δικό σας API key
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?address={$address}&key={$apiKey}";
         
-        if (!$driverData || !$driverData['is_verified']) {
-            header('Location: ' . BASE_URL . '404');
-            exit();
+        $response = file_get_contents($url);
+        $data = json_decode($response, true);
+        
+        if ($data['status'] === 'OK') {
+            return [
+                'lat' => $data['results'][0]['geometry']['location']['lat'],
+                'lng' => $data['results'][0]['geometry']['location']['lng']
+            ];
         }
         
-        // Λήψη των δημόσιων αγγελιών του οδηγού
-        $jobListingModel = new \Drivejob\Models\JobListingModel($this->pdo);
-        $listings = $jobListingModel->getDriverListings($id, true, 1, 5);
-        
-        // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/drivers/public_profile.php';
+        return null;
     }
-
+    
     /**
-     * Αναζήτηση οδηγών
+     * Υπολογίζει την απόσταση μεταξύ δύο σημείων (σε χιλιόμετρα)
      */
-    public function search() {
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $limit = 10;
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2) {
+        $earthRadius = 6371; // Ακτίνα της Γης σε χιλιόμετρα
         
-        // Συλλογή παραμέτρων αναζήτησης
-        $params = [
-            'min_experience' => $_GET['min_experience'] ?? null,
-            'location' => $_GET['location'] ?? null,
-            'driving_license' => $_GET['driving_license'] ?? null,
-            'adr_certificate' => isset($_GET['adr_certificate']) ? 1 : 0,
-            'operator_license' => isset($_GET['operator_license']) ? 1 : 0,
-            'training_seminars' => isset($_GET['training_seminars']) ? 1 : 0,
-            'name' => $_GET['name'] ?? null
-        ];
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
         
-        // Εκτέλεση αναζήτησης
-        $searchResults = $this->driversModel->searchDrivers($params, $page, $limit);
+        $a = sin($dLat/2) * sin($dLat/2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * 
+             sin($dLon/2) * sin($dLon/2);
         
-        // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/drivers/search.php';
-    }
-
-    /**
-     * Προβάλλει τη λίστα των κορυφαίων οδηγών
-     */
-    public function topRated() {
-        $topDrivers = $this->driversModel->getTopRatedDrivers(10);
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        $distance = $earthRadius * $c;
         
-        // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/drivers/top_rated.php';
-    }
-
-    /**
-     * Προβάλλει τη λίστα των πρόσφατα διαθέσιμων οδηγών
-     */
-    public function recentlyAvailable() {
-        $recentDrivers = $this->driversModel->getRecentAvailableDrivers(10);
-        
-        // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/drivers/recently_available.php';
-    }
-
-    /**
-     * Προσθήκη αξιολόγησης σε οδηγό
-     */
-    public function addRating($driverId) {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        AuthMiddleware::hasRole('company');
-        
-        // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-            $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
-            header('Location: ' . BASE_URL . 'drivers/view/' . $driverId);
-            exit();
-        }
-        
-        // Επικύρωση δεδομένων
-        $validator = new Validator($_POST);
-        $validator->required('rating', 'Η αξιολόγηση είναι υποχρεωτική.')
-                  ->inList('rating', ['1', '2', '3', '4', '5'], 'Η αξιολόγηση πρέπει να είναι από 1 έως 5.');
-        
-        if (!$validator->isValid()) {
-            $_SESSION['errors'] = $validator->getErrors();
-            header('Location: ' . BASE_URL . 'drivers/view/' . $driverId);
-            exit();
-        }
-        
-        // Ενημέρωση της αξιολόγησης
-        if ($this->driversModel->updateRating($driverId, $_POST['rating'])) {
-            $_SESSION['success_message'] = 'Η αξιολόγηση καταχωρήθηκε με επιτυχία.';
-        } else {
-            $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την καταχώρηση της αξιολόγησης. Παρακαλώ δοκιμάστε ξανά.';
-        }
-        
-        header('Location: ' . BASE_URL . 'drivers/view/' . $driverId);
-        exit();
-    }
-
-    /**
-     * Αλλαγή κωδικού πρόσβασης
-     */
-    public function changePassword() {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        AuthMiddleware::hasRole('driver');
-        
-        // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-            $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
-            header('Location: ' . BASE_URL . 'drivers/edit-profile');
-            exit();
-        }
-        
-        // Επικύρωση δεδομένων
-        $validator = new Validator($_POST);
-        $validator->required('current_password', 'Ο τρέχων κωδικός είναι υποχρεωτικός.')
-                  ->required('new_password', 'Ο νέος κωδικός είναι υποχρεωτικός.')
-                  ->minLength('new_password', 8, 'Ο νέος κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.')
-                  ->pattern('new_password', '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', 'Ο νέος κωδικός πρέπει να περιέχει τουλάχιστον ένα πεζό γράμμα, ένα κεφαλαίο γράμμα, έναν αριθμό και έναν ειδικό χαρακτήρα.')
-                  ->required('confirm_password', 'Η επιβεβαίωση του νέου κωδικού είναι υποχρεωτική.')
-                  ->matches('confirm_password', 'new_password', 'Οι κωδικοί δεν ταιριάζουν.');
-        
-        if (!$validator->isValid()) {
-            $_SESSION['errors'] = $validator->getErrors();
-            header('Location: ' . BASE_URL . 'drivers/edit-profile');
-            exit();
-        }
-        
-        // Λήψη ID του συνδεδεμένου οδηγού
-        $driverId = $_SESSION['user_id'];
-        
-        // Λήψη του οδηγού από τη βάση δεδομένων
-        $driver = $this->driversModel->getDriverById($driverId);
-        
-        // Έλεγχος αν ο τρέχων κωδικός είναι σωστός
-        if (!password_verify($_POST['current_password'], $driver['password'])) {
-            $_SESSION['error_message'] = 'Ο τρέχων κωδικός είναι λανθασμένος.';
-            header('Location: ' . BASE_URL . 'drivers/edit-profile');
-            exit();
-        }
-        
-        // Δημιουργία hash για τον νέο κωδικό
-        $hashedPassword = password_hash($_POST['new_password'], PASSWORD_BCRYPT);
-        
-        // Ενημέρωση του κωδικού
-        if ($this->driversModel->updatePassword($driverId, $hashedPassword)) {
-            $_SESSION['success_message'] = 'Ο κωδικός σας ενημερώθηκε με επιτυχία.';
-        } else {
-            $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την ενημέρωση του κωδικού σας. Παρακαλώ δοκιμάστε ξανά.';
-        }
-        
-        header('Location: ' . BASE_URL . 'drivers/edit-profile');
-        exit();
+        return round($distance, 1);
     }
 }

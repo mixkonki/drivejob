@@ -1,4 +1,4 @@
-/* public/css/driver_profile.css */
+/* driver_profile.css - Στυλ για το προφίλ οδηγού */
 
 /* Γενικά στυλ για το προφίλ */
 .container {
@@ -10,20 +10,29 @@
 /* Επικεφαλίδα προφίλ */
 .profile-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    gap: 30px;
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid #eee;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 25px;
 }
 
 .profile-image {
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: 180px;
     border-radius: 50%;
     overflow: hidden;
-    margin-right: 30px;
     border: 5px solid #f0f0f0;
     flex-shrink: 0;
+    background-color: #f9f9f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .profile-image img {
@@ -39,6 +48,7 @@
 .profile-info h1 {
     margin: 0 0 10px 0;
     color: #333;
+    font-size: 2.2em;
 }
 
 .profile-location {
@@ -46,12 +56,77 @@
     align-items: center;
     color: #666;
     margin-bottom: 15px;
+    font-size: 1.1em;
 }
 
 .profile-location img {
     width: 20px;
     height: 20px;
     margin-right: 5px;
+}
+
+/* Στυλ για την αξιολόγηση */
+.driver-rating {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.rating-stars {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.star {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-image: url('../img/star-empty.png');
+    background-size: cover;
+    margin-right: 2px;
+}
+
+.star.half {
+    background-image: url('../img/star-half.png');
+}
+
+.star.full {
+    background-image: url('../img/star-full.png');
+}
+
+.rating-value {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-left: 5px;
+    color: #ffa500;
+}
+
+.rating-count {
+    color: #777;
+    font-size: 0.9em;
+}
+
+/* Badge εμπειρίας */
+.experience-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    border: 1px solid #e7e7e7;
+}
+
+.experience-badge img {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+.experience-badge span {
+    font-weight: 500;
+    color: #444;
 }
 
 .profile-actions {
@@ -63,12 +138,11 @@
 /* Μηνύματα επιτυχίας και σφάλματος */
 .success-message,
 .error-message {
-    padding: 10px 15px;
+    padding: 12px 15px;
     border-radius: 5px;
     margin-bottom: 20px;
+    font-weight: 500;
 }
-
-/* public/css/driver_profile.css */
 
 .success-message {
     background-color: #d4edda;
@@ -80,6 +154,75 @@
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+/* Καρτέλες προφίλ */
+.profile-tabs {
+    margin-top: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.tabs-nav {
+    display: flex;
+    overflow-x: auto;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e7e7e7;
+}
+
+.tab-btn {
+    padding: 15px 20px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: #555;
+    position: relative;
+    transition: color 0.3s;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: #aa3636;
+    background-color: #f1f1f1;
+}
+
+.tab-btn.active {
+    color: #aa3636;
+    font-weight: 600;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #aa3636;
+}
+
+.tab-content {
+    padding: 20px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.tab-pane > h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 1.5em;
 }
 
 /* Περιεχόμενο προφίλ */
@@ -134,10 +277,61 @@
     text-decoration: underline;
 }
 
+/* Σύνοψη προσόντων */
+.qualifications-summary {
+    margin-top: 15px;
+}
+
+.qualification-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    border: 1px solid #e7e7e7;
+    width: 120px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: help;
+}
+
+.badge:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge img {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+}
+
+.badge span {
+    font-size: 14px;
+    color: #333;
+    text-align: center;
+}
+
+.badge.badge-active {
+    background-color: #eaf6ea;
+    border-color: #c3e6cb;
+}
+
+.badge.badge-inactive {
+    background-color: #f8f9fa;
+    opacity: 0.6;
+}
+
 /* Προσόντα και πιστοποιήσεις */
 .profile-qualifications {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
 }
 
@@ -146,25 +340,32 @@
     align-items: flex-start;
     padding: 15px;
     background-color: #f9f9f9;
-    border-radius: 5px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    transition: box-shadow 0.2s;
+}
+
+.qualification-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .qualification-icon {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     overflow: hidden;
-    background-color: #eee;
+    background-color: #f1f1f1;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-right: 15px;
     flex-shrink: 0;
+    border: 1px solid #e0e0e0;
 }
 
 .qualification-icon img {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
 }
 
 .qualification-info h3 {
@@ -190,6 +391,303 @@
     background-color: #f0f0f0;
     border-radius: 4px;
     font-size: 14px;
+    border-left: 3px solid #aa3636;
+}
+
+/* Χάρτης και ταιριάσματα εργασίας */
+.job-matches-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+@media (min-width: 768px) {
+    .job-matches-container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.job-matches-map, 
+.job-matches-list {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.job-matches-map h3,
+.job-matches-list h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 18px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.map-container {
+    height: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+}
+
+.map-options {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.map-options label {
+    font-weight: 500;
+}
+
+.map-options select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.job-match-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    position: relative;
+    border: 1px solid #eee;
+}
+
+.match-score-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 40px;
+    height: 40px;
+    background-color: #28a745;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.job-match-details {
+    flex: 1;
+}
+
+.job-match-details h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+}
+
+.job-match-details h4 a {
+    color: #333;
+    text-decoration: none;
+}
+
+.job-match-details h4 a:hover {
+    color: #aa3636;
+    text-decoration: underline;
+}
+
+.job-match-company {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.job-match-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    font-size: 14px;
+    color: #555;
+}
+
+.job-match-location, 
+.job-match-salary {
+    display: flex;
+    align-items: center;
+}
+
+.job-match-location img,
+.job-match-salary img {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+}
+
+/* Ενότητα αυτοαξιολόγησης */
+.assessment-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.assessment-intro {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e7e7e7;
+}
+
+.driver-score-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.score-circle {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 20px;
+}
+
+.score-circle svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.score-circle circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+}
+
+.score-background {
+    stroke: #f0f0f0;
+}
+
+.score-progress {
+    stroke: #aa3636;
+    stroke-dasharray: 283.5;
+    transition: stroke-dashoffset 1s ease;
+}
+
+.score-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.score-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.score-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.score-breakdown {
+    flex: 1;
+    min-width: 300px;
+}
+
+.score-breakdown h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #333;
+}
+
+.score-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.score-category {
+    margin-bottom: 10px;
+}
+
+.score-category h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.progress {
+    height: 100%;
+    background-color: #aa3636;
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+
+.category-score {
+    font-size: 14px;
+    color: #666;
+    float: right;
+}
+
+.self-assessment-form {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 30px;
+    border: 1px solid #e7e7e7;
+}
+
+.self-assessment-form h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.assessment-section {
+    margin-bottom: 20px;
+}
+
+.assessment-section h4 {
+    margin: 0 0 15px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 16px;
+    color: #333;
+}
+
+.assessment-question {
+    margin-bottom: 15px;
+}
+
+.assessment-question label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.assessment-question select,
+.assessment-question input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 /* Αγγελίες στο προφίλ */
@@ -201,8 +699,13 @@
     padding: 15px;
     margin-bottom: 15px;
     border: 1px solid #eee;
-    border-radius: 5px;
+    border-radius: 8px;
     background-color: #f9f9f9;
+    transition: box-shadow 0.2s;
+}
+
+.listing-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .listing-item h3 {
@@ -228,10 +731,11 @@
 }
 
 .listing-type {
+    display: inline-block;
     background-color: #6c757d;
     color: white;
-    padding: 3px 8px;
-    border-radius: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
     font-size: 12px;
 }
 
@@ -265,6 +769,9 @@
     display: flex;
     align-items: center;
     margin-bottom: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
 }
 
 .contact-list li img {
@@ -290,7 +797,10 @@
 }
 
 .preferences-list li {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    padding: 12px;
+    border-radius: 8px;
 }
 
 .preferences-list li strong {
@@ -319,15 +829,54 @@
 
 /* Χάρτης προφίλ */
 .profile-map {
-    border-radius: 5px;
+    border-radius: 8px;
     overflow: hidden;
     height: 200px;
+    border: 1px solid #e0e0e0;
 }
 
-/* Προσαρμογή για μικρές οθόνες */
+/* Κουμπιά ενεργειών */
+.btn-primary,
+.btn-secondary {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    border: none;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background-color: #aa3636;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #993333;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Προσαρμογή για κινητές συσκευές */
 @media (max-width: 768px) {
     .profile-header {
         flex-direction: column;
+        align-items: center;
         text-align: center;
     }
     
@@ -340,18 +889,25 @@
         justify-content: center;
     }
     
+    .tabs-nav {
+        flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+        flex: 1 1 auto;
+        text-align: center;
+    }
+    
     .profile-qualifications {
         grid-template-columns: 1fr;
     }
     
-    .profile-section-footer {
-        flex-direction: column;
-        gap: 10px;
+    .qualification-badges {
+        justify-content: center;
     }
     
-    .profile-section-footer .btn-primary,
-    .profile-section-footer .btn-secondary {
-        width: 100%;
-        text-align: center;
+    .driver-score-summary {
+        flex-direction: column;
+        align-items: center;
     }
 }
