@@ -34,11 +34,20 @@ class DriversController {
         $listings = $jobListingModel->getDriverListings($driverId, null, 1, 5);
         
         // Λήψη των συντεταγμένων της τοποθεσίας του οδηγού για τον χάρτη
-        $driverLocation = null;
-        if (!empty($driverData['address']) && !empty($driverData['city'])) {
-            $address = urlencode($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']);
-            $driverLocation = $this->getGeocodingData($address);
-        }
+      // Λήψη των συντεταγμένων της τοποθεσίας του οδηγού για τον χάρτη
+$driverLocation = null;
+if (!empty($driverData['address']) && !empty($driverData['city'])) {
+    $address = urlencode($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']);
+    $driverLocation = $this->getGeocodingData($address);
+}
+
+// Συνεχίστε μόνο αν έχουμε έγκυρες συντεταγμένες
+if ($driverLocation !== null) {
+    // Κώδικας που χρησιμοποιεί το $driverLocation
+} else {
+    // Προσθέστε μια σημείωση στο session ότι οι συντεταγμένες δεν βρέθηκαν
+    $_SESSION['info_message'] = 'Δεν ήταν δυνατή η εύρεση συντεταγμένων για τη διεύθυνσή σας.';
+}
         
         // Λήψη δεδομένων αυτοαξιολόγησης
         // Προς το παρόν επιστρέφουμε ψευδή δεδομένα για επίδειξη
@@ -196,41 +205,100 @@ class DriversController {
         
         // Ενημέρωση του προφίλ
         if ($this->driversModel->updateProfile($driverId, $data)) {
-            // Διαχείριση αδειών οδήγησης
-            $this->driversModel->deleteDriverLicenses($driverId);
-            if (isset($_POST['license_types']) && is_array($_POST['license_types'])) {
-                foreach ($_POST['license_types'] as $licenseType) {
-                    $hasPei = false;
-                    if (($licenseType == 'C' || $licenseType == 'CE') && isset($_POST['has_pei_c'])) {
-                        $hasPei = true;
-                    } else if (($licenseType == 'D' || $licenseType == 'DE') && isset($_POST['has_pei_d'])) {
-                        $hasPei = true;
-                    }
-                    
-                    $this->driversModel->addDriverLicense($driverId, $licenseType, $hasPei, $_POST['driving_license_expiry']);
-                }
+           // Διαχείριση αδειών οδήγησης
+    $this->driversModel->deleteDriverLicenses($driverId);
+    if (isset($_POST['license_types']) && is_array($_POST['license_types'])) {
+        $licenseNumber = $_POST['license_number'] ?? null;
+        $licenseDocumentExpiry = $_POST['license_document_expiry'] ?? null;
+        
+        foreach ($_POST['license_types'] as $licenseType) {
+            $hasPei = false;
+            $peiExpiryC = null;
+            $peiExpiryD = null;
+            
+            if (($licenseType == 'C' || $licenseType == 'CE') && isset($_POST['has_pei_c'])) {
+                $hasPei = true;
+                $peiExpiryC = $_POST['pei_c_expiry'] ?? null;
+            } else if (($licenseType == 'D' || $licenseType == 'DE') && isset($_POST['has_pei_d'])) {
+                $hasPei = true;
+                $peiExpiryD = $_POST['pei_d_expiry'] ?? null;
             }
             
-            // Διαχείριση πιστοποιητικού ADR
-            $this->driversModel->deleteDriverADRCertificates($driverId);
-            if (isset($_POST['adr_certificate']) && $_POST['adr_certificate'] && isset($_POST['adr_certificate_type'])) {
-                $this->driversModel->addDriverADRCertificate($driverId, $_POST['adr_certificate_type'], $_POST['adr_certificate_expiry']);
+            // Επιλογή της κατάλληλης ημερομηνίας λήξης ανάλογα με την κατηγορία
+            $expiryDate = null;
+            if (in_array($licenseType, ['AM', 'A1', 'A2', 'A'])) {
+                $expiryDate = $_POST['motorcycle_license_expiry'] ?? null;
+            } else if (in_array($licenseType, ['B', 'BE'])) {
+                $expiryDate = $_POST['car_license_expiry'] ?? null;
+            } else if (in_array($licenseType, ['C', 'CE'])) {
+                $expiryDate = $_POST['truck_license_expiry'] ?? null;
+            } else if (in_array($licenseType, ['D', 'DE'])) {
+                $expiryDate = $_POST['bus_license_expiry'] ?? null;
             }
             
-            // Διαχείριση άδειας χειριστή μηχανημάτων
-            $this->driversModel->deleteDriverOperatorLicenses($driverId);
-            if (isset($_POST['operator_license']) && $_POST['operator_license'] && isset($_POST['operator_speciality'])) {
-                $operatorLicenseId = $this->driversModel->addDriverOperatorLicense($driverId, $_POST['operator_speciality'], $_POST['operator_license_expiry']);
+            $this->driversModel->addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC, $peiExpiryD, $licenseDocumentExpiry);
+        }
+    }
+    
+    // Διαχείριση πιστοποιητικού ADR
+    $this->driversModel->deleteDriverADRCertificates($driverId);
+    if (isset($_POST['adr_certificate']) && $_POST['adr_certificate'] && isset($_POST['adr_certificate_type'])) {
+        $certificateNumber = $_POST['adr_certificate_number'] ?? null;
+        $this->driversModel->addDriverADRCertificate($driverId, $_POST['adr_certificate_type'], $_POST['adr_certificate_expiry'], $certificateNumber);
+    }
+    
+    // Διαχείριση άδειας χειριστή μηχανημάτων
+    $this->driversModel->deleteDriverOperatorLicenses($driverId);
+    if (isset($_POST['operator_license']) && $_POST['operator_license'] && isset($_POST['operator_speciality'])) {
+        $licenseNumber = $_POST['operator_license_number'] ?? null;
+        $operatorLicenseId = $this->driversModel->addDriverOperatorLicense($driverId, $_POST['operator_speciality'], $_POST['operator_license_expiry'], $licenseNumber);
+        
+        if (isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
+            foreach ($_POST['operator_sub_specialities'] as $subSpeciality) {
+                $subSpecialityId = $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality);
                 
-                if (isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
-                    foreach ($_POST['operator_sub_specialities'] as $subSpeciality) {
-                        // Εδώ θα πρέπει να καθορίσετε τον τύπο ομάδας (A ή B) για κάθε υποειδικότητα
-                        // είτε με ένα lookup πίνακα είτε από τη φόρμα
-                        $groupType = $this->getSubSpecialityGroupType($subSpeciality);
-                        $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType);
+                // Προσθήκη ομάδων A, B για κάθε υποειδικότητα
+                if (isset($_POST['sub_speciality_groups'][$subSpeciality]) && is_array($_POST['sub_speciality_groups'][$subSpeciality])) {
+                    foreach ($_POST['sub_speciality_groups'][$subSpeciality] as $groupType) {
+                        $this->driversModel->addDriverOperatorSubSpecialityGroup($subSpecialityId, $groupType);
                     }
                 }
             }
+        }
+    }
+    
+    // Διαχείριση κάρτας ψηφιακού ταχογράφου
+    $this->driversModel->deleteDriverTachographCard($driverId);
+    if (isset($_POST['has_tachograph_card']) && $_POST['has_tachograph_card']) {
+        $cardNumber = $_POST['tachograph_card_number'] ?? null;
+        $expiryDate = $_POST['tachograph_card_expiry'] ?? null;
+        if ($cardNumber && $expiryDate) {
+            $this->driversModel->addDriverTachographCard($driverId, $cardNumber, $expiryDate);
+        }
+    }
+    
+    // Διαχείριση ειδικών αδειών
+    $this->driversModel->deleteDriverSpecialLicenses($driverId);
+    
+    // Άδεια ΤΑΞΙ
+    if (isset($_POST['has_taxi_license']) && $_POST['has_taxi_license']) {
+        $licenseNumber = $_POST['taxi_license_number'] ?? null;
+        $expiryDate = $_POST['taxi_license_expiry'] ?? null;
+        $details = $_POST['taxi_license_details'] ?? null;
+        if ($licenseNumber) {
+            $this->driversModel->addDriverSpecialLicense($driverId, 'TAXI', $licenseNumber, $expiryDate, $details);
+        }
+    }
+    
+    // Άδεια μεταφοράς ζώντων ζώων
+    if (isset($_POST['has_animal_transport_license']) && $_POST['has_animal_transport_license']) {
+        $licenseNumber = $_POST['animal_transport_license_number'] ?? null;
+        $expiryDate = $_POST['animal_transport_license_expiry'] ?? null;
+        $details = $_POST['animal_transport_license_details'] ?? null;
+        if ($licenseNumber) {
+            $this->driversModel->addDriverSpecialLicense($driverId, 'ANIMAL_TRANSPORT', $licenseNumber, $expiryDate, $details);
+        }
+    }
             
             // Διαχείριση μεταφόρτωσης εικόνας προφίλ αν υπάρχει
             if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
@@ -570,17 +638,34 @@ class DriversController {
      * Λαμβάνει τις συντεταγμένες από μια διεύθυνση μέσω της υπηρεσίας Geocoding
      */
     private function getGeocodingData($address) {
-        $apiKey = 'AIzaSyCgZpJWVYyrY0U8U1jBGelEWryur3vIrzc'; // Αντικαταστήστε με το δικό σας API key
+        $apiKey = 'AIzaSyCgZpJWVYyrY0U8U1jBGelEWryur3vIrzc';
         $url = "https://maps.googleapis.com/maps/api/geocode/json?address={$address}&key={$apiKey}";
         
-        $response = file_get_contents($url);
-        $data = json_decode($response, true);
-        
-        if ($data['status'] === 'OK') {
-            return [
-                'lat' => $data['results'][0]['geometry']['location']['lat'],
-                'lng' => $data['results'][0]['geometry']['location']['lng']
-            ];
+        try {
+            // Ορίστε ένα ρητό χρονικό όριο 5 δευτερολέπτων
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 5,
+                ]
+            ]);
+            
+            $response = @file_get_contents($url, false, $context);
+            
+            if ($response === false) {
+                // Σε περίπτωση αποτυχίας επιστρέφουμε null
+                return null;
+            }
+            
+            $data = json_decode($response, true);
+            
+            if (isset($data['status']) && $data['status'] === 'OK' && !empty($data['results'][0]['geometry']['location'])) {
+                return [
+                    'lat' => $data['results'][0]['geometry']['location']['lat'],
+                    'lng' => $data['results'][0]['geometry']['location']['lng']
+                ];
+            }
+        } catch (Exception $e) {
+            // Σε περίπτωση εξαίρεσης επιστρέφουμε null
         }
         
         return null;

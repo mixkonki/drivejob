@@ -4,6 +4,9 @@
 /**
  * Βοηθητική συνάρτηση για την εμφάνιση παλιών τιμών φόρμας
  */
+// Ενεργοποίηση output buffering
+ob_start();
+
 function old($field, $default = '') {
     global $companyData;
     

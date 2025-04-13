@@ -1,14 +1,13 @@
 <?php
-
 namespace Drivejob\Models;
-
+use PDO;
 class DriversModel {
     private $pdo;
-
+    
     public function __construct($pdo) {
         $this->pdo = $pdo;
     }
-
+    
     /**
      * Δημιουργεί έναν νέο λογαριασμό οδηγού
      */
@@ -28,7 +27,7 @@ class DriversModel {
         
         return $this->pdo->lastInsertId();
     }
-
+    
     /**
      * Ενημερώνει τα στοιχεία ενός οδηγού
      */
@@ -49,7 +48,7 @@ class DriversModel {
             'phone' => $data['phone']
         ]);
     }
-
+    
     /**
      * Επιστρέφει τα στοιχεία ενός οδηγού με βάση το ID
      */
@@ -57,9 +56,9 @@ class DriversModel {
         $sql = "SELECT * FROM drivers WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id]);
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
+    
     /**
      * Επιστρέφει έναν οδηγό με βάση το email
      */
@@ -67,9 +66,9 @@ class DriversModel {
         $sql = "SELECT * FROM drivers WHERE email = :email";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['email' => $email]);
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
+    
     /**
      * Διαγράφει έναν οδηγό
      */
@@ -78,7 +77,7 @@ class DriversModel {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute(['id' => $id]);
     }
-
+    
     /**
      * Ενημερώνει την κατάσταση επαλήθευσης του οδηγού
      */
@@ -87,7 +86,7 @@ class DriversModel {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute(['email' => $email]);
     }
-
+    
     /**
      * Ενημερώνει τον κωδικό πρόσβασης ενός οδηγού
      */
@@ -99,7 +98,7 @@ class DriversModel {
             'password' => $password
         ]);
     }
-
+    
     /**
      * Ενημερώνει το προφίλ ενός οδηγού
      */
@@ -108,6 +107,7 @@ class DriversModel {
             first_name = :first_name,
             last_name = :last_name,
             phone = :phone,
+            landline = :landline,
             birth_date = :birth_date,
             address = :address,
             house_number = :house_number,
@@ -158,7 +158,7 @@ class DriversModel {
             'social_linkedin' => $data['social_linkedin'] ?: null
         ]);
     }
-
+    
     /**
      * Ενημερώνει την εικόνα προφίλ ενός οδηγού
      */
@@ -170,7 +170,7 @@ class DriversModel {
             'profile_image' => $imagePath
         ]);
     }
-
+    
     /**
      * Ενημερώνει το αρχείο βιογραφικού ενός οδηγού
      */
@@ -182,7 +182,7 @@ class DriversModel {
             'resume_file' => $filePath
         ]);
     }
-
+    
     /**
      * Ενημερώνει την τελευταία σύνδεση του οδηγού
      */
@@ -191,7 +191,7 @@ class DriversModel {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute(['id' => $id]);
     }
-
+    
     /**
      * Ενημερώνει την αξιολόγηση ενός οδηγού
      */
@@ -207,7 +207,7 @@ class DriversModel {
             'rating' => $rating
         ]);
     }
-
+    
     /**
      * Επιστρέφει όλους τους οδηγούς
      */
@@ -220,13 +220,13 @@ class DriversModel {
                 LIMIT :limit OFFSET :offset";
                 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
         
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
+    
     /**
      * Μετράει το συνολικό αριθμό οδηγών
      */
@@ -236,7 +236,7 @@ class DriversModel {
         $stmt->execute();
         return $stmt->fetchColumn();
     }
-
+    
     /**
      * Αναζητά οδηγούς με βάση κριτήρια
      */
@@ -306,8 +306,8 @@ class DriversModel {
         $stmt = $this->pdo->prepare($sql);
         
         // Προσθήκη των παραμέτρων για το LIMIT και OFFSET
-        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         
         // Προσθήκη των υπόλοιπων παραμέτρων
         foreach ($parameters as $key => $value) {
@@ -315,7 +315,7 @@ class DriversModel {
         }
         
         $stmt->execute();
-        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         return [
             'results' => $results,
@@ -327,7 +327,7 @@ class DriversModel {
             ]
         ];
     }
-
+    
     /**
      * Ελέγχει αν ένα email υπάρχει ήδη
      */
@@ -337,7 +337,7 @@ class DriversModel {
         $stmt->execute(['email' => $email]);
         return $stmt->fetchColumn() > 0;
     }
-
+    
     /**
      * Επιστρέφει τους πιο πρόσφατους διαθέσιμους οδηγούς
      */
@@ -350,12 +350,12 @@ class DriversModel {
                 LIMIT :limit";
                 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
         
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
+    
     /**
      * Επιστρέφει τους κορυφαίους οδηγούς με βάση την αξιολόγηση
      */
@@ -368,83 +368,196 @@ class DriversModel {
                 LIMIT :limit";
                 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
         
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
+    
     // Μέθοδοι για τις άδειες οδήγησης
-public function getDriverLicenses($driverId) {
-    $sql = "SELECT * FROM driver_licenses WHERE driver_id = ?";
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute([$driverId]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-public function deleteDriverLicenses($driverId) {
-    $sql = "DELETE FROM driver_licenses WHERE driver_id = ?";
-    $stmt = $this->pdo->prepare($sql);
-    return $stmt->execute([$driverId]);
-}
-
-public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate) {
-    $sql = "INSERT INTO driver_licenses (driver_id, license_type, has_pei, expiry_date) VALUES (?, ?, ?, ?)";
-    $stmt = $this->pdo->prepare($sql);
-    return $stmt->execute([$driverId, $licenseType, $hasPei ? 1 : 0, $expiryDate]);
-}
-
-// Μέθοδοι για τα πιστοποιητικά ADR
-public function getDriverADRCertificate($driverId) {
-    $sql = "SELECT * FROM driver_adr_certificates WHERE driver_id = ? LIMIT 1";
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute([$driverId]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-public function deleteDriverADRCertificates($driverId) {
-    $sql = "DELETE FROM driver_adr_certificates WHERE driver_id = ?";
-    $stmt = $this->pdo->prepare($sql);
-    return $stmt->execute([$driverId]);
-}
-
-public function addDriverADRCertificate($driverId, $adrType, $expiryDate) {
-    $sql = "INSERT INTO driver_adr_certificates (driver_id, adr_type, expiry_date) VALUES (?, ?, ?)";
-    $stmt = $this->pdo->prepare($sql);
-    return $stmt->execute([$driverId, $adrType, $expiryDate]);
-}
-
-// Μέθοδοι για τις άδειες χειριστή μηχανημάτων
-public function getDriverOperatorLicense($driverId) {
-    $sql = "SELECT * FROM driver_operator_licenses WHERE driver_id = ? LIMIT 1";
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute([$driverId]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-public function getDriverOperatorSubSpecialities($operatorLicenseId) {
-    $sql = "SELECT * FROM driver_operator_sub_specialities WHERE operator_license_id = ?";
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute([$operatorLicenseId]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-public function deleteDriverOperatorLicenses($driverId) {
-    $sql = "DELETE FROM driver_operator_licenses WHERE driver_id = ?";
-    $stmt = $this->pdo->prepare($sql);
-    return $stmt->execute([$driverId]);
-}
-
-public function addDriverOperatorLicense($driverId, $speciality, $expiryDate) {
-    $sql = "INSERT INTO driver_operator_licenses (driver_id, speciality, expiry_date) VALUES (?, ?, ?)";
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute([$driverId, $speciality, $expiryDate]);
-    return $this->pdo->lastInsertId();
-}
-
-public function addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType) {
-    $sql = "INSERT INTO driver_operator_sub_specialities (operator_license_id, sub_speciality, group_type) VALUES (?, ?, ?)";
-    $stmt = $this->pdo->prepare($sql);
-    return $stmt->execute([$operatorLicenseId, $subSpeciality, $groupType]);
-}
+    public function getDriverLicenses($driverId) {
+        $sql = "SELECT * FROM driver_licenses WHERE driver_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$driverId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function deleteDriverLicenses($driverId) {
+        $sql = "DELETE FROM driver_licenses WHERE driver_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$driverId]);
+    }
+    
+    // Μέθοδοι για τα πιστοποιητικά ADR
+    public function getDriverADRCertificate($driverId) {
+        $sql = "SELECT * FROM driver_adr_certificates WHERE driver_id = ? LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$driverId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    public function deleteDriverADRCertificates($driverId) {
+        $sql = "DELETE FROM driver_adr_certificates WHERE driver_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$driverId]);
+    }
+    
+    // Μέθοδοι για τις άδειες χειριστή μηχανημάτων
+    public function getDriverOperatorLicense($driverId) {
+        $sql = "SELECT * FROM driver_operator_licenses WHERE driver_id = ? LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$driverId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    public function getDriverOperatorSubSpecialities($operatorLicenseId) {
+        $sql = "SELECT * FROM driver_operator_sub_specialities WHERE operator_license_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$operatorLicenseId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function deleteDriverOperatorLicenses($driverId) {
+        $sql = "DELETE FROM driver_operator_licenses WHERE driver_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$driverId]);
+    }
+    
+    // Κάρτα Ψηφιακού Ταχογράφου
+    public function getDriverTachographCard($driverId) {
+        $sql = "SELECT * FROM driver_tachograph_cards WHERE driver_id = ? LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$driverId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    public function deleteDriverTachographCard($driverId) {
+        $sql = "DELETE FROM driver_tachograph_cards WHERE driver_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$driverId]);
+    }
+    
+    public function addDriverTachographCard($driverId, $cardNumber, $expiryDate) {
+        $sql = "INSERT INTO driver_tachograph_cards (driver_id, card_number, expiry_date) VALUES (?, ?, ?)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$driverId, $cardNumber, $expiryDate]);
+    }
+    
+    // Ειδικές Άδειες
+    public function getDriverSpecialLicenses($driverId) {
+        $sql = "SELECT * FROM driver_special_licenses WHERE driver_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$driverId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getDriverSpecialLicenseByType($driverId, $licenseType) {
+        $sql = "SELECT * FROM driver_special_licenses WHERE driver_id = ? AND license_type = ? LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$driverId, $licenseType]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    public function deleteDriverSpecialLicenses($driverId) {
+        $sql = "DELETE FROM driver_special_licenses WHERE driver_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$driverId]);
+    }
+    
+    public function deleteDriverSpecialLicenseByType($driverId, $licenseType) {
+        $sql = "DELETE FROM driver_special_licenses WHERE driver_id = ? AND license_type = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$driverId, $licenseType]);
+    }
+    
+    public function addDriverSpecialLicense($driverId, $licenseType, $licenseNumber, $expiryDate, $details = null) {
+        $sql = "INSERT INTO driver_special_licenses (driver_id, license_type, license_number, expiry_date, details) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$driverId, $licenseType, $licenseNumber, $expiryDate, $details]);
+    }
+    
+    // Τροποποιημένες μέθοδοι για τις άδειες
+    public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC = null, $peiExpiryD = null, $licenseDocumentExpiry = null) {
+        $sql = "INSERT INTO driver_licenses (driver_id, license_type, has_pei, expiry_date, license_number, pei_expiry_c, pei_expiry_d, license_document_expiry) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$driverId, $licenseType, $hasPei ? 1 : 0, $expiryDate, $licenseNumber, $peiExpiryC, $peiExpiryD, $licenseDocumentExpiry]);
+    }
+    
+    // Τροποποιημένες μέθοδοι για το ADR
+    public function addDriverADRCertificate($driverId, $adrType, $expiryDate, $certificateNumber) {
+        $sql = "INSERT INTO driver_adr_certificates (driver_id, adr_type, expiry_date, certificate_number) VALUES (?, ?, ?, ?)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$driverId, $adrType, $expiryDate, $certificateNumber]);
+    }
+    
+    // Τροποποιημένες μέθοδοι για χειριστές μηχανημάτων
+    public function addDriverOperatorLicense($driverId, $speciality, $expiryDate, $licenseNumber) {
+        $sql = "INSERT INTO driver_operator_licenses (driver_id, speciality, expiry_date, license_number) VALUES (?, ?, ?, ?)";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$driverId, $speciality, $expiryDate, $licenseNumber]);
+        return $this->pdo->lastInsertId();
+    }
+    
+    public function addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality) {
+        $sql = "INSERT INTO driver_operator_sub_specialities (operator_license_id, sub_speciality) VALUES (?, ?)";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$operatorLicenseId, $subSpeciality]);
+        return $this->pdo->lastInsertId();
+    }
+    
+    public function addDriverOperatorSubSpecialityGroup($subSpecialityId, $groupType) {
+        $sql = "INSERT INTO driver_operator_sub_speciality_groups (sub_speciality_id, group_type) VALUES (?, ?)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$subSpecialityId, $groupType]);
+    }
+    
+    // Μέθοδος για ειδοποιήσεις λήξης αδειών
+    public function getDriversWithExpiringLicenses() {
+        $twoMonthsFromNow = date('Y-m-d', strtotime('+2 months'));
+        $oneYearFromNow = date('Y-m-d', strtotime('+1 year'));
+        $eightYearsFromNow = date('Y-m-d', strtotime('+8 years'));
+        
+        // Οδηγοί με άδειες οδήγησης που λήγουν σε 2 μήνες
+        $drivingLicensesSql = "
+            SELECT d.id, d.first_name, d.last_name, d.email, 'driving_license' as type, dl.expiry_date 
+            FROM drivers d 
+            JOIN driver_licenses dl ON d.id = dl.driver_id 
+            WHERE dl.expiry_date <= ? AND dl.expiry_date >= CURRENT_DATE()
+        ";
+        
+        // Οδηγοί με ADR που λήγουν σε 1 χρόνο
+        $adrSql = "
+            SELECT d.id, d.first_name, d.last_name, d.email, 'adr_certificate' as type, dac.expiry_date 
+            FROM drivers d 
+            JOIN driver_adr_certificates dac ON d.id = dac.driver_id 
+            WHERE dac.expiry_date <= ? AND dac.expiry_date >= CURRENT_DATE()
+        ";
+        
+        // Οδηγοί με άδειες χειριστή που λήγουν σε 8 χρόνια
+        $operatorSql = "
+            SELECT d.id, d.first_name, d.last_name, d.email, 'operator_license' as type, dol.expiry_date 
+            FROM drivers d 
+            JOIN driver_operator_licenses dol ON d.id = dol.driver_id 
+            WHERE dol.expiry_date <= ? AND dol.expiry_date >= CURRENT_DATE()
+        ";
+        
+        $drivingLicensesStmt = $this->pdo->prepare($drivingLicensesSql);
+        $adrStmt = $this->pdo->prepare($adrSql);
+        $operatorStmt = $this->pdo->prepare($operatorSql);
+        
+        $drivingLicensesStmt->execute([$twoMonthsFromNow]);
+        $adrStmt->execute([$oneYearFromNow]);
+        $operatorStmt->execute([$eightYearsFromNow]);
+        
+        $drivingLicenses = $drivingLicensesStmt->fetchAll(PDO::FETCH_ASSOC);
+        $adrCertificates = $adrStmt->fetchAll(PDO::FETCH_ASSOC);
+        $operatorLicenses = $operatorStmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return [
+            'driving_licenses' => $drivingLicenses,
+            'adr_certificates' => $adrCertificates,
+            'operator_licenses' => $operatorLicenses
+        ];
+    }
 }
