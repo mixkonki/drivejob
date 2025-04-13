@@ -336,9 +336,13 @@ include ROOT_DIR . '/src/Views/header.php';
                     <div class="job-matches-container">
                         <div class="job-matches-map">
                             <h3>Αγγελίες Εργασίας στην περιοχή σας</h3>
-                            <div class="map-container">
-                                <div id="jobMatchesMap" style="width: 100%; height: 400px;"></div>
-                            </div>
+                            <!-- Αλλαγή στο div του χάρτη για να προσθέσουμε data attributes -->
+<div class="map-container">
+<div id="jobMatchesMap" style="width: 100%; height: 400px;" 
+    data-lat="<?php echo isset($driverLocation) && isset($driverLocation['lat']) ? $driverLocation['lat'] : 40.6401; ?>" 
+    data-lng="<?php echo isset($driverLocation) && isset($driverLocation['lng']) ? $driverLocation['lng'] : 22.9444; ?>">
+</div>
+</div>
                             <div class="map-options">
                                 <label for="searchRadius">Ακτίνα αναζήτησης:</label>
                                 <select id="searchRadius" name="searchRadius">
@@ -527,9 +531,8 @@ include ROOT_DIR . '/src/Views/header.php';
             </div>
         </div>
     </div>
+    <script src="<?php echo BASE_URL; ?>js/driver_profile.js"></script>
 </main>
-
-<script src="<?php echo BASE_URL; ?>js/driver_profile.js"></script>
 
 <?php 
 // Συμπερίληψη του footer
