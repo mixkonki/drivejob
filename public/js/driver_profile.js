@@ -1,93 +1,134 @@
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script loaded'); // Για debugging
+    
     // Λειτουργία καρτελών
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabPanes = document.querySelectorAll('.tab-pane');
     
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const targetTab = this.getAttribute('data-tab');
-            
-            // Αφαίρεση ενεργών κλάσεων
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabPanes.forEach(pane => pane.classList.remove('active'));
-            
-            // Ενεργοποίηση της επιλεγμένης καρτέλας
-            this.classList.add('active');
-            document.getElementById(targetTab).classList.add('active');
-            
-            // Ειδικές ενέργειες για συγκεκριμένες καρτέλες
-            if (targetTab === 'job-matches') {
-                initJobMatchesMap();
-            }
+    if (tabButtons.length > 0) {
+        console.log('Found tab buttons: ' + tabButtons.length);
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const targetTab = this.getAttribute('data-tab');
+                console.log('Tab clicked: ' + targetTab);
+                
+                // Αφαίρεση ενεργών κλάσεων
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                
+                // Ενεργοποίηση της επιλεγμένης καρτέλας
+                this.classList.add('active');
+                document.getElementById(targetTab).classList.add('active');
+                
+                // Ειδικές ενέργειες για συγκεκριμένες καρτέλες
+                if (targetTab === 'job-matches') {
+                    // Καθυστέρηση για να βεβαιωθούμε ότι το tab είναι ορατό
+                    setTimeout(initJobMatchesMap, 100);
+                }
+            });
         });
-    });
+    } else {
+        console.error('No tab buttons found!');
+    }
     
     // Αρχικοποίηση χάρτη για τις προτεινόμενες θέσεις
     function initJobMatchesMap() {
-        if (document.getElementById('jobMatchesMap')) {
+        const mapElement = document.getElementById('jobMatchesMap');
+        if (mapElement) {
+            console.log('Initializing map');
+            
             // Προεπιλεγμένες συντεταγμένες για Θεσσαλονίκη
             let driverLat = 40.6401;
             let driverLng = 22.9444;
             
             // Έλεγχος αν υπάρχει στοιχείο με τα data attributes
-            const mapElement = document.getElementById('jobMatchesMap');
             if (mapElement.dataset.lat && mapElement.dataset.lng) {
                 driverLat = parseFloat(mapElement.dataset.lat);
                 driverLng = parseFloat(mapElement.dataset.lng);
             }
+            
+            console.log('Map coordinates:', driverLat, driverLng);
             
             const driverLocation = {
                 lat: driverLat,
                 lng: driverLng
             };
             
-            const map = new google.maps.Map(document.getElementById('jobMatchesMap'), {
-                center: driverLocation,
-                zoom: 11
-            });
-            
-            // Μαρκαδόρος για τη θέση του οδηγού
-            const driverMarker = new google.maps.Marker({
-                position: driverLocation,
-                map: map,
-                title: 'Η θέση μου',
-                icon: '/drivejob/public/img/driver_marker.png'
-            });
-            
-            // Κύκλος για την ακτίνα αναζήτησης
-            const searchRadius = parseInt(document.getElementById('searchRadius').value);
-            const radiusCircle = new google.maps.Circle({
-                strokeColor: '#FF6B6B',
-                strokeOpacity: 0.8,
-                strokeWeight: 2,
-                fillColor: '#FF6B6B',
-                fillOpacity: 0.1,
-                map: map,
-                center: driverLocation,
-                radius: searchRadius * 1000 // Μετατροπή σε μέτρα
-            });
-            
-            // Φόρτωση προτεινόμενων θέσεων
-            loadJobMatches(driverLocation, searchRadius);
-            
-            // Ενημέρωση ακτίνας όταν αλλάζει η επιλογή
-            document.getElementById('searchRadius').addEventListener('change', function() {
-                const newRadius = parseInt(this.value);
-                radiusCircle.setRadius(newRadius * 1000);
-                loadJobMatches(driverLocation, newRadius);
-            });
-            
-            // Κουμπί ανανέωσης
-            document.getElementById('refreshJobMatches').addEventListener('click', function() {
-                const currentRadius = parseInt(document.getElementById('searchRadius').value);
-                loadJobMatches(driverLocation, currentRadius);
-            });
+            try {
+                // Έλεγχος αν το Google Maps API είναι διαθέσιμο
+                if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+                    console.error('Google Maps API not loaded!');
+                    return;
+                }
+                
+                const map = new google.maps.Map(mapElement, {
+                    center: driverLocation,
+                    zoom: 11
+                });
+                
+                // Μαρκαδόρος για τη θέση του οδηγού
+                const driverMarker = new google.maps.Marker({
+                    position: driverLocation,
+                    map: map,
+                    title: 'Η θέση μου',
+                    // Χρησιμοποιούμε εικόνα μόνο αν υπάρχει
+                    // icon: '/drivejob/public/img/driver_marker.png'
+                });
+                
+                // Έλεγχος αν υπάρχει το element για το searchRadius
+                const searchRadiusElement = document.getElementById('searchRadius');
+                if (searchRadiusElement) {
+                    // Κύκλος για την ακτίνα αναζήτησης
+                    const searchRadius = parseInt(searchRadiusElement.value);
+                    const radiusCircle = new google.maps.Circle({
+                        strokeColor: '#FF6B6B',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: '#FF6B6B',
+                        fillOpacity: 0.1,
+                        map: map,
+                        center: driverLocation,
+                        radius: searchRadius * 1000 // Μετατροπή σε μέτρα
+                    });
+                    
+                    // Φόρτωση προτεινόμενων θέσεων
+                    loadJobMatches(driverLocation, searchRadius);
+                    
+                    // Ενημέρωση ακτίνας όταν αλλάζει η επιλογή
+                    searchRadiusElement.addEventListener('change', function() {
+                        const newRadius = parseInt(this.value);
+                        radiusCircle.setRadius(newRadius * 1000);
+                        loadJobMatches(driverLocation, newRadius);
+                    });
+                    
+                    // Κουμπί ανανέωσης
+                    const refreshButton = document.getElementById('refreshJobMatches');
+                    if (refreshButton) {
+                        refreshButton.addEventListener('click', function() {
+                            const currentRadius = parseInt(searchRadiusElement.value);
+                            loadJobMatches(driverLocation, currentRadius);
+                        });
+                    }
+                }
+                
+                console.log('Map initialized successfully');
+            } catch (error) {
+                console.error('Error initializing map:', error);
+            }
+        } else {
+            console.error('Map element not found!');
         }
     }
     
     // Φόρτωση προτεινόμενων θέσεων εργασίας
     function loadJobMatches(location, radius) {
         const matchesList = document.getElementById('matchedJobsList');
+        if (!matchesList) {
+            console.error('Matched jobs list element not found!');
+            return;
+        }
+        
         matchesList.innerHTML = '<p class="loading-message">Φόρτωση προτεινόμενων θέσεων εργασίας...</p>';
         
         // Βάση URL για τους συνδέσμους
@@ -158,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             matchesList.innerHTML = matchesHTML;
-        }, 1500);
+        }, 1000);
     }
     
     // Βοηθητική συνάρτηση για το χρώμα του ποσοστού ταιριάσματος
@@ -167,5 +208,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (score >= 75) return '#17a2b8'; // Μπλε
         if (score >= 60) return '#ffc107'; // Κίτρινο
         return '#dc3545'; // Κόκκινο
+    }
+    
+    // Εναλλακτικός τρόπος λειτουργίας καρτελών με απλά κλικ
+    if (tabButtons.length === 0) {
+        // Fallback για τις καρτέλες
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = function() {
+                const tabId = this.getAttribute('data-tab');
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+                return false;
+            };
+        });
     }
 });

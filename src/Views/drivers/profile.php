@@ -1,12 +1,11 @@
-# Αναβαθμισμένο Προφίλ Οδηγού (driver_profile.php)
-
-```php
 <?php 
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php'; 
 ?>
 <!-- Σύνδεση με το CSS αρχείο του προφίλ οδηγού -->
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
+<!-- Μετά το link του CSS και πριν το </head> -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgZpJWVYyrY0U8U1jBGelEWryur3vIrzc&libraries=places"></script>
 
 <main>
     <div class="container">
@@ -531,11 +530,10 @@ include ROOT_DIR . '/src/Views/header.php';
             </div>
         </div>
     </div>
-    <script src="<?php echo BASE_URL; ?>js/driver_profile.js"></script>
+<script src="<?php echo BASE_URL; ?>js/driver_profile.js"></script>
 </main>
 
 <?php 
 // Συμπερίληψη του footer
 include ROOT_DIR . '/src/Views/footer.php'; 
 ?>
-```
