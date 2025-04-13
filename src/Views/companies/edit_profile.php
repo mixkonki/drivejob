@@ -1,4 +1,13 @@
 <?php 
+// Αποσφαλμάτωση - εμφάνιση δεδομένων
+echo "<div style='background: #f5f5f5; padding: 10px; margin-bottom: 10px; font-size: 12px;'>";
+echo "<h3>Debug Info</h3>";
+echo "<p>CompanyData:</p>";
+echo "<pre>";
+print_r($companyData ?? 'Not set');
+echo "</pre>";
+echo "</div>";
+
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php'; 
 
@@ -15,7 +24,9 @@ echo "<pre>";
 print_r($_SESSION);
 echo "</pre>";
 echo "</div>";
+
 */
+// Έλεγχος αν ο χρήστης είναι συνδεδεμένος
 
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
 $errors = $_SESSION['errors'] ?? [];
@@ -25,26 +36,21 @@ $oldInput = $_SESSION['old_input'] ?? [];
 unset($_SESSION['errors'], $_SESSION['old_input']);
 
 // Βοηθητική συνάρτηση για την εμφάνιση των παλιών τιμών
-function old($field, $default = '') {
-    global $oldInput, $companyData;
-    if (isset($oldInput[$field])) {
-        return $oldInput[$field];
-    } elseif (isset($companyData[$field])) {
-        return $companyData[$field];
-    }
-    return $default;
-}
+//function old($field, $default = '') {
+  //  global $companyData;
+    //return $companyData[$field] ?? $default;
+//}
 
 // Βοηθητική συνάρτηση για την εμφάνιση των σφαλμάτων
-function hasError($field) {
-    global $errors;
-    return isset($errors[$field]);
-}
+//function hasError($field) {
+  //  global $errors;
+    //return isset($errors[$field]);
+//}
 
-function getError($field) {
-    global $errors;
-    return $errors[$field] ?? '';
-}
+//function getError($field) {
+  //  global $errors;
+  //return $errors[$field] ?? '';
+//}
 ?>
 
 <main>

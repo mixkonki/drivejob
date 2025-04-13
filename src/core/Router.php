@@ -35,8 +35,6 @@ class Router
         $method = $_SERVER['REQUEST_METHOD'];
         $path = $this->getPath();
         
-        
-        
         // Έλεγχος αν υπάρχει ακριβής διαδρομή
         if (isset($this->routes[$method][$path])) {
             $callback = $this->routes[$method][$path];
@@ -85,10 +83,6 @@ class Router
         // Καθαρισμός του path
         $path = trim($path, '/');
         $path = '/' . $path;
-        
-        // Αποσφαλμάτωση
-        // echo "Original path: {$_SERVER['REQUEST_URI']}<br>";
-        // echo "Processed path: {$path}<br>";
         
         return $path ?: '/';
     }

@@ -1,4 +1,4 @@
-<?php
+<?php  // Βεβαιωθείτε ότι αυτή είναι η πρώτη γραμμή χωρίς κενά πριν από αυτήν
 namespace Drivejob\Core;
 
 class DatabaseSessionHandler implements \SessionHandlerInterface {
@@ -13,17 +13,18 @@ class DatabaseSessionHandler implements \SessionHandlerInterface {
         ], $options);
     }
 
-
-    
-    public function open(string $savePath, string $sessionName): bool {
+    #[\ReturnTypeWillChange]
+    public function open($savePath, $sessionName) {
         return true;
     }
 
-    public function close(): bool {
+    #[\ReturnTypeWillChange]
+    public function close() {
         return true;
     }
 
-    public function read(string $id): string|false {
+    #[\ReturnTypeWillChange]
+    public function read($id) {
         try {
             $stmt = $this->pdo->prepare(
                 "SELECT payload FROM {$this->options['table']} WHERE id = :id"
@@ -37,13 +38,13 @@ class DatabaseSessionHandler implements \SessionHandlerInterface {
             
             return '';
         } catch (\PDOException $e) {
-            // Καταγραφή σφάλματος και επιστροφή κενού string
             error_log('Session read error: ' . $e->getMessage());
             return '';
         }
     }
 
-    public function write(string $id, string $data): bool {
+    #[\ReturnTypeWillChange]
+    public function write($id, $data) {
         try {
             // Λήψη πρόσθετων πληροφοριών
             $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
@@ -93,7 +94,8 @@ class DatabaseSessionHandler implements \SessionHandlerInterface {
         }
     }
 
-    public function destroy(string $id): bool {
+    #[\ReturnTypeWillChange]
+    public function destroy($id) {
         try {
             $stmt = $this->pdo->prepare(
                 "DELETE FROM {$this->options['table']} WHERE id = :id"
@@ -106,7 +108,8 @@ class DatabaseSessionHandler implements \SessionHandlerInterface {
         }
     }
 
-    public function gc(int $maxlifetime): int|false {
+    #[\ReturnTypeWillChange]
+    public function gc($maxlifetime) {
         try {
             $time = time() - $maxlifetime;
             $stmt = $this->pdo->prepare(

@@ -10,15 +10,8 @@ require_once __DIR__ . '/../config/config.php';
 // Σύνδεση με τη βάση δεδομένων
 require_once __DIR__ . '/../config/database.php';
 
-// Ρύθμιση του Session Handler
-$sessionHandler = new \Drivejob\Core\DatabaseSessionHandler($pdo, [
-    'lifetime' => 86400, // 24 ώρες
-    'table' => 'sessions'
-]);
-\Drivejob\Core\Session::setHandler($sessionHandler);
-
-// Έναρξη της συνεδρίας
-\Drivejob\Core\Session::start();
+// Προσθέστε αυτή τη γραμμή στο bootstrap.php
+require_once __DIR__ . '/Helpers/form_helpers.php';
 
 // Ορισμός περιβάλλοντος
 defined('ENVIRONMENT') or define('ENVIRONMENT', 'development');
@@ -32,8 +25,6 @@ if (ENVIRONMENT === 'development') {
     ini_set('display_errors', 0);
     error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 }
-// Σύνδεση με τη βάση δεδομένων
-require_once __DIR__ . '/../config/database.php';
 
 // Αρχικοποίηση του Database Session Handler και έναρξη της συνεδρίας
 use Drivejob\Core\Session;
@@ -41,9 +32,14 @@ use Drivejob\Core\DatabaseSessionHandler;
 
 // Έλεγχος αν πρέπει να χρησιμοποιηθεί ο Database Session Handler
 $useDbSessions = defined('USE_DB_SESSIONS') ? USE_DB_SESSIONS : false;
+
 if ($useDbSessions) {
-    // Αρχικοποίηση του Database Session Handler
-    Session::initDatabaseHandler($pdo);
+    // Ρύθμιση του Session Handler
+    $sessionHandler = new DatabaseSessionHandler($pdo, [
+        'lifetime' => 86400, // 24 ώρες
+        'table' => 'sessions'
+    ]);
+    Session::setHandler($sessionHandler);
 }
 
 // Έναρξη της συνεδρίας

@@ -68,9 +68,12 @@ class CompaniesController {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         AuthMiddleware::hasRole('company');
         
-        // Λήψη των στοιχείων
+        // Λήψη των στοιχείων της εταιρείας
         $companyId = $_SESSION['user_id'];
         $companyData = $this->companiesModel->getCompanyById($companyId);
+        
+        // Προσθέστε αυτή τη γραμμή για αποσφαλμάτωση
+        error_log('Company Data in edit(): ' . print_r($companyData, true));
         
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/companies/edit_profile.php';
