@@ -373,4 +373,78 @@ class DriversModel {
         
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    // Μέθοδοι για τις άδειες οδήγησης
+public function getDriverLicenses($driverId) {
+    $sql = "SELECT * FROM driver_licenses WHERE driver_id = ?";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([$driverId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function deleteDriverLicenses($driverId) {
+    $sql = "DELETE FROM driver_licenses WHERE driver_id = ?";
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([$driverId]);
+}
+
+public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate) {
+    $sql = "INSERT INTO driver_licenses (driver_id, license_type, has_pei, expiry_date) VALUES (?, ?, ?, ?)";
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([$driverId, $licenseType, $hasPei ? 1 : 0, $expiryDate]);
+}
+
+// Μέθοδοι για τα πιστοποιητικά ADR
+public function getDriverADRCertificate($driverId) {
+    $sql = "SELECT * FROM driver_adr_certificates WHERE driver_id = ? LIMIT 1";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([$driverId]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+public function deleteDriverADRCertificates($driverId) {
+    $sql = "DELETE FROM driver_adr_certificates WHERE driver_id = ?";
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([$driverId]);
+}
+
+public function addDriverADRCertificate($driverId, $adrType, $expiryDate) {
+    $sql = "INSERT INTO driver_adr_certificates (driver_id, adr_type, expiry_date) VALUES (?, ?, ?)";
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([$driverId, $adrType, $expiryDate]);
+}
+
+// Μέθοδοι για τις άδειες χειριστή μηχανημάτων
+public function getDriverOperatorLicense($driverId) {
+    $sql = "SELECT * FROM driver_operator_licenses WHERE driver_id = ? LIMIT 1";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([$driverId]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+public function getDriverOperatorSubSpecialities($operatorLicenseId) {
+    $sql = "SELECT * FROM driver_operator_sub_specialities WHERE operator_license_id = ?";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([$operatorLicenseId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function deleteDriverOperatorLicenses($driverId) {
+    $sql = "DELETE FROM driver_operator_licenses WHERE driver_id = ?";
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([$driverId]);
+}
+
+public function addDriverOperatorLicense($driverId, $speciality, $expiryDate) {
+    $sql = "INSERT INTO driver_operator_licenses (driver_id, speciality, expiry_date) VALUES (?, ?, ?)";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([$driverId, $speciality, $expiryDate]);
+    return $this->pdo->lastInsertId();
+}
+
+public function addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType) {
+    $sql = "INSERT INTO driver_operator_sub_specialities (operator_license_id, sub_speciality, group_type) VALUES (?, ?, ?)";
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([$operatorLicenseId, $subSpeciality, $groupType]);
+}
 }

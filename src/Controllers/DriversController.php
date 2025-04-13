@@ -1,7 +1,5 @@
 <?php
-
 namespace Drivejob\Controllers;
-
 use Drivejob\Models\DriversModel;
 use Drivejob\Models\DriverAssessmentModel;
 use Drivejob\Core\Validator;
@@ -67,6 +65,24 @@ class DriversController {
         $driverId = $_SESSION['user_id'];
         $driverData = $this->driversModel->getDriverById($driverId);
         
+        // Λήψη των αδειών οδήγησης του οδηγού
+        $driverLicenses = $this->driversModel->getDriverLicenses($driverId);
+        $driverLicenseTypes = array_column($driverLicenses, 'license_type');
+        $driverPEI = array_column(array_filter($driverLicenses, function($license) {
+            return $license['has_pei'] == 1;
+        }), 'license_type');
+        
+        // Λήψη του πιστοποιητικού ADR του οδηγού
+        $driverADR = $this->driversModel->getDriverADRCertificate($driverId);
+        
+        // Λήψη της άδειας χειριστή μηχανημάτων του οδηγού
+        $driverOperator = $this->driversModel->getDriverOperatorLicense($driverId);
+        $driverOperatorSubSpecialities = [];
+        
+        if ($driverOperator) {
+            $driverOperatorSubSpecialities = $this->driversModel->getDriverOperatorSubSpecialities($driverOperator['id']);
+        }
+        
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/drivers/edit_profile.php';
     }
@@ -77,7 +93,7 @@ class DriversController {
     public function update() {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         AuthMiddleware::hasRole('driver');
-        
+            
         // Έλεγχος για CSRF token
         if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
             $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
@@ -148,21 +164,6 @@ class DriversController {
         // Λήψη ID του συνδεδεμένου οδηγού
         $driverId = $_SESSION['user_id'];
         
-        // Έλεγχος κωδικού αν ζητήθηκε αλλαγή
-        if (!empty($_POST['current_password'])) {
-            $driver = $this->driversModel->getDriverById($driverId);
-            
-            if (!password_verify($_POST['current_password'], $driver['password'])) {
-                $_SESSION['error_message'] = 'Ο τρέχων κωδικός είναι λανθασμένος.';
-                header('Location: ' . BASE_URL . 'drivers/edit-profile');
-                exit();
-            }
-            
-            // Αλλαγή κωδικού
-            $hashedPassword = password_hash($_POST['new_password'], PASSWORD_BCRYPT);
-            $this->driversModel->updatePassword($driverId, $hashedPassword);
-        }
-        
         // Συλλογή των δεδομένων από τη φόρμα
         $data = [
             'first_name' => $_POST['first_name'],
@@ -177,38 +178,60 @@ class DriversController {
             'postal_code' => $_POST['postal_code'] ?? null,
             'about_me' => $_POST['about_me'] ?? null,
             'experience_years' => $_POST['experience_years'] ? intval($_POST['experience_years']) : null,
-            'driving_license' => isset($_POST['driving_license']) ? $_POST['driving_license_type'] : null,
-            'driving_license_expiry' => $_POST['driving_license_expiry'] ?? null,
-            'adr_certificate' => isset($_POST['adr_certificate']) ? 1 : 0,
-            'adr_certificate_expiry' => $_POST['adr_certificate_expiry'] ?? null,
-            'operator_license' => isset($_POST['operator_license']) ? 1 : 0,
-            'operator_license_expiry' => $_POST['operator_license_expiry'] ?? null,
-            'training_seminars' => isset($_POST['training_seminars']) ? 1 : 0,
-            'training_details' => $_POST['training_details'] ?? null,
             'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
             'preferred_job_type' => $_POST['preferred_job_type'] ?? null,
             'preferred_vehicle_type' => $_POST['preferred_vehicle_type'] ?? null,
             'preferred_location' => $_POST['preferred_location'] ?? null,
+            'preferred_radius' => $_POST['preferred_radius'] ?? null,
+            'salary_min' => $_POST['salary_min'] ?? null,
+            'salary_max' => $_POST['salary_max'] ?? null,
+            'salary_period' => $_POST['salary_period'] ?? null,
             'social_linkedin' => $_POST['social_linkedin'] ?? null,
             'social_facebook' => $_POST['social_facebook'] ?? null,
             'social_twitter' => $_POST['social_twitter'] ?? null,
             'social_instagram' => $_POST['social_instagram'] ?? null,
             'willing_to_relocate' => isset($_POST['willing_to_relocate']) ? 1 : 0,
             'willing_to_travel' => isset($_POST['willing_to_travel']) ? 1 : 0,
-            // Προσθήκη πεδίων που δεν υπάρχουν ακόμη στη βάση
-            // 'salary_min' => $_POST['salary_min'] ?? null,
-            // 'salary_max' => $_POST['salary_max'] ?? null,
-            // 'salary_period' => $_POST['salary_period'] ?? null,
-            // 'preferred_radius' => $_POST['preferred_radius'] ?? null,
         ];
-        
-        // Επεξεργασία ADR κλάσεων αν έχουν επιλεγεί
-        if (isset($_POST['adr_certificate_classes']) && is_array($_POST['adr_certificate_classes'])) {
-            $data['adr_classes'] = implode(',', $_POST['adr_certificate_classes']);
-        }
         
         // Ενημέρωση του προφίλ
         if ($this->driversModel->updateProfile($driverId, $data)) {
+            // Διαχείριση αδειών οδήγησης
+            $this->driversModel->deleteDriverLicenses($driverId);
+            if (isset($_POST['license_types']) && is_array($_POST['license_types'])) {
+                foreach ($_POST['license_types'] as $licenseType) {
+                    $hasPei = false;
+                    if (($licenseType == 'C' || $licenseType == 'CE') && isset($_POST['has_pei_c'])) {
+                        $hasPei = true;
+                    } else if (($licenseType == 'D' || $licenseType == 'DE') && isset($_POST['has_pei_d'])) {
+                        $hasPei = true;
+                    }
+                    
+                    $this->driversModel->addDriverLicense($driverId, $licenseType, $hasPei, $_POST['driving_license_expiry']);
+                }
+            }
+            
+            // Διαχείριση πιστοποιητικού ADR
+            $this->driversModel->deleteDriverADRCertificates($driverId);
+            if (isset($_POST['adr_certificate']) && $_POST['adr_certificate'] && isset($_POST['adr_certificate_type'])) {
+                $this->driversModel->addDriverADRCertificate($driverId, $_POST['adr_certificate_type'], $_POST['adr_certificate_expiry']);
+            }
+            
+            // Διαχείριση άδειας χειριστή μηχανημάτων
+            $this->driversModel->deleteDriverOperatorLicenses($driverId);
+            if (isset($_POST['operator_license']) && $_POST['operator_license'] && isset($_POST['operator_speciality'])) {
+                $operatorLicenseId = $this->driversModel->addDriverOperatorLicense($driverId, $_POST['operator_speciality'], $_POST['operator_license_expiry']);
+                
+                if (isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
+                    foreach ($_POST['operator_sub_specialities'] as $subSpeciality) {
+                        // Εδώ θα πρέπει να καθορίσετε τον τύπο ομάδας (A ή B) για κάθε υποειδικότητα
+                        // είτε με ένα lookup πίνακα είτε από τη φόρμα
+                        $groupType = $this->getSubSpecialityGroupType($subSpeciality);
+                        $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType);
+                    }
+                }
+            }
+            
             // Διαχείριση μεταφόρτωσης εικόνας προφίλ αν υπάρχει
             if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
                 $this->handleProfileImageUpload($driverId);
@@ -580,5 +603,31 @@ class DriversController {
         $distance = $earthRadius * $c;
         
         return round($distance, 1);
+    }
+    
+    /**
+     * Βοηθητική μέθοδος για τον καθορισμό του τύπου ομάδας υποειδικότητας
+     */
+    private function getSubSpecialityGroupType($subSpeciality) {
+        // Πίνακας με τις ομάδες για κάθε υποειδικότητα
+        $groupTypes = [
+            '1.1' => 'A', '1.2' => 'B', '1.3' => 'A', '1.4' => 'A', '1.5' => 'A',
+            '1.6' => 'B', '1.7' => 'B', '1.8' => 'A', '1.9' => 'B',
+            '2.1' => 'A', '2.2' => 'A', '2.3' => 'B', '2.4' => 'B', '2.5' => 'B',
+            '2.6' => 'A', '2.7' => 'A', '2.8' => 'B', '2.9' => 'A',
+            '3.1' => 'A', '3.2' => 'A', '3.3' => 'A', '3.4' => 'B', '3.5' => 'A',
+            '3.6' => 'B', '3.7' => 'A', '3.8' => 'B', '3.9' => 'B', '3.10' => 'B',
+            '3.11' => 'A', '3.12' => 'B',
+            '4.1' => 'A', '4.2' => 'A', '4.3' => 'B', '4.4' => 'B', '4.5' => 'A',
+            '4.6' => 'B', '4.7' => 'A', '4.8' => 'B',
+            '5.1' => 'A', '5.2' => 'A', '5.3' => 'A', '5.4' => 'B', '5.5' => 'A',
+            '5.6' => 'A',
+            '6.1' => 'A', '6.2' => 'B',
+            '7.1' => 'A', '7.2' => 'A', '7.3' => 'B',
+            '8.1' => 'A', '8.2' => 'A', '8.3' => 'B', '8.4' => 'A', '8.5' => 'A',
+            '8.6' => 'B', '8.7' => 'B', '8.8' => 'A', '8.9' => 'B'
+        ];
+        
+        return $groupTypes[$subSpeciality] ?? 'A';
     }
 }
