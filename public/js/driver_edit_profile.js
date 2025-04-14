@@ -282,3 +282,221 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+// JavaScript για τη διαχείριση της καρτέλας Άδειας Οδήγησης
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Διαχείριση των checkbox ΠΕΙ και των αντίστοιχων πεδίων ημερομηνίας
+    const peiCheckboxes = document.querySelectorAll('input[name^="has_pei_"]');
+    
+    peiCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // Εύρεση του κοντινότερου πεδίου ημερομηνίας ΠΕΙ
+            const dateField = this.closest('.pei-field').querySelector('input[type="date"]');
+            if (dateField) {
+                dateField.disabled = !this.checked;
+                
+                // Αν ενεργοποιείται το ΠΕΙ και δεν έχει ημερομηνία, ορίζουμε την τρέχουσα
+                if (this.checked && !dateField.value) {
+                    const today = new Date();
+                    const threeYearsLater = new Date(today.setFullYear(today.getFullYear() + 5));
+                    dateField.value = threeYearsLater.toISOString().split('T')[0];
+                }
+            }
+        });
+    });
+    
+    // Συγχρονισμός των ημερομηνιών λήξης για τις διάφορες ομάδες κατηγοριών
+    
+    // Ομάδες κατηγοριών αδειών για συγχρονισμό
+    const licenseGroups = {
+        'motorcycle': ['AM', 'A1', 'A2', 'A'],         // Δίκυκλα
+        'car': ['B', 'BE'],                            // Επιβατικά
+        'truck': ['C1', 'C1E', 'C', 'CE'],             // Φορτηγά
+        'bus': ['D1', 'D1E', 'D', 'DE']                // Λεωφορεία
+    };
+    
+    // Συγχρονισμός για κάθε ομάδα
+    for (const groupName in licenseGroups) {
+        // Βρίσκουμε όλα τα πεδία ημερομηνιών λήξης για την τρέχουσα ομάδα
+        const expiryFields = [];
+        licenseGroups[groupName].forEach(licenseType => {
+            const field = document.querySelector(`input[name="license_expiry[${licenseType}]"]`);
+            if (field) expiryFields.push(field);
+        });
+        
+        // Προσθέτουμε event listeners για συγχρονισμό
+        expiryFields.forEach(field => {
+            field.addEventListener('change', function() {
+                const newDate = this.value;
+                expiryFields.forEach(f => {
+                    if (f !== this && !f.disabled) {
+                        f.value = newDate;
+                    }
+                });
+            });
+        });
+    }
+    
+    // Συγχρονισμός των ημερομηνιών λήξης ΠΕΙ για κατηγορίες C,CE,C1,C1E
+    const peiCExpiryFields = document.querySelectorAll('input[name="pei_c_expiry"]');
+    peiCExpiryFields.forEach(field => {
+        field.addEventListener('change', function() {
+            const newDate = this.value;
+            peiCExpiryFields.forEach(f => {
+                if (f !== this && !f.disabled) {
+                    f.value = newDate;
+                }
+            });
+        });
+    });
+    
+    // Συγχρονισμός των ημερομηνιών λήξης ΠΕΙ για κατηγορίες D,DE,D1,D1E
+    const peiDExpiryFields = document.querySelectorAll('input[name="pei_d_expiry"]');
+    peiDExpiryFields.forEach(field => {
+        field.addEventListener('change', function() {
+            const newDate = this.value;
+            peiDExpiryFields.forEach(f => {
+                if (f !== this && !f.disabled) {
+                    f.value = newDate;
+                }
+            });
+        });
+    });
+    
+    // Χειρισμός των checkbox κατηγοριών αδειών
+    const licenseTypeCheckboxes = document.querySelectorAll('input[name="license_types[]"]');
+    licenseTypeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // Εύρεση του πλησιέστερου πεδίου ημερομηνίας λήξης
+            const row = this.closest('tr');
+            const dateField = row.querySelector('input[type="date"][name^="license_expiry"]');
+            const peiField = row.querySelector('.pei-field');
+            
+            if (dateField) {
+                dateField.disabled = !this.checked;
+            }
+            
+            // Χειρισμός των πεδίων ΠΕΙ
+            if (peiField) {
+                const peiCheckbox = peiField.querySelector('input[type="checkbox"]');
+                const peiDateField = peiField.querySelector('input[type="date"]');
+                
+                if (!this.checked) {
+                    // Αν η κατηγορία δεν είναι επιλεγμένη, απενεργοποιούμε το ΠΕΙ
+                    peiCheckbox.disabled = true;
+                    peiDateField.disabled = true;
+                } else {
+                    // Αν η κατηγορία είναι επιλεγμένη, ενεργοποιούμε το checkbox ΠΕΙ
+                    peiCheckbox.disabled = false;
+                    // Το πεδίο ημερομηνίας ΠΕΙ ενεργοποιείται μόνο αν το checkbox ΠΕΙ είναι επιλεγμένο
+                    peiDateField.disabled = !peiCheckbox.checked;
+                }
+            }
+        });
+    });
+    
+    // Αρχικοποίηση των πεδίων ΠΕΙ ανάλογα με την κατάσταση των κατηγοριών
+    licenseTypeCheckboxes.forEach(checkbox => {
+        if (!checkbox.checked) {
+            const row = checkbox.closest('tr');
+            const peiField = row.querySelector('.pei-field');
+            
+            if (peiField) {
+                const peiCheckbox = peiField.querySelector('input[type="checkbox"]');
+                const peiDateField = peiField.querySelector('input[type="date"]');
+                
+                peiCheckbox.disabled = true;
+                peiDateField.disabled = true;
+            }
+        }
+    });
+    
+    // Αρχικοποίηση της συμπεριφοράς των tabs
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Αφαίρεση ενεργής κατάστασης από όλα τα tabs
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            // Ενεργοποίηση του επιλεγμένου tab
+            this.classList.add('active');
+            document.getElementById(targetTab).classList.add('active');
+        });
+    });
+    
+    // Χειρισμός της μεταφόρτωσης εικόνων διπλώματος
+    const imageInputs = document.querySelectorAll('input[type="file"]');
+    imageInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Έλεγχος μεγέθους αρχείου (max 2MB)
+            if (this.files.length > 0) {
+                const fileSize = this.files[0].size / 1024 / 1024; // σε MB
+                if (fileSize > 2) {
+                    alert('Το αρχείο είναι πολύ μεγάλο. Μέγιστο επιτρεπόμενο μέγεθος: 2MB');
+                    this.value = ''; // Καθαρισμός της επιλογής
+                    return;
+                }
+                
+                // Έλεγχος τύπου αρχείου
+                const fileType = this.files[0].type;
+                if (!['image/jpeg', 'image/png', 'image/gif'].includes(fileType)) {
+                    alert('Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.');
+                    this.value = '';
+                    return;
+                }
+                
+                // Προεπισκόπηση εικόνας (αν ήδη υπάρχει η δομή)
+                const parent = this.parentElement;
+                let previewContainer = parent.querySelector('.current-image');
+                
+                if (!previewContainer) {
+                    // Δημιουργία νέου container για προεπισκόπηση
+                    previewContainer = document.createElement('div');
+                    previewContainer.className = 'current-image';
+                    
+                    const previewImg = document.createElement('img');
+                    const previewText = document.createElement('p');
+                    previewText.textContent = 'Προεπισκόπηση';
+                    
+                    previewContainer.appendChild(previewImg);
+                    previewContainer.appendChild(previewText);
+                    
+                    // Προσθήκη πριν από το input
+                    parent.insertBefore(previewContainer, this);
+                }
+                
+                // Ενημέρωση προεπισκόπησης
+                const previewImg = previewContainer.querySelector('img');
+                const file = this.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                };
+                
+                reader.readAsDataURL(file);
+                previewContainer.style.display = 'block';
+            }
+        });
+    });
+    
+    // Αρχικοποίηση του πεδίου κωδικών (στήλη 12)
+    const licenseCodesInput = document.getElementById('license_codes');
+    if (licenseCodesInput) {
+        licenseCodesInput.addEventListener('input', function() {
+            // Εδώ θα μπορούσαμε να προσθέσουμε επικύρωση ή μορφοποίηση για τους κωδικούς
+            // Για παράδειγμα, αυτόματο διαχωρισμό με κόμματα, μετατροπή σε κεφαλαία, κτλ.
+            this.value = this.value.toUpperCase();
+        });
+    }
+});
+
+// Μελλοντική υλοποίηση για το σκανάρισμα του διπλώματος με OCR
+// Θα χρειαστεί να χρησιμοποιηθεί ένα API όπως το Tesseract.js ή κάποια cloud υπηρεσία
+function scanLicense() {
+    // Υλοποίηση OCR
+    alert('Η λειτουργία σκαναρίσματος διπλώματος θα είναι διαθέσιμη σύντομα!');
+}

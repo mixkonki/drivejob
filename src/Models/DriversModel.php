@@ -358,41 +358,66 @@ class DriversModel {
         return $stmt->execute([$driverId]);
     }
 
-    /**
-     * Προσθέτει μια νέα άδεια οδήγησης για τον οδηγό
-     * 
-     * @param int $driverId ID του οδηγού
-     * @param string $licenseType Τύπος άδειας
-     * @param bool $hasPei Αν έχει ΠΕΙ
-     * @param string|null $expiryDate Ημερομηνία λήξης
-     * @param string|null $licenseNumber Αριθμός άδειας
-     * @param string|null $peiExpiryC Ημερομηνία λήξης ΠΕΙ για εμπορεύματα
-     * @param string|null $peiExpiryD Ημερομηνία λήξης ΠΕΙ για επιβάτες
-     * @param string|null $licenseDocumentExpiry Ημερομηνία λήξης εντύπου άδειας
-     * @return int|false ID της νέας εγγραφής ή false σε αποτυχία
-     */
-    public function addDriverLicense($driverId, $licenseType, $hasPei = false, $expiryDate = null, $licenseNumber = null, $peiExpiryC = null, $peiExpiryD = null, $licenseDocumentExpiry = null) {
-        $sql = "INSERT INTO driver_licenses (driver_id, license_type, has_pei, expiry_date, license_number, pei_expiry_c, pei_expiry_d, license_document_expiry) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+   /**
+ * Ενημερώνει την εικόνα του διπλώματος του οδηγού (εμπρόσθια ή οπίσθια όψη)
+ * 
+ * @param int $driverId ID του οδηγού
+ * @param string $imageType Τύπος εικόνας ('license_front' ή 'license_back')
+ * @param string $imagePath Διαδρομή προς την εικόνα
+ * @return bool Επιτυχία ή αποτυχία της ενημέρωσης
+ */
+public function updateDriverLicenseImage($driverId, $imageType, $imagePath) {
+    try {
+        $columnName = $imageType . '_image'; // Δημιουργία του ονόματος της στήλης (license_front_image ή license_back_image)
         
+        $sql = "UPDATE drivers SET $columnName = :imagePath WHERE id = :driverId";
         $stmt = $this->pdo->prepare($sql);
-        $result = $stmt->execute([
-            $driverId, 
-            $licenseType, 
-            $hasPei ? 1 : 0, 
-            $expiryDate, 
-            $licenseNumber,
-            $peiExpiryC,
-            $peiExpiryD,
-            $licenseDocumentExpiry
-        ]);
+        $stmt->bindParam(':imagePath', $imagePath, \PDO::PARAM_STR);
+        $stmt->bindParam(':driverId', $driverId, \PDO::PARAM_INT);
         
-        if ($result) {
-            return $this->pdo->lastInsertId();
-        }
-        
+        return $stmt->execute();
+    } catch (\PDOException $e) {
+        // Καταγραφή του σφάλματος
+        error_log('Σφάλμα κατά την ενημέρωση εικόνας διπλώματος: ' . $e->getMessage());
         return false;
     }
+}
+
+/**
+ * Προσθήκη άδειας οδήγησης για τον οδηγό με βελτιωμένο χειρισμό των ημερομηνιών λήξης
+ * 
+ * @param int $driverId ID του οδηγού
+ * @param string $licenseType Τύπος άδειας (A, B, C, D, κλπ.)
+ * @param bool $hasPei Αν έχει ΠΕΙ
+ * @param string $expiryDate Ημερομηνία λήξης της κατηγορίας
+ * @param string $licenseNumber Αριθμός άδειας
+ * @param string $peiExpiryC Ημερομηνία λήξης ΠΕΙ για κατηγορία C
+ * @param string $peiExpiryD Ημερομηνία λήξης ΠΕΙ για κατηγορία D
+ * @param string $licenseDocumentExpiry Ημερομηνία λήξης εντύπου
+ * @return bool Επιτυχία ή αποτυχία της προσθήκης
+ */
+public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC = null, $peiExpiryD = null, $licenseDocumentExpiry = null) {
+    try {
+        $sql = "INSERT INTO driver_licenses (driver_id, license_type, has_pei, expiry_date, license_number, pei_expiry_c, pei_expiry_d, license_document_expiry) 
+                VALUES (:driver_id, :license_type, :has_pei, :expiry_date, :license_number, :pei_expiry_c, :pei_expiry_d, :license_document_expiry)";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':driver_id', $driverId, \PDO::PARAM_INT);
+        $stmt->bindParam(':license_type', $licenseType, \PDO::PARAM_STR);
+        $stmt->bindParam(':has_pei', $hasPei, \PDO::PARAM_BOOL);
+        $stmt->bindParam(':expiry_date', $expiryDate, \PDO::PARAM_STR);
+        $stmt->bindParam(':license_number', $licenseNumber, \PDO::PARAM_STR);
+        $stmt->bindParam(':pei_expiry_c', $peiExpiryC, \PDO::PARAM_STR);
+        $stmt->bindParam(':pei_expiry_d', $peiExpiryD, \PDO::PARAM_STR);
+        $stmt->bindParam(':license_document_expiry', $licenseDocumentExpiry, \PDO::PARAM_STR);
+        
+        return $stmt->execute();
+    } catch (\PDOException $e) {
+        // Καταγραφή του σφάλματος
+        error_log('Σφάλμα κατά την προσθήκη άδειας οδήγησης: ' . $e->getMessage());
+        return false;
+    }
+}
 
     /**
      * Λαμβάνει όλες τις άδειες οδήγησης του οδηγού

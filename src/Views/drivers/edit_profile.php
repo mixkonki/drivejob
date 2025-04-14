@@ -13,6 +13,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_edit_profile.css">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="<?php echo BASE_URL; ?>js/license_ocr.js"></script>
 
 <main>
     <div class="container">
@@ -166,7 +168,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         </div>
                     </div>
                     
-                   <!-- Tab για Άδειες Οδήγησης με βελτιωμένη διάταξη -->
+<!-- Tab για Άδειες Οδήγησης με βελτιωμένη διάταξη -->
 <div class="tab-pane" id="driving-licenses">
     <h2>Άδειες Οδήγησης</h2>
     
@@ -195,10 +197,36 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                     </div>
                 </div>
                 
+                <!-- Κωδικοί στήλης 12 του διπλώματος -->
+                <div class="form-group">
+                    <label for="license_codes">Κωδικοί Περιορισμών/Πληροφοριών (Στήλη 12)</label>
+                    <input type="text" id="license_codes" name="license_codes" value="<?php echo old('license_codes', $driverData['license_codes'] ?? ''); ?>" placeholder="π.χ. 01.01, 78, 95">
+                    <p class="form-hint">Εισάγετε τους κωδικούς που αναγράφονται στη στήλη 12 του διπλώματος, χωρισμένους με κόμμα</p>
+                </div>
+                
                 <!-- Οπτική αναπαράσταση της άδειας οδήγησης -->
                 <div class="license-visual">
-                    <img src="<?php echo BASE_URL; ?>img/license_front.png" alt="Εμπρόσθια όψη άδειας" class="license-image">
-                    <img src="<?php echo BASE_URL; ?>img/license_back.png" alt="Οπίσθια όψη άδειας" class="license-image">
+                    <div class="form-group">
+                        <label for="license_front_image">Εμπρόσθια Όψη Διπλώματος</label>
+                        <?php if (isset($driverData['license_front_image']) && $driverData['license_front_image']): ?>
+                            <div class="current-image">
+                                <img src="<?php echo BASE_URL . htmlspecialchars($driverData['license_front_image']); ?>" alt="Εμπρόσθια όψη διπλώματος">
+                                <p>Τρέχουσα εικόνα</p>
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" id="license_front_image" name="license_front_image" accept="image/jpeg, image/png, image/gif">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="license_back_image">Οπίσθια Όψη Διπλώματος</label>
+                        <?php if (isset($driverData['license_back_image']) && $driverData['license_back_image']): ?>
+                            <div class="current-image">
+                                <img src="<?php echo BASE_URL . htmlspecialchars($driverData['license_back_image']); ?>" alt="Οπίσθια όψη διπλώματος">
+                                <p>Τρέχουσα εικόνα</p>
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" id="license_back_image" name="license_back_image" accept="image/jpeg, image/png, image/gif">
+                    </div>
                 </div>
             </div>
 
@@ -236,7 +264,10 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="motorcycle_license_expiry" value="<?php echo old('motorcycle_license_expiry', $motorbikeExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[AM]" value="<?php 
+                                    echo old('license_expiry[AM]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'AM')); 
+                                ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
                         </tr>
@@ -255,7 +286,10 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="motorcycle_license_expiry" value="<?php echo old('motorcycle_license_expiry', $motorbikeExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[A1]" value="<?php 
+                                    echo old('license_expiry[A1]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'A1')); 
+                                ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
                         </tr>
@@ -274,7 +308,10 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="motorcycle_license_expiry" value="<?php echo old('motorcycle_license_expiry', $motorbikeExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[A2]" value="<?php 
+                                    echo old('license_expiry[A2]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'A2')); 
+                                ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
                         </tr>
@@ -293,7 +330,10 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="motorcycle_license_expiry" value="<?php echo old('motorcycle_license_expiry', $motorbikeExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[A]" value="<?php 
+                                    echo old('license_expiry[A]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'A')); 
+                                ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
                         </tr>
@@ -317,7 +357,10 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="car_license_expiry" value="<?php echo old('car_license_expiry', $carExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[B]" value="<?php 
+                                    echo old('license_expiry[B]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'B')); 
+                                ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
                         </tr>
@@ -336,14 +379,18 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="car_license_expiry" value="<?php echo old('car_license_expiry', $carExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[BE]" value="<?php 
+                                    echo old('license_expiry[BE]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'BE')); 
+                                ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
                         </tr>
                         
                         <!-- Φορτηγά -->
                         <tr class="category-header">
-                            <td colspan="5"><strong>Φορτηγά</strong></td>
+                            <td colspan="4"><strong>Φορτηγά</strong></td>
+                            <td><strong>ΠΕΙ</strong></td>
                         </tr>
                         <tr>
                             <td>
@@ -360,13 +407,49 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="truck_license_expiry" value="<?php echo old('truck_license_expiry', $truckExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[C1]" value="<?php 
+                                    echo old('license_expiry[C1]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'C1')); 
+                                ?>">
                             </td>
                             <td>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="has_pei_c1" value="1" <?php echo (in_array('C1', $driverPEI)) ? 'checked' : ''; ?>>
-                                    <span class="checkmark"></span>
+                                <div class="pei-field">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="has_pei_c1" value="1" <?php echo (in_array('C1', $driverPEI)) ? 'checked' : ''; ?>>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <input type="date" name="pei_c_expiry" value="<?php echo old('pei_c_expiry', $peiCExpiryDate ?? ''); ?>" <?php echo (in_array('C1', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/c1e.png" alt="C1E">
+                                    <span>C1E</span>
+                                </div>
+                            </td>
+                            <td>Φορτηγά < 7.5t με ρυμουλκούμενο</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="C1E" <?php echo (in_array('C1E', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
                                 </label>
+                            </td>
+                            <td>
+                                <input type="date" name="license_expiry[C1E]" value="<?php 
+                                    echo old('license_expiry[C1E]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'C1E')); 
+                                ?>">
+                            </td>
+                            <td>
+                                <div class="pei-field">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="has_pei_c1e" value="1" <?php echo (in_array('C1E', $driverPEI)) ? 'checked' : ''; ?>>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <input type="date" name="pei_c_expiry" value="<?php echo old('pei_c_expiry', $peiCExpiryDate ?? ''); ?>" <?php echo (in_array('C1E', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                </div>
                             </td>
                         </tr>
                         <tr>
@@ -384,13 +467,19 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="truck_license_expiry" value="<?php echo old('truck_license_expiry', $truckExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[C]" value="<?php 
+                                    echo old('license_expiry[C]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'C')); 
+                                ?>">
                             </td>
                             <td>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="has_pei_c" value="1" <?php echo (in_array('C', $driverPEI)) ? 'checked' : ''; ?>>
-                                    <span class="checkmark"></span>
-                                </label>
+                                <div class="pei-field">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="has_pei_c" value="1" <?php echo (in_array('C', $driverPEI)) ? 'checked' : ''; ?>>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <input type="date" name="pei_c_expiry" value="<?php echo old('pei_c_expiry', $peiCExpiryDate ?? ''); ?>" <?php echo (in_array('C', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                </div>
                             </td>
                         </tr>
                         <tr>
@@ -408,19 +497,26 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="truck_license_expiry" value="<?php echo old('truck_license_expiry', $truckExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[CE]" value="<?php 
+                                    echo old('license_expiry[CE]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'CE')); 
+                                ?>">
                             </td>
                             <td>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="has_pei_ce" value="1" <?php echo (in_array('CE', $driverPEI)) ? 'checked' : ''; ?>>
-                                    <span class="checkmark"></span>
-                                </label>
+                                <div class="pei-field">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="has_pei_ce" value="1" <?php echo (in_array('CE', $driverPEI)) ? 'checked' : ''; ?>>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <input type="date" name="pei_c_expiry" value="<?php echo old('pei_c_expiry', $peiCExpiryDate ?? ''); ?>" <?php echo (in_array('CE', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                </div>
                             </td>
                         </tr>
                         
                         <!-- Λεωφορεία -->
                         <tr class="category-header">
-                            <td colspan="5"><strong>Λεωφορεία</strong></td>
+                            <td colspan="4"><strong>Λεωφορεία</strong></td>
+                            <td><strong>ΠΕΙ</strong></td>
                         </tr>
                         <tr>
                             <td>
@@ -437,13 +533,49 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="bus_license_expiry" value="<?php echo old('bus_license_expiry', $busExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[D1]" value="<?php 
+                                    echo old('license_expiry[D1]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'D1')); 
+                                ?>">
                             </td>
                             <td>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="has_pei_d1" value="1" <?php echo (in_array('D1', $driverPEI)) ? 'checked' : ''; ?>>
-                                    <span class="checkmark"></span>
+                                <div class="pei-field">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="has_pei_d1" value="1" <?php echo (in_array('D1', $driverPEI)) ? 'checked' : ''; ?>>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <input type="date" name="pei_d_expiry" value="<?php echo old('pei_d_expiry', $peiDExpiryDate ?? ''); ?>" <?php echo (in_array('D1', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/d1e.png" alt="D1E">
+                                    <span>D1E</span>
+                                </div>
+                            </td>
+                            <td>Μικρά λεωφορεία με ρυμουλκούμενο</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="D1E" <?php echo (in_array('D1E', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
                                 </label>
+                            </td>
+                            <td>
+                                <input type="date" name="license_expiry[D1E]" value="<?php 
+                                    echo old('license_expiry[D1E]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'D1E')); 
+                                ?>">
+                            </td>
+                            <td>
+                                <div class="pei-field">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="has_pei_d1e" value="1" <?php echo (in_array('D1E', $driverPEI)) ? 'checked' : ''; ?>>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <input type="date" name="pei_d_expiry" value="<?php echo old('pei_d_expiry', $peiDExpiryDate ?? ''); ?>" <?php echo (in_array('D1E', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                </div>
                             </td>
                         </tr>
                         <tr>
@@ -461,13 +593,19 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="bus_license_expiry" value="<?php echo old('bus_license_expiry', $busExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[D]" value="<?php 
+                                    echo old('license_expiry[D]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'D')); 
+                                ?>">
                             </td>
                             <td>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="has_pei_d" value="1" <?php echo (in_array('D', $driverPEI)) ? 'checked' : ''; ?>>
-                                    <span class="checkmark"></span>
-                                </label>
+                                <div class="pei-field">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="has_pei_d" value="1" <?php echo (in_array('D', $driverPEI)) ? 'checked' : ''; ?>>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <input type="date" name="pei_d_expiry" value="<?php echo old('pei_d_expiry', $peiDExpiryDate ?? ''); ?>" <?php echo (in_array('D', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                </div>
                             </td>
                         </tr>
                         <tr>
@@ -485,38 +623,39 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 </label>
                             </td>
                             <td>
-                                <input type="date" name="bus_license_expiry" value="<?php echo old('bus_license_expiry', $busExpiryDate ?? ''); ?>">
+                                <input type="date" name="license_expiry[DE]" value="<?php 
+                                    echo old('license_expiry[DE]', 
+                                    getExpiryDateForLicenseType($driverLicenses, 'DE')); 
+                                ?>">
                             </td>
                             <td>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="has_pei_de" value="1" <?php echo (in_array('DE', $driverPEI)) ? 'checked' : ''; ?>>
-                                    <span class="checkmark"></span>
-                                </label>
+                                <div class="pei-field">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="has_pei_de" value="1" <?php echo (in_array('DE', $driverPEI)) ? 'checked' : ''; ?>>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <input type="date" name="pei_d_expiry" value="<?php echo old('pei_d_expiry', $peiDExpiryDate ?? ''); ?>" <?php echo (in_array('DE', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            
-            <!-- Στοιχεία ΠΕΙ -->
-            <div class="pei-section" id="pei_section">
-                <h4>Πιστοποιητικό Επαγγελματικής Ικανότητας (ΠΕΙ)</h4>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="pei_c_expiry">Ημερομηνία Λήξης ΠΕΙ Εμπορευμάτων (C/CE)</label>
-                        <input type="date" id="pei_c_expiry" name="pei_c_expiry" value="<?php echo old('pei_c_expiry', $peiCExpiryDate ?? ''); ?>">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="pei_d_expiry">Ημερομηνία Λήξης ΠΕΙ Επιβατών (D/DE)</label>
-                        <input type="date" id="pei_d_expiry" name="pei_d_expiry" value="<?php echo old('pei_d_expiry', $peiDExpiryDate ?? ''); ?>">
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
+
+<?php
+// Βοηθητική συνάρτηση για την εύρεση ημερομηνίας λήξης κατηγορίας
+function getExpiryDateForLicenseType($licenses, $type) {
+    foreach ($licenses as $license) {
+        if ($license['license_type'] === $type) {
+            return $license['expiry_date'] ?? '';
+        }
+    }
+    return '';
+}
+?>
 
 <!-- Tab για Πιστοποιητικά ADR -->
 <div class="tab-pane" id="adr-certificates">
@@ -803,4 +942,3 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 // Συμπερίληψη του footer
 include ROOT_DIR . '/src/Views/footer.php'; 
 ?>
-```
