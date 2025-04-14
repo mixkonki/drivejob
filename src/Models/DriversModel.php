@@ -103,60 +103,54 @@ class DriversModel {
      * Ενημερώνει το προφίλ ενός οδηγού
      */
     public function updateProfile($id, $data) {
-        $sql = "UPDATE drivers SET
-            first_name = :first_name,
-            last_name = :last_name,
-            phone = :phone,
-            landline = :landline,
-            birth_date = :birth_date,
-            address = :address,
-            house_number = :house_number,
-            city = :city,
-            country = :country,
-            postal_code = :postal_code,
-            about_me = :about_me,
-            experience_years = :experience_years,
-            driving_license = :driving_license,
-            driving_license_expiry = :driving_license_expiry,
-            adr_certificate = :adr_certificate,
-            adr_certificate_expiry = :adr_certificate_expiry,
-            operator_license = :operator_license,
-            operator_license_expiry = :operator_license_expiry,
-            training_seminars = :training_seminars,
-            training_details = :training_details,
-            available_for_work = :available_for_work,
-            preferred_job_type = :preferred_job_type,
-            preferred_location = :preferred_location,
-            social_linkedin = :social_linkedin
-        WHERE id = :id";
-        
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([
-            'id' => $id,
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
-            'phone' => $data['phone'],
-            'birth_date' => $data['birth_date'] ?: null,
-            'address' => $data['address'] ?: null,
-            'house_number' => $data['house_number'] ?: null,
-            'city' => $data['city'] ?: null,
-            'country' => $data['country'] ?: null,
-            'postal_code' => $data['postal_code'] ?: null,
-            'about_me' => $data['about_me'] ?: null,
-            'experience_years' => $data['experience_years'] ?: null,
-            'driving_license' => $data['driving_license'] ?: null,
-            'driving_license_expiry' => $data['driving_license_expiry'] ?: null,
-            'adr_certificate' => isset($data['adr_certificate']) ? 1 : 0,
-            'adr_certificate_expiry' => $data['adr_certificate_expiry'] ?: null,
-            'operator_license' => isset($data['operator_license']) ? 1 : 0,
-            'operator_license_expiry' => $data['operator_license_expiry'] ?: null,
-            'training_seminars' => isset($data['training_seminars']) ? 1 : 0,
-            'training_details' => $data['training_details'] ?: null,
-            'available_for_work' => isset($data['available_for_work']) ? 1 : 0,
-            'preferred_job_type' => $data['preferred_job_type'] ?: null,
-            'preferred_location' => $data['preferred_location'] ?: null,
-            'social_linkedin' => $data['social_linkedin'] ?: null
-        ]);
+        try {
+            // Καθορίζουμε τα γνωστά πεδία του πίνακα drivers
+            $knownFields = [
+                'first_name', 'last_name', 'phone', 'landline', 'birth_date', 
+                'address', 'house_number', 'city', 'country', 'postal_code', 
+                'about_me', 'experience_years', 'driving_license', 
+                'driving_license_expiry', 'adr_certificate', 
+                'adr_certificate_expiry', 'operator_license', 
+                'operator_license_expiry', 'training_seminars', 
+                'training_details', 'available_for_work', 
+                'preferred_job_type', 'preferred_location', 'social_linkedin'
+            ];
+    
+            // Φιλτράρουμε το $data για να κρατήσουμε μόνο τα πεδία που υπάρχουν στον πίνακα
+            $filteredData = [];
+            foreach ($knownFields as $field) {
+                // Ορίζουμε προεπιλεγμένες τιμές για πεδία που λείπουν
+                if (array_key_exists($field, $data)) {
+                    $filteredData[$field] = $data[$field];
+                } else {
+                    // Ειδικός χειρισμός για πεδία boolean
+                    if (in_array($field, ['adr_certificate', 'operator_license', 'training_seminars', 'available_for_work'])) {
+                        $filteredData[$field] = 0;
+                    } else {
+                        $filteredData[$field] = null;
+                    }
+                }
+            }
+    
+            // Δημιουργία SET μέρους του SQL
+            $setSql = [];
+            foreach ($filteredData as $field => $value) {
+                $setSql[] = "$field = :$field";
+            }
+            
+            $sql = "UPDATE drivers SET " . implode(", ", $setSql) . " WHERE id = :id";
+            
+            $stmt = $this->pdo->prepare($sql);
+            
+            // Προσθήκη του ID στα δεδομένα για το WHERE clause
+            $filteredData['id'] = $id;
+            
+            // Εκτέλεση του ερωτήματος με τα φιλτραρισμένα δεδομένα
+            return $stmt->execute($filteredData);
+        } catch (PDOException $e) {
+            error_log("Error updating driver profile: " . $e->getMessage());
+            return false;
+        }
     }
     
     /**
