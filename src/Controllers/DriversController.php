@@ -29,25 +29,57 @@ class DriversController {
         $driverId = $_SESSION['user_id'];
         $driverData = $this->driversModel->getDriverById($driverId);
         
+        // Λήψη των αδειών οδήγησης του οδηγού
+       // Λήψη των αδειών οδήγησης του οδηγού
+    $driverLicenses = $this->driversModel->getDriverLicenses($driverId);
+    $driverLicenseTypes = !empty($driverLicenses) ? array_column($driverLicenses, 'license_type') : [];
+    
+    // Έλεγχος για ΠΕΙ
+    $hasPeiC = false;
+    $hasPeiD = false;
+    $peiCExpiryDate = null;
+    $peiDExpiryDate = null;
+    
+    if (!empty($driverLicenses)) {
+        foreach ($driverLicenses as $license) {
+            if (!empty($license['has_pei']) && $license['has_pei'] == 1) {
+                if (in_array($license['license_type'], ['C', 'CE', 'C1', 'C1E'])) {
+                    $hasPeiC = true;
+                    if (!empty($license['pei_expiry_c'])) {
+                        $peiCExpiryDate = $license['pei_expiry_c'];
+                    }
+                } else if (in_array($license['license_type'], ['D', 'DE', 'D1', 'D1E'])) {
+                    $hasPeiD = true;
+                    if (!empty($license['pei_expiry_d'])) {
+                        $peiDExpiryDate = $license['pei_expiry_d'];
+                    }
+                }
+            }
+        }
+    }
+        // Στο DriversController.php, μέθοδος profile():
+$peiCExpiryDate = null;
+$peiDExpiryDate = null;
+
+foreach ($driverLicenses as $license) {
+    if (isset($license['has_pei']) && $license['has_pei'] == 1) {
+        if (in_array($license['license_type'], ['C', 'CE', 'C1', 'C1E']) && !empty($license['pei_expiry_c'])) {
+            $peiCExpiryDate = $license['pei_expiry_c'];
+        } else if (in_array($license['license_type'], ['D', 'DE', 'D1', 'D1E']) && !empty($license['pei_expiry_d'])) {
+            $peiDExpiryDate = $license['pei_expiry_d'];
+        }
+    }
+}
         // Λήψη των αγγελιών του οδηγού
         $jobListingModel = new \Drivejob\Models\JobListingModel($this->pdo);
         $listings = $jobListingModel->getDriverListings($driverId, null, 1, 5);
         
         // Λήψη των συντεταγμένων της τοποθεσίας του οδηγού για τον χάρτη
-      // Λήψη των συντεταγμένων της τοποθεσίας του οδηγού για τον χάρτη
-$driverLocation = null;
-if (!empty($driverData['address']) && !empty($driverData['city'])) {
-    $address = urlencode($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']);
-    $driverLocation = $this->getGeocodingData($address);
-}
-
-// Συνεχίστε μόνο αν έχουμε έγκυρες συντεταγμένες
-if ($driverLocation !== null) {
-    // Κώδικας που χρησιμοποιεί το $driverLocation
-} else {
-    // Προσθέστε μια σημείωση στο session ότι οι συντεταγμένες δεν βρέθηκαν
-    $_SESSION['info_message'] = 'Δεν ήταν δυνατή η εύρεση συντεταγμένων για τη διεύθυνσή σας.';
-}
+        $driverLocation = null;
+        if (!empty($driverData['address']) && !empty($driverData['city'])) {
+            $address = urlencode($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']);
+            $driverLocation = $this->getGeocodingData($address);
+        }
         
         // Λήψη δεδομένων αυτοαξιολόγησης
         // Προς το παρόν επιστρέφουμε ψευδή δεδομένα για επίδειξη
@@ -171,40 +203,42 @@ public function update() {
     if ($this->driversModel->updateProfile($driverId, $data)) {
         // Διαχείριση αδειών οδήγησης
         $this->driversModel->deleteDriverLicenses($driverId);
-        if (isset($_POST['license_types']) && is_array($_POST['license_types'])) {
-            $licenseNumber = $_POST['license_number'] ?? null;
-            $licenseDocumentExpiry = $_POST['license_document_expiry'] ?? null;
-            
-            foreach ($_POST['license_types'] as $licenseType) {
-                $hasPei = false;
-                $peiExpiryC = null;
-                $peiExpiryD = null;
-                
-                // Έλεγχος για ΠΕΙ στις κατηγορίες C και D (και υποκατηγορίες)
-                if (in_array($licenseType, ['C', 'CE', 'C1', 'C1E'])) {
-                    // Έλεγχος για το αντίστοιχο checkbox ΠΕΙ
-                    $peiCheckboxName = 'has_pei_' . strtolower($licenseType);
-                    if (isset($_POST[$peiCheckboxName])) {
-                        $hasPei = true;
-                        // Αποθήκευση της ημερομηνίας λήξης ΠΕΙ εμπορευμάτων
-                        $peiExpiryC = !empty($_POST['pei_c_expiry']) ? $_POST['pei_c_expiry'] : null;
-                    }
-                } else if (in_array($licenseType, ['D', 'DE', 'D1', 'D1E'])) {
-                    // Έλεγχος για το αντίστοιχο checkbox ΠΕΙ
-                    $peiCheckboxName = 'has_pei_' . strtolower($licenseType);
-                    if (isset($_POST[$peiCheckboxName])) {
-                        $hasPei = true;
-                        // Αποθήκευση της ημερομηνίας λήξης ΠΕΙ επιβατών
-                        $peiExpiryD = !empty($_POST['pei_d_expiry']) ? $_POST['pei_d_expiry'] : null;
-                    }
-                }
-                
-                // Λήψη της ημερομηνίας λήξης για τη συγκεκριμένη κατηγορία
-                $expiryDate = $_POST['license_expiry'][$licenseType] ?? null;
-                
-                $this->driversModel->addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC, $peiExpiryD, $licenseDocumentExpiry);
+if (isset($_POST['license_types']) && is_array($_POST['license_types'])) {
+    $licenseNumber = $_POST['license_number'] ?? null;
+    $licenseDocumentExpiry = $_POST['license_document_expiry'] ?? null;
+    
+    // Συλλογή όλων των ημερομηνιών ΠΕΙ
+    $peiExpiryC = isset($_POST['pei_c_expiry']) ? $_POST['pei_c_expiry'] : null;
+    $peiExpiryD = isset($_POST['pei_d_expiry']) ? $_POST['pei_d_expiry'] : null;
+    
+    foreach ($_POST['license_types'] as $licenseType) {
+        $hasPei = false;
+        $peiExpiryC = null;
+        $peiExpiryD = null;
+        
+        // Έλεγχος για ΠΕΙ στις κατηγορίες C και D (και υποκατηγορίες)
+        if (in_array($licenseType, ['C', 'CE', 'C1', 'C1E'])) {
+            // Έλεγχος για το αντίστοιχο checkbox ΠΕΙ
+            $peiCheckboxName = 'has_pei_' . strtolower($licenseType);
+            if (isset($_POST[$peiCheckboxName])) {
+                $hasPei = true;
+                $peiExpiryC = !empty($_POST['pei_c_expiry']) ? $_POST['pei_c_expiry'] : null;
+            }
+        } else if (in_array($licenseType, ['D', 'DE', 'D1', 'D1E'])) {
+            // Έλεγχος για το αντίστοιχο checkbox ΠΕΙ
+            $peiCheckboxName = 'has_pei_' . strtolower($licenseType);
+            if (isset($_POST[$peiCheckboxName])) {
+                $hasPei = true;
+                $peiExpiryD = !empty($_POST['pei_d_expiry']) ? $_POST['pei_d_expiry'] : null;
             }
         }
+        
+        // Λήψη της ημερομηνίας λήξης για τη συγκεκριμένη κατηγορία
+        $expiryDate = $_POST['license_expiry'][$licenseType] ?? null;
+        
+        $this->driversModel->addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC, $peiExpiryD, $licenseDocumentExpiry);
+    }
+}
         
         // Διαχείριση μεταφόρτωσης εικόνας εμπρόσθιας όψης διπλώματος
         if (isset($_FILES['license_front_image']) && $_FILES['license_front_image']['error'] === UPLOAD_ERR_OK) {

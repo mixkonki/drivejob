@@ -1,114 +1,28 @@
 /**
- * Script για την υλοποίηση OCR με Tesseract.js για το σκανάρισμα διπλώματος οδήγησης
- * 
- * Αυτό το αρχείο θα πρέπει να προστεθεί στη σελίδα edit_profile.php
- * Θα χρειαστεί να συμπεριλάβετε το Tesseract.js από το CDN
- * 
- * <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
- */
-
-// Όταν φορτώσει το DOM
-document.addEventListener('DOMContentLoaded', function() {
-    // Σύνδεση των κουμπιών σκαναρίσματος με τις αντίστοιχες λειτουργίες
-    const scanFrontButton = document.getElementById('scan-license-front');
-    const scanBackButton = document.getElementById('scan-license-back');
-    
-    if (scanFrontButton) {
-        scanFrontButton.addEventListener('click', function() {
-            scanLicenseSide('front');
-        });
-    }
-    
-    if (scanBackButton) {
-        scanBackButton.addEventListener('click', function() {
-            scanLicenseSide('back');
-        });
-    }
-});
-
-/**
- * Σκανάρει την εμπρόσθια ή οπίσθια όψη του διπλώματος
- * 
- * @param {string} side - 'front' για την εμπρόσθια όψη, 'back' για την οπίσθια
- */
-function scanLicenseSide(side) {
-    // Αναφορά στο πεδίο εισαγωγής αρχείου
-    const inputId = (side === 'front') ? 'license_front_image' : 'license_back_image';
-    const fileInput = document.getElementById(inputId);
-    
-    // Έλεγχος αν έχει επιλεγεί αρχείο
-    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-        alert('Παρακαλώ επιλέξτε πρώτα μια εικόνα του διπλώματος.');
-        return;
-    }
-    
-    // Εμφάνιση μηνύματος φόρτωσης
-    const loadingDiv = document.createElement('div');
-    loadingDiv.className = 'ocr-loading';
-    loadingDiv.innerHTML = `
-        <div class="spinner"></div>
-        <p>Γίνεται σάρωση της εικόνας... Παρακαλώ περιμένετε.</p>
-    `;
-    document.body.appendChild(loadingDiv);
-    
-    // Μετατροπή του αρχείου σε URL
-    const imageFile = fileInput.files[0];
-    const imageUrl = URL.createObjectURL(imageFile);
-    
-    // Εκτέλεση του OCR με Tesseract.js
-    Tesseract.recognize(
-        imageUrl,
-        'ell+eng', // Ελληνικά + Αγγλικά για καλύτερη αναγνώριση
-        { 
-            logger: m => console.log(m),
-            // Εκπαίδευσε το μοντέλο για αναγνώριση εγγράφων αυτοκινήτου
-            tessedit_ocr_engine_mode: '3',
-            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789αβγδεζηθικλμνξοπρστυφχψω.-'
-        }
-    ).then(({ data: { text } }) => {
-        console.log('OCR Result:', text);
-        
-        // Αφαίρεση του μηνύματος φόρτωσης
-        document.body.removeChild(loadingDiv);
-        
-        // Επεξεργασία του κειμένου για εξαγωγή πληροφοριών
-        if (side === 'front') {
-            processFrontSideText(text);
-        } else {
-            processBackSideText(text);
-        }
-        
-        // Απελευθέρωση της μνήμης
-        URL.revokeObjectURL(imageUrl);
-    }).catch(err => {
-        console.error('OCR Error:', err);
-        alert('Σφάλμα κατά το σκανάρισμα: ' + err.message);
-        document.body.removeChild(loadingDiv);
-        URL.revokeObjectURL(imageUrl);
-    });
-}
-
-/**
  * Επεξεργάζεται το κείμενο από την εμπρόσθια όψη του διπλώματος
  * 
  * @param {string} text - Το κείμενο που εξήχθη από το OCR
  */
 function processFrontSideText(text) {
+    console.log("Επεξεργασία εμπρόσθιας όψης...");
+    
     // Εξαγωγή αριθμού άδειας (πεδίο 5)
     let licenseNumber = extractLicenseNumber(text);
     if (licenseNumber) {
+        console.log("Αριθμός άδειας:", licenseNumber);
         document.getElementById('license_number').value = licenseNumber;
     }
     
     // Εξαγωγή ημερομηνίας λήξης εντύπου (πεδίο 4β)
     let documentExpiry = extractDocumentExpiry(text);
     if (documentExpiry) {
+        console.log("Ημερομηνία λήξης εντύπου:", documentExpiry);
         document.getElementById('license_document_expiry').value = documentExpiry;
     }
     
-    // Άλλες εξαγωγές...
-    
-    alert('Ολοκληρώθηκε η σάρωση της εμπρόσθιας όψης του διπλώματος.');
+    alert('Ολοκληρώθηκε η επεξεργασία της εμπρόσθιας όψης του διπλώματος.\n' + 
+          (licenseNumber ? 'Αριθμός άδειας: ' + licenseNumber + '\n' : '') + 
+          (documentExpiry ? 'Ημερομηνία λήξης: ' + documentExpiry : ''));
 }
 
 /**
@@ -117,36 +31,59 @@ function processFrontSideText(text) {
  * @param {string} text - Το κείμενο που εξήχθη από το OCR
  */
 function processBackSideText(text) {
+    console.log("Επεξεργασία οπίσθιας όψης...");
+    
     // Εξαγωγή κωδικών περιορισμών από τη στήλη 12
     let licenseCodes = extractLicenseCodes(text);
     if (licenseCodes) {
+        console.log("Κωδικοί:", licenseCodes);
         document.getElementById('license_codes').value = licenseCodes;
     }
     
     // Εξαγωγή κατηγοριών αδειών και ημερομηνιών λήξης
     let categories = extractLicenseCategories(text);
+    console.log("Εντοπίστηκαν κατηγορίες:", categories);
+    
     if (categories && categories.length > 0) {
         // Επιλογή των αντίστοιχων checkboxes και συμπλήρωση ημερομηνιών
         categories.forEach(cat => {
             // Εύρεση του checkbox για τη συγκεκριμένη κατηγορία
             const checkbox = document.querySelector(`input[name="license_types[]"][value="${cat.type}"]`);
             if (checkbox) {
+                console.log(`Ενεργοποίηση κατηγορίας ${cat.type}`);
                 checkbox.checked = true;
+                
+                // Πυροδότηση του event change για να ενεργοποιηθούν τα σχετικά πεδία
+                const event = new Event('change');
+                checkbox.dispatchEvent(event);
                 
                 // Συμπλήρωση της ημερομηνίας λήξης
                 const dateField = document.querySelector(`input[name="license_expiry[${cat.type}]"]`);
                 if (dateField && cat.expiry) {
+                    console.log(`Ημερομηνία λήξης για ${cat.type}: ${cat.expiry}`);
                     dateField.value = cat.expiry;
                     
                     // Ενημέρωση των συγχρονισμένων πεδίων
-                    const event = new Event('change');
-                    dateField.dispatchEvent(event);
+                    const changeEvent = new Event('change');
+                    dateField.dispatchEvent(changeEvent);
                 }
+            } else {
+                console.log(`Δεν βρέθηκε το checkbox για την κατηγορία ${cat.type}`);
             }
         });
     }
     
-    alert('Ολοκληρώθηκε η σάρωση της οπίσθιας όψης του διπλώματος.');
+    let message = 'Ολοκληρώθηκε η επεξεργασία της οπίσθιας όψης του διπλώματος.\n';
+    if (licenseCodes) {
+        message += 'Κωδικοί: ' + licenseCodes + '\n';
+    }
+    if (categories && categories.length > 0) {
+        message += 'Κατηγορίες που εντοπίστηκαν: ' + categories.map(cat => cat.type).join(', ');
+    } else {
+        message += 'Δεν εντοπίστηκαν κατηγορίες αδειών.';
+    }
+    
+    alert(message);
 }
 
 /**
@@ -156,12 +93,23 @@ function processBackSideText(text) {
  * @return {string|null} Ο αριθμός άδειας ή null αν δεν βρέθηκε
  */
 function extractLicenseNumber(text) {
-    // Παράδειγμα αναγνώρισης με regex
-    // Στην πραγματικότητα, χρειάζεται πιο προηγμένη αναγνώριση βάσει της μορφής του ελληνικού διπλώματος
-    const regex = /(?:ΑΡΙΘ\s*ΑΔΕΙΑΣ|5\s*\.)[^\d]*(\d{6,10})/i;
-    const match = text.match(regex);
+    console.log("Αναζήτηση αριθμού άδειας...");
     
-    return match ? match[1] : null;
+    // Διάφορα πρότυπα αναζήτησης για να καλύψουμε διαφορετικές μορφές
+    const patterns = [
+        /(?:ΑΡΙΘ\s*ΑΔΕΙΑΣ|5\s*\.)[^\d]*(\d{6,10})/i,
+        /(?:5\.)[^\d]*([A-Z0-9]{5,10})/i,
+        /(?:ΑΡΙΘΜΟΣ ΑΔΕΙΑΣ)[^\d]*([A-Z0-9]{5,10})/i
+    ];
+    
+    for (const regex of patterns) {
+        const match = text.match(regex);
+        if (match) {
+            return match[1];
+        }
+    }
+    
+    return null;
 }
 
 /**
@@ -171,16 +119,23 @@ function extractLicenseNumber(text) {
  * @return {string|null} Η ημερομηνία σε μορφή YYYY-MM-DD ή null αν δεν βρέθηκε
  */
 function extractDocumentExpiry(text) {
-    // Παράδειγμα αναγνώρισης με regex
-    // Αναζήτηση ημερομηνίας μετά το "4β" ή "ΛΗΞΗ"
-    const regex = /(?:4β|ΛΗΞΗ)[^\d]*(\d{2})[\/\.\-](\d{2})[\/\.\-](\d{4})/i;
-    const match = text.match(regex);
+    console.log("Αναζήτηση ημερομηνίας λήξης εντύπου...");
     
-    if (match) {
-        const day = match[1];
-        const month = match[2];
-        const year = match[3];
-        return `${year}-${month}-${day}`;
+    // Διάφορα πρότυπα για διαφορετικές μορφές ημερομηνίας
+    const patterns = [
+        /(?:4β|ΛΗΞΗ)[^\d]*(\d{2})[\/\.\-](\d{2})[\/\.\-](\d{4})/i,
+        /(?:4β|ΛΗΞΗ)[^\d]*(\d{1,2})[\s\/\.\-](\d{1,2})[\s\/\.\-](\d{4})/i,
+        /(?:ΗΜΕΡΟΜΗΝΙΑ ΛΗΞΗΣ)[^\d]*(\d{1,2})[\s\/\.\-](\d{1,2})[\s\/\.\-](\d{4})/i
+    ];
+    
+    for (const regex of patterns) {
+        const match = text.match(regex);
+        if (match) {
+            const day = match[1].padStart(2, '0');
+            const month = match[2].padStart(2, '0');
+            const year = match[3];
+            return `${year}-${month}-${day}`;
+        }
     }
     
     return null;
@@ -193,11 +148,23 @@ function extractDocumentExpiry(text) {
  * @return {string|null} Οι κωδικοί ή null αν δεν βρέθηκαν
  */
 function extractLicenseCodes(text) {
-    // Παράδειγμα αναγνώρισης κωδικών - στήλη 12
-    const regex = /(?:12|ΚΩΔΙΚΟΙ)[^\d]*([0-9,.]+)/i;
-    const match = text.match(regex);
+    console.log("Αναζήτηση κωδικών...");
     
-    return match ? match[1] : null;
+    // Διάφορα πρότυπα για τους κωδικούς
+    const patterns = [
+        /(?:12|ΚΩΔΙΚΟΙ)[^\d]*([\d\.,]+)/i,
+        /(?:12\.)[^\d]*([\d\.,]+)/i,
+        /(?:ΚΩΔΙΚΟΙ ΠΕΡΙΟΡΙΣΜΩΝ)[^\d]*([\d\.,]+)/i
+    ];
+    
+    for (const regex of patterns) {
+        const match = text.match(regex);
+        if (match) {
+            return match[1];
+        }
+    }
+    
+    return null;
 }
 
 /**
@@ -207,69 +174,44 @@ function extractLicenseCodes(text) {
  * @return {Array|null} Πίνακας με τις κατηγορίες και τις ημερομηνίες λήξης
  */
 function extractLicenseCategories(text) {
-    // Αυτή η συνάρτηση είναι πιο περίπλοκη και εξαρτάται από τη μορφή του διπλώματος
-    // Παράδειγμα απλής αναγνώρισης
+    console.log("Αναζήτηση κατηγοριών αδειών...");
+    
     const categories = [];
     
     // Τυπικές κατηγορίες για αναζήτηση
     const typesToSearch = ['AM', 'A1', 'A2', 'A', 'B', 'BE', 'C1', 'C1E', 'C', 'CE', 'D1', 'D1E', 'D', 'DE'];
     
+    // Έλεγχος για κάθε κατηγορία στο κείμενο
     typesToSearch.forEach(type => {
-        // Ψάχνουμε την κατηγορία ακολουθούμενη από ημερομηνία
-        const regex = new RegExp(`${type}[^\\d]*(\\d{2})[/\\.-](\\d{2})[/\\.-](\\d{4})`, 'i');
-        const match = text.match(regex);
+        // Διάφορα πρότυπα για την εύρεση ημερομηνιών
+        const patterns = [
+            // Πρότυπο για "B 01.01.2030" ή "B 01/01/2030"
+            new RegExp(`${type}\\s+(\\d{2})[/\\.-](\\d{2})[/\\.-](\\d{4})`, 'i'),
+            // Πρότυπο για "B έως 01.01.2030"
+            new RegExp(`${type}[^\\d]*(?:έως|μέχρι|λήξη)[^\\d]*(\\d{2})[/\\.-](\\d{2})[/\\.-](\\d{4})`, 'i'),
+            // Πρότυπο για κατηγορία και ημερομηνία σε διαφορετικές γραμμές
+            new RegExp(`${type}[^\\n]*\\n[^\\d]*(\\d{2})[/\\.-](\\d{2})[/\\.-](\\d{4})`, 'i')
+        ];
         
-        if (match) {
-            const day = match[1];
-            const month = match[2];
-            const year = match[3];
-            
-            categories.push({
-                type: type,
-                expiry: `${year}-${month}-${day}`
-            });
+        // Έλεγχος κάθε προτύπου
+        for (const regex of patterns) {
+            const match = text.match(regex);
+            if (match) {
+                const day = match[1].padStart(2, '0');
+                const month = match[2].padStart(2, '0');
+                const year = match[3];
+                const expiryDate = `${year}-${month}-${day}`;
+                
+                categories.push({
+                    type: type,
+                    expiry: expiryDate
+                });
+                
+                // Αν βρέθηκε ταίριασμα, δεν χρειάζεται να ελέγξουμε τα υπόλοιπα πρότυπα
+                break;
+            }
         }
     });
     
     return categories.length > 0 ? categories : null;
 }
-
-// Προσθήκη CSS για το spinner φόρτωσης
-const style = document.createElement('style');
-style.textContent = `
-    .ocr-loading {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-    }
-    
-    .ocr-loading p {
-        color: white;
-        font-size: 18px;
-        margin-top: 20px;
-    }
-    
-    .spinner {
-        border: 8px solid #f3f3f3;
-        border-top: 8px solid #aa3636;
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        animation: spin 2s linear infinite;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-`;
-
-document.head.appendChild(style);

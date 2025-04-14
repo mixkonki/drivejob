@@ -4,11 +4,12 @@ use Drivejob\Core\Session;
 // Ξεκίνημα συνεδρίας
 Session::start();
 
-// Ορισμός των Content Security Policy headers
-header("Content-Security-Policy: default-src 'self'; script-src 'self' https://maps.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://maps.googleapis.com; frame-src 'self' https://maps.google.com https://www.google.com;");
+// Ορισμός των Content Security Policy headers με υποστήριξη για WebAssembly
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://maps.googleapis.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://maps.googleapis.com blob: data:; frame-src 'self' https://maps.google.com https://www.google.com; worker-src 'self' blob:;");
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
+
 
 // Βοηθητική συνάρτηση για να ελέγχουμε την τρέχουσα σελίδα
 if (!function_exists('isCurrentPage')) {

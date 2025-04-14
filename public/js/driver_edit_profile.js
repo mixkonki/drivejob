@@ -317,19 +317,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Συγχρονισμός για κάθε ομάδα
     for (const groupName in licenseGroups) {
-        // Βρίσκουμε όλα τα πεδία ημερομηνιών λήξης για την τρέχουσα ομάδα
         const expiryFields = [];
         licenseGroups[groupName].forEach(licenseType => {
             const field = document.querySelector(`input[name="license_expiry[${licenseType}]"]`);
-            if (field) expiryFields.push(field);
+            // Ελέγχουμε αν το checkbox είναι ενεργοποιημένο
+            const checkbox = document.querySelector(`input[name="license_types[]"][value="${licenseType}"]`);
+            if (field && checkbox && checkbox.checked) {
+                expiryFields.push(field);
+            }
         });
         
-        // Προσθέτουμε event listeners για συγχρονισμό
         expiryFields.forEach(field => {
             field.addEventListener('change', function() {
                 const newDate = this.value;
                 expiryFields.forEach(f => {
-                    if (f !== this && !f.disabled) {
+                    if (f !== this) {
                         f.value = newDate;
                     }
                 });
@@ -500,3 +502,35 @@ function scanLicense() {
     // Υλοποίηση OCR
     alert('Η λειτουργία σκαναρίσματος διπλώματος θα είναι διαθέσιμη σύντομα!');
 }
+// Ορισμός της συνάρτησης στο global scope (window)
+window.loadSubSpecialities = function(specialityId) {
+    const subSpecialityContainer = document.getElementById('subSpecialityContainer');
+    const subSpecialitiesDiv = document.getElementById('subSpecialities');
+    
+    if (!specialityId) {
+        subSpecialityContainer.style.display = 'none';
+        return;
+    }
+    
+    subSpecialityContainer.style.display = 'block';
+    subSpecialitiesDiv.innerHTML = '';
+    
+    if (operatorSubSpecialities[specialityId]) {
+        operatorSubSpecialities[specialityId].forEach(item => {
+            const checkboxDiv = document.createElement('div');
+            checkboxDiv.className = 'checkbox-group';
+            
+            // Έλεγχος αν η συγκεκριμένη υποειδικότητα είναι επιλεγμένη
+            const isChecked = window.selectedSubSpecialities && window.selectedSubSpecialities.includes(item.id);
+            
+            checkboxDiv.innerHTML = `
+                <label class="checkbox-label">
+                    <input type="checkbox" name="operator_sub_specialities[]" value="${item.id}" ${isChecked ? 'checked' : ''}>
+                    <span>${item.id} - ${item.name} (Ομάδα ${item.group})</span>
+                </label>
+            `;
+            
+            subSpecialitiesDiv.appendChild(checkboxDiv);
+        });
+    }
+};

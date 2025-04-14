@@ -193,8 +193,13 @@ include ROOT_DIR . '/src/Views/header.php';
         <!-- Προβολή των κατηγοριών άδειας οδήγησης -->
         <div class="license-categories">
             <h3>Κατηγορίες</h3>
-            
             <?php if (count($driverLicenseTypes) > 0): ?>
+                <?php if (isset($driverLicenseTypes) && count($driverLicenseTypes) > 0): ?>
+    <!-- Κώδικας που χρησιμοποιεί το $driverLicenseTypes -->
+<?php else: ?>
+    <p class="no-categories">Δεν έχουν καταχωρηθεί κατηγορίες αδειών οδήγησης.</p>
+<?php endif; ?>
+            
                 <div class="license-categories-grid">
                     <?php 
                     // Ομαδοποίηση κατηγοριών
@@ -300,31 +305,39 @@ include ROOT_DIR . '/src/Views/header.php';
                 
                 if ($hasPeiC || $hasPeiD):
                 ?>
-                <div class="pei-info">
-                    <h3>Πιστοποιητικό Επαγγελματικής Ικανότητας (ΠΕΙ)</h3>
-                    <div class="pei-details">
-                        <?php if ($hasPeiC): ?>
-                            <div class="pei-item">
-                                <span class="pei-type">ΠΕΙ Εμπορευμάτων</span>
-                                <?php if ($peiCExpiry): ?>
-                                    <span class="pei-expiry <?php echo (strtotime($peiCExpiry) < time()) ? 'expired' : ((strtotime($peiCExpiry) - time()) < 60*60*24*90 ? 'expiring-soon' : ''); ?>">
-                                        Λήξη: <?php echo date('d/m/Y', strtotime($peiCExpiry)); ?>
-                                    </span>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <?php if ($hasPeiD): ?>
-                            <div class="pei-item">
-                                <span class="pei-type">ΠΕΙ Επιβατών</span>
-                                <?php if ($peiDExpiry): ?>
-                                    <span class="pei-expiry <?php echo (strtotime($peiDExpiry) < time()) ? 'expired' : ((strtotime($peiDExpiry) - time()) < 60*60*24*90 ? 'expiring-soon' : ''); ?>">
-                                        Λήξη: <?php echo date('d/m/Y', strtotime($peiDExpiry)); ?>
-                                    </span>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+              
+    <?php if (isset($hasPeiC) && $hasPeiC || isset($hasPeiD) && $hasPeiD): ?>
+    <div class="pei-info">
+        <h3>Πιστοποιητικό Επαγγελματικής Ικανότητας (ΠΕΙ)</h3>
+        <div class="pei-details">
+            <?php if (isset($hasPeiC) && $hasPeiC): ?>
+                <div class="pei-item">
+                    <span class="pei-type">ΠΕΙ Εμπορευμάτων</span>
+                    <?php if (isset($peiCExpiryDate) && $peiCExpiryDate): ?>
+                        <span class="pei-expiry <?php echo (strtotime($peiCExpiryDate) < time()) ? 'expired' : ((strtotime($peiCExpiryDate) - time()) < 60*60*24*90 ? 'expiring-soon' : ''); ?>">
+                            Λήξη: <?php echo date('d/m/Y', strtotime($peiCExpiryDate)); ?>
+                        </span>
+                    <?php else: ?>
+                        <span class="pei-expiry">Δεν έχει καταχωρηθεί ημερομηνία λήξης</span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($hasPeiD) && $hasPeiD): ?>
+                <div class="pei-item">
+                    <span class="pei-type">ΠΕΙ Επιβατών</span>
+                    <?php if (isset($peiDExpiryDate) && $peiDExpiryDate): ?>
+                        <span class="pei-expiry <?php echo (strtotime($peiDExpiryDate) < time()) ? 'expired' : ((strtotime($peiDExpiryDate) - time()) < 60*60*24*90 ? 'expiring-soon' : ''); ?>">
+                            Λήξη: <?php echo date('d/m/Y', strtotime($peiDExpiryDate)); ?>
+                        </span>
+                    <?php else: ?>
+                        <span class="pei-expiry">Δεν έχει καταχωρηθεί ημερομηνία λήξης</span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+<?php endif; ?>
                 </div>
                 <?php endif; ?>
             <?php else: ?>

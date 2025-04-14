@@ -397,26 +397,34 @@ public function updateDriverLicenseImage($driverId, $imageType, $imagePath) {
  * @return bool Επιτυχία ή αποτυχία της προσθήκης
  */
 public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC = null, $peiExpiryD = null, $licenseDocumentExpiry = null) {
-    try {
-        $sql = "INSERT INTO driver_licenses (driver_id, license_type, has_pei, expiry_date, license_number, pei_expiry_c, pei_expiry_d, license_document_expiry) 
-                VALUES (:driver_id, :license_type, :has_pei, :expiry_date, :license_number, :pei_expiry_c, :pei_expiry_d, :license_document_expiry)";
-        
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':driver_id', $driverId, \PDO::PARAM_INT);
-        $stmt->bindParam(':license_type', $licenseType, \PDO::PARAM_STR);
-        $stmt->bindParam(':has_pei', $hasPei, \PDO::PARAM_BOOL);
-        $stmt->bindParam(':expiry_date', $expiryDate, \PDO::PARAM_STR);
-        $stmt->bindParam(':license_number', $licenseNumber, \PDO::PARAM_STR);
-        $stmt->bindParam(':pei_expiry_c', $peiExpiryC, \PDO::PARAM_STR);
-        $stmt->bindParam(':pei_expiry_d', $peiExpiryD, \PDO::PARAM_STR);
-        $stmt->bindParam(':license_document_expiry', $licenseDocumentExpiry, \PDO::PARAM_STR);
-        
-        return $stmt->execute();
-    } catch (\PDOException $e) {
-        // Καταγραφή του σφάλματος
-        error_log('Σφάλμα κατά την προσθήκη άδειας οδήγησης: ' . $e->getMessage());
-        return false;
+    // Καθορισμός της ημερομηνίας λήξης ΠΕΙ ανάλογα με την κατηγορία
+    $peiExpiryCValue = null;
+    $peiExpiryDValue = null;
+    
+    if ($hasPei) {
+        if (in_array($licenseType, ['C', 'CE', 'C1', 'C1E'])) {
+            $peiExpiryCValue = $peiExpiryC;
+        } else if (in_array($licenseType, ['D', 'DE', 'D1', 'D1E'])) {
+            $peiExpiryDValue = $peiExpiryD;
+        }
     }
+    
+    $sql = "INSERT INTO driver_licenses (
+                driver_id, license_type, has_pei, expiry_date, 
+                license_number, pei_expiry_c, pei_expiry_d, license_document_expiry
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([
+        $driverId, 
+        $licenseType, 
+        $hasPei ? 1 : 0, 
+        $expiryDate, 
+        $licenseNumber,
+        $peiExpiryCValue, 
+        $peiExpiryDValue,
+        $licenseDocumentExpiry
+    ]);
 }
 
     /**

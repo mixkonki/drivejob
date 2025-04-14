@@ -1,5 +1,3 @@
-# Αναβαθμισμένη Φόρμα Επεξεργασίας Προφίλ Οδηγού (edit_profile.php)
-
 <?php 
 
 // Συμπερίληψη του header
@@ -11,9 +9,10 @@ $oldInput = $_SESSION['old_input'] ?? [];
 unset($_SESSION['errors'], $_SESSION['old_input']);
 ?>
 
+
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_edit_profile.css">
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="<?php echo BASE_URL; ?>js/libs/tesseract.min.js"></script>
 <script src="<?php echo BASE_URL; ?>js/license_ocr.js"></script>
 
 <main>
@@ -204,31 +203,37 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                     <p class="form-hint">Εισάγετε τους κωδικούς που αναγράφονται στη στήλη 12 του διπλώματος, χωρισμένους με κόμμα</p>
                 </div>
                 
-                <!-- Οπτική αναπαράσταση της άδειας οδήγησης -->
                 <div class="license-visual">
-                    <div class="form-group">
-                        <label for="license_front_image">Εμπρόσθια Όψη Διπλώματος</label>
-                        <?php if (isset($driverData['license_front_image']) && $driverData['license_front_image']): ?>
-                            <div class="current-image">
-                                <img src="<?php echo BASE_URL . htmlspecialchars($driverData['license_front_image']); ?>" alt="Εμπρόσθια όψη διπλώματος">
-                                <p>Τρέχουσα εικόνα</p>
-                            </div>
-                        <?php endif; ?>
-                        <input type="file" id="license_front_image" name="license_front_image" accept="image/jpeg, image/png, image/gif">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="license_back_image">Οπίσθια Όψη Διπλώματος</label>
-                        <?php if (isset($driverData['license_back_image']) && $driverData['license_back_image']): ?>
-                            <div class="current-image">
-                                <img src="<?php echo BASE_URL . htmlspecialchars($driverData['license_back_image']); ?>" alt="Οπίσθια όψη διπλώματος">
-                                <p>Τρέχουσα εικόνα</p>
-                            </div>
-                        <?php endif; ?>
-                        <input type="file" id="license_back_image" name="license_back_image" accept="image/jpeg, image/png, image/gif">
-                    </div>
-                </div>
+    <div class="form-group">
+        <label for="license_front_image">Εμπρόσθια Όψη Διπλώματος</label>
+        <?php if (isset($driverData['license_front_image']) && $driverData['license_front_image']): ?>
+            <div class="current-image">
+                <img src="<?php echo BASE_URL . htmlspecialchars($driverData['license_front_image']); ?>" alt="Εμπρόσθια όψη διπλώματος">
+                <p>Τρέχουσα εικόνα</p>
             </div>
+        <?php endif; ?>
+        <input type="file" id="license_front_image" name="license_front_image" accept="image/jpeg, image/png, image/gif">
+        <button type="button" id="scan-license-front" class="btn-scan">
+            <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
+            Σκανάρισμα με OCR
+        </button>
+    </div>
+    
+    <div class="form-group">
+        <label for="license_back_image">Οπίσθια Όψη Διπλώματος</label>
+        <?php if (isset($driverData['license_back_image']) && $driverData['license_back_image']): ?>
+            <div class="current-image">
+                <img src="<?php echo BASE_URL . htmlspecialchars($driverData['license_back_image']); ?>" alt="Οπίσθια όψη διπλώματος">
+                <p>Τρέχουσα εικόνα</p>
+            </div>
+        <?php endif; ?>
+        <input type="file" id="license_back_image" name="license_back_image" accept="image/jpeg, image/png, image/gif">
+        <button type="button" id="scan-license-back" class="btn-scan">
+            <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
+            Σκανάρισμα με OCR
+        </button>
+    </div>
+</div>
 
             <!-- Κατηγορίες Αδειών Οδήγησης με βελτιωμένη διάταξη σε πίνακα -->
             <h4>Κατηγορίες Αδειών Οδήγησης</h4>
@@ -747,7 +752,7 @@ function getExpiryDateForLicenseType($licenses, $type) {
         </label>
     </div>
     
-    <div id="operator_license_tab" class="license-details-tab <?php echo (!$driverOperator) ? 'hidden' : ''; ?>">
+    <select id="operator_speciality" name="operator_speciality" onchange="window.loadSubSpecialities(this.value)">
         <div class="form-group">
             <label for="operator_speciality">Επιλέξτε Ειδικότητα</label>
             <select id="operator_speciality" name="operator_speciality" onchange="loadSubSpecialities(this.value)">
@@ -761,6 +766,21 @@ function getExpiryDateForLicenseType($licenses, $type) {
                 <option value="7" <?php echo ($driverOperator && $driverOperator['speciality'] == '7') ? 'selected' : ''; ?>>7 - Εργασίες διάτρησης και κοπής εδαφών</option>
                 <option value="8" <?php echo ($driverOperator && $driverOperator['speciality'] == '8') ? 'selected' : ''; ?>>8 - Ειδικές εργασίες ανύψωσης</option>
             </select>
+            <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const specialitySelect = document.getElementById('operator_speciality');
+    if (specialitySelect) {
+        specialitySelect.addEventListener('change', function() {
+            loadSubSpecialities(this.value);
+        });
+        
+        // Αρχική φόρτωση αν υπάρχει τιμή
+        if (specialitySelect.value) {
+            loadSubSpecialities(specialitySelect.value);
+        }
+    }
+});
+</script>
         </div>
         
         <div id="subSpecialityContainer" class="form-group" style="display: <?php echo ($driverOperator) ? 'block' : 'none'; ?>;">
