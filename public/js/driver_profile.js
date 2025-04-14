@@ -225,3 +225,224 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+// JavaScript για τη διαχείριση των αδειών οδήγησης
+document.addEventListener('DOMContentLoaded', function() {
+    // Χειρισμός της εμφάνισης/απόκρυψης του τμήματος άδειας οδήγησης
+    const drivingLicenseCheckbox = document.getElementById('driving_license');
+    const drivingLicenseTab = document.getElementById('driving_license_tab');
+    
+    if (drivingLicenseCheckbox && drivingLicenseTab) {
+        drivingLicenseCheckbox.addEventListener('change', function() {
+            drivingLicenseTab.classList.toggle('hidden', !this.checked);
+        });
+    }
+    
+    // Διαχείριση ημερομηνιών λήξης για κάθε κατηγορία
+    const categoryExpiryMap = {
+        // Δίκυκλα
+        'AM': 'motorcycle_license_expiry',
+        'A1': 'motorcycle_license_expiry',
+        'A2': 'motorcycle_license_expiry',
+        'A': 'motorcycle_license_expiry',
+        
+        // Επιβατικά
+        'B': 'car_license_expiry',
+        'BE': 'car_license_expiry',
+        
+        // Φορτηγά
+        'C1': 'truck_license_expiry',
+        'C': 'truck_license_expiry',
+        'CE': 'truck_license_expiry',
+        'C1E': 'truck_license_expiry',
+        
+        // Λεωφορεία
+        'D1': 'bus_license_expiry',
+        'D': 'bus_license_expiry',
+        'DE': 'bus_license_expiry',
+        'D1E': 'bus_license_expiry'
+    };
+    
+    // Διαχείριση ορατότητας ΠΕΙ
+    const peiSection = document.getElementById('pei_section');
+    const peiCheckboxes = document.querySelectorAll('input[name^="has_pei_"]');
+    const licenseTypeCheckboxes = document.querySelectorAll('input[name="license_types[]"]');
+    
+    // Έλεγχος εάν πρέπει να εμφανιστεί το τμήμα ΠΕΙ
+    function updatePEIVisibility() {
+        // Έλεγχος αν υπάρχει τουλάχιστον μια κατηγορία C ή D που έχει επιλεγεί
+        const hasCOrDCategory = Array.from(licenseTypeCheckboxes).some(checkbox => {
+            if (!checkbox.checked) return false;
+            const category = checkbox.value;
+            return ['C', 'CE', 'C1', 'C1E', 'D', 'DE', 'D1', 'D1E'].includes(category);
+        });
+        
+        // Ενημέρωση ορατότητας τμήματος ΠΕΙ
+        if (peiSection) {
+            peiSection.classList.toggle('hidden', !hasCOrDCategory);
+        }
+    }
+    
+    // Ενημέρωση ορατότητας κατά την αρχικοποίηση
+    updatePEIVisibility();
+    
+    // Προσθήκη event listeners για το ΠΕΙ
+    licenseTypeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updatePEIVisibility);
+    });
+    
+    // Εμφάνιση επιβεβαιώσεων για τις ημερομηνίες λήξης
+    const expiryDateInputs = document.querySelectorAll('input[type="date"]');
+    
+    expiryDateInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Έλεγχος αν η ημερομηνία λήξης είναι κοντά ή έχει περάσει
+            if (this.value) {
+                const expiryDate = new Date(this.value);
+                const today = new Date();
+                const monthDiff = (expiryDate.getFullYear() - today.getFullYear()) * 12 + 
+                                  (expiryDate.getMonth() - today.getMonth());
+                
+                // Αφαίρεση προηγούμενων notification messages
+                const parent = this.closest('.form-group');
+                const existingNotification = parent.querySelector('.expiry-notification');
+                if (existingNotification) {
+                    parent.removeChild(existingNotification);
+                }
+                
+                // Προσθήκη notification ανάλογα με την κατάσταση της ημερομηνίας
+                const notification = document.createElement('div');
+                notification.className = 'expiry-notification';
+                
+                if (expiryDate < today) {
+                    // Έχει λήξει
+                    notification.className += ' expired';
+                    notification.textContent = 'Η άδεια έχει λήξει! Απαιτείται ανανέωση.';
+                } else if (monthDiff <= 3) {
+                    // Λήγει σε λιγότερο από 3 μήνες
+                    notification.className += ' expiring-soon';
+                    notification.textContent = 'Η άδεια λήγει σύντομα! Προγραμματίστε ανανέωση.';
+                }
+                
+                if (notification.textContent) {
+                    parent.appendChild(notification);
+                }
+            }
+        });
+        
+        // Trigger change event για τις ήδη συμπληρωμένες ημερομηνίες
+        if (input.value) {
+            const event = new Event('change');
+            input.dispatchEvent(event);
+        }
+    });
+    
+    // Συγχρονισμός κοινών ημερομηνιών λήξης για κάθε κατηγορία
+    
+    // Ομαδοποίηση ημερομηνιών ανά τύπο άδειας
+    const categoryGroups = {
+        'motorcycle': ['AM', 'A1', 'A2', 'A'],
+        'car': ['B', 'BE'],
+        'truck': ['C1', 'C1E', 'C', 'CE'],
+        'bus': ['D1', 'D1E', 'D', 'DE']
+    };
+    
+    // Προσθήκη event listeners για συγχρονισμό ημερομηνιών λήξης ανά κατηγορία
+    for (const groupName in categoryGroups) {
+        const expiryInput = document.querySelector(`input[name="${groupName}_license_expiry"]`);
+        
+        if (expiryInput) {
+            expiryInput.addEventListener('change', function() {
+                // Ενημέρωση όλων των σχετικών πεδίων στον πίνακα με την ίδια ημερομηνία
+                categoryGroups[groupName].forEach(category => {
+                    const checkboxes = document.querySelectorAll(`input[name="license_types[]"][value="${category}"]`);
+                    checkboxes.forEach(checkbox => {
+                        if (checkbox.checked) {
+                            // Βρίσκουμε το αντίστοιχο πεδίο ημερομηνίας λήξης στον πίνακα
+                            const row = checkbox.closest('tr');
+                            const dateInput = row.querySelector('input[type="date"]');
+                            if (dateInput) {
+                                dateInput.value = this.value;
+                                
+                                // Πυροδότηση του event change για ενημέρωση ειδοποιήσεων
+                                const event = new Event('change');
+                                dateInput.dispatchEvent(event);
+                            }
+                        }
+                    });
+                });
+            });
+        }
+    }
+    
+    // Διαχείριση της εμφάνισης των ειδοποιήσεων λήξης ΠΕΙ
+    const peiExpiryInputs = [
+        document.getElementById('pei_c_expiry'),
+        document.getElementById('pei_d_expiry')
+    ];
+    
+    peiExpiryInputs.forEach(input => {
+        if (input) {
+            input.addEventListener('change', function() {
+                if (this.value) {
+                    const expiryDate = new Date(this.value);
+                    const today = new Date();
+                    const monthDiff = (expiryDate.getFullYear() - today.getFullYear()) * 12 + 
+                                     (expiryDate.getMonth() - today.getMonth());
+                    
+                    // Αφαίρεση προηγούμενων ειδοποιήσεων
+                    const parent = this.closest('.form-group');
+                    const existingNotification = parent.querySelector('.pei-notification');
+                    if (existingNotification) {
+                        parent.removeChild(existingNotification);
+                    }
+                    
+                    // Προσθήκη ειδοποίησης ανάλογα με την κατάσταση του ΠΕΙ
+                    const notification = document.createElement('div');
+                    notification.className = 'pei-notification';
+                    
+                    if (expiryDate < today) {
+                        // Έχει λήξει
+                        notification.className += ' expired';
+                        notification.textContent = 'Το ΠΕΙ έχει λήξει! Απαιτείται ανανέωση.';
+                    } else if (monthDiff <= 3) {
+                        // Λήγει σε λιγότερο από 3 μήνες
+                        notification.className += ' expiring-soon';
+                        notification.textContent = 'Το ΠΕΙ λήγει σύντομα! Προγραμματίστε ανανέωση.';
+                    }
+                    
+                    if (notification.textContent) {
+                        parent.appendChild(notification);
+                    }
+                }
+            });
+            
+            // Trigger change event για τις ήδη συμπληρωμένες ημερομηνίες
+            if (input.value) {
+                const event = new Event('change');
+                input.dispatchEvent(event);
+            }
+        }
+    });
+    
+    // Αυτόματη επιλογή ΠΕΙ όταν επιλέγεται μια κατηγορία C ή D
+    licenseTypeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                const category = this.value;
+                
+                // Αυτόματη επιλογή του αντίστοιχου checkbox ΠΕΙ
+                if (['C', 'CE', 'C1', 'C1E'].includes(category)) {
+                    const peiCCheckbox = document.querySelector('input[name="has_pei_c"]');
+                    if (peiCCheckbox) {
+                        peiCCheckbox.checked = true;
+                    }
+                } else if (['D', 'DE', 'D1', 'D1E'].includes(category)) {
+                    const peiDCheckbox = document.querySelector('input[name="has_pei_d"]');
+                    if (peiDCheckbox) {
+                        peiDCheckbox.checked = true;
+                    }
+                }
+            }
+        });
+    });
+});

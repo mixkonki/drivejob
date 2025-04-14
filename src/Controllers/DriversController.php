@@ -99,225 +99,236 @@ if ($driverLocation !== null) {
     /**
      * Αποθηκεύει τις αλλαγές στο προφίλ
      */
-    public function update() {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        AuthMiddleware::hasRole('driver');
-            
-        // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-            $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
-            header('Location: ' . BASE_URL . 'drivers/edit-profile');
-            exit();
-        }
+    /**
+ * Αποθηκεύει τις αλλαγές στο προφίλ
+ */
+public function update() {
+    // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+    AuthMiddleware::hasRole('driver');
         
-        // Επικύρωση βασικών δεδομένων
-        $validator = new Validator($_POST);
-        $validator->required('first_name', 'Το όνομα είναι υποχρεωτικό.')
-                  ->required('last_name', 'Το επώνυμο είναι υποχρεωτικό.')
-                  ->required('phone', 'Το τηλέφωνο είναι υποχρεωτικό.')
-                  ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
-        
-        // Επιπλέον επικύρωση για προαιρετικά πεδία
-        if (!empty($_POST['landline'])) {
-            $validator->pattern('landline', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο σταθερό τηλέφωνο.');
-        }
-        
-        if (!empty($_POST['postal_code'])) {
-            $validator->pattern('postal_code', '/^[0-9a-zA-Z\s-]{3,10}$/', 'Μη έγκυρος ταχυδρομικός κώδικας.');
-        }
-        
-        if (!empty($_POST['social_linkedin'])) {
-            $validator->pattern('social_linkedin', '/^https?:\/\/(?:www\.)?linkedin\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL LinkedIn.');
-        }
-        
-        if (!empty($_POST['social_facebook'])) {
-            $validator->pattern('social_facebook', '/^https?:\/\/(?:www\.)?facebook\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL Facebook.');
-        }
-        
-        if (!empty($_POST['social_twitter'])) {
-            $validator->pattern('social_twitter', '/^https?:\/\/(?:www\.)?twitter\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL Twitter.');
-        }
-        
-        if (!empty($_POST['social_instagram'])) {
-            $validator->pattern('social_instagram', '/^https?:\/\/(?:www\.)?instagram\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL Instagram.');
-        }
-        
-        // Επικύρωση πεδίων ημερομηνίας
-        $dateFields = ['birth_date', 'driving_license_expiry', 'adr_certificate_expiry', 'operator_license_expiry'];
-        foreach ($dateFields as $field) {
-            if (!empty($_POST[$field])) {
-                $date = date_create_from_format('Y-m-d', $_POST[$field]);
-                if (!$date) {
-                    $validator->getErrors()[$field] = 'Μη έγκυρη ημερομηνία.';
-                }
+    // Έλεγχος για CSRF token
+    if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
+        header('Location: ' . BASE_URL . 'drivers/edit-profile');
+        exit();
+    }
+    
+    // Επικύρωση βασικών δεδομένων
+    $validator = new Validator($_POST);
+    $validator->required('first_name', 'Το όνομα είναι υποχρεωτικό.')
+              ->required('last_name', 'Το επώνυμο είναι υποχρεωτικό.')
+              ->required('phone', 'Το τηλέφωνο είναι υποχρεωτικό.')
+              ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
+    
+    // Επιπλέον επικύρωση για προαιρετικά πεδία
+    if (!empty($_POST['landline'])) {
+        $validator->pattern('landline', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο σταθερό τηλέφωνο.');
+    }
+    
+    if (!empty($_POST['postal_code'])) {
+        $validator->pattern('postal_code', '/^[0-9a-zA-Z\s-]{3,10}$/', 'Μη έγκυρος ταχυδρομικός κώδικας.');
+    }
+    
+    if (!empty($_POST['social_linkedin'])) {
+        $validator->pattern('social_linkedin', '/^https?:\/\/(?:www\.)?linkedin\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL LinkedIn.');
+    }
+    
+    if (!empty($_POST['social_facebook'])) {
+        $validator->pattern('social_facebook', '/^https?:\/\/(?:www\.)?facebook\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL Facebook.');
+    }
+    
+    if (!empty($_POST['social_twitter'])) {
+        $validator->pattern('social_twitter', '/^https?:\/\/(?:www\.)?twitter\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL Twitter.');
+    }
+    
+    if (!empty($_POST['social_instagram'])) {
+        $validator->pattern('social_instagram', '/^https?:\/\/(?:www\.)?instagram\.com\/.*$/', 'Παρακαλώ εισάγετε ένα έγκυρο URL Instagram.');
+    }
+    
+    // Επικύρωση πεδίων ημερομηνίας
+    $dateFields = ['birth_date', 'driving_license_expiry', 'adr_certificate_expiry', 'operator_license_expiry'];
+    foreach ($dateFields as $field) {
+        if (!empty($_POST[$field])) {
+            $date = date_create_from_format('Y-m-d', $_POST[$field]);
+            if (!$date) {
+                $validator->getErrors()[$field] = 'Μη έγκυρη ημερομηνία.';
             }
-        }
-        
-        // Επικύρωση αλλαγής κωδικού αν έχουν συμπληρωθεί τα σχετικά πεδία
-        if (!empty($_POST['current_password']) || !empty($_POST['new_password']) || !empty($_POST['confirm_password'])) {
-            $validator->required('current_password', 'Ο τρέχων κωδικός είναι υποχρεωτικός για την αλλαγή.')
-                      ->required('new_password', 'Ο νέος κωδικός είναι υποχρεωτικός.')
-                      ->minLength('new_password', 8, 'Ο νέος κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.')
-                      ->pattern('new_password', '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', 'Ο νέος κωδικός πρέπει να περιέχει τουλάχιστον ένα πεζό γράμμα, ένα κεφαλαίο γράμμα, έναν αριθμό και έναν ειδικό χαρακτήρα.')
-                      ->required('confirm_password', 'Η επιβεβαίωση του νέου κωδικού είναι υποχρεωτική.')
-                      ->matches('confirm_password', 'new_password', 'Οι κωδικοί δεν ταιριάζουν.');
-        }
-        
-        if (!$validator->isValid()) {
-            $_SESSION['errors'] = $validator->getErrors();
-            $_SESSION['old_input'] = $_POST;
-            header('Location: ' . BASE_URL . 'drivers/edit-profile');
-            exit();
-        }
-        
-        // Λήψη ID του συνδεδεμένου οδηγού
-        $driverId = $_SESSION['user_id'];
-        
-        // Συλλογή των δεδομένων από τη φόρμα
-        $data = [
-            'first_name' => $_POST['first_name'],
-            'last_name' => $_POST['last_name'],
-            'phone' => $_POST['phone'],
-            'landline' => $_POST['landline'] ?? null,
-            'birth_date' => $_POST['birth_date'] ?? null,
-            'address' => $_POST['address'] ?? null,
-            'house_number' => $_POST['house_number'] ?? null,
-            'city' => $_POST['city'] ?? null,
-            'country' => $_POST['country'] ?? null,
-            'postal_code' => $_POST['postal_code'] ?? null,
-            'about_me' => $_POST['about_me'] ?? null,
-            'experience_years' => $_POST['experience_years'] ? intval($_POST['experience_years']) : null,
-            'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
-            'preferred_job_type' => $_POST['preferred_job_type'] ?? null,
-            'preferred_vehicle_type' => $_POST['preferred_vehicle_type'] ?? null,
-            'preferred_location' => $_POST['preferred_location'] ?? null,
-            'preferred_radius' => $_POST['preferred_radius'] ?? null,
-            'salary_min' => $_POST['salary_min'] ?? null,
-            'salary_max' => $_POST['salary_max'] ?? null,
-            'salary_period' => $_POST['salary_period'] ?? null,
-            'social_linkedin' => $_POST['social_linkedin'] ?? null,
-            'social_facebook' => $_POST['social_facebook'] ?? null,
-            'social_twitter' => $_POST['social_twitter'] ?? null,
-            'social_instagram' => $_POST['social_instagram'] ?? null,
-            'willing_to_relocate' => isset($_POST['willing_to_relocate']) ? 1 : 0,
-            'willing_to_travel' => isset($_POST['willing_to_travel']) ? 1 : 0,
-        ];
-        
-        // Ενημέρωση του προφίλ
-        if ($this->driversModel->updateProfile($driverId, $data)) {
-           // Διαχείριση αδειών οδήγησης
-    $this->driversModel->deleteDriverLicenses($driverId);
-    if (isset($_POST['license_types']) && is_array($_POST['license_types'])) {
-        $licenseNumber = $_POST['license_number'] ?? null;
-        $licenseDocumentExpiry = $_POST['license_document_expiry'] ?? null;
-        
-        foreach ($_POST['license_types'] as $licenseType) {
-            $hasPei = false;
-            $peiExpiryC = null;
-            $peiExpiryD = null;
-            
-            if (($licenseType == 'C' || $licenseType == 'CE') && isset($_POST['has_pei_c'])) {
-                $hasPei = true;
-                $peiExpiryC = $_POST['pei_c_expiry'] ?? null;
-            } else if (($licenseType == 'D' || $licenseType == 'DE') && isset($_POST['has_pei_d'])) {
-                $hasPei = true;
-                $peiExpiryD = $_POST['pei_d_expiry'] ?? null;
-            }
-            
-            // Επιλογή της κατάλληλης ημερομηνίας λήξης ανάλογα με την κατηγορία
-            $expiryDate = null;
-            if (in_array($licenseType, ['AM', 'A1', 'A2', 'A'])) {
-                $expiryDate = $_POST['motorcycle_license_expiry'] ?? null;
-            } else if (in_array($licenseType, ['B', 'BE'])) {
-                $expiryDate = $_POST['car_license_expiry'] ?? null;
-            } else if (in_array($licenseType, ['C', 'CE'])) {
-                $expiryDate = $_POST['truck_license_expiry'] ?? null;
-            } else if (in_array($licenseType, ['D', 'DE'])) {
-                $expiryDate = $_POST['bus_license_expiry'] ?? null;
-            }
-            
-            $this->driversModel->addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC, $peiExpiryD, $licenseDocumentExpiry);
         }
     }
     
-    // Διαχείριση πιστοποιητικού ADR
-    $this->driversModel->deleteDriverADRCertificates($driverId);
-    if (isset($_POST['adr_certificate']) && $_POST['adr_certificate'] && isset($_POST['adr_certificate_type'])) {
-        $certificateNumber = $_POST['adr_certificate_number'] ?? null;
-        $this->driversModel->addDriverADRCertificate($driverId, $_POST['adr_certificate_type'], $_POST['adr_certificate_expiry'], $certificateNumber);
+    // Επικύρωση αλλαγής κωδικού αν έχουν συμπληρωθεί τα σχετικά πεδία
+    if (!empty($_POST['current_password']) || !empty($_POST['new_password']) || !empty($_POST['confirm_password'])) {
+        $validator->required('current_password', 'Ο τρέχων κωδικός είναι υποχρεωτικός για την αλλαγή.')
+                  ->required('new_password', 'Ο νέος κωδικός είναι υποχρεωτικός.')
+                  ->minLength('new_password', 8, 'Ο νέος κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.')
+                  ->pattern('new_password', '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', 'Ο νέος κωδικός πρέπει να περιέχει τουλάχιστον ένα πεζό γράμμα, ένα κεφαλαίο γράμμα, έναν αριθμό και έναν ειδικό χαρακτήρα.')
+                  ->required('confirm_password', 'Η επιβεβαίωση του νέου κωδικού είναι υποχρεωτική.')
+                  ->matches('confirm_password', 'new_password', 'Οι κωδικοί δεν ταιριάζουν.');
     }
     
-    // Διαχείριση άδειας χειριστή μηχανημάτων
-    $this->driversModel->deleteDriverOperatorLicenses($driverId);
-    if (isset($_POST['operator_license']) && $_POST['operator_license'] && isset($_POST['operator_speciality'])) {
-        $licenseNumber = $_POST['operator_license_number'] ?? null;
-        $operatorLicenseId = $this->driversModel->addDriverOperatorLicense($driverId, $_POST['operator_speciality'], $_POST['operator_license_expiry'], $licenseNumber);
-        
-        if (isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
-            foreach ($_POST['operator_sub_specialities'] as $subSpeciality) {
-                $subSpecialityId = $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality);
+    if (!$validator->isValid()) {
+        $_SESSION['errors'] = $validator->getErrors();
+        $_SESSION['old_input'] = $_POST;
+        header('Location: ' . BASE_URL . 'drivers/edit-profile');
+        exit();
+    }
+    
+    // Λήψη ID του συνδεδεμένου οδηγού
+    $driverId = $_SESSION['user_id'];
+    
+    // Συλλογή των δεδομένων από τη φόρμα
+    $data = [
+        'first_name' => $_POST['first_name'],
+        'last_name' => $_POST['last_name'],
+        'phone' => $_POST['phone'],
+        'landline' => $_POST['landline'] ?? null,
+        'birth_date' => $_POST['birth_date'] ?? null,
+        'address' => $_POST['address'] ?? null,
+        'house_number' => $_POST['house_number'] ?? null,
+        'city' => $_POST['city'] ?? null,
+        'country' => $_POST['country'] ?? null,
+        'postal_code' => $_POST['postal_code'] ?? null,
+        'about_me' => $_POST['about_me'] ?? null,
+        'experience_years' => $_POST['experience_years'] ? intval($_POST['experience_years']) : null,
+        'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
+        'preferred_job_type' => $_POST['preferred_job_type'] ?? null,
+        'preferred_vehicle_type' => $_POST['preferred_vehicle_type'] ?? null,
+        'preferred_location' => $_POST['preferred_location'] ?? null,
+        'preferred_radius' => $_POST['preferred_radius'] ?? null,
+        'salary_min' => $_POST['salary_min'] ?? null,
+        'salary_max' => $_POST['salary_max'] ?? null,
+        'salary_period' => $_POST['salary_period'] ?? null,
+        'social_linkedin' => $_POST['social_linkedin'] ?? null,
+        'social_facebook' => $_POST['social_facebook'] ?? null,
+        'social_twitter' => $_POST['social_twitter'] ?? null,
+        'social_instagram' => $_POST['social_instagram'] ?? null,
+        'willing_to_relocate' => isset($_POST['willing_to_relocate']) ? 1 : 0,
+        'willing_to_travel' => isset($_POST['willing_to_travel']) ? 1 : 0,
+        'license_number' => $_POST['license_number'] ?? null, // Προσθήκη νέου πεδίου για τον αριθμό άδειας
+    ];
+    
+    // Ενημέρωση του προφίλ
+    if ($this->driversModel->updateProfile($driverId, $data)) {
+        // Διαχείριση αδειών οδήγησης
+        $this->driversModel->deleteDriverLicenses($driverId);
+        if (isset($_POST['license_types']) && is_array($_POST['license_types'])) {
+            $licenseNumber = $_POST['license_number'] ?? null;
+            $licenseDocumentExpiry = $_POST['license_document_expiry'] ?? null;
+            
+            foreach ($_POST['license_types'] as $licenseType) {
+                $hasPei = false;
+                $peiExpiryC = null;
+                $peiExpiryD = null;
                 
-                // Προσθήκη ομάδων A, B για κάθε υποειδικότητα
-                if (isset($_POST['sub_speciality_groups'][$subSpeciality]) && is_array($_POST['sub_speciality_groups'][$subSpeciality])) {
-                    foreach ($_POST['sub_speciality_groups'][$subSpeciality] as $groupType) {
-                        $this->driversModel->addDriverOperatorSubSpecialityGroup($subSpecialityId, $groupType);
+                // Έλεγχος για ΠΕΙ στις κατηγορίες C, CE, D, DE
+                if (($licenseType == 'C' || $licenseType == 'CE') && isset($_POST['has_pei_c'])) {
+                    $hasPei = true;
+                    $peiExpiryC = $_POST['pei_c_expiry'] ?? null;
+                } else if (($licenseType == 'C1') && isset($_POST['has_pei_c1'])) {
+                    $hasPei = true;
+                    $peiExpiryC = $_POST['pei_c_expiry'] ?? null;
+                } else if (($licenseType == 'D' || $licenseType == 'DE') && isset($_POST['has_pei_d'])) {
+                    $hasPei = true;
+                    $peiExpiryD = $_POST['pei_d_expiry'] ?? null;
+                } else if (($licenseType == 'D1') && isset($_POST['has_pei_d1'])) {
+                    $hasPei = true;
+                    $peiExpiryD = $_POST['pei_d_expiry'] ?? null;
+                }
+                
+                // Επιλογή της κατάλληλης ημερομηνίας λήξης ανάλογα με την κατηγορία
+                $expiryDate = null;
+                if (in_array($licenseType, ['AM', 'A1', 'A2', 'A'])) {
+                    $expiryDate = $_POST['motorcycle_license_expiry'] ?? null;
+                } else if (in_array($licenseType, ['B', 'BE'])) {
+                    $expiryDate = $_POST['car_license_expiry'] ?? null;
+                } else if (in_array($licenseType, ['C', 'CE', 'C1', 'C1E'])) {
+                    $expiryDate = $_POST['truck_license_expiry'] ?? null;
+                } else if (in_array($licenseType, ['D', 'DE', 'D1', 'D1E'])) {
+                    $expiryDate = $_POST['bus_license_expiry'] ?? null;
+                }
+                
+                $this->driversModel->addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC, $peiExpiryD, $licenseDocumentExpiry);
+            }
+        }
+        
+        // Διαχείριση πιστοποιητικού ADR
+        $this->driversModel->deleteDriverADRCertificates($driverId);
+        if (isset($_POST['adr_certificate']) && $_POST['adr_certificate'] && isset($_POST['adr_certificate_type'])) {
+            $certificateNumber = $_POST['adr_certificate_number'] ?? null;
+            $this->driversModel->addDriverADRCertificate($driverId, $_POST['adr_certificate_type'], $_POST['adr_certificate_expiry'], $certificateNumber);
+        }
+        
+        // Διαχείριση άδειας χειριστή μηχανημάτων
+        $this->driversModel->deleteDriverOperatorLicenses($driverId);
+        if (isset($_POST['operator_license']) && $_POST['operator_license'] && isset($_POST['operator_speciality'])) {
+            $licenseNumber = $_POST['operator_license_number'] ?? null;
+            $operatorLicenseId = $this->driversModel->addDriverOperatorLicense($driverId, $_POST['operator_speciality'], $_POST['operator_license_expiry'], $licenseNumber);
+            
+            if (isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
+                foreach ($_POST['operator_sub_specialities'] as $subSpeciality) {
+                    $subSpecialityId = $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality);
+                    
+                    // Προσθήκη ομάδων A, B για κάθε υποειδικότητα
+                    if (isset($_POST['sub_speciality_groups'][$subSpeciality]) && is_array($_POST['sub_speciality_groups'][$subSpeciality])) {
+                        foreach ($_POST['sub_speciality_groups'][$subSpeciality] as $groupType) {
+                            $this->driversModel->addDriverOperatorSubSpecialityGroup($subSpecialityId, $groupType);
+                        }
                     }
                 }
             }
         }
-    }
-    
-    // Διαχείριση κάρτας ψηφιακού ταχογράφου
-    $this->driversModel->deleteDriverTachographCard($driverId);
-    if (isset($_POST['has_tachograph_card']) && $_POST['has_tachograph_card']) {
-        $cardNumber = $_POST['tachograph_card_number'] ?? null;
-        $expiryDate = $_POST['tachograph_card_expiry'] ?? null;
-        if ($cardNumber && $expiryDate) {
-            $this->driversModel->addDriverTachographCard($driverId, $cardNumber, $expiryDate);
-        }
-    }
-    
-    // Διαχείριση ειδικών αδειών
-    $this->driversModel->deleteDriverSpecialLicenses($driverId);
-    
-    // Άδεια ΤΑΞΙ
-    if (isset($_POST['has_taxi_license']) && $_POST['has_taxi_license']) {
-        $licenseNumber = $_POST['taxi_license_number'] ?? null;
-        $expiryDate = $_POST['taxi_license_expiry'] ?? null;
-        $details = $_POST['taxi_license_details'] ?? null;
-        if ($licenseNumber) {
-            $this->driversModel->addDriverSpecialLicense($driverId, 'TAXI', $licenseNumber, $expiryDate, $details);
-        }
-    }
-    
-    // Άδεια μεταφοράς ζώντων ζώων
-    if (isset($_POST['has_animal_transport_license']) && $_POST['has_animal_transport_license']) {
-        $licenseNumber = $_POST['animal_transport_license_number'] ?? null;
-        $expiryDate = $_POST['animal_transport_license_expiry'] ?? null;
-        $details = $_POST['animal_transport_license_details'] ?? null;
-        if ($licenseNumber) {
-            $this->driversModel->addDriverSpecialLicense($driverId, 'ANIMAL_TRANSPORT', $licenseNumber, $expiryDate, $details);
-        }
-    }
-            
-            // Διαχείριση μεταφόρτωσης εικόνας προφίλ αν υπάρχει
-            if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
-                $this->handleProfileImageUpload($driverId);
+        
+        // Διαχείριση κάρτας ψηφιακού ταχογράφου
+        $this->driversModel->deleteDriverTachographCard($driverId);
+        if (isset($_POST['has_tachograph_card']) && $_POST['has_tachograph_card']) {
+            $cardNumber = $_POST['tachograph_card_number'] ?? null;
+            $expiryDate = $_POST['tachograph_card_expiry'] ?? null;
+            if ($cardNumber && $expiryDate) {
+                $this->driversModel->addDriverTachographCard($driverId, $cardNumber, $expiryDate);
             }
-            
-            // Διαχείριση μεταφόρτωσης βιογραφικού αν υπάρχει
-            if (isset($_FILES['resume_file']) && $_FILES['resume_file']['error'] === UPLOAD_ERR_OK) {
-                $this->handleResumeFileUpload($driverId);
-            }
-            
-            $_SESSION['success_message'] = 'Το προφίλ σας ενημερώθηκε με επιτυχία.';
-        } else {
-            $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την ενημέρωση του προφίλ σας. Παρακαλώ δοκιμάστε ξανά.';
         }
         
-        header('Location: ' . BASE_URL . 'drivers/driver_profile');
-        exit();
+        // Διαχείριση ειδικών αδειών
+        $this->driversModel->deleteDriverSpecialLicenses($driverId);
+        
+        // Άδεια ΤΑΞΙ
+        if (isset($_POST['has_taxi_license']) && $_POST['has_taxi_license']) {
+            $licenseNumber = $_POST['taxi_license_number'] ?? null;
+            $expiryDate = $_POST['taxi_license_expiry'] ?? null;
+            $details = $_POST['taxi_license_details'] ?? null;
+            if ($licenseNumber) {
+                $this->driversModel->addDriverSpecialLicense($driverId, 'TAXI', $licenseNumber, $expiryDate, $details);
+            }
+        }
+        
+        // Άδεια μεταφοράς ζώντων ζώων
+        if (isset($_POST['has_animal_transport_license']) && $_POST['has_animal_transport_license']) {
+            $licenseNumber = $_POST['animal_transport_license_number'] ?? null;
+            $expiryDate = $_POST['animal_transport_license_expiry'] ?? null;
+            $details = $_POST['animal_transport_license_details'] ?? null;
+            if ($licenseNumber) {
+                $this->driversModel->addDriverSpecialLicense($driverId, 'ANIMAL_TRANSPORT', $licenseNumber, $expiryDate, $details);
+            }
+        }
+        
+        // Διαχείριση μεταφόρτωσης εικόνας προφίλ αν υπάρχει
+        if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
+            $this->handleProfileImageUpload($driverId);
+        }
+        
+        // Διαχείριση μεταφόρτωσης βιογραφικού αν υπάρχει
+        if (isset($_FILES['resume_file']) && $_FILES['resume_file']['error'] === UPLOAD_ERR_OK) {
+            $this->handleResumeFileUpload($driverId);
+        }
+        
+        $_SESSION['success_message'] = 'Το προφίλ σας ενημερώθηκε με επιτυχία.';
+    } else {
+        $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την ενημέρωση του προφίλ σας. Παρακαλώ δοκιμάστε ξανά.';
     }
+    
+    header('Location: ' . BASE_URL . 'drivers/driver_profile');
+    exit();
+}
 
     /**
      * Ενημέρωση της αυτοαξιολόγησης του οδηγού

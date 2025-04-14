@@ -166,143 +166,357 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         </div>
                     </div>
                     
-                    <div class="tab-pane" id="driving-licenses">
-            <h2>Άδειες Οδήγησης</h2>
+                   <!-- Tab για Άδειες Οδήγησης με βελτιωμένη διάταξη -->
+<div class="tab-pane" id="driving-licenses">
+    <h2>Άδειες Οδήγησης</h2>
+    
+    <div class="license-section">
+        <div class="form-group checkbox-group">
+            <label for="driving_license" class="checkbox-label">
+                <input type="checkbox" id="driving_license" name="driving_license" value="1" <?php echo (!empty($driverLicenseTypes)) ? 'checked' : ''; ?>>
+                <span>Διαθέτω άδεια οδήγησης</span>
+            </label>
+        </div>
+        
+        <div id="driving_license_tab" class="license-details-tab <?php echo (empty($driverLicenseTypes)) ? 'hidden' : ''; ?>">
+            <!-- Βασικές πληροφορίες άδειας -->
+            <div class="license-basic-info">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="license_number">Αριθμός Άδειας Οδήγησης</label>
+                        <input type="text" id="license_number" name="license_number" value="<?php echo old('license_number', $driverData['license_number'] ?? ''); ?>" placeholder="π.χ. 123456789">
+                        <p class="form-hint">Εισάγετε τον αριθμό που αναγράφεται στο πεδίο 5 της άδειας οδήγησης</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="license_document_expiry">Ημερομηνία Λήξης Εντύπου Άδειας</label>
+                        <input type="date" id="license_document_expiry" name="license_document_expiry" value="<?php echo old('license_document_expiry', $driverData['license_document_expiry'] ?? ''); ?>">
+                        <p class="form-hint">Εισάγετε την ημερομηνία που αναγράφεται στο πεδίο 4β της άδειας οδήγησης</p>
+                    </div>
+                </div>
+                
+                <!-- Οπτική αναπαράσταση της άδειας οδήγησης -->
+                <div class="license-visual">
+                    <img src="<?php echo BASE_URL; ?>img/license_front.png" alt="Εμπρόσθια όψη άδειας" class="license-image">
+                    <img src="<?php echo BASE_URL; ?>img/license_back.png" alt="Οπίσθια όψη άδειας" class="license-image">
+                </div>
+            </div>
+
+            <!-- Κατηγορίες Αδειών Οδήγησης με βελτιωμένη διάταξη σε πίνακα -->
+            <h4>Κατηγορίες Αδειών Οδήγησης</h4>
             
-            <div class="form-group checkbox-group">
-                <label for="driving_license" class="checkbox-label">
-                    <input type="checkbox" id="driving_license" name="driving_license" value="1" <?php echo (!empty($driverLicenseTypes)) ? 'checked' : ''; ?>>
-                    <span>Διαθέτω άδεια οδήγησης</span>
-                </label>
+            <div class="license-categories-table">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Κατηγορία</th>
+                            <th>Περιγραφή</th>
+                            <th>Ενεργή</th>
+                            <th>Ημερομηνία Λήξης</th>
+                            <th>ΠΕΙ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Δίκυκλα -->
+                        <tr class="category-header">
+                            <td colspan="5"><strong>Δίκυκλα</strong></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/am.png" alt="AM">
+                                    <span>AM</span>
+                                </div>
+                            </td>
+                            <td>Μοτοποδήλατα</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="AM" <?php echo (in_array('AM', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="motorcycle_license_expiry" value="<?php echo old('motorcycle_license_expiry', $motorbikeExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/a1.png" alt="A1">
+                                    <span>A1</span>
+                                </div>
+                            </td>
+                            <td>Μοτοσυκλέτες έως 125 cc</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="A1" <?php echo (in_array('A1', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="motorcycle_license_expiry" value="<?php echo old('motorcycle_license_expiry', $motorbikeExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/a2.png" alt="A2">
+                                    <span>A2</span>
+                                </div>
+                            </td>
+                            <td>Μοτοσυκλέτες έως 35 kW</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="A2" <?php echo (in_array('A2', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="motorcycle_license_expiry" value="<?php echo old('motorcycle_license_expiry', $motorbikeExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/a.png" alt="A">
+                                    <span>A</span>
+                                </div>
+                            </td>
+                            <td>Μοτοσυκλέτες χωρίς περιορισμό</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="A" <?php echo (in_array('A', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="motorcycle_license_expiry" value="<?php echo old('motorcycle_license_expiry', $motorbikeExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
+                        </tr>
+                        
+                        <!-- Επιβατικά -->
+                        <tr class="category-header">
+                            <td colspan="5"><strong>Επιβατικά</strong></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/b.png" alt="B">
+                                    <span>B</span>
+                                </div>
+                            </td>
+                            <td>Επιβατικά αυτοκίνητα</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="B" <?php echo (in_array('B', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="car_license_expiry" value="<?php echo old('car_license_expiry', $carExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/be.png" alt="BE">
+                                    <span>BE</span>
+                                </div>
+                            </td>
+                            <td>Επιβατικά με ρυμουλκούμενο</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="BE" <?php echo (in_array('BE', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="car_license_expiry" value="<?php echo old('car_license_expiry', $carExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
+                        </tr>
+                        
+                        <!-- Φορτηγά -->
+                        <tr class="category-header">
+                            <td colspan="5"><strong>Φορτηγά</strong></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/c1.png" alt="C1">
+                                    <span>C1</span>
+                                </div>
+                            </td>
+                            <td>Φορτηγά < 7.5t</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="C1" <?php echo (in_array('C1', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="truck_license_expiry" value="<?php echo old('truck_license_expiry', $truckExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="has_pei_c1" value="1" <?php echo (in_array('C1', $driverPEI)) ? 'checked' : ''; ?>>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/c.png" alt="C">
+                                    <span>C</span>
+                                </div>
+                            </td>
+                            <td>Φορτηγά > 7.5t</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="C" <?php echo (in_array('C', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="truck_license_expiry" value="<?php echo old('truck_license_expiry', $truckExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="has_pei_c" value="1" <?php echo (in_array('C', $driverPEI)) ? 'checked' : ''; ?>>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/ce.png" alt="CE">
+                                    <span>CE</span>
+                                </div>
+                            </td>
+                            <td>Φορτηγά με ρυμουλκούμενο</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="CE" <?php echo (in_array('CE', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="truck_license_expiry" value="<?php echo old('truck_license_expiry', $truckExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="has_pei_ce" value="1" <?php echo (in_array('CE', $driverPEI)) ? 'checked' : ''; ?>>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        
+                        <!-- Λεωφορεία -->
+                        <tr class="category-header">
+                            <td colspan="5"><strong>Λεωφορεία</strong></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/d1.png" alt="D1">
+                                    <span>D1</span>
+                                </div>
+                            </td>
+                            <td>Μικρά λεωφορεία</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="D1" <?php echo (in_array('D1', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="bus_license_expiry" value="<?php echo old('bus_license_expiry', $busExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="has_pei_d1" value="1" <?php echo (in_array('D1', $driverPEI)) ? 'checked' : ''; ?>>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/d.png" alt="D">
+                                    <span>D</span>
+                                </div>
+                            </td>
+                            <td>Λεωφορεία</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="D" <?php echo (in_array('D', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="bus_license_expiry" value="<?php echo old('bus_license_expiry', $busExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="has_pei_d" value="1" <?php echo (in_array('D', $driverPEI)) ? 'checked' : ''; ?>>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="license-type-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icons/de.png" alt="DE">
+                                    <span>DE</span>
+                                </div>
+                            </td>
+                            <td>Λεωφορεία με ρυμουλκούμενο</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="license_types[]" value="DE" <?php echo (in_array('DE', $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <input type="date" name="bus_license_expiry" value="<?php echo old('bus_license_expiry', $busExpiryDate ?? ''); ?>">
+                            </td>
+                            <td>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="has_pei_de" value="1" <?php echo (in_array('DE', $driverPEI)) ? 'checked' : ''; ?>>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             
-            <div id="driving_license_tab" class="license-details-tab <?php echo (empty($driverLicenseTypes)) ? 'hidden' : ''; ?>">
-                <div class="form-group">
-                    <label for="license_number">Αριθμός Άδειας Οδήγησης</label>
-                    <input type="text" id="license_number" name="license_number" value="<?php echo old('license_number', $driverData['license_number'] ?? ''); ?>">
-                </div>
+            <!-- Στοιχεία ΠΕΙ -->
+            <div class="pei-section" id="pei_section">
+                <h4>Πιστοποιητικό Επαγγελματικής Ικανότητας (ΠΕΙ)</h4>
                 
-                <div class="form-group">
-                    <label for="license_document_expiry">Ημερομηνία Λήξης Εντύπου Άδειας</label>
-                    <input type="date" id="license_document_expiry" name="license_document_expiry" value="<?php echo old('license_document_expiry', $driverData['license_document_expiry'] ?? ''); ?>">
-                </div>
-                
-                <!-- Κατηγορίες Αδειών Οδήγησης -->
-                <h4>Κατηγορίες Αδειών Οδήγησης</h4>
-                <!-- Δίκυκλα -->
-                <div class="license-category">
-                    <h5>Δίκυκλα</h5>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="license_types[]" value="AM" <?php echo (in_array('AM', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                <span>AM (Μοτοποδήλατα)</span>
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="license_types[]" value="A1" <?php echo (in_array('A1', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                <span>A1 (Μοτοσυκλέτες έως 125 cc)</span>
-                            </label>
-                        </div>
-                        <!-- Άλλες κατηγορίες... -->
-                    </div>
+                <div class="form-row">
                     <div class="form-group">
-                        <label for="motorcycle_license_expiry">Ημερομηνία Λήξης Κατηγοριών AM, A1, A2, A</label>
-                        <input type="date" id="motorcycle_license_expiry" name="motorcycle_license_expiry" value="<?php echo old('motorcycle_license_expiry', $motorbikeExpiryDate ?? ''); ?>">
-                    </div>
-                </div>
-                
-                <!-- Επιβατικά -->
-                <div class="license-category">
-                    <h5>Επιβατικά</h5>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="license_types[]" value="B" <?php echo (in_array('B', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                <span>B (Επιβατικά αυτοκίνητα)</span>
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="license_types[]" value="BE" <?php echo (in_array('BE', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                <span>BE (Επιβατικά με ρυμουλκούμενο)</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="car_license_expiry">Ημερομηνία Λήξης Κατηγοριών B, BE</label>
-                        <input type="date" id="car_license_expiry" name="car_license_expiry" value="<?php echo old('car_license_expiry', $carExpiryDate ?? ''); ?>">
-                    </div>
-                </div>
-                
-                <!-- Φορτηγά -->
-                <div class="license-category">
-                    <h5>Φορτηγά</h5>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="license_types[]" value="C" <?php echo (in_array('C', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                <span>C (Φορτηγά)</span>
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="license_types[]" value="CE" <?php echo (in_array('CE', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                <span>CE (Φορτηγά με ρυμουλκούμενο)</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="truck_license_expiry">Ημερομηνία Λήξης Κατηγοριών C, CE</label>
-                        <input type="date" id="truck_license_expiry" name="truck_license_expiry" value="<?php echo old('truck_license_expiry', $truckExpiryDate ?? ''); ?>">
-                    </div>
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="has_pei_c" value="1" <?php echo (in_array('C', $driverPEI) || in_array('CE', $driverPEI)) ? 'checked' : ''; ?>>
-                            <span>ΠΕΙ Εμπορευμάτων</span>
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label for="pei_c_expiry">Ημερομηνία Λήξης ΠΕΙ Εμπορευμάτων</label>
+                        <label for="pei_c_expiry">Ημερομηνία Λήξης ΠΕΙ Εμπορευμάτων (C/CE)</label>
                         <input type="date" id="pei_c_expiry" name="pei_c_expiry" value="<?php echo old('pei_c_expiry', $peiCExpiryDate ?? ''); ?>">
                     </div>
-                </div>
-                
-                <!-- Λεωφορεία -->
-                <div class="license-category">
-                    <h5>Λεωφορεία</h5>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="license_types[]" value="D" <?php echo (in_array('D', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                <span>D (Λεωφορεία)</span>
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="license_types[]" value="DE" <?php echo (in_array('DE', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                <span>DE (Λεωφορεία με ρυμουλκούμενο)</span>
-                            </label>
-                        </div>
-                    </div>
+                    
                     <div class="form-group">
-                        <label for="bus_license_expiry">Ημερομηνία Λήξης Κατηγοριών D, DE</label>
-                        <input type="date" id="bus_license_expiry" name="bus_license_expiry" value="<?php echo old('bus_license_expiry', $busExpiryDate ?? ''); ?>">
-                    </div>
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="has_pei_d" value="1" <?php echo (in_array('D', $driverPEI) || in_array('DE', $driverPEI)) ? 'checked' : ''; ?>>
-                            <span>ΠΕΙ Επιβατών</span>
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label for="pei_d_expiry">Ημερομηνία Λήξης ΠΕΙ Επιβατών</label>
+                        <label for="pei_d_expiry">Ημερομηνία Λήξης ΠΕΙ Επιβατών (D/DE)</label>
                         <input type="date" id="pei_d_expiry" name="pei_d_expiry" value="<?php echo old('pei_d_expiry', $peiDExpiryDate ?? ''); ?>">
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
 <!-- Tab για Πιστοποιητικά ADR -->
 <div class="tab-pane" id="adr-certificates">

@@ -101,7 +101,7 @@ include ROOT_DIR . '/src/Views/header.php';
                         <div class="profile-main">
                             <section class="profile-section">
                                 <h2>Σχετικά με εμένα</h2>
-                                <div class="profile-about">
+                                                            <div class="profile-about">
                                     <?php if (isset($driverData['about_me']) && $driverData['about_me']): ?>
                                         <?php echo nl2br(htmlspecialchars($driverData['about_me'])); ?>
                                     <?php else: ?>
@@ -166,6 +166,175 @@ include ROOT_DIR . '/src/Views/header.php';
                                 </div>
                             </section>
                         </div>
+                        <!-- Συστατικό προβολής άδειας οδήγησης για το προφίλ οδηγού (profile.php) -->
+<div class="profile-section license-section">
+    <h2>Άδεια Οδήγησης</h2>
+    
+    <?php if (isset($driverData['license_number']) && $driverData['license_number']): ?>
+        <!-- Βασικές πληροφορίες άδειας -->
+        <div class="license-info">
+            <div class="license-header">
+                <div class="license-number">
+                    <span class="label">Αριθμός Άδειας:</span>
+                    <span class="value"><?php echo htmlspecialchars($driverData['license_number']); ?></span>
+                </div>
+                
+                <?php if (!empty($licenseDocumentExpiry)): ?>
+                    <div class="license-expiry">
+                        <span class="label">Ημερομηνία Λήξης Εντύπου:</span>
+                        <span class="value <?php echo (strtotime($licenseDocumentExpiry) < time()) ? 'expired' : ((strtotime($licenseDocumentExpiry) - time()) < 60*60*24*90 ? 'expiring-soon' : ''); ?>">
+                            <?php echo date('d/m/Y', strtotime($licenseDocumentExpiry)); ?>
+                        </span>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <!-- Προβολή των κατηγοριών άδειας οδήγησης -->
+        <div class="license-categories">
+            <h3>Κατηγορίες</h3>
+            
+            <?php if (count($driverLicenseTypes) > 0): ?>
+                <div class="license-categories-grid">
+                    <?php 
+                    // Ομαδοποίηση κατηγοριών
+                    $categoryGroups = [
+                        'Δίκυκλα' => ['AM', 'A1', 'A2', 'A'],
+                        'Επιβατικά' => ['B', 'BE'],
+                        'Φορτηγά' => ['C1', 'C1E', 'C', 'CE'],
+                        'Λεωφορεία' => ['D1', 'D1E', 'D', 'DE']
+                    ];
+                    
+                    // Αντιστοίχιση περιγραφών
+                    $categoryDescriptions = [
+                        'AM' => 'Μοτοποδήλατα',
+                        'A1' => 'Μοτοσυκλέτες έως 125 cc',
+                        'A2' => 'Μοτοσυκλέτες έως 35 kW',
+                        'A' => 'Μοτοσυκλέτες',
+                        'B' => 'Επιβατικά',
+                        'BE' => 'Επιβατικά με ρυμουλκούμενο',
+                        'C1' => 'Φορτηγά < 7.5t',
+                        'C1E' => 'Φορτηγά < 7.5t με ρυμουλκούμενο',
+                        'C' => 'Φορτηγά',
+                        'CE' => 'Φορτηγά με ρυμουλκούμενο',
+                        'D1' => 'Μικρά λεωφορεία',
+                        'D1E' => 'Μικρά λεωφορεία με ρυμουλκούμενο',
+                        'D' => 'Λεωφορεία',
+                        'DE' => 'Λεωφορεία με ρυμουλκούμενο'
+                    ];
+                    
+                    // Προβολή ανά ομάδα κατηγοριών
+                    foreach ($categoryGroups as $groupName => $categories):
+                        $hasCategories = false;
+                        foreach ($categories as $category) {
+                            if (in_array($category, $driverLicenseTypes)) {
+                                $hasCategories = true;
+                                break;
+                            }
+                        }
+                        
+                        if ($hasCategories):
+                    ?>
+                        <div class="license-category-group">
+                            <h4><?php echo $groupName; ?></h4>
+                            <div class="license-category-items">
+                                <?php foreach ($categories as $category): 
+                                    if (in_array($category, $driverLicenseTypes)):
+                                        // Λήψη της ημερομηνίας λήξης για την κατηγορία
+                                        $expiryDate = null;
+                                        $hasPei = false;
+                                        
+                                        foreach ($driverLicenses as $license) {
+                                            if ($license['license_type'] === $category) {
+                                                $expiryDate = $license['expiry_date'];
+                                                $hasPei = ($license['has_pei'] == 1);
+                                                break;
+                                            }
+                                        }
+                                ?>
+                                    <div class="license-category-item">
+                                        <div class="category-icon">
+                                            <img src="<?php echo BASE_URL; ?>img/license_icons/<?php echo strtolower($category); ?>.png" alt="<?php echo $category; ?>">
+                                            <span class="category-code"><?php echo $category; ?></span>
+                                        </div>
+                                        <div class="category-details">
+                                            <span class="category-name"><?php echo $categoryDescriptions[$category] ?? $category; ?></span>
+                                            <?php if ($expiryDate): ?>
+                                                <span class="category-expiry <?php echo (strtotime($expiryDate) < time()) ? 'expired' : ((strtotime($expiryDate) - time()) < 60*60*24*90 ? 'expiring-soon' : ''); ?>">
+                                                    Λήξη: <?php echo date('d/m/Y', strtotime($expiryDate)); ?>
+                                                </span>
+                                            <?php endif; ?>
+                                            <?php if ($hasPei): ?>
+                                                <span class="category-pei">ΠΕΙ</span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; endforeach; ?>
+                </div>
+                
+                <!-- Πληροφορίες ΠΕΙ -->
+                <?php 
+                $hasPeiC = false;
+                $hasPeiD = false;
+                $peiCExpiry = null;
+                $peiDExpiry = null;
+                
+                foreach ($driverLicenses as $license) {
+                    if ($license['has_pei'] == 1) {
+                        if (in_array($license['license_type'], ['C', 'CE', 'C1', 'C1E'])) {
+                            $hasPeiC = true;
+                            if (!empty($license['pei_expiry_c']) && (empty($peiCExpiry) || strtotime($license['pei_expiry_c']) > strtotime($peiCExpiry))) {
+                                $peiCExpiry = $license['pei_expiry_c'];
+                            }
+                        } else if (in_array($license['license_type'], ['D', 'DE', 'D1', 'D1E'])) {
+                            $hasPeiD = true;
+                            if (!empty($license['pei_expiry_d']) && (empty($peiDExpiry) || strtotime($license['pei_expiry_d']) > strtotime($peiDExpiry))) {
+                                $peiDExpiry = $license['pei_expiry_d'];
+                            }
+                        }
+                    }
+                }
+                
+                if ($hasPeiC || $hasPeiD):
+                ?>
+                <div class="pei-info">
+                    <h3>Πιστοποιητικό Επαγγελματικής Ικανότητας (ΠΕΙ)</h3>
+                    <div class="pei-details">
+                        <?php if ($hasPeiC): ?>
+                            <div class="pei-item">
+                                <span class="pei-type">ΠΕΙ Εμπορευμάτων</span>
+                                <?php if ($peiCExpiry): ?>
+                                    <span class="pei-expiry <?php echo (strtotime($peiCExpiry) < time()) ? 'expired' : ((strtotime($peiCExpiry) - time()) < 60*60*24*90 ? 'expiring-soon' : ''); ?>">
+                                        Λήξη: <?php echo date('d/m/Y', strtotime($peiCExpiry)); ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($hasPeiD): ?>
+                            <div class="pei-item">
+                                <span class="pei-type">ΠΕΙ Επιβατών</span>
+                                <?php if ($peiDExpiry): ?>
+                                    <span class="pei-expiry <?php echo (strtotime($peiDExpiry) < time()) ? 'expired' : ((strtotime($peiDExpiry) - time()) < 60*60*24*90 ? 'expiring-soon' : ''); ?>">
+                                        Λήξη: <?php echo date('d/m/Y', strtotime($peiDExpiry)); ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            <?php else: ?>
+                <p class="no-categories">Δεν έχουν καταχωρηθεί κατηγορίες αδειών οδήγησης.</p>
+            <?php endif; ?>
+        </div>
+    <?php else: ?>
+        <p class="profile-empty">Δεν έχετε καταχωρήσει στοιχεία άδειας οδήγησης. <a href="<?php echo BASE_URL; ?>drivers/edit-profile#driving-licenses">Προσθέστε τώρα!</a></p>
+    <?php endif; ?>
+</div>
                         
                         <div class="profile-sidebar">
                             <section class="profile-section">
