@@ -33,6 +33,8 @@ $userRole = Session::has('role') ? Session::get('role') : '';
     <meta name="keywords" content="εργασία, οδηγοί, εταιρείες, πρόσληψη, πλατφόρμα">
     <meta name="author" content="DriveJob">
     <meta name="csrf-token" content="<?php echo \Drivejob\Core\CSRF::getCurrentToken(); ?>">
+   
+
     
     <!-- Δυναμικός τίτλος σελίδας -->
     <title>DriveJob - <?php echo isset($pageTitle) ? $pageTitle : 'Καλώς Ήρθατε'; ?></title>

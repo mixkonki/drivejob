@@ -1,7 +1,6 @@
-<?php 
-
+<?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
 $errors = $_SESSION['errors'] ?? [];
@@ -9,11 +8,12 @@ $oldInput = $_SESSION['old_input'] ?? [];
 unset($_SESSION['errors'], $_SESSION['old_input']);
 ?>
 
-
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_edit_profile.css">
-<script src="<?php echo BASE_URL; ?>js/libs/tesseract.min.js"></script>
-<script src="<?php echo BASE_URL; ?>js/license_ocr.js"></script>
+<script src="<?php echo BASE_URL; ?>js/vendor/tesseract-bundle.js"></script>
+<script src="<?php echo BASE_URL; ?>js/tesseract-fallback.js"></script>
+<script src="<?php echo BASE_URL; ?>js/driver_edit_profile.js"></script>
+<script src="<?php echo BASE_URL; ?>js/license-validation.js"></script>
 
 <main>
     <div class="container">
@@ -46,12 +46,10 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
         <button type="button" class="tab-btn" data-tab="operator-licenses">Άδειες Χειριστή Μηχανημάτων</button>
         <button type="button" class="tab-btn" data-tab="tachograph-card">Κάρτα Ψηφιακού Ταχογράφου</button>
         <button type="button" class="tab-btn" data-tab="special-licenses">Ειδικές Άδειες</button>
-        <button type="button" class="tab-btn" data-tab="work-preferences">Εργασιακές Προτιμήσεις</button>
-        <button type="button" class="tab-btn" data-tab="media-accounts">Μέσα & Λογαριασμοί</button>
     </nav>
                 
                 <div class="tab-content">
-                   <!-- Καρτέλα Προσωπικών Στοιχείων -->
+                    <!-- Καρτέλα Προσωπικών Στοιχείων -->
 <div class="tab-pane active" id="personal-info">
     <h2>Προσωπικά Στοιχεία</h2>
     
@@ -187,7 +185,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
         <p class="form-hint">Μέγιστο μέγεθος: 5MB. Επιτρεπόμενοι τύποι: PDF, DOC, DOCX</p>
     </div>
 </div>
-                    <!-- Καρτέλα Στοιχείων Επικοινωνίας -->
+                    
+                    <!-- Καρτέλα Στοιχείων Επικοινωνίας (ενσωματωμένα με Μέσα & Λογαριασμοί) -->
                     <div class="tab-pane" id="contact-info">
                         <h2>Στοιχεία Επικοινωνίας</h2>
                         
@@ -238,9 +237,53 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                 <input type="text" id="country" name="country" value="<?php echo old('country', $driverData['country'] ?? ''); ?>">
                             </div>
                         </div>
+
+                        <!-- Προσθήκη τμήματος Μέσα Κοινωνικής Δικτύωσης -->
+                        <hr class="section-divider">
+                        <h3>Μέσα Κοινωνικής Δικτύωσης</h3>
+                        
+                        <div class="form-group">
+                            <label for="social_linkedin">LinkedIn</label>
+                            <input type="url" id="social_linkedin" name="social_linkedin" value="<?php echo old('social_linkedin', $driverData['social_linkedin'] ?? ''); ?>" placeholder="https://www.linkedin.com/in/yourprofile">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="social_facebook">Facebook</label>
+                            <input type="url" id="social_facebook" name="social_facebook" value="<?php echo old('social_facebook', $driverData['social_facebook'] ?? ''); ?>" placeholder="https://www.facebook.com/yourprofile">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="social_twitter">Twitter/X</label>
+                            <input type="url" id="social_twitter" name="social_twitter" value="<?php echo old('social_twitter', $driverData['social_twitter'] ?? ''); ?>" placeholder="https://twitter.com/yourusername">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="social_instagram">Instagram</label>
+                            <input type="url" id="social_instagram" name="social_instagram" value="<?php echo old('social_instagram', $driverData['social_instagram'] ?? ''); ?>" placeholder="https://www.instagram.com/yourusername">
+                        </div>
+                        
+                        <hr class="section-divider">
+                        <h3>Αλλαγή Κωδικού Πρόσβασης</h3>
+                        <p class="form-hint">Αφήστε τα πεδία κενά αν δεν επιθυμείτε να αλλάξετε τον κωδικό σας.</p>
+                        
+                        <div class="form-group">
+                            <label for="current_password">Τρέχων Κωδικός</label>
+                            <input type="password" id="current_password" name="current_password">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="new_password">Νέος Κωδικός</label>
+                            <input type="password" id="new_password" name="new_password">
+                            <div id="password-strength" class="password-strength"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirm_password">Επιβεβαίωση Νέου Κωδικού</label>
+                            <input type="password" id="confirm_password" name="confirm_password">
+                        </div>
                     </div>
                     
-<!-- Tab για Άδειες Οδήγησης με βελτιωμένη διάταξη -->
+                    <!-- Tab για Άδειες Οδήγησης με βελτιωμένη διάταξη -->
 <div class="tab-pane" id="driving-licenses">
     <h2>Άδειες Οδήγησης</h2>
     
@@ -309,7 +352,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                     <p class="form-hint">Εισάγετε τους κωδικούς που αναγράφονται στη στήλη 12 του διπλώματος, χωρισμένους με κόμμα</p>
                 </div>
             </div>
-
+            
             <!-- Κατηγορίες Αδειών Οδήγησης με πίνακα -->
             <h4>Κατηγορίες Αδειών Οδήγησης</h4>
             
@@ -345,8 +388,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[AM]" value="<?php 
-                                    echo old('license_expiry[AM]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'AM')); 
+                                    echo old('license_expiry[AM]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'AM'));
                                 ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
@@ -367,8 +410,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[A1]" value="<?php 
-                                    echo old('license_expiry[A1]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'A1')); 
+                                    echo old('license_expiry[A1]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'A1'));
                                 ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
@@ -389,8 +432,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[A2]" value="<?php 
-                                    echo old('license_expiry[A2]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'A2')); 
+                                    echo old('license_expiry[A2]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'A2'));
                                 ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
@@ -411,8 +454,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[A]" value="<?php 
-                                    echo old('license_expiry[A]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'A')); 
+                                    echo old('license_expiry[A]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'A'));
                                 ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
@@ -438,8 +481,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[B]" value="<?php 
-                                    echo old('license_expiry[B]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'B')); 
+                                    echo old('license_expiry[B]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'B'));
                                 ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
@@ -460,8 +503,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[BE]" value="<?php 
-                                    echo old('license_expiry[BE]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'BE')); 
+                                    echo old('license_expiry[BE]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'BE'));
                                 ?>">
                             </td>
                             <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
@@ -488,8 +531,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[C1]" value="<?php 
-                                    echo old('license_expiry[C1]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'C1')); 
+                                    echo old('license_expiry[C1]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'C1'));
                                 ?>">
                             </td>
                             <td>
@@ -518,8 +561,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[C1E]" value="<?php 
-                                    echo old('license_expiry[C1E]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'C1E')); 
+                                    echo old('license_expiry[C1E]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'C1E'));
                                 ?>">
                             </td>
                             <td>
@@ -548,8 +591,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[C]" value="<?php 
-                                    echo old('license_expiry[C]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'C')); 
+                                    echo old('license_expiry[C]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'C'));
                                 ?>">
                             </td>
                             <td>
@@ -578,8 +621,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[CE]" value="<?php 
-                                    echo old('license_expiry[CE]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'CE')); 
+                                    echo old('license_expiry[CE]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'CE'));
                                 ?>">
                             </td>
                             <td>
@@ -614,8 +657,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[D1]" value="<?php 
-                                    echo old('license_expiry[D1]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'D1')); 
+                                    echo old('license_expiry[D1]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'D1'));
                                 ?>">
                             </td>
                             <td>
@@ -644,8 +687,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[D1E]" value="<?php 
-                                    echo old('license_expiry[D1E]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'D1E')); 
+                                    echo old('license_expiry[D1E]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'D1E'));
                                 ?>">
                             </td>
                             <td>
@@ -674,8 +717,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[D]" value="<?php 
-                                    echo old('license_expiry[D]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'D')); 
+                                    echo old('license_expiry[D]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'D'));
                                 ?>">
                             </td>
                             <td>
@@ -704,8 +747,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             </td>
                             <td>
                                 <input type="date" name="license_expiry[DE]" value="<?php 
-                                    echo old('license_expiry[DE]', 
-                                    getExpiryDateForLicenseType($driverLicenses, 'DE')); 
+                                    echo old('license_expiry[DE]',
+                                    getExpiryDateForLicenseType($driverLicenses, 'DE'));
                                 ?>">
                             </td>
                             <td>
@@ -730,7 +773,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
         </div>
     </div>
 </div>
-
+    
 <?php
 // Βοηθητική συνάρτηση για την εύρεση ημερομηνίας λήξης κατηγορίας
 function getExpiryDateForLicenseType($licenses, $type) {
@@ -742,11 +785,11 @@ function getExpiryDateForLicenseType($licenses, $type) {
     return '';
 }
 ?>
-
+    
 <!-- Tab για Πιστοποιητικά ADR -->
 <div class="tab-pane" id="adr-certificates">
     <h2>Πιστοποιητικά ADR</h2>
-                        
+                     
     <div class="license-section">
         <div class="form-group checkbox-group">
             <label for="adr_certificate" class="checkbox-label">
@@ -918,7 +961,7 @@ function getExpiryDateForLicenseType($licenses, $type) {
                 </div>
             </div>
             
-            <!-- Βασικές πληροφορίες κάρτας ταχογράφου -->
+            <!-- Βασικές πληροφορίες κάρτας ταχογράφου - ΔΙΟΡΘΩΜΕΝΟ ΤΜΗΜΑ -->
             <div class="license-basic-info">
                 <div class="form-row">
                     <div class="form-group">
@@ -928,7 +971,7 @@ function getExpiryDateForLicenseType($licenses, $type) {
                     
                     <div class="form-group">
                         <label for="tachograph_card_expiry">Ημερομηνία Λήξης</label>
-                        <input type="date" id="tachograph_card_expiry" name="tachograph_card_expiry" value="<?php echo old('tachograph_card_expiry', $driverTachograph ? $driverTachograph['expiry_date'] : ''); ?>">
+                        <input type="date" id="tachograph_card_expiry" name="tachograph_card_expiry" value="<?php echo old('tachograph_card_expiry', $driverTachograph['expiry_date'] ?? ''); ?>">
                     </div>
                 </div>
             </div>
@@ -942,19 +985,20 @@ function getExpiryDateForLicenseType($licenses, $type) {
         </div>
     </div>
 </div>
-<!-- Tab για Άδειες Χειριστή Μηχανημάτων Έργου -->
+
+<!-- Tab για Άδειες Χειριστή Μηχανημάτων Έργου - ΔΙΟΡΘΩΜΕΝΟ -->
 <div class="tab-pane" id="operator-licenses">
     <h2>Άδειες Χειριστή Μηχανημάτων Έργου</h2>
-                        
+                     
     <div class="license-section">
         <div class="form-group checkbox-group">
             <label for="operator_license" class="checkbox-label">
-                <input type="checkbox" id="operator_license" name="operator_license" value="1" <?php echo ($driverOperator) ? 'checked' : ''; ?>>
+                <input type="checkbox" id="operator_license" name="operator_license" value="1" <?php echo (isset($driverOperator) && $driverOperator) ? 'checked' : ''; ?>>
                 <span>Διαθέτω άδεια χειριστή μηχανημάτων έργου</span>
             </label>
         </div>
         
-        <div id="operator_license_tab" class="license-details-tab <?php echo (!$driverOperator) ? 'hidden' : ''; ?>">
+        <div id="operator_license_tab" class="license-details-tab <?php echo (!isset($driverOperator) || !$driverOperator) ? 'hidden' : ''; ?>">
             <!-- Εικόνες άδειας χειριστή και σκανάρισμα -->
             <div class="license-visual">
                 <div class="form-group">
@@ -998,33 +1042,46 @@ function getExpiryDateForLicenseType($licenses, $type) {
                     
                     <div class="form-group">
                         <label for="operator_license_expiry">Ημερομηνία Θεώρησης</label>
-                        <input type="date" id="operator_license_expiry" name="operator_license_expiry" value="<?php echo old('operator_license_expiry', $driverOperator ? $driverOperator['expiry_date'] : ''); ?>">
+                        <input type="date" id="operator_license_expiry" name="operator_license_expiry" value="<?php echo old('operator_license_expiry', isset($driverOperator) && $driverOperator ? $driverOperator['expiry_date'] : ''); ?>">
                         <p class="form-hint">Οι άδειες χειριστή μηχανημάτων έργου είναι αορίστου διάρκειας και θεωρούνται κάθε έντεκα (11) έτη.</p>
                     </div>
                 </div>
             </div>
-
+            
             <h4>Επιλογή Ειδικότητας και Υποειδικοτήτων</h4>
             
             <div class="form-group">
                 <label for="operator_speciality">Επιλέξτε Ειδικότητα</label>
                 <select id="operator_speciality" name="operator_speciality" onchange="loadSubSpecialities(this.value)">
                     <option value="">Επιλέξτε</option>
-                    <option value="1" <?php echo ($driverOperator && $driverOperator['speciality'] == '1') ? 'selected' : ''; ?>>1 - Εργασίες εκσκαφής και χωματουργικές</option>
-                    <option value="2" <?php echo ($driverOperator && $driverOperator['speciality'] == '2') ? 'selected' : ''; ?>>2 - Εργασίες ανύψωσης και μεταφοράς φορτίων</option>
-                    <option value="3" <?php echo ($driverOperator && $driverOperator['speciality'] == '3') ? 'selected' : ''; ?>>3 - Εργασίες οδοστρωσίας</option>
-                    <option value="4" <?php echo ($driverOperator && $driverOperator['speciality'] == '4') ? 'selected' : ''; ?>>4 - Εργασίες εξυπηρέτησης οδών και αεροδρομίων</option>
-                    <option value="5" <?php echo ($driverOperator && $driverOperator['speciality'] == '5') ? 'selected' : ''; ?>>5 - Εργασίες υπόγειων έργων και μεταλλείων</option>
-                    <option value="6" <?php echo ($driverOperator && $driverOperator['speciality'] == '6') ? 'selected' : ''; ?>>6 - Εργασίες έλξης</option>
-                    <option value="7" <?php echo ($driverOperator && $driverOperator['speciality'] == '7') ? 'selected' : ''; ?>>7 - Εργασίες διάτρησης και κοπής εδαφών</option>
-                    <option value="8" <?php echo ($driverOperator && $driverOperator['speciality'] == '8') ? 'selected' : ''; ?>>8 - Ειδικές εργασίες ανύψωσης</option>
+                    <option value="1" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '1') ? 'selected' : ''; ?>>1 - Εργασίες εκσκαφής και χωματουργικές</option>
+                    <option value="2" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '2') ? 'selected' : ''; ?>>2 - Εργασίες ανύψωσης και μεταφοράς φορτίων</option>
+                    <option value="3" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '3') ? 'selected' : ''; ?>>3 - Εργασίες οδοστρωσίας</option>
+                    <option value="4" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '4') ? 'selected' : ''; ?>>4 - Εργασίες εξυπηρέτησης οδών και αεροδρομίων</option>
+                    <option value="5" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '5') ? 'selected' : ''; ?>>5 - Εργασίες υπόγειων έργων και μεταλλείων</option>
+                    <option value="6" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '6') ? 'selected' : ''; ?>>6 - Εργασίες έλξης</option>
+                    <option value="7" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '7') ? 'selected' : ''; ?>>7 - Εργασίες διάτρησης και κοπής εδαφών</option>
+                    <option value="8" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '8') ? 'selected' : ''; ?>>8 - Ειδικές εργασίες ανύψωσης</option>
                 </select>
             </div>
             
-            <div id="subSpecialityContainer" class="form-group" style="display: <?php echo ($driverOperator) ? 'block' : 'none'; ?>;">
+            <div id="subSpecialityContainer" class="form-group" style="display: <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality']) ? 'block' : 'none'; ?>;">
                 <label>Επιλέξτε Υποειδικότητες</label>
                 <div id="subSpecialities" class="sub-specialities">
                     <!-- Οι υποειδικότητες θα φορτωθούν με JavaScript -->
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%">Κωδικός</th>
+                                <th style="width: 50%">Υποειδικότητα</th>
+                                <th style="width: 15%">Ενεργή</th>
+                                <th style="width: 20%">Ομάδα</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subSpecialitiesTableBody">
+                            <!-- Τα δεδομένα θα προστεθούν με JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
@@ -1037,139 +1094,6 @@ function getExpiryDateForLicenseType($licenses, $type) {
         </div>
     </div>
 </div>
-
-<script>
-// Λεξικό με τις υποειδικότητες για κάθε ειδικότητα
-const operatorSubSpecialities = {
-    '1': [
-        {id: '1.1', name: 'Εκσκαφείς όλων των τύπων', group: 'A'},
-        {id: '1.2', name: 'Πασσαλοπήχτες παντός τύπου', group: 'B'},
-        {id: '1.3', name: 'Σύνθετα εκσκαπτικά και φορτωτικά μηχανήματα', group: 'A'},
-        {id: '1.4', name: 'Προωθητήρες γαιών (ΜΠΟΛΤΟΖΕΣ)', group: 'A'},
-        {id: '1.5', name: 'Φορτωτές αλυσότροχοι και λαστιχοφόροι', group: 'A'},
-        {id: '1.6', name: 'Αποξέστες γαιών (ΣΚΡΕΪΠΕΡ)', group: 'B'},
-        {id: '1.7', name: 'Τορναντόζες παντός τύπου', group: 'B'},
-        {id: '1.8', name: 'Βυθοκόροι παντός τύπου', group: 'A'},
-        {id: '1.9', name: 'Μηχανήματα επεξεργασίας αδρανών υλικών', group: 'B'}
-    ],
-    '2': [
-        {id: '2.1', name: 'Γερανοί μεταθετοί παντός τύπου', group: 'A'},
-        {id: '2.2', name: 'Γερανοφόρα μηχανήματα παντός τύπου', group: 'A'},
-        {id: '2.3', name: 'Γερανοφόρα οχήματα (παπαγάλοι)', group: 'B'},
-        {id: '2.4', name: 'Τρυπανοφόρα οχήματα', group: 'B'},
-        {id: '2.5', name: 'Καλαθοφόρα οχήματα', group: 'B'},
-        {id: '2.6', name: 'Αντλίες (πρέσες) ετοίμου σκυροδέματος', group: 'A'},
-        {id: '2.7', name: 'Ανυψωτικά περονοφόρα μηχανήματα (ΚΛΑΡΚ)', group: 'A'},
-        {id: '2.8', name: 'Ηλεκτροκίνητα περονοφόρα ανυψωτικά μηχανήματα', group: 'B'},
-        {id: '2.9', name: 'Βαρέα οχήματα ανύψωσης και μεταφοράς', group: 'A'}
-    ],
-    '3': [
-        {id: '3.1', name: 'Βαρέα οχήματα μεταφοράς γαιωδών υλικών', group: 'A'},
-        {id: '3.2', name: 'Βαρέα οχήματα μεταφοράς πέτρινων όγκων', group: 'A'},
-        {id: '3.3', name: 'Μηχανήματα διάστρωσης ασφάλτου (ΦΙΝΙΤΣΕΡ)', group: 'A'},
-        {id: '3.4', name: 'Μηχανήματα εκσκαφής και αποξέσεως ασφάλτου (ΦΡΕΖΕΣ)', group: 'B'},
-        {id: '3.5', name: 'Διαμορφωτές γαιών, οδών (ΓΚΡΕΪΝΤΕΡ)', group: 'A'},
-        {id: '3.6', name: 'Μηχανήματα πλάγιας εκσκαφής πρανών', group: 'B'},
-        {id: '3.7', name: 'Οδοστρωτήρες παντός τύπου', group: 'A'},
-        {id: '3.8', name: 'Μηχανήματα ανακύκλωσης ασφάλτου', group: 'B'},
-        {id: '3.9', name: 'Προθερμαντήρες θέρμανσης ασφάλτου', group: 'B'},
-        {id: '3.10', name: 'Μηχανήματα κοπής ασφάλτου και πεζοδρομίων', group: 'B'},
-        {id: '3.11', name: 'Στατικά και δονητικά μηχανήματα συμπύκνωσης', group: 'A'},
-        {id: '3.12', name: 'Πισσωτικά μηχανήματα εμποτισμού ασφάλτου', group: 'B'}
-    ],
-    '4': [
-        {id: '4.1', name: 'Μηχανικά σάρωθρα (σκούπες)', group: 'A'},
-        {id: '4.2', name: 'Εκχιονιστικά οχήματα - μηχανήματα', group: 'A'},
-        {id: '4.3', name: 'Οχήματα - μηχανήματα διάστρωσης αλατιού', group: 'B'},
-        {id: '4.4', name: 'Ειδικά οχήματα καθαρισμού διαδρόμων αεροδρομίων', group: 'B'},
-        {id: '4.5', name: 'Οχήματα φορτοεκφόρτωσης αεροσκαφών', group: 'A'},
-        {id: '4.6', name: 'Μηχανήματα σήμανσης - διαγράμμισης οδών και αεροδρομίων', group: 'B'},
-        {id: '4.7', name: 'Βυτιοφόρα αποφρακτικά οχήματα', group: 'A'},
-        {id: '4.8', name: 'Οχήματα εξυπηρέτησης οδών και αεροδρομίων με βραχίονα', group: 'B'}
-    ],
-    '5': [
-        {id: '5.1', name: 'Μηχανήματα διανοίξεως στοών – σηράγγων (αρουραίοι)', group: 'A'},
-        {id: '5.2', name: 'Ηλεκτροκίνητα μηχανήματα διανοίξεως στοών – γαλαριών', group: 'A'},
-        {id: '5.3', name: 'Μηχανήματα εκσκαφής και φόρτωσης στα υπόγεια έργα', group: 'A'},
-        {id: '5.4', name: 'Μηχανήματα εκσκαφών στα υπόγεια έργα μικρότερης ισχύος', group: 'B'},
-        {id: '5.5', name: 'Μεγάλοι ηλεκτροκίνητοι εκσκαφείς λιγνίτη', group: 'A'},
-        {id: '5.6', name: 'Μηχανήματα επιφανειακών ορυχείων', group: 'A'}
-    ],
-    '6': [
-        {id: '6.1', name: 'Ελκυστήρες παντός τύπου (πλην των γεωργικών)', group: 'A'},
-        {id: '6.2', name: 'Αυτοκινούμενοι αεροσυμπιεστές', group: 'B'}
-    ],
-    '7': [
-        {id: '7.1', name: 'Γεωτρύπανα παντός τύπου', group: 'A'},
-        {id: '7.2', name: 'Διατρητικά μηχανήματα', group: 'A'},
-        {id: '7.3', name: 'Ηλεκτροκίνητα διατρητικά μηχανήματα', group: 'B'}
-    ],
-    '8': [
-        {id: '8.1', name: 'Ηλεκτροκίνητοι περιστρεφόμενοι γερανοί', group: 'A'},
-        {id: '8.2', name: 'Γερανοί σταθεροί παντός τύπου', group: 'A'},
-        {id: '8.3', name: 'Ηλεκτροκίνητοι οικοδομικοί γερανοί', group: 'B'},
-        {id: '8.4', name: 'Πλωτοί ηλεκτροκίνητοι γερανοί', group: 'A'},
-        {id: '8.5', name: 'Ηλεκτροκίνητες γερανογέφυρες', group: 'A'},
-        {id: '8.6', name: 'Ηλεκτροκίνητοι σταθεροί γερανοί τροφοδοτήσεως', group: 'B'},
-        {id: '8.7', name: 'Ηλεκτροκίνητες ανυψωτικές πλατφόρμες', group: 'B'},
-        {id: '8.8', name: 'Ηλεκτροκίνητα μηχανήματα φορτοεκφόρτωσης', group: 'A'},
-        {id: '8.9', name: 'Ειδικά μηχανήματα αναβατώρες - πυλώνες', group: 'B'}
-    ]
-};
-
-// Επιλεγμένες υποειδικότητες
-window.selectedSubSpecialities = <?php echo json_encode($driverOperatorSubSpecialities ?? []); ?>;
-
-// Φόρτωση υποειδικοτήτων με βάση την επιλεγμένη ειδικότητα
-function loadSubSpecialities(specialityId) {
-    const subSpecialityContainer = document.getElementById('subSpecialityContainer');
-    const subSpecialitiesDiv = document.getElementById('subSpecialities');
-    
-    if (!specialityId) {
-        subSpecialityContainer.style.display = 'none';
-        return;
-    }
-    
-    subSpecialityContainer.style.display = 'block';
-    subSpecialitiesDiv.innerHTML = '';
-    
-    if (operatorSubSpecialities[specialityId]) {
-        operatorSubSpecialities[specialityId].forEach(item => {
-            const checkboxDiv = document.createElement('div');
-            checkboxDiv.className = 'checkbox-group';
-            
-            // Έλεγχος αν η συγκεκριμένη υποειδικότητα είναι επιλεγμένη
-            const isChecked = window.selectedSubSpecialities && window.selectedSubSpecialities.includes(item.id);
-            
-            checkboxDiv.innerHTML = `
-                <label class="checkbox-label">
-                    <input type="checkbox" name="operator_sub_specialities[]" value="${item.id}" ${isChecked ? 'checked' : ''}>
-                    <span>${item.id} - ${item.name} (Ομάδα ${item.group})</span>
-                </label>
-            `;
-            
-            subSpecialitiesDiv.appendChild(checkboxDiv);
-        });
-    }
-}
-
-// Αρχικοποίηση των υποειδικοτήτων κατά τη φόρτωση της σελίδας
-document.addEventListener('DOMContentLoaded', function() {
-    const specialitySelect = document.getElementById('operator_speciality');
-    if (specialitySelect && specialitySelect.value) {
-        loadSubSpecialities(specialitySelect.value);
-    }
-});
-</script>
-        
-       <!-- Tab για Ειδικές Άδειες -->
-<div class="tab-pane" id="special-licenses">
-    <h2>Ειδικές Άδειες</h2>
-    
-    <div class="license-section">
-        <p class="form-hint">Σε αυτή την ενότητα μπορείτε να προσθέσετε άλλες ειδικές άδειες που κατέχετε και δεν περιλαμβάνονται στις προηγούμενες καρτέλες.</p>
-        
-        <div id="special-licenses-container">
             <!-- Λίστα ειδικών αδειών -->
             <?php if (isset($driverSpecialLicenses) && count($driverSpecialLicenses) > 0): ?>
                 <?php foreach ($driverSpecialLicenses as $index => $license): ?>
@@ -1207,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="form-row">
                     <div class="form-group">
                         <label for="special_license_type_new">Τύπος Άδειας</label>
-                        <input type="text" id="special_license_type_new" name="special_license_type[]" required>
+                        <input type="text" id="special_license_type_new" name="special_license_type[]">
                     </div>
                     
                     <div class="form-group">
@@ -1235,191 +1159,13 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-<script>
-// JavaScript για διαχείριση ειδικών αδειών
-document.addEventListener('DOMContentLoaded', function() {
-    // Προσθήκη νέας ειδικής άδειας
-    const addButton = document.getElementById('add-special-license');
-    const container = document.getElementById('special-licenses-container');
-    const template = document.getElementById('special-license-template');
-    let licenseCounter = <?php echo isset($driverSpecialLicenses) ? count($driverSpecialLicenses) : 0; ?>;
-    
-    if (addButton && container && template) {
-        addButton.addEventListener('click', function() {
-            // Κλωνοποίηση του προτύπου
-            const clone = template.cloneNode(true);
-            clone.id = 'special-license-item-' + licenseCounter;
-            clone.style.display = 'block';
-            
-            // Ενημέρωση των IDs και των ονομάτων των πεδίων
-            const inputs = clone.querySelectorAll('input, textarea');
-            inputs.forEach(input => {
-                const oldId = input.id;
-                const newId = oldId.replace('_new', '_' + licenseCounter);
-                input.id = newId;
-            });
-            
-            // Ενημέρωση του κουμπιού αφαίρεσης
-            const removeButton = clone.querySelector('.remove-special-license');
-            if (removeButton) {
-                removeButton.dataset.index = licenseCounter;
-            }
-            
-            // Προσθήκη στον container
-            container.appendChild(clone);
-            licenseCounter++;
-        });
-        
-        // Αφαίρεση ειδικής άδειας (με ανάθεση στο document για δυναμικά δημιουργημένα στοιχεία)
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('remove-special-license')) {
-                const index = e.target.dataset.index;
-                const item = document.getElementById('special-license-item-' + index);
-                if (item) {
-                    item.remove();
-                }
-            }
-        });
-    }
-});
-</script>
-
-
-                            
-                            <div id="training_seminars_tab" class="license-details-tab <?php echo !(old('training_seminars', $driverData['training_seminars'] ?? 0)) ? 'hidden' : ''; ?>">
-                                <div class="form-group">
-                                    <label for="training_details">Λεπτομέρειες Σεμιναρίων</label>
-                                    <textarea id="training_details" name="training_details" rows="4"><?php echo old('training_details', $driverData['training_details'] ?? ''); ?></textarea>
-                                    <p class="form-hint">Καταγράψτε τα σεμινάρια που έχετε παρακολουθήσει, τις ημερομηνίες και τους φορείς υλοποίησης.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Καρτέλα Εργασιακών Προτιμήσεων -->
-                    <div class="tab-pane" id="work-preferences">
-                        <h2>Εργασιακές Προτιμήσεις</h2>
-                        
-                        <div class="form-group checkbox-group">
-                            <label for="available_for_work" class="checkbox-label">
-                                <input type="checkbox" id="available_for_work" name="available_for_work" value="1" <?php echo (old('available_for_work', $driverData['available_for_work'] ?? 1)) ? 'checked' : ''; ?>>
-                                <span>Είμαι διαθέσιμος/η για εργασία</span>
-                            </label>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="preferred_job_type">Προτιμώμενος Τύπος Εργασίας</label>
-                            <select id="preferred_job_type" name="preferred_job_type">
-                                <option value="">Επιλέξτε</option>
-                                <option value="full_time" <?php echo old('preferred_job_type', $driverData['preferred_job_type'] ?? '') === 'full_time' ? 'selected' : ''; ?>>Πλήρης Απασχόληση</option>
-                                <option value="part_time" <?php echo old('preferred_job_type', $driverData['preferred_job_type'] ?? '') === 'part_time' ? 'selected' : ''; ?>>Μερική Απασχόληση</option>
-                                <option value="contract" <?php echo old('preferred_job_type', $driverData['preferred_job_type'] ?? '') === 'contract' ? 'selected' : ''; ?>>Σύμβαση Έργου</option>
-                                <option value="temporary" <?php echo old('preferred_job_type', $driverData['preferred_job_type'] ?? '') === 'temporary' ? 'selected' : ''; ?>>Προσωρινή Απασχόληση</option>
-                                <option value="any" <?php echo old('preferred_job_type', $driverData['preferred_job_type'] ?? '') === 'any' ? 'selected' : ''; ?>>Οποιοσδήποτε τύπος</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="preferred_vehicle_type">Προτιμώμενος Τύπος Οχήματος</label>
-                            <select id="preferred_vehicle_type" name="preferred_vehicle_type">
-                                <option value="">Επιλέξτε</option>
-                                <option value="car" <?php echo old('preferred_vehicle_type', $driverData['preferred_vehicle_type'] ?? '') === 'car' ? 'selected' : ''; ?>>Αυτοκίνητο</option>
-                                <option value="van" <?php echo old('preferred_vehicle_type', $driverData['preferred_vehicle_type'] ?? '') === 'van' ? 'selected' : ''; ?>>Βαν</option>
-                                <option value="truck" <?php echo old('preferred_vehicle_type', $driverData['preferred_vehicle_type'] ?? '') === 'truck' ? 'selected' : ''; ?>>Φορτηγό</option>
-                                <option value="bus" <?php echo old('preferred_vehicle_type', $driverData['preferred_vehicle_type'] ?? '') === 'bus' ? 'selected' : ''; ?>>Λεωφορείο</option>
-                                <option value="machinery" <?php echo old('preferred_vehicle_type', $driverData['preferred_vehicle_type'] ?? '') === 'machinery' ? 'selected' : ''; ?>>Μηχάνημα Έργου</option>
-                                <option value="any" <?php echo old('preferred_vehicle_type', $driverData['preferred_vehicle_type'] ?? '') === 'any' ? 'selected' : ''; ?>>Οποιοδήποτε</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="preferred_location">Προτιμώμενη Περιοχή Εργασίας</label>
-                            <input type="text" id="preferred_location" name="preferred_location" value="<?php echo old('preferred_location', $driverData['preferred_location'] ?? ''); ?>">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="preferred_radius">Μέγιστη Απόσταση από την Κατοικία (χλμ)</label>
-                            <input type="number" id="preferred_radius" name="preferred_radius" min="0" max="500" step="5" value="<?php echo old('preferred_radius', $driverData['preferred_radius'] ?? ''); ?>">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="salary_expectations">Προσδοκίες Αμοιβής (€)</label>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <input type="number" id="salary_min" name="salary_min" min="0" step="100" placeholder="Ελάχιστο" value="<?php echo old('salary_min', $driverData['salary_min'] ?? ''); ?>">
-                                </div>
-                                <div class="form-group">
-                                    <input type="number" id="salary_max" name="salary_max" min="0" step="100" placeholder="Μέγιστο" value="<?php echo old('salary_max', $driverData['salary_max'] ?? ''); ?>">
-                                </div>
-                                <div class="form-group">
-                                    <select id="salary_period" name="salary_period">
-                                        <option value="monthly" <?php echo old('salary_period', $driverData['salary_period'] ?? '') === 'monthly' ? 'selected' : ''; ?>>Μηνιαία</option>
-                                        <option value="yearly" <?php echo old('salary_period', $driverData['salary_period'] ?? '') === 'yearly' ? 'selected' : ''; ?>>Ετήσια</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group checkbox-group">
-                            <label for="willing_to_relocate" class="checkbox-label">
-                                <input type="checkbox" id="willing_to_relocate" name="willing_to_relocate" value="1" <?php echo (old('willing_to_relocate', $driverData['willing_to_relocate'] ?? 0)) ? 'checked' : ''; ?>>
-                                <span>Είμαι διατεθειμένος/η να μετακομίσω για εργασία</span>
-                            </label>
-                        </div>
-                        
-                        <div class="form-group checkbox-group">
-                            <label for="willing_to_travel" class="checkbox-label">
-                                <input type="checkbox" id="willing_to_travel" name="willing_to_travel" value="1" <?php echo (old('willing_to_travel', $driverData['willing_to_travel'] ?? 0)) ? 'checked' : ''; ?>>
-                                <span>Είμαι διατεθειμένος/η να ταξιδεύω συχνά</span>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <!-- Καρτέλα Μέσων & Λογαριασμών -->
-                    <div class="tab-pane" id="media-accounts">
-                        <h2>Μέσα Κοινωνικής Δικτύωσης & Λογαριασμοί</h2>
-                        
-                        <div class="form-group">
-                            <label for="social_linkedin">LinkedIn</label>
-                            <input type="url" id="social_linkedin" name="social_linkedin" value="<?php echo old('social_linkedin', $driverData['social_linkedin'] ?? ''); ?>" placeholder="https://www.linkedin.com/in/yourprofile">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="social_facebook">Facebook</label>
-                            <input type="url" id="social_facebook" name="social_facebook" value="<?php echo old('social_facebook', $driverData['social_facebook'] ?? ''); ?>" placeholder="https://www.facebook.com/yourprofile">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="social_twitter">Twitter/X</label>
-                            <input type="url" id="social_twitter" name="social_twitter" value="<?php echo old('social_twitter', $driverData['social_twitter'] ?? ''); ?>" placeholder="https://twitter.com/yourusername">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="social_instagram">Instagram</label>
-                            <input type="url" id="social_instagram" name="social_instagram" value="<?php echo old('social_instagram', $driverData['social_instagram'] ?? ''); ?>" placeholder="https://www.instagram.com/yourusername">
-                        </div>
-                        
-                        <hr class="section-divider">
-                        
-                        <h3>Αλλαγή Κωδικού Πρόσβασης</h3>
-                        <p class="form-hint">Αφήστε τα πεδία κενά αν δεν επιθυμείτε να αλλάξετε τον κωδικό σας.</p>
-                        
-                        <div class="form-group">
-                            <label for="current_password">Τρέχων Κωδικός</label>
-                            <input type="password" id="current_password" name="current_password">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="new_password">Νέος Κωδικός</label>
-                            <input type="password" id="new_password" name="new_password">
-                            <div id="password-strength" class="password-strength"></div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="confirm_password">Επιβεβαίωση Νέου Κωδικού</label>
-                            <input type="password" id="confirm_password" name="confirm_password">
-                        </div>
-                    </div>
+<div id="training_seminars_tab" class="license-details-tab <?php echo !(old('training_seminars', $driverData['training_seminars'] ?? 0)) ? 'hidden' : ''; ?>">
+    <div class="form-group">
+        <label for="training_details">Λεπτομέρειες Σεμιναρίων</label>
+        <textarea id="training_details" name="training_details" rows="4"><?php echo old('training_details', $driverData['training_details'] ?? ''); ?></textarea>
+        <p class="form-hint">Καταγράψτε τα σεμινάρια που έχετε παρακολουθήσει, τις ημερομηνίες και τους φορείς υλοποίησης.</p>
+    </div>
+</div>
                 </div>
             </div>
             
@@ -1429,11 +1175,20 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </form>
     </div>
+    <script>
+    // Έλεγχος για διαθεσιμότητα του TesseractWrapper
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('TesseractWrapper διαθέσιμο:', typeof TesseractWrapper !== 'undefined');
+        console.log('TesseractWrapper:', TesseractWrapper);
+        
+        if (typeof TesseractWrapper !== 'undefined') {
+            console.log('TesseractWrapper.preprocessImage:', typeof TesseractWrapper.preprocessImage);
+        }
+    });
+    </script>
 </main>
 
-<script src="<?php echo BASE_URL; ?>js/driver_edit_profile.js"></script>
-
-<?php 
+<?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php'; 
+include ROOT_DIR . '/src/Views/footer.php';
 ?>

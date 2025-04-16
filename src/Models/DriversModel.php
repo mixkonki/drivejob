@@ -12,6 +12,9 @@ class DriversModel {
     
     /**
      * Δημιουργεί έναν νέο λογαριασμό οδηγού
+     * 
+     * @param array $data Δεδομένα νέου οδηγού
+     * @return int ID του νέου οδηγού
      */
     public function create($data) {
         $sql = "INSERT INTO drivers (email, password, last_name, first_name, phone, is_verified) 
@@ -31,7 +34,11 @@ class DriversModel {
     }
     
     /**
-     * Ενημερώνει τα στοιχεία ενός οδηγού
+     * Ενημερώνει τα βασικά στοιχεία ενός οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @param array $data Δεδομένα προς ενημέρωση
+     * @return bool Επιτυχία/αποτυχία
      */
     public function update($id, $data) {
         $sql = "UPDATE drivers SET 
@@ -53,6 +60,9 @@ class DriversModel {
     
     /**
      * Επιστρέφει τα στοιχεία ενός οδηγού με βάση το ID
+     * 
+     * @param int $id ID του οδηγού
+     * @return array|false Στοιχεία οδηγού ή false αν δεν βρέθηκε
      */
     public function getDriverById($id) {
         $sql = "SELECT * FROM drivers WHERE id = :id";
@@ -63,6 +73,9 @@ class DriversModel {
     
     /**
      * Επιστρέφει έναν οδηγό με βάση το email
+     * 
+     * @param string $email Email του οδηγού
+     * @return array|false Στοιχεία οδηγού ή false αν δεν βρέθηκε
      */
     public function getDriverByEmail($email) {
         $sql = "SELECT * FROM drivers WHERE email = :email";
@@ -73,6 +86,9 @@ class DriversModel {
     
     /**
      * Διαγράφει έναν οδηγό
+     * 
+     * @param int $id ID του οδηγού
+     * @return bool Επιτυχία/αποτυχία
      */
     public function delete($id) {
         $sql = "DELETE FROM drivers WHERE id = :id";
@@ -82,6 +98,9 @@ class DriversModel {
     
     /**
      * Ενημερώνει την κατάσταση επαλήθευσης του οδηγού
+     * 
+     * @param string $email Email του οδηγού
+     * @return bool Επιτυχία/αποτυχία
      */
     public function verifyDriver($email) {
         $sql = "UPDATE drivers SET is_verified = 1 WHERE email = :email";
@@ -91,6 +110,10 @@ class DriversModel {
     
     /**
      * Ενημερώνει τον κωδικό πρόσβασης ενός οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @param string $password Νέος κωδικός πρόσβασης (κρυπτογραφημένος)
+     * @return bool Επιτυχία/αποτυχία
      */
     public function updatePassword($id, $password) {
         $sql = "UPDATE drivers SET password = :password WHERE id = :id";
@@ -109,30 +132,86 @@ class DriversModel {
      * @return bool Επιτυχία/αποτυχία
      */
     public function updateProfile($driverId, $data) {
-        $columns = [];
-        $values = [];
-        
-        // Δημιουργία του μέρους SET του SQL ερωτήματος
-        foreach ($data as $column => $value) {
-            if ($value === null) {
-                $columns[] = "`$column` = NULL";
-            } else {
-                $columns[] = "`$column` = ?";
-                $values[] = $value;
+        try {
+            $columns = [];
+            $values = [];
+            
+            // Καταγραφή των δεδομένων για debugging
+            error_log('updateProfile data: ' . print_r($data, true));
+            
+            // Δημιουργία του μέρους SET του SQL ερωτήματος
+            foreach ($data as $column => $value) {
+                if ($value === null) {
+                    $columns[] = "`$column` = NULL";
+                } else {
+                    $columns[] = "`$column` = ?";
+                    $values[] = $value;
+                }
             }
+            
+            // Προσθήκη του ID του οδηγού στο τέλος των παραμέτρων
+            $values[] = $driverId;
+            
+            $sql = "UPDATE drivers SET " . implode(', ', $columns) . " WHERE id = ?";
+            error_log('Update SQL: ' . $sql);
+            error_log('Update Values: ' . print_r($values, true));
+            
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute($values);
+            
+            // Ενημέρωση των flags αδειών
+            $this->updateDriverFlags($driverId);
+            
+            return $result;
+        } catch (PDOException $e) {
+            error_log('Error in updateProfile: ' . $e->getMessage());
+            return false;
         }
-        
-        // Προσθήκη του ID του οδηγού στο τέλος των παραμέτρων
-        $values[] = $driverId;
-        
-        $sql = "UPDATE drivers SET " . implode(', ', $columns) . " WHERE id = ?";
-        $stmt = $this->pdo->prepare($sql);
-        
-        return $stmt->execute($values);
+    }
+    
+    /**
+     * Ενημερώνει τα flags αδειών (driving_license, adr_certificate, operator_license) βάσει των σχετικών εγγραφών
+     * 
+     * @param int $driverId ID του οδηγού
+     * @return bool Επιτυχία/αποτυχία
+     */
+    private function updateDriverFlags($driverId) {
+        try {
+            // Έλεγχος αν υπάρχουν άδειες οδήγησης
+            $hasLicenses = $this->pdo->prepare("SELECT COUNT(*) FROM driver_licenses WHERE driver_id = ?");
+            $hasLicenses->execute([$driverId]);
+            $drivingLicenseFlag = ($hasLicenses->fetchColumn() > 0) ? 1 : 0;
+            
+            // Έλεγχος αν υπάρχει ADR
+            $hasADR = $this->pdo->prepare("SELECT COUNT(*) FROM driver_adr_certificates WHERE driver_id = ?");
+            $hasADR->execute([$driverId]);
+            $adrFlag = ($hasADR->fetchColumn() > 0) ? 1 : 0;
+            
+            // Έλεγχος αν υπάρχει άδεια χειριστή
+            $hasOperator = $this->pdo->prepare("SELECT COUNT(*) FROM driver_operator_licenses WHERE driver_id = ?");
+            $hasOperator->execute([$driverId]);
+            $operatorFlag = ($hasOperator->fetchColumn() > 0) ? 1 : 0;
+            
+            // Ενημέρωση των flags στον πίνακα drivers
+            $updateFlags = $this->pdo->prepare("UPDATE drivers SET 
+                driving_license = ?, 
+                adr_certificate = ?, 
+                operator_license = ? 
+                WHERE id = ?");
+                
+            return $updateFlags->execute([$drivingLicenseFlag, $adrFlag, $operatorFlag, $driverId]);
+        } catch (PDOException $e) {
+            error_log('Error in updateDriverFlags: ' . $e->getMessage());
+            return false;
+        }
     }
     
     /**
      * Ενημερώνει την εικόνα προφίλ ενός οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @param string $imagePath Διαδρομή εικόνας
+     * @return bool Επιτυχία/αποτυχία
      */
     public function updateProfileImage($id, $imagePath) {
         $sql = "UPDATE drivers SET profile_image = :profile_image WHERE id = :id";
@@ -145,6 +224,10 @@ class DriversModel {
     
     /**
      * Ενημερώνει το αρχείο βιογραφικού ενός οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @param string $filePath Διαδρομή αρχείου
+     * @return bool Επιτυχία/αποτυχία
      */
     public function updateResumeFile($id, $filePath) {
         $sql = "UPDATE drivers SET resume_file = :resume_file WHERE id = :id";
@@ -157,6 +240,9 @@ class DriversModel {
     
     /**
      * Ενημερώνει την τελευταία σύνδεση του οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @return bool Επιτυχία/αποτυχία
      */
     public function updateLastLogin($id) {
         $sql = "UPDATE drivers SET last_login = CURRENT_TIMESTAMP WHERE id = :id";
@@ -166,6 +252,10 @@ class DriversModel {
     
     /**
      * Ενημερώνει την αξιολόγηση ενός οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @param float $rating Νέα αξιολόγηση
+     * @return bool Επιτυχία/αποτυχία
      */
     public function updateRating($id, $rating) {
         $sql = "UPDATE drivers SET 
@@ -182,6 +272,10 @@ class DriversModel {
     
     /**
      * Επιστρέφει όλους τους οδηγούς
+     * 
+     * @param int $limit Μέγιστος αριθμός αποτελεσμάτων
+     * @param int $offset Μετατόπιση αποτελεσμάτων
+     * @return array Λίστα οδηγών
      */
     public function getAllDrivers($limit = 100, $offset = 0) {
         $sql = "SELECT id, first_name, last_name, email, phone, city, country, 
@@ -201,6 +295,8 @@ class DriversModel {
     
     /**
      * Μετράει το συνολικό αριθμό οδηγών
+     * 
+     * @return int Αριθμός οδηγών
      */
     public function countDrivers() {
         $sql = "SELECT COUNT(*) FROM drivers WHERE is_verified = 1";
@@ -211,6 +307,11 @@ class DriversModel {
     
     /**
      * Αναζητά οδηγούς με βάση κριτήρια
+     * 
+     * @param array $params Παράμετροι αναζήτησης
+     * @param int $page Αριθμός σελίδας
+     * @param int $limit Αριθμός αποτελεσμάτων ανά σελίδα
+     * @return array Αποτελέσματα αναζήτησης και πληροφορίες σελιδοποίησης
      */
     public function searchDrivers($params, $page = 1, $limit = 10) {
         $conditions = ["is_verified = 1", "available_for_work = 1"];
@@ -230,8 +331,12 @@ class DriversModel {
         
         // Φίλτρο με βάση την άδεια οδήγησης
         if (isset($params['driving_license']) && $params['driving_license']) {
-            $conditions[] = "driving_license = :driving_license";
-            $parameters['driving_license'] = $params['driving_license'];
+            $conditions[] = "driving_license = 1";
+            // Χρειάζεται ειδικός έλεγχος για συγκεκριμένη κατηγορία
+            if ($params['driving_license'] !== 'any') {
+                $conditions[] = "EXISTS (SELECT 1 FROM driver_licenses dl WHERE dl.driver_id = drivers.id AND dl.license_type = :license_type)";
+                $parameters['license_type'] = $params['driving_license'];
+            }
         }
         
         // Φίλτρο για ADR πιστοποίηση
@@ -262,7 +367,16 @@ class DriversModel {
         // Μέτρηση συνολικών αποτελεσμάτων
         $countSql = "SELECT COUNT(*) FROM drivers WHERE $whereClause";
         $countStmt = $this->pdo->prepare($countSql);
-        $countStmt->execute($parameters);
+        
+        foreach ($parameters as $key => $value) {
+            if (is_int($value)) {
+                $countStmt->bindValue(':' . $key, $value, PDO::PARAM_INT);
+            } else {
+                $countStmt->bindValue(':' . $key, $value, PDO::PARAM_STR);
+            }
+        }
+        
+        $countStmt->execute();
         $totalResults = $countStmt->fetchColumn();
         
         // Εκτέλεση του κύριου ερωτήματος
@@ -283,7 +397,11 @@ class DriversModel {
         
         // Προσθήκη των υπόλοιπων παραμέτρων
         foreach ($parameters as $key => $value) {
-            $stmt->bindValue(':' . $key, $value);
+            if (is_int($value)) {
+                $stmt->bindValue(':' . $key, $value, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue(':' . $key, $value, PDO::PARAM_STR);
+            }
         }
         
         $stmt->execute();
@@ -302,6 +420,9 @@ class DriversModel {
     
     /**
      * Ελέγχει αν ένα email υπάρχει ήδη
+     * 
+     * @param string $email Email προς έλεγχο
+     * @return bool Αν υπάρχει ήδη
      */
     public function emailExists($email) {
         $sql = "SELECT COUNT(*) FROM drivers WHERE email = :email";
@@ -312,6 +433,9 @@ class DriversModel {
     
     /**
      * Επιστρέφει τους πιο πρόσφατους διαθέσιμους οδηγούς
+     * 
+     * @param int $limit Μέγιστος αριθμός αποτελεσμάτων
+     * @return array Λίστα οδηγών
      */
     public function getRecentAvailableDrivers($limit = 5) {
         $sql = "SELECT id, first_name, last_name, city, country, 
@@ -330,6 +454,9 @@ class DriversModel {
     
     /**
      * Επιστρέφει τους κορυφαίους οδηγούς με βάση την αξιολόγηση
+     * 
+     * @param int $limit Μέγιστος αριθμός αποτελεσμάτων
+     * @return array Λίστα οδηγών
      */
     public function getTopRatedDrivers($limit = 5) {
         $sql = "SELECT id, first_name, last_name, city, country, 
@@ -353,79 +480,118 @@ class DriversModel {
      * @return bool Επιτυχία/αποτυχία
      */
     public function deleteDriverLicenses($driverId) {
-        $sql = "DELETE FROM driver_licenses WHERE driver_id = ?";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$driverId]);
-    }
-
-   /**
- * Ενημερώνει την εικόνα του διπλώματος του οδηγού (εμπρόσθια ή οπίσθια όψη)
- * 
- * @param int $driverId ID του οδηγού
- * @param string $imageType Τύπος εικόνας ('license_front' ή 'license_back')
- * @param string $imagePath Διαδρομή προς την εικόνα
- * @return bool Επιτυχία ή αποτυχία της ενημέρωσης
- */
-public function updateDriverLicenseImage($driverId, $imageType, $imagePath) {
-    try {
-        $columnName = $imageType . '_image'; // Δημιουργία του ονόματος της στήλης (license_front_image ή license_back_image)
-        
-        $sql = "UPDATE drivers SET $columnName = :imagePath WHERE id = :driverId";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':imagePath', $imagePath, \PDO::PARAM_STR);
-        $stmt->bindParam(':driverId', $driverId, \PDO::PARAM_INT);
-        
-        return $stmt->execute();
-    } catch (\PDOException $e) {
-        // Καταγραφή του σφάλματος
-        error_log('Σφάλμα κατά την ενημέρωση εικόνας διπλώματος: ' . $e->getMessage());
-        return false;
-    }
-}
-
-/**
- * Προσθήκη άδειας οδήγησης για τον οδηγό με βελτιωμένο χειρισμό των ημερομηνιών λήξης
- * 
- * @param int $driverId ID του οδηγού
- * @param string $licenseType Τύπος άδειας (A, B, C, D, κλπ.)
- * @param bool $hasPei Αν έχει ΠΕΙ
- * @param string $expiryDate Ημερομηνία λήξης της κατηγορίας
- * @param string $licenseNumber Αριθμός άδειας
- * @param string $peiExpiryC Ημερομηνία λήξης ΠΕΙ για κατηγορία C
- * @param string $peiExpiryD Ημερομηνία λήξης ΠΕΙ για κατηγορία D
- * @param string $licenseDocumentExpiry Ημερομηνία λήξης εντύπου
- * @return bool Επιτυχία ή αποτυχία της προσθήκης
- */
-public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC = null, $peiExpiryD = null, $licenseDocumentExpiry = null) {
-    // Καθορισμός της ημερομηνίας λήξης ΠΕΙ ανάλογα με την κατηγορία
-    $peiExpiryCValue = null;
-    $peiExpiryDValue = null;
-    
-    if ($hasPei) {
-        if (in_array($licenseType, ['C', 'CE', 'C1', 'C1E'])) {
-            $peiExpiryCValue = $peiExpiryC;
-        } else if (in_array($licenseType, ['D', 'DE', 'D1', 'D1E'])) {
-            $peiExpiryDValue = $peiExpiryD;
+        try {
+            $sql = "DELETE FROM driver_licenses WHERE driver_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([$driverId]);
+            
+            if ($result) {
+                // Ενημέρωση του flag στον πίνακα drivers
+                $updateFlag = $this->pdo->prepare("UPDATE drivers SET driving_license = 0 WHERE id = ?");
+                $updateFlag->execute([$driverId]);
+            }
+            
+            return $result;
+        } catch (PDOException $e) {
+            error_log('Error in deleteDriverLicenses: ' . $e->getMessage());
+            return false;
         }
     }
-    
-    $sql = "INSERT INTO driver_licenses (
-                driver_id, license_type, has_pei, expiry_date, 
-                license_number, pei_expiry_c, pei_expiry_d, license_document_expiry
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    
-    $stmt = $this->pdo->prepare($sql);
-    return $stmt->execute([
-        $driverId, 
-        $licenseType, 
-        $hasPei ? 1 : 0, 
-        $expiryDate, 
-        $licenseNumber,
-        $peiExpiryCValue, 
-        $peiExpiryDValue,
-        $licenseDocumentExpiry
-    ]);
-}
+
+    /**
+     * Ενημερώνει την εικόνα του διπλώματος του οδηγού (εμπρόσθια ή οπίσθια όψη)
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param string $imageType Τύπος εικόνας ('license_front_image' ή 'license_back_image')
+     * @param string $imagePath Διαδρομή προς την εικόνα
+     * @return bool Επιτυχία ή αποτυχία της ενημέρωσης
+     */
+    public function updateDriverLicenseImage($driverId, $imageType, $imagePath) {
+        try {
+            // Βεβαιωνόμαστε ότι το imageType είναι ασφαλές για SQL
+            if (!in_array($imageType, ['license_front_image', 'license_back_image'])) {
+                error_log('Invalid image type: ' . $imageType);
+                return false;
+            }
+            
+            $sql = "UPDATE drivers SET $imageType = :imagePath WHERE id = :driverId";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':imagePath', $imagePath, PDO::PARAM_STR);
+            $stmt->bindParam(':driverId', $driverId, PDO::PARAM_INT);
+            
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            // Καταγραφή του σφάλματος
+            error_log('Σφάλμα κατά την ενημέρωση εικόνας διπλώματος: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Προσθήκη άδειας οδήγησης για τον οδηγό
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param string $licenseType Τύπος άδειας (A, B, C, D, κλπ.)
+     * @param bool $hasPei Αν έχει ΠΕΙ
+     * @param string $expiryDate Ημερομηνία λήξης της κατηγορίας
+     * @param string $licenseNumber Αριθμός άδειας
+     * @param string $peiExpiryC Ημερομηνία λήξης ΠΕΙ για κατηγορία C
+     * @param string $peiExpiryD Ημερομηνία λήξης ΠΕΙ για κατηγορία D
+     * @param string $licenseDocumentExpiry Ημερομηνία λήξης εντύπου
+     * @return bool Επιτυχία ή αποτυχία της προσθήκης
+     */
+    public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC = null, $peiExpiryD = null, $licenseDocumentExpiry = null) {
+        try {
+            // Καταγραφή παραμέτρων για debugging
+            error_log("addDriverLicense - Driver ID: $driverId, Type: $licenseType, HasPEI: " . ($hasPei ? "Yes" : "No"));
+            error_log("ExpiryDate: $expiryDate, LicenseNumber: $licenseNumber");
+            error_log("PEI-C Expiry: $peiExpiryC, PEI-D Expiry: $peiExpiryD, Document Expiry: $licenseDocumentExpiry");
+            
+            // Καθορισμός της ημερομηνίας λήξης ΠΕΙ ανάλογα με την κατηγορία
+            $peiExpiryCValue = null;
+            $peiExpiryDValue = null;
+            
+            if ($hasPei) {
+                if (in_array($licenseType, ['C', 'CE', 'C1', 'C1E'])) {
+                    $peiExpiryCValue = $peiExpiryC;
+                } else if (in_array($licenseType, ['D', 'DE', 'D1', 'D1E'])) {
+                    $peiExpiryDValue = $peiExpiryD;
+                }
+            }
+            
+            $sql = "INSERT INTO driver_licenses (
+                    driver_id, license_type, has_pei, expiry_date, 
+                    license_number, pei_expiry_c, pei_expiry_d, license_document_expiry
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([
+                $driverId, 
+                $licenseType, 
+                $hasPei ? 1 : 0, 
+                $expiryDate, 
+                $licenseNumber,
+                $peiExpiryCValue, 
+                $peiExpiryDValue,
+                $licenseDocumentExpiry
+            ]);
+            
+            if ($result) {
+                // Ενημέρωση του flag στον πίνακα drivers
+                $updateFlag = $this->pdo->prepare("UPDATE drivers SET driving_license = 1 WHERE id = ?");
+                $updateFlag->execute([$driverId]);
+                
+                error_log("License added successfully");
+            } else {
+                error_log("Failed to add license");
+            }
+            
+            return $result;
+        } catch (PDOException $e) {
+            error_log('Error in addDriverLicense: ' . $e->getMessage());
+            return false;
+        }
+    }
 
     /**
      * Λαμβάνει όλες τις άδειες οδήγησης του οδηγού
@@ -505,7 +671,12 @@ public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, 
         return $stmt->execute([$licenseNumber, $driverId]);
     }
     
-    // Μέθοδοι για τα πιστοποιητικά ADR
+    /**
+     * Λαμβάνει το πιστοποιητικό ADR του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @return array|false Στοιχεία πιστοποιητικού ή false
+     */
     public function getDriverADRCertificate($driverId) {
         $sql = "SELECT * FROM driver_adr_certificates WHERE driver_id = ? LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
@@ -513,13 +684,94 @@ public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     
-    public function deleteDriverADRCertificates($driverId) {
-        $sql = "DELETE FROM driver_adr_certificates WHERE driver_id = ?";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$driverId]);
+    /**
+     * Διαγράφει το πιστοποιητικό ADR του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function deleteDriverADRCertificate($driverId) {
+        try {
+            $sql = "DELETE FROM driver_adr_certificates WHERE driver_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([$driverId]);
+            
+            if ($result) {
+                // Ενημέρωση του flag στον πίνακα drivers
+                $updateFlag = $this->pdo->prepare("UPDATE drivers SET adr_certificate = 0 WHERE id = ?");
+                $updateFlag->execute([$driverId]);
+            }
+            
+            return $result;
+        } catch (PDOException $e) {
+            error_log('Error in deleteDriverADRCertificate: ' . $e->getMessage());
+            return false;
+        }
     }
     
-    // Μέθοδοι για τις άδειες χειριστή μηχανημάτων
+    /**
+     * Ενημερώνει το πιστοποιητικό ADR του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param array $adrData Δεδομένα πιστοποιητικού ADR
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateDriverADRCertificate($driverId, $adrData) {
+        try {
+            // Καταγραφή δεδομένων για debugging
+            error_log('updateDriverADRCertificate - Data: ' . print_r($adrData, true));
+            
+            // Έλεγχος αν υπάρχει ήδη εγγραφή
+            $existingCert = $this->getDriverADRCertificate($driverId);
+            
+            if ($existingCert) {
+                // Ενημέρωση υπάρχουσας εγγραφής
+                $sql = "UPDATE driver_adr_certificates 
+                        SET adr_type = ?, certificate_number = ?, expiry_date = ? 
+                        WHERE driver_id = ?";
+                $stmt = $this->pdo->prepare($sql);
+                $result = $stmt->execute([
+                    $adrData['adr_type'],
+                    $adrData['certificate_number'],
+                    $adrData['expiry_date'] ?: null,
+                    $driverId
+                ]);
+            } else {
+                // Δημιουργία νέας εγγραφής
+                $sql = "INSERT INTO driver_adr_certificates 
+                        (driver_id, adr_type, certificate_number, expiry_date) 
+                        VALUES (?, ?, ?, ?)";
+                $stmt = $this->pdo->prepare($sql);
+                $result = $stmt->execute([
+                    $driverId,
+                    $adrData['adr_type'],
+                    $adrData['certificate_number'],
+                    $adrData['expiry_date'] ?: null
+                ]);
+            }
+            
+            if ($result) {
+                // Ενημέρωση του flag στον πίνακα drivers
+                $updateFlag = $this->pdo->prepare("UPDATE drivers SET adr_certificate = 1, adr_certificate_expiry = ? WHERE id = ?");
+                $updateFlag->execute([$adrData['expiry_date'] ?: null, $driverId]);
+                error_log('ADR certificate updated successfully');
+            } else {
+                error_log('Failed to update ADR certificate');
+            }
+            
+            return $result;
+        } catch (PDOException $e) {
+            error_log('Error in updateDriverADRCertificate: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Λαμβάνει την άδεια χειριστή μηχανημάτων του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @return array|false Στοιχεία άδειας χειριστή ή false
+     */
     public function getDriverOperatorLicense($driverId) {
         $sql = "SELECT * FROM driver_operator_licenses WHERE driver_id = ? LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
@@ -527,6 +779,12 @@ public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     
+    /**
+     * Λαμβάνει τις υποειδικότητες της άδειας χειριστή μηχανημάτων
+     * 
+     * @param int $operatorLicenseId ID της άδειας χειριστή
+     * @return array Λίστα υποειδικοτήτων
+     */
     public function getDriverOperatorSubSpecialities($operatorLicenseId) {
         $sql = "SELECT * FROM driver_operator_sub_specialities WHERE operator_license_id = ?";
         $stmt = $this->pdo->prepare($sql);
@@ -534,139 +792,539 @@ public function addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    public function deleteDriverOperatorLicenses($driverId) {
-        $sql = "DELETE FROM driver_operator_licenses WHERE driver_id = ?";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$driverId]);
+    /**
+     * Διαγράφει την άδεια χειριστή μηχανημάτων του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function deleteDriverOperatorLicense($driverId) {
+        try {
+            // Αρχικά βρίσκουμε όλες τις άδειες χειριστή του οδηγού για να πάρουμε τα IDs τους
+            $findLicenses = $this->pdo->prepare("SELECT id FROM driver_operator_licenses WHERE driver_id = ?");
+            $findLicenses->execute([$driverId]);
+            $operatorLicenseIds = $findLicenses->fetchAll(PDO::FETCH_COLUMN);
+            
+            // Διαγραφή υποειδικοτήτων για κάθε άδεια χειριστή
+            foreach ($operatorLicenseIds as $operatorLicenseId) {
+                $deleteSubspecialities = $this->pdo->prepare("DELETE FROM driver_operator_sub_specialities WHERE operator_license_id = ?");
+                $deleteSubspecialities->execute([$operatorLicenseId]);
+            }
+            
+            // Διαγραφή των αδειών χειριστή
+            $sql = "DELETE FROM driver_operator_licenses WHERE driver_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([$driverId]);
+            
+            if ($result) {
+                // Ενημέρωση του flag στον πίνακα drivers
+                $updateFlag = $this->pdo->prepare("UPDATE drivers SET operator_license = 0, operator_license_expiry = NULL WHERE id = ?");
+                $updateFlag->execute([$driverId]);
+            }
+            
+            return $result;
+        } catch (PDOException $e) {
+            error_log('Error in deleteDriverOperatorLicense: ' . $e->getMessage());
+            return false;
+        }
     }
     
-    // Κάρτα Ψηφιακού Ταχογράφου
-    public function getDriverTachographCard($driverId) {
-        $sql = "SELECT * FROM driver_tachograph_cards WHERE driver_id = ? LIMIT 1";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$driverId]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+    /**
+     * Διαγράφει τις υποειδικότητες της άδειας χειριστή μηχανημάτων
+     * 
+     * @param int $operatorLicenseId ID της άδειας χειριστή
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function deleteDriverOperatorSubSpecialities($operatorLicenseId) {
+        try {
+            $sql = "DELETE FROM driver_operator_sub_specialities WHERE operator_license_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$operatorLicenseId]);
+        } catch (PDOException $e) {
+            error_log('Error in deleteDriverOperatorSubSpecialities: ' . $e->getMessage());
+            return false;
+        }
     }
     
-    public function deleteDriverTachographCard($driverId) {
-        $sql = "DELETE FROM driver_tachograph_cards WHERE driver_id = ?";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$driverId]);
+    /**
+     * Ενημερώνει την άδεια χειριστή μηχανημάτων του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param array $operatorData Δεδομένα άδειας χειριστή
+     * @return int|false ID της άδειας ή false σε αποτυχία
+     */
+    public function updateDriverOperatorLicense($driverId, $operatorData) {
+        try {
+            // Καταγραφή δεδομένων για debugging
+            error_log('updateDriverOperatorLicense - Data: ' . print_r($operatorData, true));
+            
+            // Έλεγχος αν υπάρχει ήδη εγγραφή
+            $existingLicense = $this->getDriverOperatorLicense($driverId);
+            
+            if ($existingLicense) {
+                // Ενημέρωση υπάρχουσας εγγραφής
+                $sql = "UPDATE driver_operator_licenses 
+                        SET speciality = ?, license_number = ?, expiry_date = ? 
+                        WHERE driver_id = ?";
+                $stmt = $this->pdo->prepare($sql);
+                $success = $stmt->execute([
+                    $operatorData['speciality'],
+                    $operatorData['license_number'],
+                    $operatorData['expiry_date'] ?: null,
+                    $driverId
+                ]);
+                
+                // Ενημέρωση του flag και της ημερομηνίας λήξης στον πίνακα drivers
+                if ($success) {
+                    $updateDriver = $this->pdo->prepare("UPDATE drivers SET 
+                        operator_license = 1, 
+                        operator_license_expiry = ? 
+                        WHERE id = ?");
+                    $updateDriver->execute([$operatorData['expiry_date'] ?: null, $driverId]);
+                    
+                    error_log('Operator license updated successfully');
+                    return $existingLicense['id'];
+                } else {
+                    error_log('Failed to update operator license');
+                    return false;
+                }
+            } else {
+                // Δημιουργία νέας εγγραφής
+                $sql = "INSERT INTO driver_operator_licenses 
+                        (driver_id, speciality, license_number, expiry_date) 
+                        VALUES (?, ?, ?, ?)";
+                $stmt = $this->pdo->prepare($sql);
+                $success = $stmt->execute([
+                    $driverId,
+                    $operatorData['speciality'],
+                    $operatorData['license_number'],
+                    $operatorData['expiry_date'] ?: null
+                ]);
+                
+                if ($success) {
+                    $licenseId = $this->pdo->lastInsertId();
+                    
+                    // Ενημέρωση του flag και της ημερομηνίας λήξης στον πίνακα drivers
+                    $updateDriver = $this->pdo->prepare("UPDATE drivers SET 
+                        operator_license = 1, 
+                        operator_license_expiry = ? 
+                        WHERE id = ?");
+                    $updateDriver->execute([$operatorData['expiry_date'] ?: null, $driverId]);
+                    
+                    error_log('New operator license created successfully');
+                    return $licenseId;
+                } else {
+                    error_log('Failed to create operator license');
+                    return false;
+                }
+            }
+        } catch (PDOException $e) {
+            error_log('Error in updateDriverOperatorLicense: ' . $e->getMessage());
+            return false;
+        }
     }
     
-    public function addDriverTachographCard($driverId, $cardNumber, $expiryDate) {
-        $sql = "INSERT INTO driver_tachograph_cards (driver_id, card_number, expiry_date) VALUES (?, ?, ?)";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$driverId, $cardNumber, $expiryDate]);
+    /**
+     * Προσθέτει μια υποειδικότητα στην άδεια χειριστή μηχανημάτων
+     * 
+     * @param int $operatorLicenseId ID της άδειας χειριστή
+     * @param string $subSpeciality Κωδικός υποειδικότητας
+     * @param string $groupType Τύπος ομάδας (A ή B)
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType = 'A') {
+        try {
+            // Έλεγχος αν η στήλη group_type υπάρχει στον πίνακα
+            $tableInfo = $this->pdo->query("DESCRIBE driver_operator_sub_specialities")->fetchAll(PDO::FETCH_COLUMN);
+            $hasGroupTypeColumn = in_array('group_type', $tableInfo);
+            
+            if ($hasGroupTypeColumn) {
+                $sql = "INSERT INTO driver_operator_sub_specialities 
+                        (operator_license_id, sub_speciality, group_type) 
+                        VALUES (?, ?, ?)";
+                $stmt = $this->pdo->prepare($sql);
+                return $stmt->execute([$operatorLicenseId, $subSpeciality, $groupType]);
+            } else {
+                // Αν δεν υπάρχει η στήλη group_type, χρησιμοποιούμε τον παλιό τρόπο
+                $sql = "INSERT INTO driver_operator_sub_specialities 
+                        (operator_license_id, sub_speciality) 
+                        VALUES (?, ?)";
+                $stmt = $this->pdo->prepare($sql);
+                
+                $result = $stmt->execute([$operatorLicenseId, $subSpeciality]);
+                
+                if ($result) {
+                    // Προσθήκη εγγραφής στον πίνακα driver_operator_sub_speciality_groups
+                    $subSpecialityId = $this->pdo->lastInsertId();
+                    $this->addDriverOperatorSubSpecialityGroup($subSpecialityId, $groupType);
+                }
+                
+                return $result;
+            }
+        } catch (PDOException $e) {
+            error_log('Error in addDriverOperatorSubSpeciality: ' . $e->getMessage());
+            return false;
+        }
     }
     
-    // Ειδικές Άδειες
-    public function getDriverSpecialLicenses($driverId) {
-        $sql = "SELECT * FROM driver_special_licenses WHERE driver_id = ?";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$driverId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    
-    public function getDriverSpecialLicenseByType($driverId, $licenseType) {
-        $sql = "SELECT * FROM driver_special_licenses WHERE driver_id = ? AND license_type = ? LIMIT 1";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$driverId, $licenseType]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-    
-    public function deleteDriverSpecialLicenses($driverId) {
-        $sql = "DELETE FROM driver_special_licenses WHERE driver_id = ?";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$driverId]);
-    }
-    
-    public function deleteDriverSpecialLicenseByType($driverId, $licenseType) {
-        $sql = "DELETE FROM driver_special_licenses WHERE driver_id = ? AND license_type = ?";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$driverId, $licenseType]);
-    }
-    
-    public function addDriverSpecialLicense($driverId, $licenseType, $licenseNumber, $expiryDate, $details = null) {
-        $sql = "INSERT INTO driver_special_licenses (driver_id, license_type, license_number, expiry_date, details) VALUES (?, ?, ?, ?, ?)";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$driverId, $licenseType, $licenseNumber, $expiryDate, $details]);
-    }
-    
-    // Τροποποιημένες μέθοδοι για το ADR
-    public function addDriverADRCertificate($driverId, $adrType, $expiryDate, $certificateNumber) {
-        $sql = "INSERT INTO driver_adr_certificates (driver_id, adr_type, expiry_date, certificate_number) VALUES (?, ?, ?, ?)";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$driverId, $adrType, $expiryDate, $certificateNumber]);
-    }
-    
-    // Τροποποιημένες μέθοδοι για χειριστές μηχανημάτων
-    public function addDriverOperatorLicense($driverId, $speciality, $expiryDate, $licenseNumber) {
-        $sql = "INSERT INTO driver_operator_licenses (driver_id, speciality, expiry_date, license_number) VALUES (?, ?, ?, ?)";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$driverId, $speciality, $expiryDate, $licenseNumber]);
-        return $this->pdo->lastInsertId();
-    }
-    
-    public function addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality) {
-        $sql = "INSERT INTO driver_operator_sub_specialities (operator_license_id, sub_speciality) VALUES (?, ?)";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$operatorLicenseId, $subSpeciality]);
-        return $this->pdo->lastInsertId();
-    }
-    
+    /**
+     * Προσθέτει μια ομάδα υποειδικότητας για την άδεια χειριστή μηχανημάτων
+     * 
+     * @param int $subSpecialityId ID της υποειδικότητας
+     * @param string $groupType Τύπος ομάδας (A ή B)
+     * @return bool Επιτυχία/αποτυχία
+     */
     public function addDriverOperatorSubSpecialityGroup($subSpecialityId, $groupType) {
-        $sql = "INSERT INTO driver_operator_sub_speciality_groups (sub_speciality_id, group_type) VALUES (?, ?)";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$subSpecialityId, $groupType]);
+        try {
+            $sql = "INSERT INTO driver_operator_sub_speciality_groups 
+                    (sub_speciality_id, group_type) 
+                    VALUES (?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$subSpecialityId, $groupType]);
+        } catch (PDOException $e) {
+            error_log('Error in addDriverOperatorSubSpecialityGroup: ' . $e->getMessage());
+            return false;
+        }
     }
     
-    // Μέθοδος για ειδοποιήσεις λήξης αδειών
+    /**
+     * Λαμβάνει την κάρτα ταχογράφου του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @return array|false Στοιχεία κάρτας ταχογράφου ή false
+     */
+    public function getDriverTachographCard($driverId) {
+        $sql = "SELECT * FROM driver_tachograph_cards WHERE driver_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$driverId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Ενημερώνει τα δεδομένα της κάρτας ταχογράφου ενός οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param array $tachographData Δεδομένα της κάρτας ταχογράφου
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateDriverTachographCard($driverId, $tachographData) {
+        try {
+            // Καταγραφή δεδομένων για debugging
+            error_log('updateDriverTachographCard - Data: ' . print_r($tachographData, true));
+            
+            // Έλεγχος αν υπάρχει ήδη εγγραφή
+            $existingCard = $this->getDriverTachographCard($driverId);
+            
+            if ($existingCard) {
+                // Ενημέρωση υπάρχουσας εγγραφής
+                $sql = "UPDATE driver_tachograph_cards SET card_number = ?, expiry_date = ? WHERE driver_id = ?";
+                $stmt = $this->pdo->prepare($sql);
+                return $stmt->execute([
+                    $tachographData['card_number'],
+                    $tachographData['expiry_date'] ?: null,
+                    $driverId
+                ]);
+            } else {
+                // Δημιουργία νέας εγγραφής
+                $sql = "INSERT INTO driver_tachograph_cards (driver_id, card_number, expiry_date) VALUES (?, ?, ?)";
+                $stmt = $this->pdo->prepare($sql);
+                return $stmt->execute([
+                    $driverId,
+                    $tachographData['card_number'],
+                    $tachographData['expiry_date'] ?: null
+                ]);
+            }
+        } catch (PDOException $e) {
+            error_log('Error in updateDriverTachographCard: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Διαγράφει την κάρτα ταχογράφου του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function deleteDriverTachographCard($driverId) {
+        try {
+            $sql = "DELETE FROM driver_tachograph_cards WHERE driver_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$driverId]);
+        } catch (PDOException $e) {
+            error_log('Error in deleteDriverTachographCard: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Ενημερώνει την εικόνα ενός εγγράφου του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param string $documentType Τύπος εγγράφου
+     * @param string $imagePath Διαδρομή εικόνας
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateDriverDocumentImage($driverId, $documentType, $imagePath) {
+        try {
+            // Βεβαιώνουμε ότι ο τύπος εγγράφου είναι ασφαλής για χρήση σε SQL
+            $validDocTypes = [
+                'license_front_image', 'license_back_image', 
+                'adr_front_image', 'adr_back_image', 
+                'operator_front_image', 'operator_back_image', 
+                'tachograph_front_image', 'tachograph_back_image'
+            ];
+            
+            if (!in_array($documentType, $validDocTypes)) {
+                error_log('Invalid document type for image update: ' . $documentType);
+                return false;
+            }
+            
+            $sql = "UPDATE drivers SET $documentType = ? WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$imagePath, $driverId]);
+        } catch (PDOException $e) {
+            error_log('Error in updateDriverDocumentImage: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Λαμβάνει τις ειδικές άδειες του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @return array Λίστα ειδικών αδειών
+     */
+    public function getDriverSpecialLicenses($driverId) {
+        try {
+            $sql = "SELECT * FROM driver_special_licenses WHERE driver_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$driverId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('Error in getDriverSpecialLicenses: ' . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
+     * Λαμβάνει μια συγκεκριμένη ειδική άδεια του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param string $licenseType Τύπος ειδικής άδειας
+     * @return array|false Στοιχεία ειδικής άδειας ή false
+     */
+    public function getDriverSpecialLicenseByType($driverId, $licenseType) {
+        try {
+            $sql = "SELECT * FROM driver_special_licenses WHERE driver_id = ? AND license_type = ? LIMIT 1";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$driverId, $licenseType]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('Error in getDriverSpecialLicenseByType: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Ενημερώνει τις ειδικές άδειες του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param array $specialLicenses Λίστα με ειδικές άδειες
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateDriverSpecialLicenses($driverId, $specialLicenses) {
+        try {
+            // Καταγραφή δεδομένων για debugging
+            error_log('updateDriverSpecialLicenses - Data: ' . print_r($specialLicenses, true));
+            
+            // Διαγραφή όλων των προηγούμενων εγγραφών
+            $this->deleteDriverSpecialLicenses($driverId);
+            
+            // Αν δεν υπάρχουν νέες άδειες, επιστρέφουμε true
+            if (empty($specialLicenses)) {
+                return true;
+            }
+            
+            // Εισαγωγή των νέων αδειών
+            $sql = "INSERT INTO driver_special_licenses (driver_id, license_type, license_number, expiry_date, details) 
+                    VALUES (?, ?, ?, ?, ?)";
+            
+            foreach ($specialLicenses as $license) {
+                if (empty($license['license_type'])) {
+                    continue; // Παραλείπουμε εγγραφές χωρίς τύπο άδειας
+                }
+                
+                $stmt = $this->pdo->prepare($sql);
+                $result = $stmt->execute([
+                    $driverId,
+                    $license['license_type'],
+                    $license['license_number'] ?: null,
+                    $license['expiry_date'] ?: null,
+                    $license['details'] ?: null
+                ]);
+                
+                if (!$result) {
+                    error_log('Failed to insert special license: ' . print_r($license, true));
+                    return false;
+                }
+            }
+            
+            return true;
+        } catch (PDOException $e) {
+            error_log('Error in updateDriverSpecialLicenses: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Διαγράφει όλες τις ειδικές άδειες του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function deleteDriverSpecialLicenses($driverId) {
+        try {
+            $sql = "DELETE FROM driver_special_licenses WHERE driver_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$driverId]);
+        } catch (PDOException $e) {
+            error_log('Error in deleteDriverSpecialLicenses: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Διαγράφει μια συγκεκριμένη ειδική άδεια του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param string $licenseType Τύπος ειδικής άδειας
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function deleteDriverSpecialLicenseByType($driverId, $licenseType) {
+        try {
+            $sql = "DELETE FROM driver_special_licenses WHERE driver_id = ? AND license_type = ?";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$driverId, $licenseType]);
+        } catch (PDOException $e) {
+            error_log('Error in deleteDriverSpecialLicenseByType: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Προσθέτει μια ειδική άδεια για τον οδηγό
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param string $licenseType Τύπος ειδικής άδειας
+     * @param string $licenseNumber Αριθμός άδειας
+     * @param string $expiryDate Ημερομηνία λήξης
+     * @param string $details Λεπτομέρειες άδειας
+     * * @return bool Επιτυχία/αποτυχία
+     */
+    public function addDriverSpecialLicense($driverId, $licenseType, $licenseNumber, $expiryDate, $details = null) {
+        try {
+            $sql = "INSERT INTO driver_special_licenses (driver_id, license_type, license_number, expiry_date, details) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$driverId, $licenseType, $licenseNumber, $expiryDate, $details]);
+        } catch (PDOException $e) {
+            error_log('Error in addDriverSpecialLicense: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Λαμβάνει τους οδηγούς με άδειες που λήγουν σύντομα
+     * 
+     * @return array Λίστα οδηγών με άδειες που λήγουν
+     */
     public function getDriversWithExpiringLicenses() {
-        $twoMonthsFromNow = date('Y-m-d', strtotime('+2 months'));
-        $oneYearFromNow = date('Y-m-d', strtotime('+1 year'));
-        $eightYearsFromNow = date('Y-m-d', strtotime('+8 years'));
-        
-        // Οδηγοί με άδειες οδήγησης που λήγουν σε 2 μήνες
-        $drivingLicensesSql = "
-            SELECT d.id, d.first_name, d.last_name, d.email, 'driving_license' as type, dl.expiry_date 
-            FROM drivers d 
-            JOIN driver_licenses dl ON d.id = dl.driver_id 
-            WHERE dl.expiry_date <= ? AND dl.expiry_date >= CURRENT_DATE()
-        ";
-        
-        // Οδηγοί με ADR που λήγουν σε 1 χρόνο
-        $adrSql = "
-            SELECT d.id, d.first_name, d.last_name, d.email, 'adr_certificate' as type, dac.expiry_date 
-            FROM drivers d 
-            JOIN driver_adr_certificates dac ON d.id = dac.driver_id 
-            WHERE dac.expiry_date <= ? AND dac.expiry_date >= CURRENT_DATE()
-        ";
-        
-        // Οδηγοί με άδειες χειριστή που λήγουν σε 8 χρόνια
-        $operatorSql = "
-            SELECT d.id, d.first_name, d.last_name, d.email, 'operator_license' as type, dol.expiry_date 
-            FROM drivers d 
-            JOIN driver_operator_licenses dol ON d.id = dol.driver_id 
-            WHERE dol.expiry_date <= ? AND dol.expiry_date >= CURRENT_DATE()
-        ";
-        
-        $drivingLicensesStmt = $this->pdo->prepare($drivingLicensesSql);
-        $adrStmt = $this->pdo->prepare($adrSql);
-        $operatorStmt = $this->pdo->prepare($operatorSql);
-        
-        $drivingLicensesStmt->execute([$twoMonthsFromNow]);
-        $adrStmt->execute([$oneYearFromNow]);
-        $operatorStmt->execute([$eightYearsFromNow]);
-        
-        $drivingLicenses = $drivingLicensesStmt->fetchAll(PDO::FETCH_ASSOC);
-        $adrCertificates = $adrStmt->fetchAll(PDO::FETCH_ASSOC);
-        $operatorLicenses = $operatorStmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        return [
-            'driving_licenses' => $drivingLicenses,
-            'adr_certificates' => $adrCertificates,
-            'operator_licenses' => $operatorLicenses
-        ];
+        try {
+            $twoMonthsFromNow = date('Y-m-d', strtotime('+2 months'));
+            $oneYearFromNow = date('Y-m-d', strtotime('+1 year'));
+            $elevenYearsFromNow = date('Y-m-d', strtotime('+11 years'));
+            
+            // Οδηγοί με άδειες οδήγησης που λήγουν σε 2 μήνες
+            $drivingLicensesSql = "
+                SELECT d.id, d.first_name, d.last_name, d.email, 'driving_license' as type, dl.expiry_date 
+                FROM drivers d 
+                JOIN driver_licenses dl ON d.id = dl.driver_id 
+                WHERE dl.expiry_date <= ? AND dl.expiry_date >= CURRENT_DATE()
+            ";
+            
+            // Οδηγοί με ADR που λήγουν σε 1 χρόνο
+            $adrSql = "
+                SELECT d.id, d.first_name, d.last_name, d.email, 'adr_certificate' as type, dac.expiry_date 
+                FROM drivers d 
+                JOIN driver_adr_certificates dac ON d.id = dac.driver_id 
+                WHERE dac.expiry_date <= ? AND dac.expiry_date >= CURRENT_DATE()
+            ";
+            
+            // Οδηγοί με άδειες χειριστή που λήγουν (σε 11 χρόνια)
+            $operatorSql = "
+                SELECT d.id, d.first_name, d.last_name, d.email, 'operator_license' as type, dol.expiry_date 
+                FROM drivers d 
+                JOIN driver_operator_licenses dol ON d.id = dol.driver_id 
+                WHERE dol.expiry_date <= ? AND dol.expiry_date >= CURRENT_DATE()
+            ";
+            
+            $drivingLicensesStmt = $this->pdo->prepare($drivingLicensesSql);
+            $adrStmt = $this->pdo->prepare($adrSql);
+            $operatorStmt = $this->pdo->prepare($operatorSql);
+            
+            $drivingLicensesStmt->execute([$twoMonthsFromNow]);
+            $adrStmt->execute([$oneYearFromNow]);
+            $operatorStmt->execute([$elevenYearsFromNow]);
+            
+            $drivingLicenses = $drivingLicensesStmt->fetchAll(PDO::FETCH_ASSOC);
+            $adrCertificates = $adrStmt->fetchAll(PDO::FETCH_ASSOC);
+            $operatorLicenses = $operatorStmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return [
+                'driving_licenses' => $drivingLicenses,
+                'adr_certificates' => $adrCertificates,
+                'operator_licenses' => $operatorLicenses
+            ];
+        } catch (PDOException $e) {
+            error_log('Error in getDriversWithExpiringLicenses: ' . $e->getMessage());
+            return [
+                'driving_licenses' => [],
+                'adr_certificates' => [],
+                'operator_licenses' => []
+            ];
+        }
+    }
+    
+    /**
+     * Προσθήκη της στήλης group_type στον πίνακα driver_operator_sub_specialities εάν δεν υπάρχει
+     * Αυτή η μέθοδος μπορεί να κληθεί κατά την αρχικοποίηση της εφαρμογής
+     * 
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function addGroupTypeColumnIfNotExists() {
+        try {
+            // Έλεγχος αν η στήλη group_type υπάρχει στον πίνακα
+            $tableInfo = $this->pdo->query("DESCRIBE driver_operator_sub_specialities")->fetchAll(PDO::FETCH_COLUMN);
+            
+            if (!in_array('group_type', $tableInfo)) {
+                // Αν η στήλη δεν υπάρχει, την προσθέτουμε
+                $sql = "ALTER TABLE driver_operator_sub_specialities ADD COLUMN group_type CHAR(1) DEFAULT 'A' AFTER sub_speciality";
+                $this->pdo->exec($sql);
+                
+                // Ενημέρωση υπαρχόντων εγγραφών με τιμές από τον πίνακα groups
+                $sql = "UPDATE driver_operator_sub_specialities dos
+                        INNER JOIN driver_operator_sub_speciality_groups dosg ON dos.id = dosg.sub_speciality_id
+                        SET dos.group_type = dosg.group_type";
+                $this->pdo->exec($sql);
+                
+                error_log('Added group_type column to driver_operator_sub_specialities table');
+                return true;
+            }
+            
+            return true; // Η στήλη υπάρχει ήδη
+        } catch (PDOException $e) {
+            error_log('Error in addGroupTypeColumnIfNotExists: ' . $e->getMessage());
+            return false;
+        }
     }
 }

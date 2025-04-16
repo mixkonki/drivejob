@@ -10,14 +10,14 @@ class DriversController {
     private $driversModel;
     private $driverAssessmentModel;
     private $pdo;
-
+    
     public function __construct($pdo) {
         $this->pdo = $pdo;
         $this->driversModel = new DriversModel($pdo);
         // Θεωρητικά θα δημιουργήσουμε ένα μοντέλο για την αυτοαξιολόγηση του οδηγού
         // $this->driverAssessmentModel = new DriverAssessmentModel($pdo);
     }
-
+    
     /**
      * Προβάλλει τη σελίδα προφίλ του οδηγού
      */
@@ -30,46 +30,33 @@ class DriversController {
         $driverData = $this->driversModel->getDriverById($driverId);
         
         // Λήψη των αδειών οδήγησης του οδηγού
-       // Λήψη των αδειών οδήγησης του οδηγού
-    $driverLicenses = $this->driversModel->getDriverLicenses($driverId);
-    $driverLicenseTypes = !empty($driverLicenses) ? array_column($driverLicenses, 'license_type') : [];
+        $driverLicenses = $this->driversModel->getDriverLicenses($driverId);
+        $driverLicenseTypes = !empty($driverLicenses) ? array_column($driverLicenses, 'license_type') : [];
     
-    // Έλεγχος για ΠΕΙ
-    $hasPeiC = false;
-    $hasPeiD = false;
-    $peiCExpiryDate = null;
-    $peiDExpiryDate = null;
-    
-    if (!empty($driverLicenses)) {
-        foreach ($driverLicenses as $license) {
-            if (!empty($license['has_pei']) && $license['has_pei'] == 1) {
-                if (in_array($license['license_type'], ['C', 'CE', 'C1', 'C1E'])) {
-                    $hasPeiC = true;
-                    if (!empty($license['pei_expiry_c'])) {
-                        $peiCExpiryDate = $license['pei_expiry_c'];
-                    }
-                } else if (in_array($license['license_type'], ['D', 'DE', 'D1', 'D1E'])) {
-                    $hasPeiD = true;
-                    if (!empty($license['pei_expiry_d'])) {
-                        $peiDExpiryDate = $license['pei_expiry_d'];
+        // Έλεγχος για ΠΕΙ
+        $hasPeiC = false;
+        $hasPeiD = false;
+        $peiCExpiryDate = null;
+        $peiDExpiryDate = null;
+        
+        if (!empty($driverLicenses)) {
+            foreach ($driverLicenses as $license) {
+                if (!empty($license['has_pei']) && $license['has_pei'] == 1) {
+                    if (in_array($license['license_type'], ['C', 'CE', 'C1', 'C1E'])) {
+                        $hasPeiC = true;
+                        if (!empty($license['pei_expiry_c'])) {
+                            $peiCExpiryDate = $license['pei_expiry_c'];
+                        }
+                    } else if (in_array($license['license_type'], ['D', 'DE', 'D1', 'D1E'])) {
+                        $hasPeiD = true;
+                        if (!empty($license['pei_expiry_d'])) {
+                            $peiDExpiryDate = $license['pei_expiry_d'];
+                        }
                     }
                 }
             }
         }
-    }
-        // Στο DriversController.php, μέθοδος profile():
-$peiCExpiryDate = null;
-$peiDExpiryDate = null;
-
-foreach ($driverLicenses as $license) {
-    if (isset($license['has_pei']) && $license['has_pei'] == 1) {
-        if (in_array($license['license_type'], ['C', 'CE', 'C1', 'C1E']) && !empty($license['pei_expiry_c'])) {
-            $peiCExpiryDate = $license['pei_expiry_c'];
-        } else if (in_array($license['license_type'], ['D', 'DE', 'D1', 'D1E']) && !empty($license['pei_expiry_d'])) {
-            $peiDExpiryDate = $license['pei_expiry_d'];
-        }
-    }
-}
+        
         // Λήψη των αγγελιών του οδηγού
         $jobListingModel = new \Drivejob\Models\JobListingModel($this->pdo);
         $listings = $jobListingModel->getDriverListings($driverId, null, 1, 5);
@@ -94,7 +81,7 @@ foreach ($driverLicenses as $license) {
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/drivers/profile.php';
     }
-
+    
     /**
      * Προβάλλει τη φόρμα επεξεργασίας προφίλ
      */
@@ -124,189 +111,489 @@ foreach ($driverLicenses as $license) {
             $driverOperatorSubSpecialities = $this->driversModel->getDriverOperatorSubSpecialities($driverOperator['id']);
         }
         
+        // Φόρτωση των ειδικών αδειών
+        $driverSpecialLicenses = $this->driversModel->getDriverSpecialLicenses($driverId);
+        
+        // Φόρτωση δεδομένων ταχογράφου
+        $driverTachograph = $this->driversModel->getDriverTachographCard($driverId);
+        
+        // Προετοιμασία δεδομένων ΠΕΙ
+        $peiCExpiryDate = null;
+        $peiDExpiryDate = null;
+        
+        foreach ($driverLicenses as $license) {
+            if (isset($license['has_pei']) && $license['has_pei'] == 1) {
+                if (in_array($license['license_type'], ['C', 'CE', 'C1', 'C1E']) && !empty($license['pei_expiry_c'])) {
+                    $peiCExpiryDate = $license['pei_expiry_c'];
+                } else if (in_array($license['license_type'], ['D', 'DE', 'D1', 'D1E']) && !empty($license['pei_expiry_d'])) {
+                    $peiDExpiryDate = $license['pei_expiry_d'];
+                }
+            }
+        }
+        
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/drivers/edit_profile.php';
     }
-
+    
     /**
      * Αποθηκεύει τις αλλαγές στο προφίλ
      */
-  // Τροποποιήσεις στο DriversController.php για τη διαχείριση των νέων πεδίων
-
-/**
- * Αποθηκεύει τις αλλαγές στο προφίλ
- */
-public function update() {
-    // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-    AuthMiddleware::hasRole('driver');
+    public function update() {
+        // Καταγραφή των δεδομένων που λαμβάνονται από τη φόρμα για αποσφαλμάτωση
+        error_log('POST Data: ' . print_r($_POST, true));
         
-    // Έλεγχος για CSRF token
-    if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-        $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
-        header('Location: ' . BASE_URL . 'drivers/edit-profile');
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        AuthMiddleware::hasRole('driver');
+        
+        // Έλεγχος για CSRF token
+        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+            $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
+            header('Location: ' . BASE_URL . 'drivers/edit-profile');
+            exit();
+        }
+        
+        // Επικύρωση βασικών δεδομένων
+        $validator = new Validator($_POST);
+        $validator->required('first_name', 'Το όνομα είναι υποχρεωτικό.')
+                 ->required('last_name', 'Το επώνυμο είναι υποχρεωτικό.')
+                 ->required('phone', 'Το τηλέφωνο είναι υποχρεωτικό.')
+                 ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
+        
+        // Επιπλέον επικύρωση για προαιρετικά πεδία που παραμένουν ίδια
+        
+        if (!$validator->isValid()) {
+            $_SESSION['errors'] = $validator->getErrors();
+            $_SESSION['old_input'] = $_POST;
+            header('Location: ' . BASE_URL . 'drivers/edit-profile');
+            exit();
+        }
+        
+        // Λήψη ID του συνδεδεμένου οδηγού
+        $driverId = $_SESSION['user_id'];
+        
+        // Συλλογή των δεδομένων από τη φόρμα
+        $data = [
+            'first_name' => $_POST['first_name'],
+            'last_name' => $_POST['last_name'],
+            'phone' => $_POST['phone'],
+            'landline' => $_POST['landline'] ?? null,
+            'birth_date' => $_POST['birth_date'] ?? null,
+            'address' => $_POST['address'] ?? null,
+            'house_number' => $_POST['house_number'] ?? null,
+            'city' => $_POST['city'] ?? null,
+            'country' => $_POST['country'] ?? null,
+            'postal_code' => $_POST['postal_code'] ?? null,
+            'about_me' => $_POST['about_me'] ?? null,
+            'experience_years' => $_POST['experience_years'] ? intval($_POST['experience_years']) : null,
+            'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
+            'preferred_job_type' => $_POST['preferred_job_type'] ?? null,
+            'preferred_vehicle_type' => $_POST['preferred_vehicle_type'] ?? null,
+            'preferred_location' => $_POST['preferred_location'] ?? null,
+            'preferred_radius' => $_POST['preferred_radius'] ?? null,
+            'salary_min' => $_POST['salary_min'] ?? null,
+            'salary_max' => $_POST['salary_max'] ?? null,
+            'salary_period' => $_POST['salary_period'] ?? null,
+            'social_linkedin' => $_POST['social_linkedin'] ?? null,
+            'social_facebook' => $_POST['social_facebook'] ?? null,
+            'social_twitter' => $_POST['social_twitter'] ?? null,
+            'social_instagram' => $_POST['social_instagram'] ?? null,
+            'willing_to_relocate' => isset($_POST['willing_to_relocate']) ? 1 : 0,
+            'willing_to_travel' => isset($_POST['willing_to_travel']) ? 1 : 0,
+            'license_number' => $_POST['license_number'] ?? null,
+            'license_document_expiry' => $_POST['license_document_expiry'] ?? null,
+            'license_codes' => $_POST['license_codes'] ?? null,
+            'marital_status' => $_POST['marital_status'] ?? null,
+    'education_level' => $_POST['education_level'] ?? null,
+    'military_service' => $_POST['military_service'] ?? null,
+    'languages' => isset($_POST['languages']) ? implode(',', $_POST['languages']) : null,
+    'language_notes' => $_POST['language_notes'] ?? null,
+        ];
+        
+        // Ενημέρωση του προφίλ
+        if ($this->driversModel->updateProfile($driverId, $data)) {
+            // Διαχείριση αδειών οδήγησης
+            $this->driversModel->deleteDriverLicenses($driverId);
+            
+            if (isset($_POST['license_types']) && is_array($_POST['license_types'])) {
+                $licenseNumber = $_POST['license_number'] ?? null;
+                $licenseDocumentExpiry = $_POST['license_document_expiry'] ?? null;
+                
+                foreach ($_POST['license_types'] as $licenseType) {
+                    $hasPei = false;
+                    $peiExpiryC = null;
+                    $peiExpiryD = null;
+                    
+                    // Έλεγχος για ΠΕΙ στις κατηγορίες C και D (και υποκατηγορίες)
+                    if (in_array($licenseType, ['C', 'CE', 'C1', 'C1E'])) {
+                        // Έλεγχος για το αντίστοιχο checkbox ΠΕΙ
+                        $peiCheckboxName = 'has_pei_' . strtolower($licenseType);
+                        if (isset($_POST[$peiCheckboxName])) {
+                            $hasPei = true;
+                            $peiExpiryC = !empty($_POST['pei_c_expiry']) ? $_POST['pei_c_expiry'] : null;
+                        }
+                    } else if (in_array($licenseType, ['D', 'DE', 'D1', 'D1E'])) {
+                        // Έλεγχος για το αντίστοιχο checkbox ΠΕΙ
+                        $peiCheckboxName = 'has_pei_' . strtolower($licenseType);
+                        if (isset($_POST[$peiCheckboxName])) {
+                            $hasPei = true;
+                            $peiExpiryD = !empty($_POST['pei_d_expiry']) ? $_POST['pei_d_expiry'] : null;
+                        }
+                    }
+                    
+                    // Λήψη της ημερομηνίας λήξης για τη συγκεκριμένη κατηγορία
+                    $expiryDate = $_POST['license_expiry'][$licenseType] ?? null;
+                    
+                    $this->driversModel->addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC, $peiExpiryD, $licenseDocumentExpiry);
+                }
+            }
+            
+            // Διαχείριση μεταφόρτωσης εικόνας εμπρόσθιας όψης διπλώματος
+            if (isset($_FILES['license_front_image']) && $_FILES['license_front_image']['error'] === UPLOAD_ERR_OK) {
+                $this->handleLicenseImageUpload($driverId, 'license_front_image');
+            }
+            
+            // Διαχείριση μεταφόρτωσης εικόνας οπίσθιας όψης διπλώματος
+            if (isset($_FILES['license_back_image']) && $_FILES['license_back_image']['error'] === UPLOAD_ERR_OK) {
+                $this->handleLicenseImageUpload($driverId, 'license_back_image');
+            }
+            
+            // Διαχείριση μεταφόρτωσης εικόνας προφίλ
+            if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
+                $this->handleProfileImageUpload($driverId);
+            }
+            
+            // Διαχείριση μεταφόρτωσης βιογραφικού
+            if (isset($_FILES['resume_file']) && $_FILES['resume_file']['error'] === UPLOAD_ERR_OK) {
+                $this->handleResumeFileUpload($driverId);
+            }
+            
+            // Διαχείριση ειδικών αδειών
+            $this->handleSpecialLicenses($driverId);
+            
+            // Διαχείριση κάρτας ταχογράφου
+            $this->handleTachographCard($driverId);
+            
+            // Διαχείριση πιστοποιητικού ADR
+            $this->handleADRCertificate($driverId);
+            
+            // Διαχείριση άδειας χειριστή μηχανημάτων
+            $this->handleOperatorLicense($driverId);
+            
+            $_SESSION['success_message'] = 'Το προφίλ σας ενημερώθηκε με επιτυχία.';
+        } else {
+            $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την ενημέρωση του προφίλ σας. Παρακαλώ δοκιμάστε ξανά.';
+        }
+        
+        header('Location: ' . BASE_URL . 'drivers/driver_profile');
         exit();
     }
     
-    // Επικύρωση βασικών δεδομένων
-    $validator = new Validator($_POST);
-    $validator->required('first_name', 'Το όνομα είναι υποχρεωτικό.')
-              ->required('last_name', 'Το επώνυμο είναι υποχρεωτικό.')
-              ->required('phone', 'Το τηλέφωνο είναι υποχρεωτικό.')
-              ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
-    
-    // Επιπλέον επικύρωση για προαιρετικά πεδία που παραμένουν ίδια
-    
-    if (!$validator->isValid()) {
-        $_SESSION['errors'] = $validator->getErrors();
-        $_SESSION['old_input'] = $_POST;
-        header('Location: ' . BASE_URL . 'drivers/edit-profile');
-        exit();
-    }
-    
-    // Λήψη ID του συνδεδεμένου οδηγού
-    $driverId = $_SESSION['user_id'];
-    
-    // Συλλογή των δεδομένων από τη φόρμα
-    $data = [
-        'first_name' => $_POST['first_name'],
-        'last_name' => $_POST['last_name'],
-        'phone' => $_POST['phone'],
-        'landline' => $_POST['landline'] ?? null,
-        'birth_date' => $_POST['birth_date'] ?? null,
-        'address' => $_POST['address'] ?? null,
-        'house_number' => $_POST['house_number'] ?? null,
-        'city' => $_POST['city'] ?? null,
-        'country' => $_POST['country'] ?? null,
-        'postal_code' => $_POST['postal_code'] ?? null,
-        'about_me' => $_POST['about_me'] ?? null,
-        'experience_years' => $_POST['experience_years'] ? intval($_POST['experience_years']) : null,
-        'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
-        'preferred_job_type' => $_POST['preferred_job_type'] ?? null,
-        'preferred_vehicle_type' => $_POST['preferred_vehicle_type'] ?? null,
-        'preferred_location' => $_POST['preferred_location'] ?? null,
-        'preferred_radius' => $_POST['preferred_radius'] ?? null,
-        'salary_min' => $_POST['salary_min'] ?? null,
-        'salary_max' => $_POST['salary_max'] ?? null,
-        'salary_period' => $_POST['salary_period'] ?? null,
-        'social_linkedin' => $_POST['social_linkedin'] ?? null,
-        'social_facebook' => $_POST['social_facebook'] ?? null,
-        'social_twitter' => $_POST['social_twitter'] ?? null,
-        'social_instagram' => $_POST['social_instagram'] ?? null,
-        'willing_to_relocate' => isset($_POST['willing_to_relocate']) ? 1 : 0,
-        'willing_to_travel' => isset($_POST['willing_to_travel']) ? 1 : 0,
-        'license_number' => $_POST['license_number'] ?? null,
-        'license_document_expiry' => $_POST['license_document_expiry'] ?? null,
-        'license_codes' => $_POST['license_codes'] ?? null,
-    ];
-    
-    // Ενημέρωση του προφίλ
-    if ($this->driversModel->updateProfile($driverId, $data)) {
-        // Διαχείριση αδειών οδήγησης
-        $this->driversModel->deleteDriverLicenses($driverId);
-if (isset($_POST['license_types']) && is_array($_POST['license_types'])) {
-    $licenseNumber = $_POST['license_number'] ?? null;
-    $licenseDocumentExpiry = $_POST['license_document_expiry'] ?? null;
-    
-    // Συλλογή όλων των ημερομηνιών ΠΕΙ
-    $peiExpiryC = isset($_POST['pei_c_expiry']) ? $_POST['pei_c_expiry'] : null;
-    $peiExpiryD = isset($_POST['pei_d_expiry']) ? $_POST['pei_d_expiry'] : null;
-    
-    foreach ($_POST['license_types'] as $licenseType) {
-        $hasPei = false;
-        $peiExpiryC = null;
-        $peiExpiryD = null;
+    /**
+     * Διαχειρίζεται τις ειδικές άδειες
+     */
+    private function handleSpecialLicenses($driverId) {
+        // Διαγραφή των υπαρχουσών ειδικών αδειών
+        $this->driversModel->deleteDriverSpecialLicenses($driverId);
         
-        // Έλεγχος για ΠΕΙ στις κατηγορίες C και D (και υποκατηγορίες)
-        if (in_array($licenseType, ['C', 'CE', 'C1', 'C1E'])) {
-            // Έλεγχος για το αντίστοιχο checkbox ΠΕΙ
-            $peiCheckboxName = 'has_pei_' . strtolower($licenseType);
-            if (isset($_POST[$peiCheckboxName])) {
-                $hasPei = true;
-                $peiExpiryC = !empty($_POST['pei_c_expiry']) ? $_POST['pei_c_expiry'] : null;
-            }
-        } else if (in_array($licenseType, ['D', 'DE', 'D1', 'D1E'])) {
-            // Έλεγχος για το αντίστοιχο checkbox ΠΕΙ
-            $peiCheckboxName = 'has_pei_' . strtolower($licenseType);
-            if (isset($_POST[$peiCheckboxName])) {
-                $hasPei = true;
-                $peiExpiryD = !empty($_POST['pei_d_expiry']) ? $_POST['pei_d_expiry'] : null;
+        // Αν έχουν υποβληθεί ειδικές άδειες, τις προσθέτουμε στη βάση
+        if (isset($_POST['special_license_type']) && is_array($_POST['special_license_type'])) {
+            foreach ($_POST['special_license_type'] as $index => $type) {
+                // Αν ο τύπος άδειας δεν είναι κενός, προσθέτουμε την άδεια
+                if (!empty(trim($type))) {
+                    $licenseNumber = $_POST['special_license_number'][$index] ?? '';
+                    $expiryDate = $_POST['special_license_expiry'][$index] ?? null;
+                    $details = $_POST['special_license_details'][$index] ?? '';
+                    
+                    $this->driversModel->addDriverSpecialLicense($driverId, $type, $licenseNumber, $expiryDate, $details);
+                }
             }
         }
-        
-        // Λήψη της ημερομηνίας λήξης για τη συγκεκριμένη κατηγορία
-        $expiryDate = $_POST['license_expiry'][$licenseType] ?? null;
-        
-        $this->driversModel->addDriverLicense($driverId, $licenseType, $hasPei, $expiryDate, $licenseNumber, $peiExpiryC, $peiExpiryD, $licenseDocumentExpiry);
-    }
-}
-        
-        // Διαχείριση μεταφόρτωσης εικόνας εμπρόσθιας όψης διπλώματος
-        if (isset($_FILES['license_front_image']) && $_FILES['license_front_image']['error'] === UPLOAD_ERR_OK) {
-            $this->handleLicenseImageUpload($driverId, 'license_front_image');
-        }
-        
-        // Διαχείριση μεταφόρτωσης εικόνας οπίσθιας όψης διπλώματος
-        if (isset($_FILES['license_back_image']) && $_FILES['license_back_image']['error'] === UPLOAD_ERR_OK) {
-            $this->handleLicenseImageUpload($driverId, 'license_back_image');
-        }
-        
-        // Ο υπόλοιπος κώδικας παραμένει ο ίδιος...
-        
-        $_SESSION['success_message'] = 'Το προφίλ σας ενημερώθηκε με επιτυχία.';
-    } else {
-        $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την ενημέρωση του προφίλ σας. Παρακαλώ δοκιμάστε ξανά.';
     }
     
-    header('Location: ' . BASE_URL . 'drivers/driver_profile');
-    exit();
-}
-
-/**
- * Διαχειρίζεται τη μεταφόρτωση εικόνων διπλώματος
- */
-private function handleLicenseImageUpload($driverId, $fieldName) {
-    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    $maxSize = 2 * 1024 * 1024; // 2MB
+    /**
+     * Διαχειρίζεται την κάρτα ταχογράφου
+     */
+    private function handleTachographCard($driverId) {
+        if (isset($_POST['tachograph_card']) && $_POST['tachograph_card'] == 1) {
+            $tachographData = [
+                'card_number' => $_POST['tachograph_card_number'] ?? null,
+                'expiry_date' => $_POST['tachograph_card_expiry'] ?? null
+            ];
+            
+            // Ανέβασμα εικόνων ταχογράφου αν υπάρχουν
+            if (isset($_FILES['tachograph_front_image']) && $_FILES['tachograph_front_image']['error'] === UPLOAD_ERR_OK) {
+                $frontImagePath = $this->handleImageUpload($driverId, 'tachograph_front_image', 'uploads/tachograph_images/');
+                if ($frontImagePath) {
+                    $this->driversModel->updateDriverDocumentImage($driverId, 'tachograph_front_image', $frontImagePath);
+                }
+            }
+            
+            if (isset($_FILES['tachograph_back_image']) && $_FILES['tachograph_back_image']['error'] === UPLOAD_ERR_OK) {
+                $backImagePath = $this->handleImageUpload($driverId, 'tachograph_back_image', 'uploads/tachograph_images/');
+                if ($backImagePath) {
+                    $this->driversModel->updateDriverDocumentImage($driverId, 'tachograph_back_image', $backImagePath);
+                }
+            }
+            
+            $this->driversModel->updateDriverTachographCard($driverId, $tachographData);
+        } else {
+            // Αν δεν έχει επιλεγεί η κάρτα ταχογράφου, διαγράφουμε τα στοιχεία
+            $this->driversModel->deleteDriverTachographCard($driverId);
+        }
+    }
     
-    $file = $_FILES[$fieldName];
+    /**
+     * Διαχειρίζεται το πιστοποιητικό ADR
+     */
+    private function handleADRCertificate($driverId) {
+        if (isset($_POST['adr_certificate']) && $_POST['adr_certificate'] == 1) {
+            $adrData = [
+                'adr_type' => $_POST['adr_certificate_type'] ?? null,
+                'certificate_number' => $_POST['adr_certificate_number'] ?? null,
+                'expiry_date' => $_POST['adr_certificate_expiry'] ?? null
+            ];
+            
+            // Ανέβασμα εικόνων ADR αν υπάρχουν
+            if (isset($_FILES['adr_front_image']) && $_FILES['adr_front_image']['error'] === UPLOAD_ERR_OK) {
+                $frontImagePath = $this->handleImageUpload($driverId, 'adr_front_image', 'uploads/adr_images/');
+                if ($frontImagePath) {
+                    $this->driversModel->updateDriverDocumentImage($driverId, 'adr_front_image', $frontImagePath);
+                }
+            }
+            
+            if (isset($_FILES['adr_back_image']) && $_FILES['adr_back_image']['error'] === UPLOAD_ERR_OK) {
+                $backImagePath = $this->handleImageUpload($driverId, 'adr_back_image', 'uploads/adr_images/');
+                if ($backImagePath) {
+                    $this->driversModel->updateDriverDocumentImage($driverId, 'adr_back_image', $backImagePath);
+                }
+            }
+            
+            $this->driversModel->updateDriverADRCertificate($driverId, $adrData);
+        } else {
+            // Αν δεν έχει επιλεγεί το ADR, διαγράφουμε τα στοιχεία
+            $this->driversModel->deleteDriverADRCertificate($driverId);
+        }
+    }
     
-    // Έλεγχος τύπου αρχείου
-    if (!in_array($file['type'], $allowedTypes)) {
-        $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
+    /**
+     * Διαχειρίζεται την άδεια χειριστή μηχανημάτων
+     */
+    private function handleOperatorLicense($driverId) {
+        if (isset($_POST['operator_license']) && $_POST['operator_license'] == 1) {
+            $operatorData = [
+                'speciality' => $_POST['operator_speciality'] ?? null,
+                'license_number' => $_POST['operator_license_number'] ?? null,
+                'expiry_date' => $_POST['operator_license_expiry'] ?? null
+            ];
+            
+            // Ανέβασμα εικόνων χειριστή αν υπάρχουν
+            if (isset($_FILES['operator_front_image']) && $_FILES['operator_front_image']['error'] === UPLOAD_ERR_OK) {
+                $frontImagePath = $this->handleImageUpload($driverId, 'operator_front_image', 'uploads/operator_images/');
+                if ($frontImagePath) {
+                    $this->driversModel->updateDriverDocumentImage($driverId, 'operator_front_image', $frontImagePath);
+                }
+            }
+            
+            if (isset($_FILES['operator_back_image']) && $_FILES['operator_back_image']['error'] === UPLOAD_ERR_OK) {
+                $backImagePath = $this->handleImageUpload($driverId, 'operator_back_image', 'uploads/operator_images/');
+                if ($backImagePath) {
+                    $this->driversModel->updateDriverDocumentImage($driverId, 'operator_back_image', $backImagePath);
+                }
+            }
+            
+            // Ενημέρωση ή προσθήκη της άδειας χειριστή
+            $operatorLicenseId = $this->driversModel->updateDriverOperatorLicense($driverId, $operatorData);
+            
+            // Διαχείριση υποειδικοτήτων
+            if ($operatorLicenseId && isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
+                // Διαγραφή προηγούμενων υποειδικοτήτων
+                $this->driversModel->deleteDriverOperatorSubSpecialities($operatorLicenseId);
+                
+                // Προσθήκη νέων υποειδικοτήτων
+                foreach ($_POST['operator_sub_specialities'] as $subSpecialityId) {
+                    // Καθορισμός του τύπου ομάδας (A ή B)
+                    $groupType = isset($_POST['group_' . $subSpecialityId]) ? $_POST['group_' . $subSpecialityId] : $this->getSubSpecialityGroupType($subSpecialityId);
+                    
+                    $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpecialityId, $groupType);
+                }
+            }
+        } else {
+            // Αν δεν έχει επιλεγεί η άδεια χειριστή, διαγράφουμε τα στοιχεία
+            $this->driversModel->deleteDriverOperatorLicense($driverId);
+        }
+    }
+    
+    /**
+     * Διαχειρίζεται τη μεταφόρτωση εικόνων διπλώματος
+     */
+    private function handleLicenseImageUpload($driverId, $fieldName) {
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $maxSize = 2 * 1024 * 1024; // 2MB
+        
+        $file = $_FILES[$fieldName];
+        
+        // Έλεγχος τύπου αρχείου
+        if (!in_array($file['type'], $allowedTypes)) {
+            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
+            return false;
+        }
+        
+        // Έλεγχος μεγέθους αρχείου
+        if ($file['size'] > $maxSize) {
+            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
+            return false;
+        }
+        
+        // Δημιουργία του καταλόγου αν δεν υπάρχει
+        $uploadDir = ROOT_DIR . '/public/uploads/license_images/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Δημιουργία μοναδικού ονόματος αρχείου
+        $filename = $driverId . '_' . $fieldName . '_' . time() . '_' . basename($file['name']);
+        $targetPath = $uploadDir . $filename;
+        
+        // Μεταφορά του αρχείου
+        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+            // Ενημέρωση του πεδίου στη βάση δεδομένων
+            $relativePath = 'uploads/license_images/' . $filename;
+            
+            // Ανάλογα με το είδος της εικόνας, ενημερώνουμε το αντίστοιχο πεδίο
+            $fieldToUpdate = $fieldName; // Χρησιμοποιούμε απευθείας το όνομα του πεδίου
+            
+            return $this->driversModel->updateDriverLicenseImage($driverId, $fieldToUpdate, $relativePath);
+        }
+        
+        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
         return false;
     }
     
-    // Έλεγχος μεγέθους αρχείου
-    if ($file['size'] > $maxSize) {
-        $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
+    /**
+     * Γενική μέθοδος για χειρισμό μεταφόρτωσης εικόνων
+     */
+    private function handleImageUpload($driverId, $fieldName, $uploadPath = 'uploads/images/') {
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $maxSize = 2 * 1024 * 1024; // 2MB
+        
+        $file = $_FILES[$fieldName];
+        
+        // Έλεγχος τύπου αρχείου
+        if (!in_array($file['type'], $allowedTypes)) {
+            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
+            return false;
+        }
+        
+        // Έλεγχος μεγέθους αρχείου
+        if ($file['size'] > $maxSize) {
+            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
+            return false;
+        }
+        
+        // Δημιουργία του καταλόγου αν δεν υπάρχει
+        $uploadDir = ROOT_DIR . '/public/' . $uploadPath;
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Δημιουργία μοναδικού ονόματος αρχείου
+        $filename = $driverId . '_' . $fieldName . '_' . time() . '_' . basename($file['name']);
+        $targetPath = $uploadDir . $filename;
+        
+        // Μεταφορά του αρχείου
+        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+            // Επιστροφή του σχετικού μονοπατιού
+            return $uploadPath . $filename;
+        }
+        
+        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
         return false;
     }
     
-    // Δημιουργία του καταλόγου αν δεν υπάρχει
-    $uploadDir = ROOT_DIR . '/public/uploads/license_images/';
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
+    /**
+     * Διαχειρίζεται τη μεταφόρτωση εικόνας προφίλ
+     */
+    private function handleProfileImageUpload($driverId) {
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $maxSize = 2 * 1024 * 1024; // 2MB
+        
+        $file = $_FILES['profile_image'];
+        
+        // Έλεγχος τύπου αρχείου
+        if (!in_array($file['type'], $allowedTypes)) {
+            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
+            return false;
+        }
+        
+        // Έλεγχος μεγέθους αρχείου
+        if ($file['size'] > $maxSize) {
+            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
+            return false;
+        }
+        
+        // Δημιουργία του καταλόγου αν δεν υπάρχει
+        $uploadDir = ROOT_DIR . '/public/uploads/profile_images/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Δημιουργία μοναδικού ονόματος αρχείου
+        $filename = $driverId . '_' . time() . '_' . basename($file['name']);
+        $targetPath = $uploadDir . $filename;
+        
+        // Μεταφορά του αρχείου
+        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+            // Ενημέρωση του πεδίου στη βάση δεδομένων
+            $relativePath = 'uploads/profile_images/' . $filename;
+            return $this->driversModel->updateProfileImage($driverId, $relativePath);
+        }
+        
+        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
+        return false;
     }
     
-    // Δημιουργία μοναδικού ονόματος αρχείου
-    $filename = $driverId . '_' . $fieldName . '_' . time() . '_' . basename($file['name']);
-    $targetPath = $uploadDir . $filename;
-    
-    // Μεταφορά του αρχείου
-    if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-        // Ενημέρωση του πεδίου στη βάση δεδομένων
-        $relativePath = 'uploads/license_images/' . $filename;
+    /**
+     * Διαχειρίζεται τη μεταφόρτωση βιογραφικού
+     */
+    private function handleResumeFileUpload($driverId) {
+        $allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        $maxSize = 5 * 1024 * 1024; // 5MB
         
-        // Ανάλογα με το είδος της εικόνας, ενημερώνουμε το αντίστοιχο πεδίο
-        $fieldToUpdate = str_replace('_image', '', $fieldName); // Αφαιρούμε το _image για να πάρουμε license_front ή license_back
+        $file = $_FILES['resume_file'];
         
-        return $this->driversModel->updateDriverLicenseImage($driverId, $fieldToUpdate, $relativePath);
+        // Έλεγχος τύπου αρχείου
+        if (!in_array($file['type'], $allowedTypes)) {
+            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο PDF και DOC/DOCX.';
+            return false;
+        }
+        
+        // Έλεγχος μεγέθους αρχείου
+        if ($file['size'] > $maxSize) {
+            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 5MB.';
+            return false;
+        }
+        
+        // Δημιουργία του καταλόγου αν δεν υπάρχει
+        $uploadDir = ROOT_DIR . '/public/uploads/resumes/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Δημιουργία μοναδικού ονόματος αρχείου
+        $filename = $driverId . '_' . time() . '_' . basename($file['name']);
+        $targetPath = $uploadDir . $filename;
+        
+        // Μεταφορά του αρχείου
+        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+            // Ενημέρωση του πεδίου στη βάση δεδομένων
+            $relativePath = 'uploads/resumes/' . $filename;
+            return $this->driversModel->updateResumeFile($driverId, $relativePath);
+        }
+        
+        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση του βιογραφικού. Παρακαλώ δοκιμάστε ξανά.';
+        return false;
     }
     
-    $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
-    return false;
-}
-
     /**
      * Ενημέρωση της αυτοαξιολόγησης του οδηγού
      */
@@ -375,7 +662,7 @@ private function handleLicenseImageUpload($driverId, $fieldName) {
         
         return ($totalPoints / $maxPoints) * 100;
     }
-
+    
     /**
      * Προβάλλει τα ταιριάσματα εργασίας για τον οδηγό
      */
@@ -536,90 +823,6 @@ private function handleLicenseImageUpload($driverId, $fieldName) {
         if ($total === 0) return 0;
         
         return round(($score / $total) * 100);
-    }
-
-    /**
-     * Διαχειρίζεται τη μεταφόρτωση εικόνας προφίλ
-     */
-    private function handleProfileImageUpload($driverId) {
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        $maxSize = 2 * 1024 * 1024; // 2MB
-        
-        $file = $_FILES['profile_image'];
-        
-        // Έλεγχος τύπου αρχείου
-        if (!in_array($file['type'], $allowedTypes)) {
-            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
-            return false;
-        }
-        
-        // Έλεγχος μεγέθους αρχείου
-        if ($file['size'] > $maxSize) {
-            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
-            return false;
-        }
-        
-        // Δημιουργία του καταλόγου αν δεν υπάρχει
-        $uploadDir = ROOT_DIR . '/public/uploads/profile_images/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-        
-        // Δημιουργία μοναδικού ονόματος αρχείου
-        $filename = $driverId . '_' . time() . '_' . basename($file['name']);
-        $targetPath = $uploadDir . $filename;
-        
-        // Μεταφορά του αρχείου
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            // Ενημέρωση του πεδίου στη βάση δεδομένων
-            $relativePath = 'uploads/profile_images/' . $filename;
-            return $this->driversModel->updateProfileImage($driverId, $relativePath);
-        }
-        
-        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
-        return false;
-    }
-
-    /**
-     * Διαχειρίζεται τη μεταφόρτωση βιογραφικού
-     */
-    private function handleResumeFileUpload($driverId) {
-        $allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-        $maxSize = 5 * 1024 * 1024; // 5MB
-        
-        $file = $_FILES['resume_file'];
-        
-        // Έλεγχος τύπου αρχείου
-        if (!in_array($file['type'], $allowedTypes)) {
-            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο PDF και DOC/DOCX.';
-            return false;
-        }
-        
-        // Έλεγχος μεγέθους αρχείου
-        if ($file['size'] > $maxSize) {
-            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 5MB.';
-            return false;
-        }
-        
-        // Δημιουργία του καταλόγου αν δεν υπάρχει
-        $uploadDir = ROOT_DIR . '/public/uploads/resumes/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-        
-        // Δημιουργία μοναδικού ονόματος αρχείου
-        $filename = $driverId . '_' . time() . '_' . basename($file['name']);
-        $targetPath = $uploadDir . $filename;
-        
-        // Μεταφορά του αρχείου
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            // Ενημέρωση του πεδίου στη βάση δεδομένων
-            $relativePath = 'uploads/resumes/' . $filename;
-            return $this->driversModel->updateResumeFile($driverId, $relativePath);
-        }
-        
-        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση του βιογραφικού. Παρακαλώ δοκιμάστε ξανά.';
-        return false;
     }
     
     /**
