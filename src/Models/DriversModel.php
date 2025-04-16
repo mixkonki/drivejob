@@ -829,163 +829,177 @@ class DriversModel {
         }
     }
     
-    /**
-     * Διαγράφει τις υποειδικότητες της άδειας χειριστή μηχανημάτων
-     * 
-     * @param int $operatorLicenseId ID της άδειας χειριστή
-     * @return bool Επιτυχία/αποτυχία
-     */
-    public function deleteDriverOperatorSubSpecialities($operatorLicenseId) {
-        try {
-            $sql = "DELETE FROM driver_operator_sub_specialities WHERE operator_license_id = ?";
+   /**
+ * Ενημερώνει την άδεια χειριστή μηχανημάτων του οδηγού
+ * 
+ * @param int $driverId ID του οδηγού
+ * @param array $operatorData Δεδομένα άδειας χειριστή
+ * @return int|false ID της άδειας ή false σε αποτυχία
+ */
+public function updateDriverOperatorLicense($driverId, $operatorData) {
+    try {
+        // Καταγραφή δεδομένων για debugging
+        error_log('updateDriverOperatorLicense - Data: ' . print_r($operatorData, true));
+        error_log('Driver ID: ' . $driverId);
+        
+        // Έλεγχος αν υπάρχει ήδη εγγραφή
+        $existingLicense = $this->getDriverOperatorLicense($driverId);
+        error_log('Existing license: ' . ($existingLicense ? json_encode($existingLicense) : 'none'));
+        
+        if ($existingLicense) {
+            // Ενημέρωση υπάρχουσας εγγραφής
+            $sql = "UPDATE driver_operator_licenses 
+                    SET speciality = ?, license_number = ?, expiry_date = ? 
+                    WHERE driver_id = ?";
             $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute([$operatorLicenseId]);
-        } catch (PDOException $e) {
-            error_log('Error in deleteDriverOperatorSubSpecialities: ' . $e->getMessage());
-            return false;
-        }
-    }
-    
-    /**
-     * Ενημερώνει την άδεια χειριστή μηχανημάτων του οδηγού
-     * 
-     * @param int $driverId ID του οδηγού
-     * @param array $operatorData Δεδομένα άδειας χειριστή
-     * @return int|false ID της άδειας ή false σε αποτυχία
-     */
-    public function updateDriverOperatorLicense($driverId, $operatorData) {
-        try {
-            // Καταγραφή δεδομένων για debugging
-            error_log('updateDriverOperatorLicense - Data: ' . print_r($operatorData, true));
+            $success = $stmt->execute([
+                $operatorData['speciality'],
+                $operatorData['license_number'],
+                $operatorData['expiry_date'] ?: null,
+                $driverId
+            ]);
             
-            // Έλεγχος αν υπάρχει ήδη εγγραφή
-            $existingLicense = $this->getDriverOperatorLicense($driverId);
+            // Ενημέρωση του flag και της ημερομηνίας λήξης στον πίνακα drivers
+            if ($success) {
+                $updateDriver = $this->pdo->prepare("UPDATE drivers SET 
+                    operator_license = 1, 
+                    operator_license_expiry = ? 
+                    WHERE id = ?");
+                $updateDriver->execute([$operatorData['expiry_date'] ?: null, $driverId]);
+                
+                error_log('Operator license updated successfully. License ID: ' . $existingLicense['id']);
+                return $existingLicense['id'];
+            } else {
+                error_log('Failed to update operator license');
+                return false;
+            }
+        } else {
+            // Δημιουργία νέας εγγραφής
+            $sql = "INSERT INTO driver_operator_licenses 
+                    (driver_id, speciality, license_number, expiry_date) 
+                    VALUES (?, ?, ?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            $success = $stmt->execute([
+                $driverId,
+                $operatorData['speciality'],
+                $operatorData['license_number'],
+                $operatorData['expiry_date'] ?: null
+            ]);
             
-            if ($existingLicense) {
-                // Ενημέρωση υπάρχουσας εγγραφής
-                $sql = "UPDATE driver_operator_licenses 
-                        SET speciality = ?, license_number = ?, expiry_date = ? 
-                        WHERE driver_id = ?";
-                $stmt = $this->pdo->prepare($sql);
-                $success = $stmt->execute([
-                    $operatorData['speciality'],
-                    $operatorData['license_number'],
-                    $operatorData['expiry_date'] ?: null,
-                    $driverId
-                ]);
+            if ($success) {
+                $licenseId = $this->pdo->lastInsertId();
                 
                 // Ενημέρωση του flag και της ημερομηνίας λήξης στον πίνακα drivers
-                if ($success) {
-                    $updateDriver = $this->pdo->prepare("UPDATE drivers SET 
-                        operator_license = 1, 
-                        operator_license_expiry = ? 
-                        WHERE id = ?");
-                    $updateDriver->execute([$operatorData['expiry_date'] ?: null, $driverId]);
-                    
-                    error_log('Operator license updated successfully');
-                    return $existingLicense['id'];
-                } else {
-                    error_log('Failed to update operator license');
-                    return false;
-                }
+                $updateDriver = $this->pdo->prepare("UPDATE drivers SET 
+                    operator_license = 1, 
+                    operator_license_expiry = ? 
+                    WHERE id = ?");
+                $updateDriver->execute([$operatorData['expiry_date'] ?: null, $driverId]);
+                
+                error_log('New operator license created successfully. License ID: ' . $licenseId);
+                return $licenseId;
             } else {
-                // Δημιουργία νέας εγγραφής
-                $sql = "INSERT INTO driver_operator_licenses 
-                        (driver_id, speciality, license_number, expiry_date) 
-                        VALUES (?, ?, ?, ?)";
-                $stmt = $this->pdo->prepare($sql);
-                $success = $stmt->execute([
-                    $driverId,
-                    $operatorData['speciality'],
-                    $operatorData['license_number'],
-                    $operatorData['expiry_date'] ?: null
-                ]);
-                
-                if ($success) {
-                    $licenseId = $this->pdo->lastInsertId();
-                    
-                    // Ενημέρωση του flag και της ημερομηνίας λήξης στον πίνακα drivers
-                    $updateDriver = $this->pdo->prepare("UPDATE drivers SET 
-                        operator_license = 1, 
-                        operator_license_expiry = ? 
-                        WHERE id = ?");
-                    $updateDriver->execute([$operatorData['expiry_date'] ?: null, $driverId]);
-                    
-                    error_log('New operator license created successfully');
-                    return $licenseId;
-                } else {
-                    error_log('Failed to create operator license');
-                    return false;
-                }
+                error_log('Failed to create operator license');
+                return false;
             }
-        } catch (PDOException $e) {
-            error_log('Error in updateDriverOperatorLicense: ' . $e->getMessage());
-            return false;
         }
+    } catch (PDOException $e) {
+        error_log('Error in updateDriverOperatorLicense: ' . $e->getMessage());
+        error_log('Stack trace: ' . $e->getTraceAsString());
+        return false;
     }
-    
-    /**
-     * Προσθέτει μια υποειδικότητα στην άδεια χειριστή μηχανημάτων
-     * 
-     * @param int $operatorLicenseId ID της άδειας χειριστή
-     * @param string $subSpeciality Κωδικός υποειδικότητας
-     * @param string $groupType Τύπος ομάδας (A ή B)
-     * @return bool Επιτυχία/αποτυχία
-     */
-    public function addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType = 'A') {
-        try {
-            // Έλεγχος αν η στήλη group_type υπάρχει στον πίνακα
-            $tableInfo = $this->pdo->query("DESCRIBE driver_operator_sub_specialities")->fetchAll(PDO::FETCH_COLUMN);
-            $hasGroupTypeColumn = in_array('group_type', $tableInfo);
-            
-            if ($hasGroupTypeColumn) {
-                $sql = "INSERT INTO driver_operator_sub_specialities 
-                        (operator_license_id, sub_speciality, group_type) 
-                        VALUES (?, ?, ?)";
-                $stmt = $this->pdo->prepare($sql);
-                return $stmt->execute([$operatorLicenseId, $subSpeciality, $groupType]);
-            } else {
-                // Αν δεν υπάρχει η στήλη group_type, χρησιμοποιούμε τον παλιό τρόπο
-                $sql = "INSERT INTO driver_operator_sub_specialities 
-                        (operator_license_id, sub_speciality) 
-                        VALUES (?, ?)";
-                $stmt = $this->pdo->prepare($sql);
-                
-                $result = $stmt->execute([$operatorLicenseId, $subSpeciality]);
-                
-                if ($result) {
-                    // Προσθήκη εγγραφής στον πίνακα driver_operator_sub_speciality_groups
-                    $subSpecialityId = $this->pdo->lastInsertId();
-                    $this->addDriverOperatorSubSpecialityGroup($subSpecialityId, $groupType);
-                }
-                
-                return $result;
-            }
-        } catch (PDOException $e) {
-            error_log('Error in addDriverOperatorSubSpeciality: ' . $e->getMessage());
-            return false;
-        }
-    }
-    
-    /**
-     * Προσθέτει μια ομάδα υποειδικότητας για την άδεια χειριστή μηχανημάτων
-     * 
-     * @param int $subSpecialityId ID της υποειδικότητας
-     * @param string $groupType Τύπος ομάδας (A ή B)
-     * @return bool Επιτυχία/αποτυχία
-     */
-    public function addDriverOperatorSubSpecialityGroup($subSpecialityId, $groupType) {
-        try {
-            $sql = "INSERT INTO driver_operator_sub_speciality_groups 
-                    (sub_speciality_id, group_type) 
+}
+
+/**
+ * Προσθέτει μια υποειδικότητα στην άδεια χειριστή μηχανημάτων
+ * 
+ * @param int $operatorLicenseId ID της άδειας χειριστή
+ * @param string $subSpeciality Κωδικός υποειδικότητας
+ * @param string $groupType Τύπος ομάδας (A ή B)
+ * @return bool Επιτυχία/αποτυχία
+ */
+public function addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType = 'A') {
+    try {
+        // Καταγραφή παραμέτρων
+        error_log("addDriverOperatorSubSpeciality: operatorLicenseId=$operatorLicenseId, subSpeciality=$subSpeciality, groupType=$groupType");
+        
+        // Έλεγχος αν η στήλη group_type υπάρχει στον πίνακα
+        $tableInfo = $this->pdo->query("DESCRIBE driver_operator_sub_specialities")->fetchAll(PDO::FETCH_COLUMN);
+        $hasGroupTypeColumn = in_array('group_type', $tableInfo);
+        error_log("Table has group_type column: " . ($hasGroupTypeColumn ? "yes" : "no"));
+        
+        if ($hasGroupTypeColumn) {
+            $sql = "INSERT INTO driver_operator_sub_specialities 
+                    (operator_license_id, sub_speciality, group_type) 
+                    VALUES (?, ?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([$operatorLicenseId, $subSpeciality, $groupType]);
+            error_log("Insert with group_type result: " . ($result ? "success" : "failed"));
+            return $result;
+        } else {
+            // Αν δεν υπάρχει η στήλη group_type, χρησιμοποιούμε τον παλιό τρόπο
+            $sql = "INSERT INTO driver_operator_sub_specialities 
+                    (operator_license_id, sub_speciality) 
                     VALUES (?, ?)";
             $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute([$subSpecialityId, $groupType]);
-        } catch (PDOException $e) {
-            error_log('Error in addDriverOperatorSubSpecialityGroup: ' . $e->getMessage());
-            return false;
+            
+            $result = $stmt->execute([$operatorLicenseId, $subSpeciality]);
+            error_log("Insert without group_type result: " . ($result ? "success" : "failed"));
+            
+            if ($result) {
+                // Προσθήκη εγγραφής στον πίνακα driver_operator_sub_speciality_groups
+                $subSpecialityId = $this->pdo->lastInsertId();
+                $groupResult = $this->addDriverOperatorSubSpecialityGroup($subSpecialityId, $groupType);
+                error_log("Adding group separately result: " . ($groupResult ? "success" : "failed"));
+            }
+            
+            return $result;
         }
+    } catch (PDOException $e) {
+        error_log('Error in addDriverOperatorSubSpeciality: ' . $e->getMessage());
+        error_log('SQL State: ' . $e->getCode());
+        error_log('Stack trace: ' . $e->getTraceAsString());
+        return false;
     }
+}
+
+/**
+ * Διαγράφει τις υποειδικότητες της άδειας χειριστή μηχανημάτων
+ * 
+ * @param int $operatorLicenseId ID της άδειας χειριστή
+ * @return bool Επιτυχία/αποτυχία
+ */
+public function deleteDriverOperatorSubSpecialities($operatorLicenseId) {
+    try {
+        error_log("Deleting subspecialities for operator license ID: " . $operatorLicenseId);
+        
+        // Πρώτα βρίσκουμε όλες τις υποειδικότητες για να διαγράψουμε τις σχετικές ομάδες
+        $findSubspecialities = $this->pdo->prepare("SELECT id FROM driver_operator_sub_specialities WHERE operator_license_id = ?");
+        $findSubspecialities->execute([$operatorLicenseId]);
+        $subSpecialityIds = $findSubspecialities->fetchAll(PDO::FETCH_COLUMN);
+        
+        error_log("Found subspeciality IDs: " . implode(", ", $subSpecialityIds ?: []));
+        
+        // Διαγραφή των ομάδων για κάθε υποειδικότητα
+        foreach ($subSpecialityIds as $subSpecialityId) {
+            $deleteGroups = $this->pdo->prepare("DELETE FROM driver_operator_sub_speciality_groups WHERE sub_speciality_id = ?");
+            $groupResult = $deleteGroups->execute([$subSpecialityId]);
+            error_log("Deleted groups for subspeciality ID $subSpecialityId: " . ($groupResult ? "success" : "failed"));
+        }
+        
+        // Διαγραφή των υποειδικοτήτων
+        $sql = "DELETE FROM driver_operator_sub_specialities WHERE operator_license_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $result = $stmt->execute([$operatorLicenseId]);
+        
+        error_log("Deleted subspecialities result: " . ($result ? "success" : "failed"));
+        return $result;
+    } catch (PDOException $e) {
+        error_log('Error in deleteDriverOperatorSubSpecialities: ' . $e->getMessage());
+        error_log('Stack trace: ' . $e->getTraceAsString());
+        return false;
+    }
+}
     
     /**
      * Λαμβάνει την κάρτα ταχογράφου του οδηγού

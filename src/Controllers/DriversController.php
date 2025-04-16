@@ -376,52 +376,76 @@ class DriversController {
     }
     
     /**
-     * Διαχειρίζεται την άδεια χειριστή μηχανημάτων
-     */
-    private function handleOperatorLicense($driverId) {
-        if (isset($_POST['operator_license']) && $_POST['operator_license'] == 1) {
-            $operatorData = [
-                'speciality' => $_POST['operator_speciality'] ?? null,
-                'license_number' => $_POST['operator_license_number'] ?? null,
-                'expiry_date' => $_POST['operator_license_expiry'] ?? null
-            ];
-            
-            // Ανέβασμα εικόνων χειριστή αν υπάρχουν
-            if (isset($_FILES['operator_front_image']) && $_FILES['operator_front_image']['error'] === UPLOAD_ERR_OK) {
-                $frontImagePath = $this->handleImageUpload($driverId, 'operator_front_image', 'uploads/operator_images/');
-                if ($frontImagePath) {
-                    $this->driversModel->updateDriverDocumentImage($driverId, 'operator_front_image', $frontImagePath);
-                }
+ * Διαχειρίζεται την άδεια χειριστή μηχανημάτων
+ */
+private function handleOperatorLicense($driverId) {
+    if (isset($_POST['operator_license']) && $_POST['operator_license'] == 1) {
+        // Καταγραφή των δεδομένων POST για αποσφαλμάτωση
+        error_log('POST operator_license data: ' . print_r($_POST, true));
+        
+        $operatorData = [
+            'speciality' => $_POST['operator_speciality'] ?? null,
+            'license_number' => $_POST['operator_license_number'] ?? null,
+            'expiry_date' => $_POST['operator_license_expiry'] ?? null
+        ];
+        
+        // Ανέβασμα εικόνων χειριστή αν υπάρχουν
+        if (isset($_FILES['operator_front_image']) && $_FILES['operator_front_image']['error'] === UPLOAD_ERR_OK) {
+            $frontImagePath = $this->handleImageUpload($driverId, 'operator_front_image', 'uploads/operator_images/');
+            if ($frontImagePath) {
+                $this->driversModel->updateDriverDocumentImage($driverId, 'operator_front_image', $frontImagePath);
             }
-            
-            if (isset($_FILES['operator_back_image']) && $_FILES['operator_back_image']['error'] === UPLOAD_ERR_OK) {
-                $backImagePath = $this->handleImageUpload($driverId, 'operator_back_image', 'uploads/operator_images/');
-                if ($backImagePath) {
-                    $this->driversModel->updateDriverDocumentImage($driverId, 'operator_back_image', $backImagePath);
-                }
+        }
+        
+        if (isset($_FILES['operator_back_image']) && $_FILES['operator_back_image']['error'] === UPLOAD_ERR_OK) {
+            $backImagePath = $this->handleImageUpload($driverId, 'operator_back_image', 'uploads/operator_images/');
+            if ($backImagePath) {
+                $this->driversModel->updateDriverDocumentImage($driverId, 'operator_back_image', $backImagePath);
             }
+        }
+        
+        // Ενημέρωση ή προσθήκη της άδειας χειριστή
+        $operatorLicenseId = $this->driversModel->updateDriverOperatorLicense($driverId, $operatorData);
+        
+        // Καταγραφή του αποτελέσματος της ενημέρωσης και του ID που προέκυψε
+        error_log('operatorLicenseId: ' . ($operatorLicenseId ? $operatorLicenseId : 'false'));
+        
+        // Διαχείριση υποειδικοτήτων
+        if ($operatorLicenseId && isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
+            // Καταγραφή των επιλεγμένων υποειδικοτήτων
+            error_log('Selected subspecialities: ' . print_r($_POST['operator_sub_specialities'], true));
             
-            // Ενημέρωση ή προσθήκη της άδειας χειριστή
-            $operatorLicenseId = $this->driversModel->updateDriverOperatorLicense($driverId, $operatorData);
+            // Διαγραφή προηγούμενων υποειδικοτήτων
+            $this->driversModel->deleteDriverOperatorSubSpecialities($operatorLicenseId);
             
-            // Διαχείριση υποειδικοτήτων
-            if ($operatorLicenseId && isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
-                // Διαγραφή προηγούμενων υποειδικοτήτων
-                $this->driversModel->deleteDriverOperatorSubSpecialities($operatorLicenseId);
+            // Προσθήκη νέων υποειδικοτήτων
+            foreach ($_POST['operator_sub_specialities'] as $subSpecialityId) {
+                // Καθορισμός του τύπου ομάδας (A ή B)
+                $groupType = isset($_POST['group_' . $subSpecialityId]) ? $_POST['group_' . $subSpecialityId] : $this->getSubSpecialityGroupType($subSpecialityId);
                 
-                // Προσθήκη νέων υποειδικοτήτων
-                foreach ($_POST['operator_sub_specialities'] as $subSpecialityId) {
-                    // Καθορισμός του τύπου ομάδας (A ή B)
-                    $groupType = isset($_POST['group_' . $subSpecialityId]) ? $_POST['group_' . $subSpecialityId] : $this->getSubSpecialityGroupType($subSpecialityId);
-                    
-                    $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpecialityId, $groupType);
-                }
+                // Καταγραφή της προσθήκης
+                error_log("Adding subspeciality: $subSpecialityId with group: $groupType");
+                
+                $result = $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpecialityId, $groupType);
+                
+                // Καταγραφή αποτελέσματος
+                error_log("Add result: " . ($result ? "true" : "false"));
             }
         } else {
-            // Αν δεν έχει επιλεγεί η άδεια χειριστή, διαγράφουμε τα στοιχεία
-            $this->driversModel->deleteDriverOperatorLicense($driverId);
+            if (!$operatorLicenseId) {
+                error_log('Error: operatorLicenseId is invalid');
+            }
+            if (!isset($_POST['operator_sub_specialities'])) {
+                error_log('Error: operator_sub_specialities not found in POST data');
+            } else if (!is_array($_POST['operator_sub_specialities'])) {
+                error_log('Error: operator_sub_specialities is not an array');
+            }
         }
+    } else {
+        // Αν δεν έχει επιλεγεί η άδεια χειριστή, διαγράφουμε τα στοιχεία
+        $this->driversModel->deleteDriverOperatorLicense($driverId);
     }
+}
     
     /**
      * Διαχειρίζεται τη μεταφόρτωση εικόνων διπλώματος

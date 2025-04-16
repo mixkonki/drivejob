@@ -1065,98 +1065,125 @@ function getExpiryDateForLicenseType($licenses, $type) {
                 </select>
             </div>
             
-            <div id="subSpecialityContainer" class="form-group" style="display: <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality']) ? 'block' : 'none'; ?>;">
-                <label>Επιλέξτε Υποειδικότητες</label>
-                <div id="subSpecialities" class="sub-specialities">
-                    <!-- Οι υποειδικότητες θα φορτωθούν με JavaScript -->
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th style="width: 15%">Κωδικός</th>
-                                <th style="width: 50%">Υποειδικότητα</th>
-                                <th style="width: 15%">Ενεργή</th>
-                                <th style="width: 20%">Ομάδα</th>
-                            </tr>
-                        </thead>
-                        <tbody id="subSpecialitiesTableBody">
-                            <!-- Τα δεδομένα θα προστεθούν με JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Ενημερωτικό μήνυμα για άδεια χειριστή -->
-            <div class="expiry-reminder">
-                <h4>Πληροφορίες για την Άδεια Χειριστή Μηχανημάτων Έργου</h4>
-                <p>Οι άδειες χειριστή μηχανημάτων έργου είναι αόριστης διάρκειας και θεωρούνται κάθε οκτώ έτη. Με την παράγραφο 1 του άρθρου 145 Νόμος 4887 η προθεσμία θεώρησής των αδειών χειριστή μηχανημάτων έργου, μετά την παρέλευση οκτώ (8) ετών, παρατείνεται κατά τρία (3) έτη και άρα η θεώρηση πραγματοποιείτε στα έντεκα (11) έτη.</p>
-                <p>Ως ημερομηνία έναρξης της ενδεκαετίας λαμβάνεται η 1η Ιανουαρίου του επόμενου έτους από τη χορήγηση ή την αντικατάσταση της άδειας χειριστή.</p>
-            </div>
-        </div>
+           <!-- Αυτό το τμήμα πρέπει να αντικαταστήσει το αντίστοιχο τμήμα στο αρχείο src/Views/drivers/edit_profile.php -->
+
+<div id="subSpecialityContainer" class="form-group" style="display: <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality']) ? 'block' : 'none'; ?>;">
+    <label>Επιλέξτε Υποειδικότητες</label>
+    <div id="subSpecialities" class="sub-specialities">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th style="width: 15%">Κωδικός</th>
+                    <th style="width: 50%">Υποειδικότητα</th>
+                    <th style="width: 15%">Ενεργή</th>
+                    <th style="width: 20%">Ομάδα</th>
+                </tr>
+            </thead>
+            <tbody id="subSpecialitiesTableBody">
+                <!-- Τα δεδομένα θα προστεθούν με JavaScript -->
+            </tbody>
+        </table>
     </div>
 </div>
-            <!-- Λίστα ειδικών αδειών -->
-            <?php if (isset($driverSpecialLicenses) && count($driverSpecialLicenses) > 0): ?>
-                <?php foreach ($driverSpecialLicenses as $index => $license): ?>
-                    <div class="special-license-item" id="special-license-item-<?php echo $index; ?>">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="special_license_type_<?php echo $index; ?>">Τύπος Άδειας</label>
-                                <input type="text" id="special_license_type_<?php echo $index; ?>" name="special_license_type[]" value="<?php echo htmlspecialchars($license['license_type']); ?>" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="special_license_number_<?php echo $index; ?>">Αριθμός Άδειας</label>
-                                <input type="text" id="special_license_number_<?php echo $index; ?>" name="special_license_number[]" value="<?php echo htmlspecialchars($license['license_number'] ?? ''); ?>">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="special_license_expiry_<?php echo $index; ?>">Ημερομηνία Λήξης</label>
-                                <input type="date" id="special_license_expiry_<?php echo $index; ?>" name="special_license_expiry[]" value="<?php echo $license['expiry_date'] ?? ''; ?>">
-                            </div>
+
+<!-- Ενημερωτικό μήνυμα για άδεια χειριστή -->
+<div class="expiry-reminder">
+    <h4>Πληροφορίες για την Άδεια Χειριστή Μηχανημάτων Έργου</h4>
+    <p>Οι άδειες χειριστή μηχανημάτων έργου είναι αόριστης διάρκειας και θεωρούνται κάθε οκτώ έτη. Με την παράγραφο 1 του άρθρου 145 Νόμος 4887 η προθεσμία θεώρησής των αδειών χειριστή μηχανημάτων έργου, μετά την παρέλευση οκτώ (8) ετών, παρατείνεται κατά τρία (3) έτη και άρα η θεώρηση πραγματοποιείτε στα έντεκα (11) έτη.</p>
+    <p>Ως ημερομηνία έναρξης της ενδεκαετίας λαμβάνεται η 1η Ιανουαρίου του επόμενου έτους από τη χορήγηση ή την αντικατάσταση της άδειας χειριστή.</p>
+</div>
+
+<!-- Το κουμπί προσθήκης ειδικής άδειας πρέπει να είναι μόνο στην αντίστοιχη καρτέλα -->
+
+<!-- Προσθέστε αυτό το script για να αρχικοποιήσετε τις επιλεγμένες υποειδικότητες -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Αρχικοποίηση των επιλεγμένων υποειδικοτήτων από τη βάση δεδομένων
+        <?php if (isset($driverOperatorSubSpecialities) && !empty($driverOperatorSubSpecialities)): ?>
+        window.selectedSubSpecialities = [
+            <?php foreach ($driverOperatorSubSpecialities as $subSpec): ?>
+            '<?php echo $subSpec['sub_speciality']; ?>',
+            <?php endforeach; ?>
+        ];
+        <?php else: ?>
+        window.selectedSubSpecialities = [];
+        <?php endif; ?>
+        
+        // Αρχική φόρτωση των υποειδικοτήτων αν έχει επιλεγεί ειδικότητα
+        const specialitySelect = document.getElementById('operator_speciality');
+        if (specialitySelect && specialitySelect.value) {
+            window.loadSubSpecialities(specialitySelect.value);
+        }
+    });
+</script>
+            <!-- Tab για Ειδικές Άδειες -->
+<div class="tab-pane" id="special-licenses">
+    <h2>Ειδικές Άδειες</h2>
+    
+    <div id="special-licenses-container">
+        <!-- Λίστα ειδικών αδειών -->
+        <?php if (isset($driverSpecialLicenses) && count($driverSpecialLicenses) > 0): ?>
+            <?php foreach ($driverSpecialLicenses as $index => $license): ?>
+                <div class="special-license-item" id="special-license-item-<?php echo $index; ?>">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="special_license_type_<?php echo $index; ?>">Τύπος Άδειας</label>
+                            <input type="text" id="special_license_type_<?php echo $index; ?>" name="special_license_type[]" value="<?php echo htmlspecialchars($license['license_type']); ?>" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="special_license_details_<?php echo $index; ?>">Περιγραφή/Λεπτομέρειες</label>
-                            <textarea id="special_license_details_<?php echo $index; ?>" name="special_license_details[]" rows="2"><?php echo htmlspecialchars($license['details'] ?? ''); ?></textarea>
+                            <label for="special_license_number_<?php echo $index; ?>">Αριθμός Άδειας</label>
+                            <input type="text" id="special_license_number_<?php echo $index; ?>" name="special_license_number[]" value="<?php echo htmlspecialchars($license['license_number'] ?? ''); ?>">
                         </div>
                         
-                        <button type="button" class="btn-secondary remove-special-license" data-index="<?php echo $index; ?>">Αφαίρεση</button>
-                        <hr class="section-divider">
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-            
-            <!-- Κενό στοιχείο για προσθήκη νέας άδειας (κρυμμένο αρχικά) -->
-            <div class="special-license-item" id="special-license-template" style="display: none;">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="special_license_type_new">Τύπος Άδειας</label>
-                        <input type="text" id="special_license_type_new" name="special_license_type[]">
+                        <div class="form-group">
+                            <label for="special_license_expiry_<?php echo $index; ?>">Ημερομηνία Λήξης</label>
+                            <input type="date" id="special_license_expiry_<?php echo $index; ?>" name="special_license_expiry[]" value="<?php echo $license['expiry_date'] ?? ''; ?>">
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="special_license_number_new">Αριθμός Άδειας</label>
-                        <input type="text" id="special_license_number_new" name="special_license_number[]">
+                        <label for="special_license_details_<?php echo $index; ?>">Περιγραφή/Λεπτομέρειες</label>
+                        <textarea id="special_license_details_<?php echo $index; ?>" name="special_license_details[]" rows="2"><?php echo htmlspecialchars($license['details'] ?? ''); ?></textarea>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="special_license_expiry_new">Ημερομηνία Λήξης</label>
-                        <input type="date" id="special_license_expiry_new" name="special_license_expiry[]">
-                    </div>
+                    <button type="button" class="btn-secondary remove-special-license" data-index="<?php echo $index; ?>">Αφαίρεση</button>
+                    <hr class="section-divider">
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        
+        <!-- Κενό στοιχείο για προσθήκη νέας άδειας (κρυμμένο αρχικά) -->
+        <div class="special-license-item" id="special-license-template" style="display: none;">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="special_license_type_new">Τύπος Άδειας</label>
+                    <input type="text" id="special_license_type_new" name="special_license_type[]">
                 </div>
                 
                 <div class="form-group">
-                    <label for="special_license_details_new">Περιγραφή/Λεπτομέρειες</label>
-                    <textarea id="special_license_details_new" name="special_license_details[]" rows="2"></textarea>
+                    <label for="special_license_number_new">Αριθμός Άδειας</label>
+                    <input type="text" id="special_license_number_new" name="special_license_number[]">
                 </div>
                 
-                <button type="button" class="btn-secondary remove-special-license" data-index="new">Αφαίρεση</button>
-                <hr class="section-divider">
+                <div class="form-group">
+                    <label for="special_license_expiry_new">Ημερομηνία Λήξης</label>
+                    <input type="date" id="special_license_expiry_new" name="special_license_expiry[]">
+                </div>
             </div>
+            
+            <div class="form-group">
+                <label for="special_license_details_new">Περιγραφή/Λεπτομέρειες</label>
+                <textarea id="special_license_details_new" name="special_license_details[]" rows="2"></textarea>
+            </div>
+            
+            <button type="button" class="btn-secondary remove-special-license" data-index="new">Αφαίρεση</button>
+            <hr class="section-divider">
         </div>
-        
-        <button type="button" id="add-special-license" class="btn-primary">Προσθήκη Ειδικής Άδειας</button>
     </div>
+    
+    <!-- Το κουμπί εμφανίζεται μόνο στην καρτέλα ειδικών αδειών -->
+    <button type="button" id="add-special-license" class="btn-primary">Προσθήκη Ειδικής Άδειας</button>
 </div>
 
 <div id="training_seminars_tab" class="license-details-tab <?php echo !(old('training_seminars', $driverData['training_seminars'] ?? 0)) ? 'hidden' : ''; ?>">

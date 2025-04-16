@@ -417,70 +417,152 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // -------------------- Δεδομένα υποειδικοτήτων για χειριστές μηχανημάτων --------------------
-    // Ορισμός του αντικειμένου operatorSubSpecialities στο global scope αν δεν υπάρχει ήδη
-    window.operatorSubSpecialities = window.operatorSubSpecialities || {
-        '1': [
-            {id: '1.1', name: 'Εκσκαφείς όλων των τύπων', group: 'A'},
-            // συνέχεια του αντικειμένου όπως είναι...
-        ]
-    };
+   // Ορισμός του αντικειμένου operatorSubSpecialities με όλες τις υποειδικότητες
+window.operatorSubSpecialities = {
+    '1': [
+        {id: '1.1', name: 'Εκσκαφείς όλων των τύπων', group: 'A'},
+        {id: '1.2', name: 'Τσάπες φορτωτές (JCB)', group: 'B'},
+        {id: '1.3', name: 'Προωθητές γαιών όλων των τύπων', group: 'A'},
+        {id: '1.4', name: 'Φορτωτές αλυσότροχοι και λαστιχοφόροι', group: 'A'},
+        {id: '1.5', name: 'Γερανοί - εκσκαφείς', group: 'A'},
+        {id: '1.6', name: 'Ισοπεδωτές (GRADER)', group: 'B'},
+        {id: '1.7', name: 'Αποξεστές (SCRAPERS)', group: 'B'},
+        {id: '1.8', name: 'Ανυψωτικά περονοφόρα μηχανήματα (κλαρκ)', group: 'A'},
+        {id: '1.9', name: 'Διαμορφωτές εδαφών', group: 'B'}
+    ],
+    '2': [
+        {id: '2.1', name: 'Γερανοί παντός τύπου', group: 'A'},
+        {id: '2.2', name: 'Γερανογέφυρες', group: 'A'},
+        {id: '2.3', name: 'Γερανοί - εκσκαφείς', group: 'B'},
+        {id: '2.4', name: 'Μηχανήματα απασχολούμενα στην κατασκευή στοών', group: 'B'},
+        {id: '2.5', name: 'Φορτωτές - εκφορτωτές λιμένων', group: 'B'},
+        {id: '2.6', name: 'Ηλεκτροκίνητα ανυψωτικά μηχανήματα', group: 'A'},
+        {id: '2.7', name: 'Πασσαλοπήκτες', group: 'A'},
+        {id: '2.8', name: 'Μηχανικοί πτύσσοβραχίονες για εργασίες σε ύψος', group: 'B'},
+        {id: '2.9', name: 'Περονοφόρα ανυψωτικά μηχανήματα (κλαρκ)', group: 'A'}
+    ],
+    '3': [
+        {id: '3.1', name: 'Μηχανήματα διάστρωσης υλικών οδοστρωσίας', group: 'A'},
+        {id: '3.2', name: 'Οδοστρωτήρες', group: 'A'},
+        {id: '3.3', name: 'Διαστρωτήρες σκυροδέματος (FINISHER)', group: 'A'},
+        {id: '3.4', name: 'Διαστρωτήρες ασφαλτοσκυροδέματος', group: 'B'},
+        {id: '3.5', name: 'Συμπιεστές - συμπυκνωτές', group: 'A'},
+        {id: '3.6', name: 'Δονητικές πλάκες', group: 'B'},
+        {id: '3.7', name: 'Μηχανήματα κατασκευής δαπέδων', group: 'A'},
+        {id: '3.8', name: 'Θραυστήρες μηχανημάτων οδοστρωσίας', group: 'B'},
+        {id: '3.9', name: 'Διαγραμμιστικές μηχανές', group: 'B'},
+        {id: '3.10', name: 'Εναποθέτες υλικών', group: 'B'},
+        {id: '3.11', name: 'Αυτοκινούμενοι διαστρωτήρες ασφάλτου', group: 'A'},
+        {id: '3.12', name: 'Μηχανήματα σταθεροποίησης του εδάφους', group: 'B'}
+    ],
+    '4': [
+        {id: '4.1', name: 'Αυτοκινούμενα σάρωθρα', group: 'A'},
+        {id: '4.2', name: 'Πολύσπαστα ανυψωτικά μηχανήματα', group: 'A'},
+        {id: '4.3', name: 'Μηχανήματα απόφραξης οχετών και φρεατίων', group: 'B'},
+        {id: '4.4', name: 'Αποχιονιστικά μηχανήματα', group: 'B'},
+        {id: '4.5', name: 'Αυτοκινούμενες αλατιέρες', group: 'A'},
+        {id: '4.6', name: 'Αυτοκινούμενοι διαστρωτήρες σκυροδέματος', group: 'B'},
+        {id: '4.7', name: 'Αυτοκινούμενοι διαστρωτήρες ασφάλτου', group: 'A'},
+        {id: '4.8', name: 'Διαγραμμιστικές μηχανές οδών', group: 'B'}
+    ],
+    '5': [
+        {id: '5.1', name: 'Μηχανήματα διάτρησης σηράγγων', group: 'A'},
+        {id: '5.2', name: 'Φορτωτές υπόγειων έργων', group: 'A'},
+        {id: '5.3', name: 'Περονοφόρα ανυψωτικά μηχανήματα (κλαρκ)', group: 'A'},
+        {id: '5.4', name: 'Μηχανήματα κατασκευής φρεάτων', group: 'B'},
+        {id: '5.5', name: 'Διατρητικά μηχανήματα', group: 'A'},
+        {id: '5.6', name: 'Εκσκαφείς υπόγειων έργων', group: 'A'}
+    ],
+    '6': [
+        {id: '6.1', name: 'Ελκυστήρες', group: 'A'},
+        {id: '6.2', name: 'Αυτοκινούμενοι αεροσυμπιεστές', group: 'B'}
+    ],
+    '7': [
+        {id: '7.1', name: 'Γεωτρύπανα', group: 'A'},
+        {id: '7.2', name: 'Διατρητικά μηχανήματα', group: 'A'},
+        {id: '7.3', name: 'Μηχανήματα πύκνωσης εδαφών χωρίς δόνηση', group: 'B'}
+    ],
+    '8': [
+        {id: '8.1', name: 'Γερανοί παντός τύπου', group: 'A'},
+        {id: '8.2', name: 'Γερανοί - εκσκαφείς', group: 'A'},
+        {id: '8.3', name: 'Αντλίες σκυροδέματος', group: 'B'},
+        {id: '8.4', name: 'Ανυψωτικές πλατφόρμες παντός τύπου', group: 'A'},
+        {id: '8.5', name: 'Περονοφόρα ανυψωτικά μηχανήματα (κλαρκ)', group: 'A'},
+        {id: '8.6', name: 'Αναβατόρια παντός τύπου', group: 'B'},
+        {id: '8.7', name: 'Μηχανικοί πτύσσοβραχίονες για εργασίες σε ύψος', group: 'B'},
+        {id: '8.8', name: 'Ανυψωτικά μηχανήματα εμπορευματοκιβωτίων', group: 'A'},
+        {id: '8.9', name: 'Εξέδρες εργασίας', group: 'B'}
+    ]
+};
+
+// Τροποποιημένη συνάρτηση φόρτωσης υποειδικοτήτων
+window.loadSubSpecialities = function(specialityId) {
+    const subSpecialityContainer = document.getElementById('subSpecialityContainer');
+    const tableBody = document.getElementById('subSpecialitiesTableBody');
     
-    // Αρχικοποίηση των επιλεγμένων υποειδικοτήτων
-    try {
-        window.selectedSubSpecialities = window.selectedSubSpecialities || [];
-    } catch (e) {
-        window.selectedSubSpecialities = [];
+    if (!subSpecialityContainer || !tableBody) {
+        console.error('Δεν βρέθηκαν τα απαραίτητα στοιχεία DOM');
+        return;
     }
     
-    // Φόρτωση υποειδικοτήτων με βάση την επιλεγμένη ειδικότητα
-    window.loadSubSpecialities = function(specialityId) {
-        const subSpecialityContainer = document.getElementById('subSpecialityContainer');
-        const subSpecialitiesDiv = document.getElementById('subSpecialities');
-        
-        if (!subSpecialityContainer || !subSpecialitiesDiv) return;
-        
-        if (!specialityId) {
-            subSpecialityContainer.style.display = 'none';
-            return;
-        }
-        
-        subSpecialityContainer.style.display = 'block';
-        subSpecialitiesDiv.innerHTML = '';
-        
-        if (window.operatorSubSpecialities[specialityId]) {
-            window.operatorSubSpecialities[specialityId].forEach(item => {
-                const checkboxDiv = document.createElement('div');
-                checkboxDiv.className = 'checkbox-group';
-                
-                // Έλεγχος αν η συγκεκριμένη υποειδικότητα είναι επιλεγμένη
-                const isChecked = window.selectedSubSpecialities && 
-                                 window.selectedSubSpecialities.includes(item.id);
-                
-                checkboxDiv.innerHTML = `
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="operator_sub_specialities[]" value="${item.id}" ${isChecked ? 'checked' : ''}>
-                        <span>${item.id} - ${item.name} (Ομάδα ${item.group})</span>
+    if (!specialityId) {
+        subSpecialityContainer.style.display = 'none';
+        return;
+    }
+    
+    subSpecialityContainer.style.display = 'block';
+    tableBody.innerHTML = '';
+    
+    // Δημιουργία μιας λίστας με τις υπάρχουσες επιλεγμένες υποειδικότητες
+    const existingSubSpecialities = Array.from(document.querySelectorAll('input[name="operator_sub_specialities[]"]:checked')).map(input => input.value);
+    
+    if (window.operatorSubSpecialities && window.operatorSubSpecialities[specialityId]) {
+        window.operatorSubSpecialities[specialityId].forEach(item => {
+            const row = document.createElement('tr');
+            
+            // Έλεγχος αν η συγκεκριμένη υποειδικότητα είναι ήδη επιλεγμένη
+            const isChecked = existingSubSpecialities.includes(item.id) || 
+                            (window.selectedSubSpecialities && window.selectedSubSpecialities.includes(item.id));
+            
+            // Δημιουργία περιεχομένου γραμμής
+            row.innerHTML = `
+                <td>${item.id}</td>
+                <td>${item.name}</td>
+                <td>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="operator_sub_specialities[]" value="${item.id}" ${isChecked ? 'checked' : ''} 
+                            onchange="toggleGroupSelection(this, '${item.id}')">
+                        <span class="toggle-slider"></span>
                     </label>
-                `;
-                
-                subSpecialitiesDiv.appendChild(checkboxDiv);
-            });
-        }
-    };
-    
-    // Αρχικοποίηση της φόρτωσης υποειδικοτήτων
-    const specialitySelect = document.getElementById('operator_speciality');
-    if (specialitySelect) {
-        specialitySelect.addEventListener('change', function() {
-            window.loadSubSpecialities(this.value);
+                </td>
+                <td>
+                    <div class="radio-group" id="group_container_${item.id}" ${isChecked ? '' : 'style="display:none;"'}>
+                        <label class="radio-label">
+                            <input type="radio" name="group_${item.id}" value="A" ${item.group === 'A' ? 'checked' : ''}>
+                            <span>A</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="group_${item.id}" value="B" ${item.group === 'B' ? 'checked' : ''}>
+                            <span>B</span>
+                        </label>
+                    </div>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
         });
-        
-        // Αρχική φόρτωση αν υπάρχει τιμή
-        if (specialitySelect.value) {
-            window.loadSubSpecialities(specialitySelect.value);
-        }
+    } else {
+        console.error('Δεν βρέθηκαν υποειδικότητες για την ειδικότητα:', specialityId);
     }
+};
+
+// Συνάρτηση για εμφάνιση/απόκρυψη των radio buttons ομάδων
+window.toggleGroupSelection = function(checkbox, subSpecialityId) {
+    const groupContainer = document.getElementById('group_container_' + subSpecialityId);
+    if (groupContainer) {
+        groupContainer.style.display = checkbox.checked ? 'block' : 'none';
+    }
+};
     
     // -------------------- Διαχείριση OCR για σκανάρισμα εγγράφων --------------------
     // Συνάρτηση βοηθός για αποσφαλμάτωση
