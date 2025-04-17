@@ -792,3 +792,21 @@ input:checked + .toggle-slider:before {
         transform: translateY(-50%) rotate(360deg);
     }
 }
+.speciality-group {
+    margin-bottom: 15px;
+    border-bottom: 1px dashed #ddd;
+    padding-bottom: 10px;
+}
+
+.speciality-group h6 {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.speciality-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}

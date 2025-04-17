@@ -495,7 +495,6 @@ window.operatorSubSpecialities = {
     ]
 };
 
-// Τροποποιημένη συνάρτηση φόρτωσης υποειδικοτήτων που διατηρεί επιλογές μεταξύ ειδικοτήτων
 window.loadSubSpecialities = function(specialityId) {
     const subSpecialityContainer = document.getElementById('subSpecialityContainer');
     const tableBody = document.getElementById('subSpecialitiesTableBody');
@@ -534,6 +533,7 @@ window.loadSubSpecialities = function(specialityId) {
             const row = document.createElement('tr');
             
             // Έλεγχος αν η συγκεκριμένη υποειδικότητα είναι ήδη επιλεγμένη
+            // Είτε από την τρέχουσα αποθηκευμένη κατάσταση είτε από προηγούμενες επιλογές
             const savedState = window.selectedSubSpecialitiesMap[item.id];
             const isChecked = savedState ? savedState.checked : 
                             (window.selectedSubSpecialities && window.selectedSubSpecialities.includes(item.id));
@@ -573,11 +573,72 @@ window.loadSubSpecialities = function(specialityId) {
     }
 };
 
+// Μετά τη συνάρτηση window.loadSubSpecialities
+
+// Συνάρτηση για την αποθήκευση όλων των επιλεγμένων υποειδικοτήτων πριν την υποβολή της φόρμας
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('driverProfileForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Συλλογή όλων των επιλεγμένων υποειδικοτήτων από το selectedSubSpecialitiesMap
+            let allSelectedSubSpecialities = [];
+            let allSelectedGroups = {};
+            
+            if (window.selectedSubSpecialitiesMap) {
+                for (let id in window.selectedSubSpecialitiesMap) {
+                    if (window.selectedSubSpecialitiesMap[id].checked) {
+                        allSelectedSubSpecialities.push(id);
+                        allSelectedGroups[id] = window.selectedSubSpecialitiesMap[id].group;
+                    }
+                }
+            }
+            
+            // Συλλογή και των τρεχουσών επιλεγμένων υποειδικοτήτων που εμφανίζονται στην οθόνη
+            const currentCheckboxes = document.querySelectorAll('input[name="operator_sub_specialities[]"]:checked');
+            currentCheckboxes.forEach(checkbox => {
+                if (!allSelectedSubSpecialities.includes(checkbox.value)) {
+                    allSelectedSubSpecialities.push(checkbox.value);
+                    const groupValue = document.querySelector(`input[name="group_${checkbox.value}"]:checked`)?.value || 'A';
+                    allSelectedGroups[checkbox.value] = groupValue;
+                }
+            });
+            
+            // Δημιουργία ή ενημέρωση κρυφών πεδίων για τη φόρμα
+            let hiddenField = document.getElementById('all_selected_subspecialities');
+            if (!hiddenField) {
+                hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.id = 'all_selected_subspecialities';
+                hiddenField.name = 'all_selected_subspecialities';
+                form.appendChild(hiddenField);
+            }
+            hiddenField.value = JSON.stringify(allSelectedSubSpecialities);
+            
+            let groupsField = document.getElementById('all_selected_groups');
+            if (!groupsField) {
+                groupsField = document.createElement('input');
+                groupsField.type = 'hidden';
+                groupsField.id = 'all_selected_groups';
+                groupsField.name = 'all_selected_groups';
+                form.appendChild(groupsField);
+            }
+            groupsField.value = JSON.stringify(allSelectedGroups);
+        });
+    }
+});
+
 // Συνάρτηση για εμφάνιση/απόκρυψη των radio buttons ομάδων
 window.toggleGroupSelection = function(checkbox, subSpecialityId) {
     const groupContainer = document.getElementById('group_container_' + subSpecialityId);
     if (groupContainer) {
         groupContainer.style.display = checkbox.checked ? 'block' : 'none';
+        
+        // Επιπρόσθετος έλεγχος κατάστασης
+        console.log('Checkbox ' + subSpecialityId + ' is ' + (checkbox.checked ? 'checked' : 'unchecked'));
+        const radioButtons = groupContainer.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(rb => {
+            console.log('Radio button ' + rb.value + ' is ' + (rb.checked ? 'selected' : 'not selected'));
+        });
     }
 };
     

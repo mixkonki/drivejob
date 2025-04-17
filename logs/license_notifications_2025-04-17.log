@@ -167,3 +167,16 @@ Stack trace:
 [17-Apr-2025 15:43:45 Europe/Athens] Κατηγορία operator_licenses: 0 ειδοποιήσεις
 [17-Apr-2025 15:43:45 Europe/Athens] Κατηγορία special_licenses: 0 ειδοποιήσεις
 [17-Apr-2025 15:43:45 Europe/Athens] --- Επιτυχής ολοκλήρωση ελέγχου: 2025-04-17 15:43:45 ---
+[17-Apr-2025 14:16:54 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-17 14:16:54 ---
+[17-Apr-2025 17:16:54 Europe/Athens] Φόρτωση του bootstrap.php
+[17-Apr-2025 17:16:54 Europe/Athens] Επιτυχής σύνδεση με τη βάση δεδομένων
+[17-Apr-2025 17:16:54 Europe/Athens] Εκτέλεση ελέγχου για άδειες που λήγουν...
+[17-Apr-2025 17:16:54 Europe/Athens] Ολοκλήρωση ελέγχου.
+[17-Apr-2025 17:16:54 Europe/Athens] Συνολικές ειδοποιήσεις που στάλθηκαν: 0
+[17-Apr-2025 17:16:54 Europe/Athens] Κατηγορία driving_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 17:16:54 Europe/Athens] Κατηγορία pei: 0 ειδοποιήσεις
+[17-Apr-2025 17:16:54 Europe/Athens] Κατηγορία adr_certificates: 0 ειδοποιήσεις
+[17-Apr-2025 17:16:54 Europe/Athens] Κατηγορία tachograph_cards: 0 ειδοποιήσεις
+[17-Apr-2025 17:16:54 Europe/Athens] Κατηγορία operator_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 17:16:54 Europe/Athens] Κατηγορία special_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 17:16:54 Europe/Athens] --- Επιτυχής ολοκλήρωση ελέγχου: 2025-04-17 17:16:54 ---

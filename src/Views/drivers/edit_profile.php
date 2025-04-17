@@ -1066,9 +1066,10 @@ function getExpiryDateForLicenseType($licenses, $type) {
                 </select>
             </div>
             
-           <!-- Αυτό το τμήμα πρέπει να αντικαταστήσει το αντίστοιχο τμήμα στο αρχείο src/Views/drivers/edit_profile.php -->
+           
 
-<div id="subSpecialityContainer" class="form-group" style="display: <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality']) ? 'block' : 'none'; ?>;">
+
+            <div id="subSpecialityContainer" class="form-group" style="display: <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality']) ? 'block' : 'none'; ?>;">
     <label>Επιλέξτε Υποειδικότητες</label>
     <div id="subSpecialities" class="sub-specialities">
         <table class="table table-striped table-hover">
@@ -1085,6 +1086,85 @@ function getExpiryDateForLicenseType($licenses, $type) {
             </tbody>
         </table>
     </div>
+    
+</div>
+<!-- Εμφάνιση επιλεγμένων υποειδικοτήτων -->
+<div class="selected-subspecialities">
+    <h5>Επιλεγμένες Υποειδικότητες</h5>
+    <?php 
+    if (isset($driverOperatorSubSpecialities) && !empty($driverOperatorSubSpecialities)): 
+        // Ταξινόμηση των υποειδικοτήτων με βάση το ID
+        usort($driverOperatorSubSpecialities, function($a, $b) {
+            $aSpecialityId = substr($a['sub_speciality'], 0, 1);
+            $aSubId = substr($a['sub_speciality'], 2);
+            
+            $bSpecialityId = substr($b['sub_speciality'], 0, 1);
+            $bSubId = substr($b['sub_speciality'], 2);
+            
+            if ($aSpecialityId == $bSpecialityId) {
+                return intval($aSubId) - intval($bSubId);
+            }
+            
+            return intval($aSpecialityId) - intval($bSpecialityId);
+        });
+        
+        // Ομαδοποίηση ανά ειδικότητα
+        $specialityGroups = [];
+        foreach ($driverOperatorSubSpecialities as $subSpec) {
+            $specialityId = substr($subSpec['sub_speciality'], 0, 1);
+            if (!isset($specialityGroups[$specialityId])) {
+                $specialityGroups[$specialityId] = [];
+            }
+            $specialityGroups[$specialityId][] = $subSpec;
+        }
+        
+        // Ορισμός των ονομάτων ειδικοτήτων
+        $specialityNames = [
+            '1' => 'Εργασίες εκσκαφής και χωματουργικές',
+            '2' => 'Εργασίες ανύψωσης και μεταφοράς φορτίων',
+            '3' => 'Εργασίες οδοστρωσίας',
+            '4' => 'Εργασίες εξυπηρέτησης οδών και αεροδρομίων',
+            '5' => 'Εργασίες υπόγειων έργων και μεταλλείων',
+            '6' => 'Εργασίες έλξης',
+            '7' => 'Εργασίες διάτρησης και κοπής εδαφών',
+            '8' => 'Ειδικές εργασίες ανύψωσης'
+        ];
+        
+        // Ορισμός των ονομάτων των υποειδικοτήτων
+        $allSubSpecialities = [
+            '1.1' => 'Εκσκαφείς όλων των τύπων',
+            '1.2' => 'Τσάπες φορτωτές (JCB)',
+            '1.3' => 'Προωθητές γαιών όλων των τύπων',
+            // ... (όλες οι υποειδικότητες που αναφέρω πιο πάνω)
+        ];
+        
+        // Εμφάνιση ανά ειδικότητα
+        foreach ($specialityGroups as $specialityId => $subSpecialities):
+    ?>
+        <div class="speciality-group">
+            <h6><?php echo $specialityId . ' - ' . ($specialityNames[$specialityId] ?? 'Ειδικότητα ' . $specialityId); ?></h6>
+            <ul class="selected-list">
+                <?php foreach ($subSpecialities as $subSpec): 
+                    $subspecialityId = $subSpec['sub_speciality'];
+                    $subspecialityName = $allSubSpecialities[$subspecialityId] ?? "Υποειδικότητα {$subspecialityId}";
+                    $groupType = $subSpec['group_type'] ?? 'A';
+                ?>
+                <li>
+                    <span class="subspeciality-id"><?php echo $subspecialityId; ?></span>
+                    <span class="subspeciality-name"><?php echo $subspecialityName; ?></span>
+                    <span class="subspeciality-group">Ομάδα <?php echo $groupType; ?></span>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php 
+        endforeach;
+    else: 
+    ?>
+        <ul class="selected-list">
+            <li class="no-items">Δεν έχουν επιλεγεί υποειδικότητες</li>
+        </ul>
+    <?php endif; ?>
 </div>
 
 <!-- Ενημερωτικό μήνυμα για άδεια χειριστή -->
@@ -1094,13 +1174,26 @@ function getExpiryDateForLicenseType($licenses, $type) {
     <p>Ως ημερομηνία έναρξης της ενδεκαετίας λαμβάνεται η 1η Ιανουαρίου του επόμενου έτους από τη χορήγηση ή την αντικατάσταση της άδειας χειριστή.</p>
 </div>
 
-<!-- Το κουμπί προσθήκης ειδικής άδειας πρέπει να είναι μόνο στην αντίστοιχη καρτέλα -->
 
 <!-- Προσθέστε αυτό το script για να αρχικοποιήσετε τις επιλεγμένες υποειδικότητες -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Αρχικοποίηση των επιλεγμένων υποειδικοτήτων από τη βάση δεδομένων
         <?php if (isset($driverOperatorSubSpecialities) && !empty($driverOperatorSubSpecialities)): ?>
+            // Ταξινόμηση των υποειδικοτήτων με βάση το ID
+usort($driverOperatorSubSpecialities, function($a, $b) {
+    $aSpecialityId = substr($a['sub_speciality'], 0, 1);
+    $aSubId = substr($a['sub_speciality'], 2);
+    
+    $bSpecialityId = substr($b['sub_speciality'], 0, 1);
+    $bSubId = substr($b['sub_speciality'], 2);
+    
+    if ($aSpecialityId == $bSpecialityId) {
+        return intval($aSubId) - intval($bSubId);
+    }
+    
+    return intval($aSpecialityId) - intval($bSpecialityId);
+});
         window.selectedSubSpecialities = [
             <?php foreach ($driverOperatorSubSpecialities as $subSpec): ?>
             '<?php echo $subSpec['sub_speciality']; ?>',
@@ -1197,12 +1290,14 @@ function getExpiryDateForLicenseType($licenses, $type) {
                 </div>
             </div>
             
-            <div class="form-actions">
+
+       </div>
+       <div class="form-actions">
                 <button type="submit" class="btn-primary btn-save">Αποθήκευση Αλλαγών</button>
                 <a href="<?php echo BASE_URL; ?>drivers/driver_profile" class="btn-secondary">Ακύρωση</a>
             </div>
-        </form>
-    </div>
+            </form>
+
     <script>
     // Έλεγχος για διαθεσιμότητα του TesseractWrapper
     document.addEventListener('DOMContentLoaded', function() {

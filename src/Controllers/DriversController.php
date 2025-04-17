@@ -5,6 +5,7 @@ use Drivejob\Models\DriverAssessmentModel;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
+use Drivejob\Core\Logger;
 
 class DriversController {
     private $driversModel;
@@ -17,6 +18,7 @@ class DriversController {
         // Θεωρητικά θα δημιουργήσουμε ένα μοντέλο για την αυτοαξιολόγηση του οδηγού
         // $this->driverAssessmentModel = new DriverAssessmentModel($pdo);
     }
+    
     
     /**
      * Προβάλλει τη σελίδα προφίλ του οδηγού
@@ -425,11 +427,18 @@ private function handleTachographCard($driverId) {
     /**
  * Διαχειρίζεται την άδεια χειριστή μηχανημάτων
  */
+/**
+ * Διαχειρίζεται την άδεια χειριστή μηχανημάτων
+ */
+/**
+ * Διαχειρίζεται την άδεια χειριστή μηχανημάτων
+ */
 private function handleOperatorLicense($driverId) {
     if (isset($_POST['operator_license']) && $_POST['operator_license'] == 1) {
         // Καταγραφή των δεδομένων POST για αποσφαλμάτωση
         error_log('POST operator_license data: ' . print_r($_POST, true));
         
+        // Δημιουργία του πίνακα δεδομένων από το POST
         $operatorData = [
             'speciality' => $_POST['operator_speciality'] ?? null,
             'license_number' => $_POST['operator_license_number'] ?? null,
@@ -458,523 +467,75 @@ private function handleOperatorLicense($driverId) {
         error_log('operatorLicenseId: ' . ($operatorLicenseId ? $operatorLicenseId : 'false'));
         
         // Διαχείριση υποειδικοτήτων
-        if ($operatorLicenseId && isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
-            // Καταγραφή των επιλεγμένων υποειδικοτήτων
-            error_log('Selected subspecialities: ' . print_r($_POST['operator_sub_specialities'], true));
-            
+        if ($operatorLicenseId) {
             // Διαγραφή προηγούμενων υποειδικοτήτων
             $this->driversModel->deleteDriverOperatorSubSpecialities($operatorLicenseId);
             
             // Προσθήκη νέων υποειδικοτήτων
-            foreach ($_POST['operator_sub_specialities'] as $subSpecialityId) {
-                // Καθορισμός του τύπου ομάδας (A ή B)
-                $groupType = isset($_POST['group_' . $subSpecialityId]) ? $_POST['group_' . $subSpecialityId] : $this->getSubSpecialityGroupType($subSpecialityId);
-                
-                // Καταγραφή της προσθήκης
-                error_log("Adding subspeciality: $subSpecialityId with group: $groupType");
-                
-                $result = $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpecialityId, $groupType);
-                
-                // Καταγραφή αποτελέσματος
-                error_log("Add result: " . ($result ? "true" : "false"));
+            if (isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
+                foreach ($_POST['operator_sub_specialities'] as $subSpecialityId) {
+                    // Καθορισμός του τύπου ομάδας (A ή B)
+                    $groupKey = 'group_' . $subSpecialityId;
+                    $groupType = isset($_POST[$groupKey]) ? $_POST[$groupKey] : 'A';
+                    
+                    // Καταγραφή των παραμέτρων
+                    error_log("Adding subspeciality: $subSpecialityId with group: $groupType");
+                    
+                    // Προσθήκη της υποειδικότητας
+                    $result = $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpecialityId, $groupType);
+                    
+                    // Καταγραφή αποτελέσματος
+                    error_log("Add result: " . ($result ? "true" : "false"));
+                }
+            } else {
+                error_log('No subspecialities selected or POST data is not array');
             }
         } else {
-            if (!$operatorLicenseId) {
-                error_log('Error: operatorLicenseId is invalid');
-            }
-            if (!isset($_POST['operator_sub_specialities'])) {
-                error_log('Error: operator_sub_specialities not found in POST data');
-            } else if (!is_array($_POST['operator_sub_specialities'])) {
-                error_log('Error: operator_sub_specialities is not an array');
-            }
+            error_log('Error: operatorLicenseId is invalid');
         }
     } else {
         // Αν δεν έχει επιλεγεί η άδεια χειριστή, διαγράφουμε τα στοιχεία
         $this->driversModel->deleteDriverOperatorLicense($driverId);
     }
 }
-    
-    /**
-     * Διαχειρίζεται τη μεταφόρτωση εικόνων διπλώματος
-     */
-    private function handleLicenseImageUpload($driverId, $fieldName) {
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        $maxSize = 2 * 1024 * 1024; // 2MB
-        
-        $file = $_FILES[$fieldName];
-        
-        // Έλεγχος τύπου αρχείου
-        if (!in_array($file['type'], $allowedTypes)) {
-            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
-            return false;
-        }
-        
-        // Έλεγχος μεγέθους αρχείου
-        if ($file['size'] > $maxSize) {
-            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
-            return false;
-        }
-        
-        // Δημιουργία του καταλόγου αν δεν υπάρχει
-        $uploadDir = ROOT_DIR . '/public/uploads/license_images/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-        
-        // Δημιουργία μοναδικού ονόματος αρχείου
-        $filename = $driverId . '_' . $fieldName . '_' . time() . '_' . basename($file['name']);
-        $targetPath = $uploadDir . $filename;
-        
-        // Μεταφορά του αρχείου
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            // Ενημέρωση του πεδίου στη βάση δεδομένων
-            $relativePath = 'uploads/license_images/' . $filename;
-            
-            // Ανάλογα με το είδος της εικόνας, ενημερώνουμε το αντίστοιχο πεδίο
-            $fieldToUpdate = $fieldName; // Χρησιμοποιούμε απευθείας το όνομα του πεδίου
-            
-            return $this->driversModel->updateDriverLicenseImage($driverId, $fieldToUpdate, $relativePath);
-        }
-        
-        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
-        return false;
-    }
-    
-    /**
-     * Γενική μέθοδος για χειρισμό μεταφόρτωσης εικόνων
-     */
-    private function handleImageUpload($driverId, $fieldName, $uploadPath = 'uploads/images/') {
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        $maxSize = 2 * 1024 * 1024; // 2MB
-        
-        $file = $_FILES[$fieldName];
-        
-        // Έλεγχος τύπου αρχείου
-        if (!in_array($file['type'], $allowedTypes)) {
-            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
-            return false;
-        }
-        
-        // Έλεγχος μεγέθους αρχείου
-        if ($file['size'] > $maxSize) {
-            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
-            return false;
-        }
-        
-        // Δημιουργία του καταλόγου αν δεν υπάρχει
-        $uploadDir = ROOT_DIR . '/public/' . $uploadPath;
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-        
-        // Δημιουργία μοναδικού ονόματος αρχείου
-        $filename = $driverId . '_' . $fieldName . '_' . time() . '_' . basename($file['name']);
-        $targetPath = $uploadDir . $filename;
-        
-        // Μεταφορά του αρχείου
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            // Επιστροφή του σχετικού μονοπατιού
-            return $uploadPath . $filename;
-        }
-        
-        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
-        return false;
-    }
-    
-    /**
-     * Διαχειρίζεται τη μεταφόρτωση εικόνας προφίλ
-     */
-    private function handleProfileImageUpload($driverId) {
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        $maxSize = 2 * 1024 * 1024; // 2MB
-        
-        $file = $_FILES['profile_image'];
-        
-        // Έλεγχος τύπου αρχείου
-        if (!in_array($file['type'], $allowedTypes)) {
-            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
-            return false;
-        }
-        
-        // Έλεγχος μεγέθους αρχείου
-        if ($file['size'] > $maxSize) {
-            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
-            return false;
-        }
-        
-        // Δημιουργία του καταλόγου αν δεν υπάρχει
-        $uploadDir = ROOT_DIR . '/public/uploads/profile_images/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-        
-        // Δημιουργία μοναδικού ονόματος αρχείου
-        $filename = $driverId . '_' . time() . '_' . basename($file['name']);
-        $targetPath = $uploadDir . $filename;
-        
-        // Μεταφορά του αρχείου
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            // Ενημέρωση του πεδίου στη βάση δεδομένων
-            $relativePath = 'uploads/profile_images/' . $filename;
-            return $this->driversModel->updateProfileImage($driverId, $relativePath);
-        }
-        
-        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
-        return false;
-    }
-    
-    /**
-     * Διαχειρίζεται τη μεταφόρτωση βιογραφικού
-     */
-    private function handleResumeFileUpload($driverId) {
-        $allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-        $maxSize = 5 * 1024 * 1024; // 5MB
-        
-        $file = $_FILES['resume_file'];
-        
-        // Έλεγχος τύπου αρχείου
-        if (!in_array($file['type'], $allowedTypes)) {
-            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο PDF και DOC/DOCX.';
-            return false;
-        }
-        
-        // Έλεγχος μεγέθους αρχείου
-        if ($file['size'] > $maxSize) {
-            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 5MB.';
-            return false;
-        }
-        
-        // Δημιουργία του καταλόγου αν δεν υπάρχει
-        $uploadDir = ROOT_DIR . '/public/uploads/resumes/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-        
-        // Δημιουργία μοναδικού ονόματος αρχείου
-        $filename = $driverId . '_' . time() . '_' . basename($file['name']);
-        $targetPath = $uploadDir . $filename;
-        
-        // Μεταφορά του αρχείου
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            // Ενημέρωση του πεδίου στη βάση δεδομένων
-            $relativePath = 'uploads/resumes/' . $filename;
-            return $this->driversModel->updateResumeFile($driverId, $relativePath);
-        }
-        
-        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση του βιογραφικού. Παρακαλώ δοκιμάστε ξανά.';
-        return false;
-    }
-    
-    /**
-     * Ενημέρωση της αυτοαξιολόγησης του οδηγού
-     */
-    public function updateAssessment() {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        AuthMiddleware::hasRole('driver');
-        
-        // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-            $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
-            header('Location: ' . BASE_URL . 'drivers/driver_profile');
-            exit();
-        }
-        
-        // Λήψη ID του συνδεδεμένου οδηγού
-        $driverId = $_SESSION['user_id'];
-        
-        // Υπολογισμός βαθμολογίας από τις απαντήσεις του οδηγού
-        $drivingSkills = $this->calculateCategoryScore([
-            'driving_experience' => $_POST['driving_experience'] ?? 0,
-            'annual_kilometers' => $_POST['annual_kilometers'] ?? 0,
-            // Άλλες μετρικές
-        ]);
-        
-        $safetyCompliance = $this->calculateCategoryScore([
-            'accidents' => $_POST['accidents'] ?? 0,
-            'traffic_violations' => $_POST['traffic_violations'] ?? 0,
-            // Άλλες μετρικές
-        ]);
-        
-        $professionalism = $this->calculateCategoryScore([
-            // Συμπλήρωση με τις κατάλληλες μετρικές
-            'professionalism' => 4 // Προσωρινή τιμή
-        ]);
-        
-        $technicalKnowledge = $this->calculateCategoryScore([
-            // Συμπλήρωση με τις κατάλληλες μετρικές
-            'technical_knowledge' => 3 // Προσωρινή τιμή
-        ]);
-        
-        // Υπολογισμός συνολικής βαθμολογίας
-        $totalScore = ($drivingSkills + $safetyCompliance + $professionalism + $technicalKnowledge) / 4;
-        
-        // Αποθήκευση της αξιολόγησης
-        // Εδώ θα χρησιμοποιούσαμε το DriverAssessmentModel
-        // $this->driverAssessmentModel->updateAssessment($driverId, $totalScore, $drivingSkills, $safetyCompliance, $professionalism, $technicalKnowledge);
-        
-        $_SESSION['success_message'] = 'Η αυτοαξιολόγησή σας ενημερώθηκε με επιτυχία.';
-        header('Location: ' . BASE_URL . 'drivers/driver_profile#self-assessment');
-        exit();
-    }
-    
-    /**
-     * Υπολογίζει τη βαθμολογία κατηγορίας από τις απαντήσεις (σε κλίμακα 0-100)
-     */
-    private function calculateCategoryScore($answers) {
-        $totalPoints = 0;
-        $maxPoints = 0;
-        
-        foreach ($answers as $answer) {
-            $totalPoints += intval($answer);
-            $maxPoints += 5; // Θεωρούμε ότι η μέγιστη βαθμολογία για κάθε απάντηση είναι 5
-        }
-        
-        if ($maxPoints === 0) return 0;
-        
-        return ($totalPoints / $maxPoints) * 100;
-    }
-    
-    /**
-     * Προβάλλει τα ταιριάσματα εργασίας για τον οδηγό
-     */
-    public function showJobMatches() {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        AuthMiddleware::hasRole('driver');
-        
-        // Λήψη ID του συνδεδεμένου οδηγού
-        $driverId = $_SESSION['user_id'];
-        $driverData = $this->driversModel->getDriverById($driverId);
-        
-        // Εύρεση των συντεταγμένων της τοποθεσίας του οδηγού
-        $driverLocation = null;
-        if (!empty($driverData['address']) && !empty($driverData['city'])) {
-            $address = urlencode($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']);
-            $driverLocation = $this->getGeocodingData($address);
-        }
-        
-        // Παράμετροι αναζήτησης
-        $radius = isset($_GET['radius']) ? intval($_GET['radius']) : 10;
-        
-        // Εύρεση ταιριασμάτων εργασίας
-        $jobListingModel = new \Drivejob\Models\JobListingModel($this->pdo);
-        $matchedJobs = [];
-        
-        if ($driverLocation) {
-            $params = [
-                'latitude' => $driverLocation['lat'],
-                'longitude' => $driverLocation['lng'],
-                'search_radius' => $radius,
-                'listing_type' => 'job_offer',
-                'is_active' => 1
-            ];
-            
-            // Προσθήκη φίλτρων με βάση τα προσόντα του οδηγού
-            if ($driverData['driving_license']) {
-                $params['required_license'] = $driverData['driving_license'];
-            }
-            
-            if ($driverData['adr_certificate']) {
-                $params['adr_certificate'] = 1;
-            }
-            
-            if ($driverData['operator_license']) {
-                $params['operator_license'] = 1;
-            }
-            
-            if ($driverData['preferred_job_type']) {
-                $params['job_type'] = $driverData['preferred_job_type'];
-            }
-            
-            if ($driverData['preferred_vehicle_type']) {
-                $params['vehicle_type'] = $driverData['preferred_vehicle_type'];
-            }
-            
-            $matchedJobs = $jobListingModel->getActiveListings($params, 1, 10);
-            
-            // Υπολογισμός ποσοστού ταιριάσματος για κάθε θέση
-            foreach ($matchedJobs['results'] as &$job) {
-                $job['match_score'] = $this->calculateJobMatchScore($job, $driverData);
-                $job['distance'] = $this->calculateDistance(
-                    $driverLocation['lat'], 
-                    $driverLocation['lng'], 
-                    $job['latitude'], 
-                    $job['longitude']
-                );
-            }
-            
-            // Ταξινόμηση με βάση το ποσοστό ταιριάσματος (φθίνουσα σειρά)
-            usort($matchedJobs['results'], function($a, $b) {
-                return $b['match_score'] <=> $a['match_score'];
-            });
-        }
-        
-        // Επιστροφή των αποτελεσμάτων σε JSON
-        header('Content-Type: application/json');
-        echo json_encode($matchedJobs);
-        exit();
-    }
-    
-    /**
-     * Υπολογίζει το ποσοστό ταιριάσματος μεταξύ οδηγού και αγγελίας (0-100)
-     */
-    private function calculateJobMatchScore($job, $driverData) {
-        $score = 0;
-        $total = 0;
-        
-        // Έλεγχος άδειας οδήγησης
-        if (!empty($job['required_license']) && !empty($driverData['driving_license'])) {
-            $total += 25;
-            if ($job['required_license'] === $driverData['driving_license']) {
-                $score += 25;
-            }
-        }
-        
-        // Έλεγχος ADR
-        if ($job['adr_certificate']) {
-            $total += 15;
-            if ($driverData['adr_certificate']) {
-                $score += 15;
-            }
-        }
-        
-        // Έλεγχος άδειας χειριστή
-        if ($job['operator_license']) {
-            $total += 15;
-            if ($driverData['operator_license']) {
-                $score += 15;
-            }
-        }
-        
-        // Έλεγχος τύπου εργασίας
-        if (!empty($job['job_type']) && !empty($driverData['preferred_job_type'])) {
-            $total += 10;
-            if ($job['job_type'] === $driverData['preferred_job_type'] || $driverData['preferred_job_type'] === 'any') {
-                $score += 10;
-            }
-        }
-        
-        // Έλεγχος τύπου οχήματος
-        if (!empty($job['vehicle_type']) && !empty($driverData['preferred_vehicle_type'])) {
-            $total += 10;
-            if ($job['vehicle_type'] === $driverData['preferred_vehicle_type'] || $driverData['preferred_vehicle_type'] === 'any') {
-                $score += 10;
-            }
-        }
-        
-        // Έλεγχος ετών εμπειρίας
-        if (!empty($job['experience_years']) && !empty($driverData['experience_years'])) {
-            $total += 15;
-            if ($driverData['experience_years'] >= $job['experience_years']) {
-                $score += 15;
-            } else {
-                // Μερικό ταίριασμα
-                $ratio = $driverData['experience_years'] / $job['experience_years'];
-                $score += round(15 * $ratio);
-            }
-        }
-        
-        // Έλεγχος απόστασης
-        if (!empty($job['distance'])) {
-            $total += 10;
-            // Αντίστροφη κλιμάκωση με βάση την απόσταση
-            if ($job['distance'] <= 5) {
-                $score += 10;
-            } else if ($job['distance'] <= 10) {
-                $score += 8;
-            } else if ($job['distance'] <= 20) {
-                $score += 6;
-            } else if ($job['distance'] <= 50) {
-                $score += 4;
-            } else {
-                $score += 2;
-            }
-        }
-        
-        // Επιστροφή του ποσοστού
-        if ($total === 0) return 0;
-        
-        return round(($score / $total) * 100);
-    }
-    
-    /**
-     * Λαμβάνει τις συντεταγμένες από μια διεύθυνση μέσω της υπηρεσίας Geocoding
-     */
-    private function getGeocodingData($address) {
-        $apiKey = 'AIzaSyCgZpJWVYyrY0U8U1jBGelEWryur3vIrzc';
+/**
+ * Λαμβάνει τις συντεταγμένες από μια διεύθυνση μέσω της υπηρεσίας Geocoding
+ * 
+ * @param string $address Η διεύθυνση προς γεωκωδικοποίηση
+ * @return array|null Συντεταγμένες [lat, lng] ή null σε περίπτωση σφάλματος
+ */
+private function getGeocodingData($address) {
+    try {
+        $apiKey = 'YOUR_GOOGLE_MAPS_API_KEY'; // Αντικαταστήστε με το δικό σας API κλειδί
         $url = "https://maps.googleapis.com/maps/api/geocode/json?address={$address}&key={$apiKey}";
         
-        try {
-            // Ορίστε ένα ρητό χρονικό όριο 5 δευτερολέπτων
-            $context = stream_context_create([
-                'http' => [
-                    'timeout' => 5,
-                ]
-            ]);
-            
-            $response = @file_get_contents($url, false, $context);
-            
-            if ($response === false) {
-                // Σε περίπτωση αποτυχίας επιστρέφουμε null
-                return null;
-            }
-            
-            $data = json_decode($response, true);
-            
-            if (isset($data['status']) && $data['status'] === 'OK' && !empty($data['results'][0]['geometry']['location'])) {
-                return [
-                    'lat' => $data['results'][0]['geometry']['location']['lat'],
-                    'lng' => $data['results'][0]['geometry']['location']['lng']
-                ];
-            }
-        } catch (Exception $e) {
-            // Σε περίπτωση εξαίρεσης επιστρέφουμε null
+        // Ορίστε ένα ρητό χρονικό όριο 5 δευτερολέπτων
+        $context = stream_context_create([
+            'http' => [
+                'timeout' => 5,
+            ]
+        ]);
+        
+        $response = @file_get_contents($url, false, $context);
+        
+        if ($response === false) {
+            // Σε περίπτωση αποτυχίας επιστρέφουμε null
+            error_log('Αποτυχία λήψης δεδομένων geocoding για τη διεύθυνση: ' . $address);
+            return null;
         }
         
-        return null;
+        $data = json_decode($response, true);
+        
+        if (isset($data['status']) && $data['status'] === 'OK' && !empty($data['results'][0]['geometry']['location'])) {
+            return [
+                'lat' => $data['results'][0]['geometry']['location']['lat'],
+                'lng' => $data['results'][0]['geometry']['location']['lng']
+            ];
+        }
+    } catch (Exception $e) {
+        error_log('Σφάλμα κατά τη λήψη δεδομένων geocoding: ' . $e->getMessage());
     }
     
-    /**
-     * Υπολογίζει την απόσταση μεταξύ δύο σημείων (σε χιλιόμετρα)
-     */
-    private function calculateDistance($lat1, $lon1, $lat2, $lon2) {
-        $earthRadius = 6371; // Ακτίνα της Γης σε χιλιόμετρα
-        
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLon = deg2rad($lon2 - $lon1);
-        
-        $a = sin($dLat/2) * sin($dLat/2) +
-             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * 
-             sin($dLon/2) * sin($dLon/2);
-        
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-        $distance = $earthRadius * $c;
-        
-        return round($distance, 1);
-    }
-    
-    /**
-     * Βοηθητική μέθοδος για τον καθορισμό του τύπου ομάδας υποειδικότητας
-     */
-    private function getSubSpecialityGroupType($subSpeciality) {
-        // Πίνακας με τις ομάδες για κάθε υποειδικότητα
-        $groupTypes = [
-            '1.1' => 'A', '1.2' => 'B', '1.3' => 'A', '1.4' => 'A', '1.5' => 'A',
-            '1.6' => 'B', '1.7' => 'B', '1.8' => 'A', '1.9' => 'B',
-            '2.1' => 'A', '2.2' => 'A', '2.3' => 'B', '2.4' => 'B', '2.5' => 'B',
-            '2.6' => 'A', '2.7' => 'A', '2.8' => 'B', '2.9' => 'A',
-            '3.1' => 'A', '3.2' => 'A', '3.3' => 'A', '3.4' => 'B', '3.5' => 'A',
-            '3.6' => 'B', '3.7' => 'A', '3.8' => 'B', '3.9' => 'B', '3.10' => 'B',
-            '3.11' => 'A', '3.12' => 'B',
-            '4.1' => 'A', '4.2' => 'A', '4.3' => 'B', '4.4' => 'B', '4.5' => 'A',
-            '4.6' => 'B', '4.7' => 'A', '4.8' => 'B',
-            '5.1' => 'A', '5.2' => 'A', '5.3' => 'A', '5.4' => 'B', '5.5' => 'A',
-            '5.6' => 'A',
-            '6.1' => 'A', '6.2' => 'B',
-            '7.1' => 'A', '7.2' => 'A', '7.3' => 'B',
-            '8.1' => 'A', '8.2' => 'A', '8.3' => 'B', '8.4' => 'A', '8.5' => 'A',
-            '8.6' => 'B', '8.7' => 'B', '8.8' => 'A', '8.9' => 'B'
-        ];
-        
-        return $groupTypes[$subSpeciality] ?? 'A';
-    }
+    return null;
+}
 }

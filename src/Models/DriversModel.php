@@ -962,6 +962,45 @@ public function addDriverOperatorSubSpeciality($operatorLicenseId, $subSpecialit
         return false;
     }
 }
+/**
+ * Προσθέτει μια εγγραφή στον πίνακα ομάδων υποειδικοτήτων
+ * 
+ * @param int $subSpecialityId ID της υποειδικότητας
+ * @param string $groupType Τύπος ομάδας (A ή B)
+ * @return bool Επιτυχία/αποτυχία
+ */
+public function addDriverOperatorSubSpecialityGroup($subSpecialityId, $groupType) {
+    try {
+        error_log("addDriverOperatorSubSpecialityGroup: subSpecialityId=$subSpecialityId, groupType=$groupType");
+        
+        // Έλεγχος αν υπάρχει ήδη εγγραφή
+        $sql = "SELECT COUNT(*) FROM driver_operator_sub_speciality_groups WHERE sub_speciality_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$subSpecialityId]);
+        $exists = ($stmt->fetchColumn() > 0);
+        
+        if ($exists) {
+            // Ενημέρωση υπάρχουσας εγγραφής
+            $sql = "UPDATE driver_operator_sub_speciality_groups SET group_type = ? WHERE sub_speciality_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([$groupType, $subSpecialityId]);
+            error_log("Update group result: " . ($result ? "success" : "failed"));
+            return $result;
+        } else {
+            // Προσθήκη νέας εγγραφής
+            $sql = "INSERT INTO driver_operator_sub_speciality_groups (sub_speciality_id, group_type) VALUES (?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([$subSpecialityId, $groupType]);
+            error_log("Insert group result: " . ($result ? "success" : "failed"));
+            return $result;
+        }
+    } catch (PDOException $e) {
+        error_log('Error in addDriverOperatorSubSpecialityGroup: ' . $e->getMessage());
+        error_log('SQL State: ' . $e->getCode());
+        error_log('Stack trace: ' . $e->getTraceAsString());
+        return false;
+    }
+}
 
 /**
  * Διαγράφει τις υποειδικότητες της άδειας χειριστή μηχανημάτων
@@ -1341,4 +1380,106 @@ public function deleteDriverOperatorSubSpecialities($operatorLicenseId) {
             return false;
         }
     }
+    /**
+ * Διαγράφει μια συγκεκριμένη υποειδικότητα άδειας χειριστή
+ * 
+ * @param int $operatorLicenseId ID της άδειας χειριστή
+ * @param string $subSpecialityId ID της υποειδικότητας
+ * @return bool Επιτυχία/αποτυχία
+ */
+public function deleteDriverOperatorSubSpeciality($operatorLicenseId, $subSpecialityId) {
+    try {
+        $sql = "DELETE FROM driver_operator_sub_specialities 
+                WHERE operator_license_id = ? AND sub_speciality = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$operatorLicenseId, $subSpecialityId]);
+    } catch (PDOException $e) {
+        error_log('Error in deleteDriverOperatorSubSpeciality: ' . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Ενημερώνει την ομάδα (group) μιας υποειδικότητας
+ * 
+ * @param int $operatorLicenseId ID της άδειας χειριστή
+ * @param string $subSpecialityId ID της υποειδικότητας
+ * @param string $groupType Τύπος ομάδας (A ή B)
+ * @return bool Επιτυχία/αποτυχία
+ */
+public function updateDriverOperatorSubSpecialityGroup($operatorLicenseId, $subSpecialityId, $groupType) {
+    try {
+        // Έλεγχος αν η στήλη group_type υπάρχει στον πίνακα
+        $tableInfo = $this->pdo->query("DESCRIBE driver_operator_sub_specialities")->fetchAll(PDO::FETCH_COLUMN);
+        $hasGroupTypeColumn = in_array('group_type', $tableInfo);
+        
+        if ($hasGroupTypeColumn) {
+            $sql = "UPDATE driver_operator_sub_specialities
+                    SET group_type = ?
+                    WHERE operator_license_id = ? AND sub_speciality = ?";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$groupType, $operatorLicenseId, $subSpecialityId]);
+        } else {
+            // Αν δεν υπάρχει η στήλη group_type, ενημερώνουμε τον πίνακα groups
+            $sql = "UPDATE driver_operator_sub_speciality_groups
+                    SET group_type = ?
+                    WHERE sub_speciality_id IN (
+                        SELECT id FROM driver_operator_sub_specialities
+                        WHERE operator_license_id = ? AND sub_speciality = ?
+                    )";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$groupType, $operatorLicenseId, $subSpecialityId]);
+        }
+    } catch (PDOException $e) {
+        error_log('Error in updateDriverOperatorSubSpecialityGroup: ' . $e->getMessage());
+        return false;
+    }
+}
+/**
+ * Ενημερώνει τον τύπο ομάδας της υποειδικότητας
+ * 
+ * @param int $subSpecialityId ID της εγγραφής στον πίνακα driver_operator_sub_specialities
+ * @param string $groupType Τύπος ομάδας (A ή B)
+ * @return bool Επιτυχία/αποτυχία
+ */
+public function updateOperatorSubSpecialityGroup($subSpecialityId, $groupType) {
+    try {
+        // Έλεγχος αν υπάρχει η στήλη group_type στον πίνακα 
+        $hasGroupTypeColumn = false;
+        try {
+            $columns = $this->pdo->query("SHOW COLUMNS FROM driver_operator_sub_specialities LIKE 'group_type'")->fetchAll();
+            $hasGroupTypeColumn = !empty($columns);
+        } catch (PDOException $e) {
+            error_log('Error checking for group_type column: ' . $e->getMessage());
+        }
+        
+        if ($hasGroupTypeColumn) {
+            // Ενημέρωση της στήλης group_type στον πίνακα driver_operator_sub_specialities
+            $sql = "UPDATE driver_operator_sub_specialities SET group_type = ? WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([$groupType, $subSpecialityId]);
+        }
+        
+        // Έλεγχος αν υπάρχει εγγραφή στον πίνακα driver_operator_sub_speciality_groups
+        $sql = "SELECT * FROM driver_operator_sub_speciality_groups WHERE sub_speciality_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$subSpecialityId]);
+        $existingGroup = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($existingGroup) {
+            // Ενημέρωση υπάρχουσας εγγραφής
+            $sql = "UPDATE driver_operator_sub_speciality_groups SET group_type = ? WHERE sub_speciality_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$groupType, $subSpecialityId]);
+        } else {
+            // Νέα εγγραφή
+            $sql = "INSERT INTO driver_operator_sub_speciality_groups (sub_speciality_id, group_type) VALUES (?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$subSpecialityId, $groupType]);
+        }
+    } catch (PDOException $e) {
+        error_log('Error in updateOperatorSubSpecialityGroup: ' . $e->getMessage());
+        return false;
+    }
+}
 }
