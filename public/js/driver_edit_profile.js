@@ -495,7 +495,7 @@ window.operatorSubSpecialities = {
     ]
 };
 
-// Τροποποιημένη συνάρτηση φόρτωσης υποειδικοτήτων
+// Τροποποιημένη συνάρτηση φόρτωσης υποειδικοτήτων που διατηρεί επιλογές μεταξύ ειδικοτήτων
 window.loadSubSpecialities = function(specialityId) {
     const subSpecialityContainer = document.getElementById('subSpecialityContainer');
     const tableBody = document.getElementById('subSpecialitiesTableBody');
@@ -510,19 +510,36 @@ window.loadSubSpecialities = function(specialityId) {
         return;
     }
     
+    // Αποθήκευση των τρεχόντων επιλογών πριν καθαρίσουμε τον πίνακα
+    if (!window.selectedSubSpecialitiesMap) {
+        window.selectedSubSpecialitiesMap = {};
+    }
+    
+    // Αποθήκευση των τρεχόντων επιλογών για την προηγούμενη ειδικότητα
+    const currentCheckboxes = tableBody.querySelectorAll('input[name="operator_sub_specialities[]"]');
+    currentCheckboxes.forEach(checkbox => {
+        window.selectedSubSpecialitiesMap[checkbox.value] = {
+            checked: checkbox.checked,
+            group: document.querySelector(`input[name="group_${checkbox.value}"]:checked`)?.value || 'A'
+        };
+    });
+    
+    // Εμφάνιση του container
     subSpecialityContainer.style.display = 'block';
     tableBody.innerHTML = '';
     
-    // Δημιουργία μιας λίστας με τις υπάρχουσες επιλεγμένες υποειδικότητες
-    const existingSubSpecialities = Array.from(document.querySelectorAll('input[name="operator_sub_specialities[]"]:checked')).map(input => input.value);
-    
+    // Εμφάνιση των υποειδικοτήτων της επιλεγμένης ειδικότητας
     if (window.operatorSubSpecialities && window.operatorSubSpecialities[specialityId]) {
         window.operatorSubSpecialities[specialityId].forEach(item => {
             const row = document.createElement('tr');
             
             // Έλεγχος αν η συγκεκριμένη υποειδικότητα είναι ήδη επιλεγμένη
-            const isChecked = existingSubSpecialities.includes(item.id) || 
+            const savedState = window.selectedSubSpecialitiesMap[item.id];
+            const isChecked = savedState ? savedState.checked : 
                             (window.selectedSubSpecialities && window.selectedSubSpecialities.includes(item.id));
+            
+            // Καθορισμός της ομάδας (A ή B)
+            const groupValue = savedState ? savedState.group : item.group;
             
             // Δημιουργία περιεχομένου γραμμής
             row.innerHTML = `
@@ -538,11 +555,11 @@ window.loadSubSpecialities = function(specialityId) {
                 <td>
                     <div class="radio-group" id="group_container_${item.id}" ${isChecked ? '' : 'style="display:none;"'}>
                         <label class="radio-label">
-                            <input type="radio" name="group_${item.id}" value="A" ${item.group === 'A' ? 'checked' : ''}>
+                            <input type="radio" name="group_${item.id}" value="A" ${groupValue === 'A' ? 'checked' : ''}>
                             <span>A</span>
                         </label>
                         <label class="radio-label">
-                            <input type="radio" name="group_${item.id}" value="B" ${item.group === 'B' ? 'checked' : ''}>
+                            <input type="radio" name="group_${item.id}" value="B" ${groupValue === 'B' ? 'checked' : ''}>
                             <span>B</span>
                         </label>
                     </div>

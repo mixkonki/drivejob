@@ -17,6 +17,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 
 <main>
     <div class="container">
+        
         <h1>Επεξεργασία Προφίλ Οδηγού</h1>
         
         <?php if (isset($_SESSION['success_message'])): ?>

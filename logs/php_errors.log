@@ -3464,3 +3464,1114 @@
 [16-Apr-2025 19:31:18 Europe/Athens] Table has group_type column: yes
 [16-Apr-2025 19:31:18 Europe/Athens] Insert with group_type result: success
 [16-Apr-2025 19:31:18 Europe/Athens] Add result: true
+[16-Apr-2025 21:56:13 Europe/Athens] Session expired due to inactivity: e9bq4o2fmh8bl2gn6rip6jvohk
+[17-Apr-2025 15:41:33 Europe/Athens] POST Data: Array
+(
+    [csrf_token] => 49dc62e3787f464c7dab5014615fef0ee889469aafb82f1222957fff7b35ae7f
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2030-01-01
+            [D] => 2030-01-01
+            [DE] => 2030-01-01
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 125622
+    [operator_license_expiry] => 2025-12-31
+    [operator_speciality] => 3
+    [operator_sub_specialities] => Array
+        (
+            [0] => 3.1
+        )
+
+    [group_3_1] => A
+    [group_3_2] => A
+    [group_3_3] => A
+    [group_3_4] => B
+    [group_3_5] => A
+    [group_3_6] => B
+    [group_3_7] => A
+    [group_3_8] => B
+    [group_3_9] => B
+    [group_3_10] => B
+    [group_3_11] => A
+    [group_3_12] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+)
+
+[17-Apr-2025 15:41:33 Europe/Athens] updateProfile data: Array
+(
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [birth_date] => 1965-01-09
+    [address] => Ολυμπου
+    [house_number] => 32
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [postal_code] => 54631
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [available_for_work] => 0
+    [preferred_job_type] => 
+    [preferred_vehicle_type] => 
+    [preferred_location] => 
+    [preferred_radius] => 
+    [salary_min] => 
+    [salary_max] => 
+    [salary_period] => 
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [willing_to_relocate] => 0
+    [willing_to_travel] => 0
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [languages] => german,italian
+    [language_notes] => φδαγΔΓ
+)
+
+[17-Apr-2025 15:41:33 Europe/Athens] Update SQL: UPDATE drivers SET `first_name` = ?, `last_name` = ?, `phone` = ?, `landline` = ?, `birth_date` = ?, `address` = ?, `house_number` = ?, `city` = ?, `country` = ?, `postal_code` = ?, `about_me` = ?, `experience_years` = ?, `available_for_work` = ?, `preferred_job_type` = NULL, `preferred_vehicle_type` = NULL, `preferred_location` = NULL, `preferred_radius` = NULL, `salary_min` = NULL, `salary_max` = NULL, `salary_period` = NULL, `social_linkedin` = ?, `social_facebook` = ?, `social_twitter` = ?, `social_instagram` = ?, `willing_to_relocate` = ?, `willing_to_travel` = ?, `license_number` = ?, `license_document_expiry` = ?, `license_codes` = ?, `marital_status` = ?, `education_level` = ?, `military_service` = ?, `languages` = ?, `language_notes` = ? WHERE id = ?
+[17-Apr-2025 15:41:33 Europe/Athens] Update Values: Array
+(
+    [0] => hotmail
+    [1] => Κώστας
+    [2] => 6972964602
+    [3] => 2310528525
+    [4] => 1965-01-09
+    [5] => Ολυμπου
+    [6] => 32
+    [7] => Θεσσαλονίκη
+    [8] => Ελλάδα
+    [9] => 54631
+    [10] => εςταςετ
+    [11] => 10
+    [12] => 0
+    [13] => 
+    [14] => 
+    [15] => 
+    [16] => 
+    [17] => 0
+    [18] => 0
+    [19] => 002640980
+    [20] => 2028-01-09
+    [21] => 95,01.01
+    [22] => single
+    [23] => secondary_high
+    [24] => completed
+    [25] => german,italian
+    [26] => φδαγΔΓ
+    [27] => 26
+)
+
+[17-Apr-2025 15:41:33 Europe/Athens] addDriverLicense - Driver ID: 26, Type: A, HasPEI: No
+[17-Apr-2025 15:41:33 Europe/Athens] ExpiryDate: 2030-01-09, LicenseNumber: 002640980
+[17-Apr-2025 15:41:33 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:41:33 Europe/Athens] License added successfully
+[17-Apr-2025 15:41:33 Europe/Athens] addDriverLicense - Driver ID: 26, Type: B, HasPEI: No
+[17-Apr-2025 15:41:33 Europe/Athens] ExpiryDate: 2030-01-01, LicenseNumber: 002640980
+[17-Apr-2025 15:41:33 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:41:33 Europe/Athens] License added successfully
+[17-Apr-2025 15:41:33 Europe/Athens] addDriverLicense - Driver ID: 26, Type: BE, HasPEI: No
+[17-Apr-2025 15:41:33 Europe/Athens] ExpiryDate: 2030-01-01, LicenseNumber: 002640980
+[17-Apr-2025 15:41:33 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:41:33 Europe/Athens] License added successfully
+[17-Apr-2025 15:41:33 Europe/Athens] addDriverLicense - Driver ID: 26, Type: C, HasPEI: Yes
+[17-Apr-2025 15:41:33 Europe/Athens] ExpiryDate: 2025-05-31, LicenseNumber: 002640980
+[17-Apr-2025 15:41:33 Europe/Athens] PEI-C Expiry: 2026-05-31, PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:41:33 Europe/Athens] License added successfully
+[17-Apr-2025 15:41:33 Europe/Athens] addDriverLicense - Driver ID: 26, Type: CE, HasPEI: Yes
+[17-Apr-2025 15:41:33 Europe/Athens] ExpiryDate: 2030-01-01, LicenseNumber: 002640980
+[17-Apr-2025 15:41:33 Europe/Athens] PEI-C Expiry: 2026-05-31, PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:41:33 Europe/Athens] License added successfully
+[17-Apr-2025 15:41:33 Europe/Athens] addDriverLicense - Driver ID: 26, Type: D, HasPEI: Yes
+[17-Apr-2025 15:41:33 Europe/Athens] ExpiryDate: 2030-01-01, LicenseNumber: 002640980
+[17-Apr-2025 15:41:33 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: 2030-04-16, Document Expiry: 2028-01-09
+[17-Apr-2025 15:41:33 Europe/Athens] License added successfully
+[17-Apr-2025 15:41:33 Europe/Athens] addDriverLicense - Driver ID: 26, Type: DE, HasPEI: Yes
+[17-Apr-2025 15:41:33 Europe/Athens] ExpiryDate: 2030-01-01, LicenseNumber: 002640980
+[17-Apr-2025 15:41:33 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: 2030-04-16, Document Expiry: 2028-01-09
+[17-Apr-2025 15:41:33 Europe/Athens] License added successfully
+[17-Apr-2025 15:41:33 Europe/Athens] updateDriverTachographCard - Data: Array
+(
+    [card_number] => gr1251511222
+    [expiry_date] => 2030-04-16
+)
+
+[17-Apr-2025 15:41:33 Europe/Athens] updateDriverADRCertificate - Data: Array
+(
+    [adr_type] => Π2
+    [certificate_number] => GR1235122
+    [expiry_date] => 2025-12-31
+)
+
+[17-Apr-2025 15:41:33 Europe/Athens] ADR certificate updated successfully
+[17-Apr-2025 15:41:33 Europe/Athens] POST operator_license data: Array
+(
+    [csrf_token] => 49dc62e3787f464c7dab5014615fef0ee889469aafb82f1222957fff7b35ae7f
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2030-01-01
+            [D] => 2030-01-01
+            [DE] => 2030-01-01
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 125622
+    [operator_license_expiry] => 2025-12-31
+    [operator_speciality] => 3
+    [operator_sub_specialities] => Array
+        (
+            [0] => 3.1
+        )
+
+    [group_3_1] => A
+    [group_3_2] => A
+    [group_3_3] => A
+    [group_3_4] => B
+    [group_3_5] => A
+    [group_3_6] => B
+    [group_3_7] => A
+    [group_3_8] => B
+    [group_3_9] => B
+    [group_3_10] => B
+    [group_3_11] => A
+    [group_3_12] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+)
+
+[17-Apr-2025 15:41:33 Europe/Athens] updateDriverOperatorLicense - Data: Array
+(
+    [speciality] => 3
+    [license_number] => 125622
+    [expiry_date] => 2025-12-31
+)
+
+[17-Apr-2025 15:41:33 Europe/Athens] Driver ID: 26
+[17-Apr-2025 15:41:33 Europe/Athens] Existing license: {"id":11,"driver_id":26,"speciality":"3","expiry_date":"2025-12-31","created_at":"2025-04-14 15:03:07","updated_at":"2025-04-16 19:31:18","license_number":"125622"}
+[17-Apr-2025 15:41:33 Europe/Athens] Operator license updated successfully. License ID: 11
+[17-Apr-2025 15:41:33 Europe/Athens] operatorLicenseId: 11
+[17-Apr-2025 15:41:33 Europe/Athens] Selected subspecialities: Array
+(
+    [0] => 3.1
+)
+
+[17-Apr-2025 15:41:33 Europe/Athens] Deleting subspecialities for operator license ID: 11
+[17-Apr-2025 15:41:33 Europe/Athens] Found subspeciality IDs: 10
+[17-Apr-2025 15:41:33 Europe/Athens] Deleted groups for subspeciality ID 10: success
+[17-Apr-2025 15:41:33 Europe/Athens] Deleted subspecialities result: success
+[17-Apr-2025 15:41:33 Europe/Athens] Adding subspeciality: 3.1 with group: A
+[17-Apr-2025 15:41:33 Europe/Athens] addDriverOperatorSubSpeciality: operatorLicenseId=11, subSpeciality=3.1, groupType=A
+[17-Apr-2025 15:41:33 Europe/Athens] Table has group_type column: yes
+[17-Apr-2025 15:41:33 Europe/Athens] Insert with group_type result: success
+[17-Apr-2025 15:41:33 Europe/Athens] Add result: true
+[17-Apr-2025 15:43:31 Europe/Athens] POST Data: Array
+(
+    [csrf_token] => 81c128cc1a2e9ae262587b4d3ca6983cd264346b920d29eb56f939c5e74b1b3e
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-12-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 125622
+    [operator_license_expiry] => 2025-12-31
+    [operator_speciality] => 3
+    [operator_sub_specialities] => Array
+        (
+            [0] => 3.1
+        )
+
+    [group_3_1] => A
+    [group_3_2] => A
+    [group_3_3] => A
+    [group_3_4] => B
+    [group_3_5] => A
+    [group_3_6] => B
+    [group_3_7] => A
+    [group_3_8] => B
+    [group_3_9] => B
+    [group_3_10] => B
+    [group_3_11] => A
+    [group_3_12] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+)
+
+[17-Apr-2025 15:43:31 Europe/Athens] updateProfile data: Array
+(
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [birth_date] => 1965-01-09
+    [address] => Ολυμπου
+    [house_number] => 32
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [postal_code] => 54631
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [available_for_work] => 0
+    [preferred_job_type] => 
+    [preferred_vehicle_type] => 
+    [preferred_location] => 
+    [preferred_radius] => 
+    [salary_min] => 
+    [salary_max] => 
+    [salary_period] => 
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [willing_to_relocate] => 0
+    [willing_to_travel] => 0
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [languages] => german,italian
+    [language_notes] => φδαγΔΓ
+)
+
+[17-Apr-2025 15:43:31 Europe/Athens] Update SQL: UPDATE drivers SET `first_name` = ?, `last_name` = ?, `phone` = ?, `landline` = ?, `birth_date` = ?, `address` = ?, `house_number` = ?, `city` = ?, `country` = ?, `postal_code` = ?, `about_me` = ?, `experience_years` = ?, `available_for_work` = ?, `preferred_job_type` = NULL, `preferred_vehicle_type` = NULL, `preferred_location` = NULL, `preferred_radius` = NULL, `salary_min` = NULL, `salary_max` = NULL, `salary_period` = NULL, `social_linkedin` = ?, `social_facebook` = ?, `social_twitter` = ?, `social_instagram` = ?, `willing_to_relocate` = ?, `willing_to_travel` = ?, `license_number` = ?, `license_document_expiry` = ?, `license_codes` = ?, `marital_status` = ?, `education_level` = ?, `military_service` = ?, `languages` = ?, `language_notes` = ? WHERE id = ?
+[17-Apr-2025 15:43:31 Europe/Athens] Update Values: Array
+(
+    [0] => hotmail
+    [1] => Κώστας
+    [2] => 6972964602
+    [3] => 2310528525
+    [4] => 1965-01-09
+    [5] => Ολυμπου
+    [6] => 32
+    [7] => Θεσσαλονίκη
+    [8] => Ελλάδα
+    [9] => 54631
+    [10] => εςταςετ
+    [11] => 10
+    [12] => 0
+    [13] => 
+    [14] => 
+    [15] => 
+    [16] => 
+    [17] => 0
+    [18] => 0
+    [19] => 002640980
+    [20] => 2028-01-09
+    [21] => 95,01.01
+    [22] => single
+    [23] => secondary_high
+    [24] => completed
+    [25] => german,italian
+    [26] => φδαγΔΓ
+    [27] => 26
+)
+
+[17-Apr-2025 15:43:32 Europe/Athens] addDriverLicense - Driver ID: 26, Type: A, HasPEI: No
+[17-Apr-2025 15:43:32 Europe/Athens] ExpiryDate: 2030-01-09, LicenseNumber: 002640980
+[17-Apr-2025 15:43:32 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:32 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:32 Europe/Athens] addDriverLicense - Driver ID: 26, Type: B, HasPEI: No
+[17-Apr-2025 15:43:32 Europe/Athens] ExpiryDate: 2030-01-01, LicenseNumber: 002640980
+[17-Apr-2025 15:43:32 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:32 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:32 Europe/Athens] addDriverLicense - Driver ID: 26, Type: BE, HasPEI: No
+[17-Apr-2025 15:43:32 Europe/Athens] ExpiryDate: 2030-01-01, LicenseNumber: 002640980
+[17-Apr-2025 15:43:32 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:32 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:32 Europe/Athens] addDriverLicense - Driver ID: 26, Type: C, HasPEI: Yes
+[17-Apr-2025 15:43:32 Europe/Athens] ExpiryDate: 2025-05-31, LicenseNumber: 002640980
+[17-Apr-2025 15:43:32 Europe/Athens] PEI-C Expiry: 2026-05-31, PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:32 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:32 Europe/Athens] addDriverLicense - Driver ID: 26, Type: CE, HasPEI: Yes
+[17-Apr-2025 15:43:32 Europe/Athens] ExpiryDate: 2025-05-31, LicenseNumber: 002640980
+[17-Apr-2025 15:43:32 Europe/Athens] PEI-C Expiry: 2026-05-31, PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:32 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:32 Europe/Athens] addDriverLicense - Driver ID: 26, Type: D, HasPEI: Yes
+[17-Apr-2025 15:43:32 Europe/Athens] ExpiryDate: 2025-05-31, LicenseNumber: 002640980
+[17-Apr-2025 15:43:32 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: 2030-04-16, Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:32 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:32 Europe/Athens] addDriverLicense - Driver ID: 26, Type: DE, HasPEI: Yes
+[17-Apr-2025 15:43:32 Europe/Athens] ExpiryDate: 2025-12-31, LicenseNumber: 002640980
+[17-Apr-2025 15:43:32 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: 2030-04-16, Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:32 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:32 Europe/Athens] updateDriverTachographCard - Data: Array
+(
+    [card_number] => gr1251511222
+    [expiry_date] => 2030-04-16
+)
+
+[17-Apr-2025 15:43:32 Europe/Athens] updateDriverADRCertificate - Data: Array
+(
+    [adr_type] => Π2
+    [certificate_number] => GR1235122
+    [expiry_date] => 2025-12-31
+)
+
+[17-Apr-2025 15:43:32 Europe/Athens] ADR certificate updated successfully
+[17-Apr-2025 15:43:32 Europe/Athens] POST operator_license data: Array
+(
+    [csrf_token] => 81c128cc1a2e9ae262587b4d3ca6983cd264346b920d29eb56f939c5e74b1b3e
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-12-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 125622
+    [operator_license_expiry] => 2025-12-31
+    [operator_speciality] => 3
+    [operator_sub_specialities] => Array
+        (
+            [0] => 3.1
+        )
+
+    [group_3_1] => A
+    [group_3_2] => A
+    [group_3_3] => A
+    [group_3_4] => B
+    [group_3_5] => A
+    [group_3_6] => B
+    [group_3_7] => A
+    [group_3_8] => B
+    [group_3_9] => B
+    [group_3_10] => B
+    [group_3_11] => A
+    [group_3_12] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+)
+
+[17-Apr-2025 15:43:32 Europe/Athens] updateDriverOperatorLicense - Data: Array
+(
+    [speciality] => 3
+    [license_number] => 125622
+    [expiry_date] => 2025-12-31
+)
+
+[17-Apr-2025 15:43:32 Europe/Athens] Driver ID: 26
+[17-Apr-2025 15:43:32 Europe/Athens] Existing license: {"id":11,"driver_id":26,"speciality":"3","expiry_date":"2025-12-31","created_at":"2025-04-14 15:03:07","updated_at":"2025-04-16 19:31:18","license_number":"125622"}
+[17-Apr-2025 15:43:32 Europe/Athens] Operator license updated successfully. License ID: 11
+[17-Apr-2025 15:43:32 Europe/Athens] operatorLicenseId: 11
+[17-Apr-2025 15:43:32 Europe/Athens] Selected subspecialities: Array
+(
+    [0] => 3.1
+)
+
+[17-Apr-2025 15:43:32 Europe/Athens] Deleting subspecialities for operator license ID: 11
+[17-Apr-2025 15:43:32 Europe/Athens] Found subspeciality IDs: 11
+[17-Apr-2025 15:43:32 Europe/Athens] Deleted groups for subspeciality ID 11: success
+[17-Apr-2025 15:43:32 Europe/Athens] Deleted subspecialities result: success
+[17-Apr-2025 15:43:32 Europe/Athens] Adding subspeciality: 3.1 with group: A
+[17-Apr-2025 15:43:32 Europe/Athens] addDriverOperatorSubSpeciality: operatorLicenseId=11, subSpeciality=3.1, groupType=A
+[17-Apr-2025 15:43:32 Europe/Athens] Table has group_type column: yes
+[17-Apr-2025 15:43:32 Europe/Athens] Insert with group_type result: success
+[17-Apr-2025 15:43:32 Europe/Athens] Add result: true
+[17-Apr-2025 15:43:42 Europe/Athens] POST Data: Array
+(
+    [csrf_token] => 4d01d37d9aff6cefd47b319454ee6cc31bd6302e662aa89bf94a21454b935fcd
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-05-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 125622
+    [operator_license_expiry] => 2025-12-31
+    [operator_speciality] => 3
+    [operator_sub_specialities] => Array
+        (
+            [0] => 3.1
+        )
+
+    [group_3_1] => A
+    [group_3_2] => A
+    [group_3_3] => A
+    [group_3_4] => B
+    [group_3_5] => A
+    [group_3_6] => B
+    [group_3_7] => A
+    [group_3_8] => B
+    [group_3_9] => B
+    [group_3_10] => B
+    [group_3_11] => A
+    [group_3_12] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+)
+
+[17-Apr-2025 15:43:42 Europe/Athens] updateProfile data: Array
+(
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [birth_date] => 1965-01-09
+    [address] => Ολυμπου
+    [house_number] => 32
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [postal_code] => 54631
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [available_for_work] => 0
+    [preferred_job_type] => 
+    [preferred_vehicle_type] => 
+    [preferred_location] => 
+    [preferred_radius] => 
+    [salary_min] => 
+    [salary_max] => 
+    [salary_period] => 
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [willing_to_relocate] => 0
+    [willing_to_travel] => 0
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [languages] => german,italian
+    [language_notes] => φδαγΔΓ
+)
+
+[17-Apr-2025 15:43:42 Europe/Athens] Update SQL: UPDATE drivers SET `first_name` = ?, `last_name` = ?, `phone` = ?, `landline` = ?, `birth_date` = ?, `address` = ?, `house_number` = ?, `city` = ?, `country` = ?, `postal_code` = ?, `about_me` = ?, `experience_years` = ?, `available_for_work` = ?, `preferred_job_type` = NULL, `preferred_vehicle_type` = NULL, `preferred_location` = NULL, `preferred_radius` = NULL, `salary_min` = NULL, `salary_max` = NULL, `salary_period` = NULL, `social_linkedin` = ?, `social_facebook` = ?, `social_twitter` = ?, `social_instagram` = ?, `willing_to_relocate` = ?, `willing_to_travel` = ?, `license_number` = ?, `license_document_expiry` = ?, `license_codes` = ?, `marital_status` = ?, `education_level` = ?, `military_service` = ?, `languages` = ?, `language_notes` = ? WHERE id = ?
+[17-Apr-2025 15:43:42 Europe/Athens] Update Values: Array
+(
+    [0] => hotmail
+    [1] => Κώστας
+    [2] => 6972964602
+    [3] => 2310528525
+    [4] => 1965-01-09
+    [5] => Ολυμπου
+    [6] => 32
+    [7] => Θεσσαλονίκη
+    [8] => Ελλάδα
+    [9] => 54631
+    [10] => εςταςετ
+    [11] => 10
+    [12] => 0
+    [13] => 
+    [14] => 
+    [15] => 
+    [16] => 
+    [17] => 0
+    [18] => 0
+    [19] => 002640980
+    [20] => 2028-01-09
+    [21] => 95,01.01
+    [22] => single
+    [23] => secondary_high
+    [24] => completed
+    [25] => german,italian
+    [26] => φδαγΔΓ
+    [27] => 26
+)
+
+[17-Apr-2025 15:43:42 Europe/Athens] addDriverLicense - Driver ID: 26, Type: A, HasPEI: No
+[17-Apr-2025 15:43:42 Europe/Athens] ExpiryDate: 2030-01-09, LicenseNumber: 002640980
+[17-Apr-2025 15:43:42 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:42 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:42 Europe/Athens] addDriverLicense - Driver ID: 26, Type: B, HasPEI: No
+[17-Apr-2025 15:43:42 Europe/Athens] ExpiryDate: 2030-01-01, LicenseNumber: 002640980
+[17-Apr-2025 15:43:42 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:42 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:42 Europe/Athens] addDriverLicense - Driver ID: 26, Type: BE, HasPEI: No
+[17-Apr-2025 15:43:42 Europe/Athens] ExpiryDate: 2030-01-01, LicenseNumber: 002640980
+[17-Apr-2025 15:43:42 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:42 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:42 Europe/Athens] addDriverLicense - Driver ID: 26, Type: C, HasPEI: Yes
+[17-Apr-2025 15:43:42 Europe/Athens] ExpiryDate: 2025-05-31, LicenseNumber: 002640980
+[17-Apr-2025 15:43:42 Europe/Athens] PEI-C Expiry: 2026-05-31, PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:42 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:42 Europe/Athens] addDriverLicense - Driver ID: 26, Type: CE, HasPEI: Yes
+[17-Apr-2025 15:43:42 Europe/Athens] ExpiryDate: 2025-05-31, LicenseNumber: 002640980
+[17-Apr-2025 15:43:42 Europe/Athens] PEI-C Expiry: 2026-05-31, PEI-D Expiry: , Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:42 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:42 Europe/Athens] addDriverLicense - Driver ID: 26, Type: D, HasPEI: Yes
+[17-Apr-2025 15:43:42 Europe/Athens] ExpiryDate: 2025-05-31, LicenseNumber: 002640980
+[17-Apr-2025 15:43:42 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: 2030-04-16, Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:42 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:42 Europe/Athens] addDriverLicense - Driver ID: 26, Type: DE, HasPEI: Yes
+[17-Apr-2025 15:43:42 Europe/Athens] ExpiryDate: 2025-05-31, LicenseNumber: 002640980
+[17-Apr-2025 15:43:42 Europe/Athens] PEI-C Expiry: , PEI-D Expiry: 2030-04-16, Document Expiry: 2028-01-09
+[17-Apr-2025 15:43:42 Europe/Athens] License added successfully
+[17-Apr-2025 15:43:42 Europe/Athens] updateDriverTachographCard - Data: Array
+(
+    [card_number] => gr1251511222
+    [expiry_date] => 2030-04-16
+)
+
+[17-Apr-2025 15:43:42 Europe/Athens] updateDriverADRCertificate - Data: Array
+(
+    [adr_type] => Π2
+    [certificate_number] => GR1235122
+    [expiry_date] => 2025-12-31
+)
+
+[17-Apr-2025 15:43:42 Europe/Athens] ADR certificate updated successfully
+[17-Apr-2025 15:43:42 Europe/Athens] POST operator_license data: Array
+(
+    [csrf_token] => 4d01d37d9aff6cefd47b319454ee6cc31bd6302e662aa89bf94a21454b935fcd
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-05-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 125622
+    [operator_license_expiry] => 2025-12-31
+    [operator_speciality] => 3
+    [operator_sub_specialities] => Array
+        (
+            [0] => 3.1
+        )
+
+    [group_3_1] => A
+    [group_3_2] => A
+    [group_3_3] => A
+    [group_3_4] => B
+    [group_3_5] => A
+    [group_3_6] => B
+    [group_3_7] => A
+    [group_3_8] => B
+    [group_3_9] => B
+    [group_3_10] => B
+    [group_3_11] => A
+    [group_3_12] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+)
+
+[17-Apr-2025 15:43:42 Europe/Athens] updateDriverOperatorLicense - Data: Array
+(
+    [speciality] => 3
+    [license_number] => 125622
+    [expiry_date] => 2025-12-31
+)
+
+[17-Apr-2025 15:43:42 Europe/Athens] Driver ID: 26
+[17-Apr-2025 15:43:42 Europe/Athens] Existing license: {"id":11,"driver_id":26,"speciality":"3","expiry_date":"2025-12-31","created_at":"2025-04-14 15:03:07","updated_at":"2025-04-16 19:31:18","license_number":"125622"}
+[17-Apr-2025 15:43:42 Europe/Athens] Operator license updated successfully. License ID: 11
+[17-Apr-2025 15:43:42 Europe/Athens] operatorLicenseId: 11
+[17-Apr-2025 15:43:42 Europe/Athens] Selected subspecialities: Array
+(
+    [0] => 3.1
+)
+
+[17-Apr-2025 15:43:42 Europe/Athens] Deleting subspecialities for operator license ID: 11
+[17-Apr-2025 15:43:42 Europe/Athens] Found subspeciality IDs: 12
+[17-Apr-2025 15:43:42 Europe/Athens] Deleted groups for subspeciality ID 12: success
+[17-Apr-2025 15:43:42 Europe/Athens] Deleted subspecialities result: success
+[17-Apr-2025 15:43:42 Europe/Athens] Adding subspeciality: 3.1 with group: A
+[17-Apr-2025 15:43:42 Europe/Athens] addDriverOperatorSubSpeciality: operatorLicenseId=11, subSpeciality=3.1, groupType=A
+[17-Apr-2025 15:43:42 Europe/Athens] Table has group_type column: yes
+[17-Apr-2025 15:43:42 Europe/Athens] Insert with group_type result: success
+[17-Apr-2025 15:43:42 Europe/Athens] Add result: true

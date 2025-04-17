@@ -311,70 +311,117 @@ class DriversController {
     }
     
     /**
-     * Διαχειρίζεται την κάρτα ταχογράφου
-     */
-    private function handleTachographCard($driverId) {
-        if (isset($_POST['tachograph_card']) && $_POST['tachograph_card'] == 1) {
-            $tachographData = [
-                'card_number' => $_POST['tachograph_card_number'] ?? null,
-                'expiry_date' => $_POST['tachograph_card_expiry'] ?? null
-            ];
-            
-            // Ανέβασμα εικόνων ταχογράφου αν υπάρχουν
-            if (isset($_FILES['tachograph_front_image']) && $_FILES['tachograph_front_image']['error'] === UPLOAD_ERR_OK) {
-                $frontImagePath = $this->handleImageUpload($driverId, 'tachograph_front_image', 'uploads/tachograph_images/');
-                if ($frontImagePath) {
-                    $this->driversModel->updateDriverDocumentImage($driverId, 'tachograph_front_image', $frontImagePath);
-                }
-            }
-            
-            if (isset($_FILES['tachograph_back_image']) && $_FILES['tachograph_back_image']['error'] === UPLOAD_ERR_OK) {
-                $backImagePath = $this->handleImageUpload($driverId, 'tachograph_back_image', 'uploads/tachograph_images/');
-                if ($backImagePath) {
-                    $this->driversModel->updateDriverDocumentImage($driverId, 'tachograph_back_image', $backImagePath);
-                }
-            }
-            
-            $this->driversModel->updateDriverTachographCard($driverId, $tachographData);
-        } else {
-            // Αν δεν έχει επιλεγεί η κάρτα ταχογράφου, διαγράφουμε τα στοιχεία
-            $this->driversModel->deleteDriverTachographCard($driverId);
-        }
+ * Διαχειρίζεται τη μεταφόρτωση εικόνων διπλώματος, ADR, ταχογράφου, κλπ.
+ * 
+ * @param int $driverId ID του οδηγού
+ * @param string $fieldName Όνομα πεδίου της φόρμας
+ * @param string $uploadPath Διαδρομή για το ανέβασμα
+ * @param string $documentType Τύπος εγγράφου για αποθήκευση στη βάση
+ * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
+ */
+private function handleDocumentImageUpload($driverId, $fieldName, $uploadPath, $documentType) {
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    $maxSize = 2 * 1024 * 1024; // 2MB
+    
+    $file = $_FILES[$fieldName];
+    
+    // Καταγραφή των δεδομένων για αποσφαλμάτωση
+    error_log("Handling document upload: fieldName={$fieldName}, documentType={$documentType}");
+    error_log("File details: name={$file['name']}, type={$file['type']}, size={$file['size']}");
+    
+    // Έλεγχος τύπου αρχείου
+    if (!in_array($file['type'], $allowedTypes)) {
+        $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
+        error_log("Invalid file type: {$file['type']}");
+        return false;
     }
     
-    /**
-     * Διαχειρίζεται το πιστοποιητικό ADR
-     */
-    private function handleADRCertificate($driverId) {
-        if (isset($_POST['adr_certificate']) && $_POST['adr_certificate'] == 1) {
-            $adrData = [
-                'adr_type' => $_POST['adr_certificate_type'] ?? null,
-                'certificate_number' => $_POST['adr_certificate_number'] ?? null,
-                'expiry_date' => $_POST['adr_certificate_expiry'] ?? null
-            ];
-            
-            // Ανέβασμα εικόνων ADR αν υπάρχουν
-            if (isset($_FILES['adr_front_image']) && $_FILES['adr_front_image']['error'] === UPLOAD_ERR_OK) {
-                $frontImagePath = $this->handleImageUpload($driverId, 'adr_front_image', 'uploads/adr_images/');
-                if ($frontImagePath) {
-                    $this->driversModel->updateDriverDocumentImage($driverId, 'adr_front_image', $frontImagePath);
-                }
-            }
-            
-            if (isset($_FILES['adr_back_image']) && $_FILES['adr_back_image']['error'] === UPLOAD_ERR_OK) {
-                $backImagePath = $this->handleImageUpload($driverId, 'adr_back_image', 'uploads/adr_images/');
-                if ($backImagePath) {
-                    $this->driversModel->updateDriverDocumentImage($driverId, 'adr_back_image', $backImagePath);
-                }
-            }
-            
-            $this->driversModel->updateDriverADRCertificate($driverId, $adrData);
-        } else {
-            // Αν δεν έχει επιλεγεί το ADR, διαγράφουμε τα στοιχεία
-            $this->driversModel->deleteDriverADRCertificate($driverId);
-        }
+    // Έλεγχος μεγέθους αρχείου
+    if ($file['size'] > $maxSize) {
+        $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
+        error_log("File too large: {$file['size']} bytes");
+        return false;
     }
     
+    // Δημιουργία του καταλόγου αν δεν υπάρχει
+    $uploadDir = ROOT_DIR . '/public/' . $uploadPath;
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+    
+    // Δημιουργία μοναδικού ονόματος αρχείου
+    $filename = $driverId . '_' . $documentType . '_' . time() . '_' . basename($file['name']);
+    $targetPath = $uploadDir . $filename;
+    
+    // Μεταφορά του αρχείου
+    if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+        // Επιστροφή του σχετικού μονοπατιού
+        $relativePath = $uploadPath . $filename;
+        error_log("File uploaded successfully: {$relativePath}");
+        
+        // Ενημέρωση του πεδίου στον πίνακα drivers
+        $this->driversModel->updateDriverDocumentImage($driverId, $documentType, $relativePath);
+        
+        return $relativePath;
+    }
+    
+    error_log("File upload failed for: {$fieldName}");
+    $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
+    return false;
+}
+
+/**
+ * Διαχειρίζεται το πιστοποιητικό ADR
+ */
+private function handleADRCertificate($driverId) {
+    if (isset($_POST['adr_certificate']) && $_POST['adr_certificate'] == 1) {
+        $adrData = [
+            'adr_type' => $_POST['adr_certificate_type'] ?? null,
+            'certificate_number' => $_POST['adr_certificate_number'] ?? null,
+            'expiry_date' => $_POST['adr_certificate_expiry'] ?? null
+        ];
+        
+        // Ανέβασμα εικόνων ADR αν υπάρχουν
+        if (isset($_FILES['adr_front_image']) && $_FILES['adr_front_image']['error'] === UPLOAD_ERR_OK) {
+            $this->handleDocumentImageUpload($driverId, 'adr_front_image', 'uploads/adr_images/', 'adr_front_image');
+        }
+        
+        if (isset($_FILES['adr_back_image']) && $_FILES['adr_back_image']['error'] === UPLOAD_ERR_OK) {
+            $this->handleDocumentImageUpload($driverId, 'adr_back_image', 'uploads/adr_images/', 'adr_back_image');
+        }
+        
+        $this->driversModel->updateDriverADRCertificate($driverId, $adrData);
+    } else {
+        // Αν δεν έχει επιλεγεί το ADR, διαγράφουμε τα στοιχεία
+        $this->driversModel->deleteDriverADRCertificate($driverId);
+    }
+}
+
+/**
+ * Διαχειρίζεται την κάρτα ταχογράφου
+ */
+private function handleTachographCard($driverId) {
+    if (isset($_POST['tachograph_card']) && $_POST['tachograph_card'] == 1) {
+        $tachographData = [
+            'card_number' => $_POST['tachograph_card_number'] ?? null,
+            'expiry_date' => $_POST['tachograph_card_expiry'] ?? null
+        ];
+        
+        // Ανέβασμα εικόνων ταχογράφου αν υπάρχουν
+        if (isset($_FILES['tachograph_front_image']) && $_FILES['tachograph_front_image']['error'] === UPLOAD_ERR_OK) {
+            $this->handleDocumentImageUpload($driverId, 'tachograph_front_image', 'uploads/tachograph_images/', 'tachograph_front_image');
+        }
+        
+        if (isset($_FILES['tachograph_back_image']) && $_FILES['tachograph_back_image']['error'] === UPLOAD_ERR_OK) {
+            $this->handleDocumentImageUpload($driverId, 'tachograph_back_image', 'uploads/tachograph_images/', 'tachograph_back_image');
+        }
+        
+        $this->driversModel->updateDriverTachographCard($driverId, $tachographData);
+    } else {
+        // Αν δεν έχει επιλεγεί η κάρτα ταχογράφου, διαγράφουμε τα στοιχεία
+        $this->driversModel->deleteDriverTachographCard($driverId);
+    }
+}
     /**
  * Διαχειρίζεται την άδεια χειριστή μηχανημάτων
  */

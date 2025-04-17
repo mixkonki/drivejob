@@ -1,0 +1,169 @@
+[17-Apr-2025 12:19:50 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-17 12:19:50 ---
+[17-Apr-2025 12:19:50 UTC] Φόρτωση του bootstrap από: C:\wamp64\www\drivejob/src/bootstrap.php
+[17-Apr-2025 15:19:50 Europe/Athens] PHP Warning:  Constant ROOT_DIR already defined in C:\wamp64\www\drivejob\config\config.php on line 7
+[17-Apr-2025 15:19:50 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:19:50 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:19:50 Europe/Athens] PHP   2. require_once() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:41
+[17-Apr-2025 15:19:50 Europe/Athens] PHP   3. require_once() C:\wamp64\www\drivejob\src\bootstrap.php:8
+[17-Apr-2025 15:19:50 Europe/Athens] Session expired due to inactivity: tgqvsoanuf3c5qsqeda9ic9hcn
+[17-Apr-2025 15:19:50 Europe/Athens] Επιτυχής φόρτωση του bootstrap.php
+[17-Apr-2025 15:19:50 Europe/Athens] PHP Fatal error:  Uncaught Error: Class "Drivejob\Core\Database" not found in C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:51
+Stack trace:
+#0 {main}
+  thrown in C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php on line 51
+[17-Apr-2025 12:20:42 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-17 12:20:42 ---
+[17-Apr-2025 12:20:42 UTC] Φόρτωση του bootstrap από: C:\wamp64\www\drivejob/src/bootstrap.php
+[17-Apr-2025 15:20:42 Europe/Athens] PHP Warning:  Constant ROOT_DIR already defined in C:\wamp64\www\drivejob\config\config.php on line 7
+[17-Apr-2025 15:20:42 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:20:42 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:20:42 Europe/Athens] PHP   2. require_once() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:42
+[17-Apr-2025 15:20:42 Europe/Athens] PHP   3. require_once() C:\wamp64\www\drivejob\src\bootstrap.php:8
+[17-Apr-2025 15:20:42 Europe/Athens] Session expired due to inactivity: tgqvsoanuf3c5qsqeda9ic9hcn
+[17-Apr-2025 15:20:42 Europe/Athens] Επιτυχής φόρτωση του bootstrap.php
+[17-Apr-2025 15:20:42 Europe/Athens] PHP Fatal error:  Uncaught Error: Class "Drivejob\Core\Database" not found in C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:52
+Stack trace:
+#0 {main}
+  thrown in C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php on line 52
+[17-Apr-2025 12:21:56 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-17 12:21:56 ---
+[17-Apr-2025 12:21:56 UTC] Φόρτωση του bootstrap από: C:\wamp64\www\drivejob/src/bootstrap.php
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Warning:  Constant ROOT_DIR already defined in C:\wamp64\www\drivejob\config\config.php on line 7
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   2. require_once() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:42
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   3. require_once() C:\wamp64\www\drivejob\src\bootstrap.php:8
+[17-Apr-2025 15:21:56 Europe/Athens] Session expired due to inactivity: tgqvsoanuf3c5qsqeda9ic9hcn
+[17-Apr-2025 15:21:56 Europe/Athens] Επιτυχής φόρτωση του bootstrap.php
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Warning:  include(C:\wamp64\www\drivejob/config/db.php): Failed to open stream: No such file or directory in C:\wamp64\www\drivejob\src\Core\Database.php on line 27
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:52
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Warning:  include(): Failed opening 'C:\wamp64\www\drivejob/config/db.php' for inclusion (include_path='.;C:\php\pear') in C:\wamp64\www\drivejob\src\Core\Database.php on line 27
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:52
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Warning:  Trying to access array offset on value of type bool in C:\wamp64\www\drivejob\src\Core\Database.php on line 30
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:52
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Warning:  Trying to access array offset on value of type bool in C:\wamp64\www\drivejob\src\Core\Database.php on line 30
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:52
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Warning:  Trying to access array offset on value of type bool in C:\wamp64\www\drivejob\src\Core\Database.php on line 31
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:52
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Warning:  Trying to access array offset on value of type bool in C:\wamp64\www\drivejob\src\Core\Database.php on line 31
+[17-Apr-2025 15:21:56 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:52
+[17-Apr-2025 15:21:56 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 12:22:32 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-17 12:22:32 ---
+[17-Apr-2025 12:22:32 UTC] Φόρτωση του bootstrap από: C:\wamp64\www\drivejob/src/bootstrap.php
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Warning:  Constant ROOT_DIR already defined in C:\wamp64\www\drivejob\config\config.php on line 7
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   2. require_once() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:36
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   3. require_once() C:\wamp64\www\drivejob\src\bootstrap.php:8
+[17-Apr-2025 15:22:32 Europe/Athens] Session expired due to inactivity: tgqvsoanuf3c5qsqeda9ic9hcn
+[17-Apr-2025 15:22:32 Europe/Athens] Επιτυχής φόρτωση του bootstrap.php
+[17-Apr-2025 15:22:32 Europe/Athens] Φόρτωση του EmailService.php
+[17-Apr-2025 15:22:32 Europe/Athens] Φόρτωση του SmsService.php
+[17-Apr-2025 15:22:32 Europe/Athens] Φόρτωση του LicenseExpiryNotificationService.php
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Warning:  include(C:\wamp64\www\drivejob/config/db.php): Failed to open stream: No such file or directory in C:\wamp64\www\drivejob\src\Core\Database.php on line 27
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:78
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Warning:  include(): Failed opening 'C:\wamp64\www\drivejob/config/db.php' for inclusion (include_path='.;C:\php\pear') in C:\wamp64\www\drivejob\src\Core\Database.php on line 27
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:78
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Warning:  Trying to access array offset on value of type bool in C:\wamp64\www\drivejob\src\Core\Database.php on line 30
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:78
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Warning:  Trying to access array offset on value of type bool in C:\wamp64\www\drivejob\src\Core\Database.php on line 30
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:78
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Warning:  Trying to access array offset on value of type bool in C:\wamp64\www\drivejob\src\Core\Database.php on line 31
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:78
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Warning:  Trying to access array offset on value of type bool in C:\wamp64\www\drivejob\src\Core\Database.php on line 31
+[17-Apr-2025 15:22:32 Europe/Athens] PHP Stack trace:
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:0
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   2. Drivejob\Core\Database::getInstance() C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:78
+[17-Apr-2025 15:22:32 Europe/Athens] PHP   3. Drivejob\Core\Database->__construct() C:\wamp64\www\drivejob\src\Core\Database.php:53
+[17-Apr-2025 12:26:14 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-17 12:26:14 ---
+[17-Apr-2025 12:26:14 UTC] Φόρτωση του bootstrap από: C:\wamp64\www\drivejob/src/bootstrap.php
+[17-Apr-2025 15:26:14 Europe/Athens] Session expired due to inactivity: tgqvsoanuf3c5qsqeda9ic9hcn
+[17-Apr-2025 15:26:14 Europe/Athens] Επιτυχής φόρτωση του bootstrap.php
+[17-Apr-2025 15:26:14 Europe/Athens] PHP Fatal error:  Uncaught Error: Undefined constant "DB_HOST" in C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php:57
+Stack trace:
+#0 {main}
+  thrown in C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php on line 57
+[17-Apr-2025 12:29:53 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-17 12:29:53 ---
+[17-Apr-2025 15:29:53 Europe/Athens] Session expired due to inactivity: tgqvsoanuf3c5qsqeda9ic9hcn
+[17-Apr-2025 15:29:53 Europe/Athens] Φόρτωση του bootstrap.php
+[17-Apr-2025 15:29:53 Europe/Athens] Επιτυχής σύνδεση με τη βάση δεδομένων
+[17-Apr-2025 15:29:53 Europe/Athens] Εκτέλεση ελέγχου για άδειες που λήγουν...
+[17-Apr-2025 15:29:53 Europe/Athens] Ολοκλήρωση ελέγχου.
+[17-Apr-2025 15:29:53 Europe/Athens] Συνολικές ειδοποιήσεις που στάλθηκαν: 0
+[17-Apr-2025 15:29:53 Europe/Athens] Κατηγορία driving_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:29:53 Europe/Athens] Κατηγορία pei: 0 ειδοποιήσεις
+[17-Apr-2025 15:29:53 Europe/Athens] Κατηγορία adr_certificates: 0 ειδοποιήσεις
+[17-Apr-2025 15:29:53 Europe/Athens] Κατηγορία tachograph_cards: 0 ειδοποιήσεις
+[17-Apr-2025 15:29:53 Europe/Athens] Κατηγορία operator_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:29:53 Europe/Athens] Κατηγορία special_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:29:53 Europe/Athens] --- Επιτυχής ολοκλήρωση ελέγχου: 2025-04-17 15:29:53 ---
+[17-Apr-2025 12:30:05 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-17 12:30:05 ---
+[17-Apr-2025 15:30:05 Europe/Athens] Session expired due to inactivity: tgqvsoanuf3c5qsqeda9ic9hcn
+[17-Apr-2025 15:30:05 Europe/Athens] Φόρτωση του bootstrap.php
+[17-Apr-2025 15:30:05 Europe/Athens] Επιτυχής σύνδεση με τη βάση δεδομένων
+[17-Apr-2025 15:30:05 Europe/Athens] Εκτέλεση ελέγχου για άδειες που λήγουν...
+[17-Apr-2025 15:30:05 Europe/Athens] Ολοκλήρωση ελέγχου.
+[17-Apr-2025 15:30:05 Europe/Athens] Συνολικές ειδοποιήσεις που στάλθηκαν: 0
+[17-Apr-2025 15:30:05 Europe/Athens] Κατηγορία driving_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:30:05 Europe/Athens] Κατηγορία pei: 0 ειδοποιήσεις
+[17-Apr-2025 15:30:05 Europe/Athens] Κατηγορία adr_certificates: 0 ειδοποιήσεις
+[17-Apr-2025 15:30:05 Europe/Athens] Κατηγορία tachograph_cards: 0 ειδοποιήσεις
+[17-Apr-2025 15:30:05 Europe/Athens] Κατηγορία operator_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:30:05 Europe/Athens] Κατηγορία special_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:30:05 Europe/Athens] --- Επιτυχής ολοκλήρωση ελέγχου: 2025-04-17 15:30:05 ---
+[17-Apr-2025 12:41:41 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-17 12:41:41 ---
+[17-Apr-2025 15:41:41 Europe/Athens] Φόρτωση του bootstrap.php
+[17-Apr-2025 15:41:41 Europe/Athens] Επιτυχής σύνδεση με τη βάση δεδομένων
+[17-Apr-2025 15:41:41 Europe/Athens] Εκτέλεση ελέγχου για άδειες που λήγουν...
+[17-Apr-2025 15:41:41 Europe/Athens] Ολοκλήρωση ελέγχου.
+[17-Apr-2025 15:41:41 Europe/Athens] Συνολικές ειδοποιήσεις που στάλθηκαν: 0
+[17-Apr-2025 15:41:41 Europe/Athens] Κατηγορία driving_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:41:41 Europe/Athens] Κατηγορία pei: 0 ειδοποιήσεις
+[17-Apr-2025 15:41:41 Europe/Athens] Κατηγορία adr_certificates: 0 ειδοποιήσεις
+[17-Apr-2025 15:41:41 Europe/Athens] Κατηγορία tachograph_cards: 0 ειδοποιήσεις
+[17-Apr-2025 15:41:41 Europe/Athens] Κατηγορία operator_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:41:41 Europe/Athens] Κατηγορία special_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:41:41 Europe/Athens] --- Επιτυχής ολοκλήρωση ελέγχου: 2025-04-17 15:41:41 ---
+[17-Apr-2025 12:43:45 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-17 12:43:45 ---
+[17-Apr-2025 15:43:45 Europe/Athens] Φόρτωση του bootstrap.php
+[17-Apr-2025 15:43:45 Europe/Athens] Επιτυχής σύνδεση με τη βάση δεδομένων
+[17-Apr-2025 15:43:45 Europe/Athens] Εκτέλεση ελέγχου για άδειες που λήγουν...
+[17-Apr-2025 15:43:45 Europe/Athens] Ολοκλήρωση ελέγχου.
+[17-Apr-2025 15:43:45 Europe/Athens] Συνολικές ειδοποιήσεις που στάλθηκαν: 0
+[17-Apr-2025 15:43:45 Europe/Athens] Κατηγορία driving_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:43:45 Europe/Athens] Κατηγορία pei: 0 ειδοποιήσεις
+[17-Apr-2025 15:43:45 Europe/Athens] Κατηγορία adr_certificates: 0 ειδοποιήσεις
+[17-Apr-2025 15:43:45 Europe/Athens] Κατηγορία tachograph_cards: 0 ειδοποιήσεις
+[17-Apr-2025 15:43:45 Europe/Athens] Κατηγορία operator_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:43:45 Europe/Athens] Κατηγορία special_licenses: 0 ειδοποιήσεις
+[17-Apr-2025 15:43:45 Europe/Athens] --- Επιτυχής ολοκλήρωση ελέγχου: 2025-04-17 15:43:45 ---
