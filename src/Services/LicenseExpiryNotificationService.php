@@ -479,260 +479,264 @@ $this->log("Διαδρομή προτύπων: {$this->templatesPath}", 'INFO');
         }
     }
     
-    /**
-     * Έλεγχος για συγκεκριμένο τύπο ΠΕΙ
-     * 
-     * @param string $peiCategory Κατηγορία ΠΕΙ (C ή D)
-     * @param string $expiryDateField Όνομα πεδίου ημερομηνίας λήξης στη βάση
-     * @param DateTime $currentDate Τρέχουσα ημερομηνία
-     * @return array Λίστα ειδοποιήσεων που στάλθηκαν
-     */
-    private function checkSpecificPeiType($peiCategory, $expiryDateField, $currentDate) {
-        $sentNotifications = [];
-        
-        // Βεβαιωνόμαστε ότι υπάρχει η στήλη στον πίνακα
-        if (!$this->columnExists('driver_licenses', $expiryDateField)) {
-            $this->log("Η στήλη {$expiryDateField} δεν υπάρχει στον πίνακα driver_licenses", 'WARNING');
-            return $sentNotifications;
-        }
-        
-        try {
-            // Υπολογισμός της μέγιστης ημερομηνίας ελέγχου
-            $maxDate = clone $currentDate;
-            $maxDate->modify("+{$this->maxCheckDays} days");
-            $maxDateString = $maxDate->format('Y-m-d');
-            
-            // Εύρεση όλων των ΠΕΙ που λήγουν στο επόμενο διάστημα
-            $sql = "
-                SELECT 
-                    d.id as driver_id, 
-                    d.first_name, 
-                    d.last_name, 
-                    d.email, 
-                    d.phone,
-                    dl.license_type, 
-                    dl.{$expiryDateField} as expiry_date
-                FROM 
-                    drivers d
-                JOIN 
-                    driver_licenses dl ON d.id = dl.driver_id
-                WHERE 
-                    dl.{$expiryDateField} BETWEEN CURDATE() AND :max_date
-                    AND dl.has_pei = 1
-                    AND d.is_verified = 1
-                GROUP BY 
-                    d.id, dl.{$expiryDateField}
-            ";
-            
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                'max_date' => $maxDateString
-            ]);
-            
-            $expiringPeis = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $this->log("Βρέθηκαν " . count($expiringPeis) . " ΠΕΙ κατηγορίας {$peiCategory} που λήγουν στο επόμενο διάστημα", 'INFO');
-            
-            // Έλεγχος για κάθε ΠΕΙ
-            foreach ($expiringPeis as $pei) {
-                $expiryDate = new DateTime($pei['expiry_date']);
-                $interval = $currentDate->diff($expiryDate);
-                $daysUntilExpiry = $interval->days;
-                
-                // Έλεγχος αν το ΠΕΙ πρέπει να ειδοποιηθεί με βάση τις περιόδους
-                foreach ($this->notificationPeriods['driving_license'] as $daysBeforeExpiry) {
-                    // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
-                    if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
-                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
-                        // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
-                        if ($this->hasNotificationBeenSent($pei['driver_id'], 'pei', "PEI-{$peiCategory}", $pei['expiry_date'], $daysBeforeExpiry)) {
-                            $this->log("Η ειδοποίηση για τον οδηγό {$pei['driver_id']} και ΠΕΙ κατηγορίας {$peiCategory} έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
-                            continue;
-                        }
-                        
-                        // Προετοιμασία του email
-                        $subject = "Ειδοποίηση λήξης ΠΕΙ κατηγορίας {$peiCategory}";
-                        $message = $this->getEmailTemplate(
-                            'pei', 
-                            [
-                                'first_name' => $pei['first_name'],
-                                'pei_category' => $peiCategory,
-                                'expiry_date' => $pei['expiry_date'],
-                                'days_before_expiry' => $daysBeforeExpiry
-                            ]
-                        );
-                        
-                        // Αποστολή email
-                        $emailSent = false;
-                        if (!empty($pei['email'])) {
-                            $emailSent = $this->emailService->send($pei['email'], $subject, $message);
-                            $this->log("Αποστολή email στον οδηγό {$pei['driver_id']} για ΠΕΙ κατηγορίας {$peiCategory}: " . ($emailSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
-                        } else {
-                            $this->log("Ο οδηγός {$pei['driver_id']} δεν έχει email", 'WARNING');
-                        }
-                        
-                        // Αποστολή SMS αν είναι λιγότερο από 15 ημέρες πριν τη λήξη
-                        $smsSent = false;
-                        if ($daysBeforeExpiry <= 15 && !empty($pei['phone'])) {
-                            $smsMessage = "DriveJob: Το ΠΕΙ κατηγορίας {$peiCategory} λήγει σε {$daysBeforeExpiry} " . 
-                                        ($daysBeforeExpiry == 1 ? "ημέρα" : "ημέρες") . ". Παρακαλούμε ανανεώστε το έγκαιρα.";
-                            $smsSent = $this->smsService->sendSms($pei['phone'], $smsMessage);
-                            $this->log("Αποστολή SMS στον οδηγό {$pei['driver_id']} για ΠΕΙ κατηγορίας {$peiCategory}: " . ($smsSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
-                        }
-                        
-                        // Καταγραφή της ειδοποίησης
-                        if ($emailSent || $smsSent) {
-                            $this->recordNotification($pei['driver_id'], 'pei', "PEI-{$peiCategory}", $pei['expiry_date'], $daysBeforeExpiry);
-                            $sentNotifications[] = [
-                                'driver_id' => $pei['driver_id'],
-                                'driver_name' => $pei['first_name'] . ' ' . $pei['last_name'],
-                                'license_type' => "PEI-{$peiCategory}",
-                                'expiry_date' => $pei['expiry_date'],
-                                'days_before' => $daysBeforeExpiry,
-                                'email_sent' => $emailSent,
-                                'sms_sent' => $smsSent
-                            ];
-                        }
-                    }
-                }
-            }
-            
-            return $sentNotifications;
-        } catch (PDOException $e) {
-            $this->log("Σφάλμα PDO κατά τον έλεγχο ΠΕΙ κατηγορίας {$peiCategory}: " . $e->getMessage() . " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
-            $this->log("SQL State: " . $e->errorInfo[0] . ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
-            $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
-            return $sentNotifications;
-        } catch (Exception $e) {
-            $this->log("Γενικό σφάλμα κατά τον έλεγχο ΠΕΙ κατηγορίας {$peiCategory}: " . $e->getMessage() . " (Τύπος: " . get_class($e) . ")", 'ERROR');
-            $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
-            return $sentNotifications;
-        }
+    // Διορθώσεις για το αρχείο: src/Services/LicenseExpiryNotificationService.php
+
+/**
+ * Έλεγχος για συγκεκριμένο τύπο ΠΕΙ - ΔΙΟΡΘΩΜΕΝΗ ΕΚΔΟΣΗ
+ * 
+ * @param string $peiCategory Κατηγορία ΠΕΙ (C ή D)
+ * @param string $expiryDateField Όνομα πεδίου ημερομηνίας λήξης στη βάση
+ * @param DateTime $currentDate Τρέχουσα ημερομηνία
+ * @return array Λίστα ειδοποιήσεων που στάλθηκαν
+ */
+private function checkSpecificPeiType($peiCategory, $expiryDateField, $currentDate) {
+    $sentNotifications = [];
+    
+    // Βεβαιωνόμαστε ότι υπάρχει η στήλη στον πίνακα
+    if (!$this->columnExists('driver_licenses', $expiryDateField)) {
+        $this->log("Η στήλη {$expiryDateField} δεν υπάρχει στον πίνακα driver_licenses", 'WARNING');
+        return $sentNotifications;
     }
     
-    /**
-     * Έλεγχος για πιστοποιητικά ADR που λήγουν
-     * 
-     * @return array Λίστα ειδοποιήσεων που στάλθηκαν
-     */
-    private function checkAdrCertificates() {
-        $sentNotifications = [];
-        $currentDate = new DateTime();
+    try {
+        // Υπολογισμός της μέγιστης ημερομηνίας ελέγχου
+        $maxDate = clone $currentDate;
+        $maxDate->modify("+{$this->maxCheckDays} days");
+        $maxDateString = $maxDate->format('Y-m-d');
         
-        // Έλεγχος αν υπάρχει ο πίνακας
-        if (!$this->tableExists('driver_adr_certificates')) {
-            $this->log("Ο πίνακας driver_adr_certificates δεν υπάρχει", 'WARNING');
-            return $sentNotifications;
-        }
+        // Εύρεση όλων των ΠΕΙ που λήγουν στο επόμενο διάστημα
+        $sql = "
+            SELECT 
+                d.id as driver_id, 
+                d.first_name, 
+                d.last_name, 
+                d.email, 
+                d.phone,
+                dl.license_type, 
+                dl.{$expiryDateField} as expiry_date
+            FROM 
+                drivers d
+            JOIN 
+                driver_licenses dl ON d.id = dl.driver_id
+            WHERE 
+                dl.{$expiryDateField} BETWEEN CURDATE() AND :max_date
+                AND dl.has_pei = 1
+                AND d.is_verified = 1
+            GROUP BY 
+                d.id, dl.{$expiryDateField}
+        ";
         
-        try {
-            // Υπολογισμός της μέγιστης ημερομηνίας ελέγχου
-            $maxDate = clone $currentDate;
-            $maxDate->modify("+{$this->maxCheckDays} days");
-            $maxDateString = $maxDate->format('Y-m-d');
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'max_date' => $maxDateString
+        ]);
+        
+        $expiringPeis = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $this->log("Βρέθηκαν " . count($expiringPeis) . " ΠΕΙ κατηγορίας {$peiCategory} που λήγουν στο επόμενο διάστημα", 'INFO');
+        
+        // Έλεγχος για κάθε ΠΕΙ
+        foreach ($expiringPeis as $pei) {
+            $expiryDate = new DateTime($pei['expiry_date']);
+            $interval = $currentDate->diff($expiryDate);
+            $daysUntilExpiry = $interval->days;
             
-            // Εύρεση όλων των πιστοποιητικών ADR που λήγουν στο επόμενο διάστημα
-            $sql = "
-                SELECT 
-                    d.id as driver_id, 
-                    d.first_name, 
-                    d.last_name, 
-                    d.email, 
-                    d.phone,
-                    dac.adr_type, 
-                    dac.expiry_date
-                FROM 
-                    drivers d
-                JOIN 
-                    driver_adr_certificates dac ON d.id = dac.driver_id
-                WHERE 
-                    dac.expiry_date BETWEEN CURDATE() AND :max_date
-                    AND d.is_verified = 1
-            ";
-            
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                'max_date' => $maxDateString
-            ]);
-            
-            $expiringAdrCerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $this->log("Βρέθηκαν " . count($expiringAdrCerts) . " πιστοποιητικά ADR που λήγουν στο επόμενο διάστημα", 'INFO');
-            
-            // Έλεγχος για κάθε πιστοποιητικό ADR
-            foreach ($expiringAdrCerts as $cert) {
-                $expiryDate = new DateTime($cert['expiry_date']);
-                $interval = $currentDate->diff($expiryDate);
-                $daysUntilExpiry = $interval->days;
-                
-                // Έλεγχος αν το πιστοποιητικό πρέπει να ειδοποιηθεί με βάση τις περιόδους
-                foreach ($this->notificationPeriods['driving_license'] as $daysBeforeExpiry) {
-                    // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
-                    if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
-                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
-                        // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
-                        if ($this->hasNotificationBeenSent($cert['driver_id'], 'adr_certificate', $cert['adr_type'], $cert['expiry_date'], $daysBeforeExpiry)) {
-                            $this->log("Η ειδοποίηση για τον οδηγό {$cert['driver_id']} και ADR τύπου {$cert['adr_type']} έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
-                            continue;
-                        }
-                        
-                        // Προετοιμασία του email
-                        $subject = "Ειδοποίηση λήξης πιστοποιητικού ADR - {$cert['adr_type']}";
-                        $message = $this->getEmailTemplate(
-                            'adr_certificate',
-                            [
-                                'first_name' => $cert['first_name'],
-                                'adr_type' => $cert['adr_type'],
-                                'expiry_date' => $cert['expiry_date'],
-                                'days_before_expiry' => $daysBeforeExpiry
-                            ]
-                        );
-                        
-                        // Αποστολή email
-                        $emailSent = false;
-                        if (!empty($cert['email'])) {
-                            $emailSent = $this->emailService->send($cert['email'], $subject, $message);
-                            $this->log("Αποστολή email στον οδηγό {$cert['driver_id']} για ADR τύπου {$cert['adr_type']}: " . ($emailSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
-                        } else {
-                            $this->log("Ο οδηγός {$cert['driver_id']} δεν έχει email", 'WARNING');
-                        }
-                        
-                        // Αποστολή SMS αν είναι λιγότερο από 15 ημέρες πριν τη λήξη
-                        $smsSent = false;
-                        if ($daysBeforeExpiry <= 15 && !empty($cert['phone'])) {
-                            $smsMessage = "DriveJob: Το πιστοποιητικό ADR τύπου {$cert['adr_type']} λήγει σε {$daysBeforeExpiry} " . 
-                                        ($daysBeforeExpiry == 1 ? "ημέρα" : "ημέρες") . ". Παρακαλούμε ανανεώστε το έγκαιρα.";
-                            $smsSent = $this->smsService->sendSms($cert['phone'], $smsMessage);
-                            $this->log("Αποστολή SMS στον οδηγό {$cert['driver_id']} για ADR τύπου {$cert['adr_type']}: " . ($smsSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
-                        }
-                        
-                        // Καταγραφή της ειδοποίησης
-                        if ($emailSent || $smsSent) {
-                            $this->recordNotification($cert['driver_id'], 'adr_certificate', $cert['adr_type'], $cert['expiry_date'], $daysBeforeExpiry);
-                            $sentNotifications[] = [
-                                'driver_id' => $cert['driver_id'],
-                                'driver_name' => $cert['first_name'] . ' ' . $cert['last_name'],
-                                'license_type' => $cert['adr_type'],
-                                'expiry_date' => $cert['expiry_date'],
-                                'days_before' => $daysBeforeExpiry,
-                                'email_sent' => $emailSent,
-                                'sms_sent' => $smsSent
-                            ];
-                        }
+            // Έλεγχος αν το ΠΕΙ πρέπει να ειδοποιηθεί με βάση τις περιόδους
+            foreach ($this->notificationPeriods['pei'] as $daysBeforeExpiry) {
+                // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
+                if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
+                    $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$pei['driver_id']}, license_type=PEI-{$peiCategory}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
+                    
+                    // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
+                    if ($this->hasNotificationBeenSent($pei['driver_id'], 'pei', "PEI-{$peiCategory}", $pei['expiry_date'], $daysBeforeExpiry)) {
+                        $this->log("Η ειδοποίηση για τον οδηγό {$pei['driver_id']} και ΠΕΙ κατηγορίας {$peiCategory} έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
+                        continue;
+                    }
+                    
+                    // Προετοιμασία του email
+                    $subject = "Ειδοποίηση λήξης ΠΕΙ κατηγορίας {$peiCategory}";
+                    $message = $this->getEmailTemplate(
+                        'pei', 
+                        [
+                            'first_name' => $pei['first_name'],
+                            'pei_category' => $peiCategory,
+                            'expiry_date' => $pei['expiry_date'],
+                            'days_before_expiry' => $daysBeforeExpiry
+                        ]
+                    );
+                    
+                    // Αποστολή email
+                    $emailSent = false;
+                    if (!empty($pei['email'])) {
+                        $emailSent = $this->emailService->send($pei['email'], $subject, $message);
+                        $this->log("Αποστολή email στον οδηγό {$pei['driver_id']} για ΠΕΙ κατηγορίας {$peiCategory}: " . ($emailSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
+                    } else {
+                        $this->log("Ο οδηγός {$pei['driver_id']} δεν έχει email", 'WARNING');
+                    }
+                    
+                    // Αποστολή SMS αν είναι λιγότερο από 15 ημέρες πριν τη λήξη
+                    $smsSent = false;
+                    if ($daysBeforeExpiry <= 15 && !empty($pei['phone'])) {
+                        $smsMessage = "DriveJob: Το ΠΕΙ κατηγορίας {$peiCategory} λήγει σε {$daysBeforeExpiry} " . 
+                                    ($daysBeforeExpiry == 1 ? "ημέρα" : "ημέρες") . ". Παρακαλούμε ανανεώστε το έγκαιρα.";
+                        $smsSent = $this->smsService->sendSms($pei['phone'], $smsMessage);
+                        $this->log("Αποστολή SMS στον οδηγό {$pei['driver_id']} για ΠΕΙ κατηγορίας {$peiCategory}: " . ($smsSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
+                    }
+                    
+                    // Καταγραφή της ειδοποίησης
+                    if ($emailSent || $smsSent) {
+                        $this->recordNotification($pei['driver_id'], 'pei', "PEI-{$peiCategory}", $pei['expiry_date'], $daysBeforeExpiry);
+                        $sentNotifications[] = [
+                            'driver_id' => $pei['driver_id'],
+                            'driver_name' => $pei['first_name'] . ' ' . $pei['last_name'],
+                            'license_type' => "PEI-{$peiCategory}",
+                            'expiry_date' => $pei['expiry_date'],
+                            'days_before' => $daysBeforeExpiry,
+                            'email_sent' => $emailSent,
+                            'sms_sent' => $smsSent
+                        ];
                     }
                 }
             }
-            
-            return $sentNotifications;
-        } catch (PDOException $e) {
-            $this->log("Σφάλμα PDO κατά τον έλεγχο πιστοποιητικών ADR: " . $e->getMessage() . " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
-            $this->log("SQL State: " . $e->errorInfo[0] . ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
-            $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
-            return $sentNotifications;
-        } catch (Exception $e) {
-            $this->log("Γενικό σφάλμα κατά τον έλεγχο πιστοποιητικών ADR: " . $e->getMessage() . " (Τύπος: " . get_class($e) . ")", 'ERROR');
-            $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
-            return $sentNotifications;
         }
+        
+        return $sentNotifications;
+    } catch (PDOException $e) {
+        $this->log("Σφάλμα PDO κατά τον έλεγχο ΠΕΙ κατηγορίας {$peiCategory}: " . $e->getMessage() . " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
+        $this->log("SQL State: " . $e->errorInfo[0] . ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
+        $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
+        return $sentNotifications;
+    } catch (Exception $e) {
+        $this->log("Γενικό σφάλμα κατά τον έλεγχο ΠΕΙ κατηγορίας {$peiCategory}: " . $e->getMessage() . " (Τύπος: " . get_class($e) . ")", 'ERROR');
+        $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
+        return $sentNotifications;
     }
+}
+
+/**
+ * Έλεγχος για πιστοποιητικά ADR που λήγουν - ΔΙΟΡΘΩΜΕΝΗ ΕΚΔΟΣΗ
+ * 
+ * @return array Λίστα ειδοποιήσεων που στάλθηκαν
+ */
+private function checkAdrCertificates() {
+    $sentNotifications = [];
+    $currentDate = new DateTime();
+    
+    // Έλεγχος αν υπάρχει ο πίνακας
+    if (!$this->tableExists('driver_adr_certificates')) {
+        $this->log("Ο πίνακας driver_adr_certificates δεν υπάρχει", 'WARNING');
+        return $sentNotifications;
+    }
+    
+    try {
+        // Υπολογισμός της μέγιστης ημερομηνίας ελέγχου
+        $maxDate = clone $currentDate;
+        $maxDate->modify("+{$this->maxCheckDays} days");
+        $maxDateString = $maxDate->format('Y-m-d');
+        
+        // Εύρεση όλων των πιστοποιητικών ADR που λήγουν στο επόμενο διάστημα
+        $sql = "
+            SELECT 
+                d.id as driver_id, 
+                d.first_name, 
+                d.last_name, 
+                d.email, 
+                d.phone,
+                dac.adr_type, 
+                dac.expiry_date
+            FROM 
+                drivers d
+            JOIN 
+                driver_adr_certificates dac ON d.id = dac.driver_id
+            WHERE 
+                dac.expiry_date BETWEEN CURDATE() AND :max_date
+                AND d.is_verified = 1
+        ";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'max_date' => $maxDateString
+        ]);
+        
+        $expiringAdrCerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $this->log("Βρέθηκαν " . count($expiringAdrCerts) . " πιστοποιητικά ADR που λήγουν στο επόμενο διάστημα", 'INFO');
+        
+        // Έλεγχος για κάθε πιστοποιητικό ADR
+        foreach ($expiringAdrCerts as $cert) {
+            $expiryDate = new DateTime($cert['expiry_date']);
+            $interval = $currentDate->diff($expiryDate);
+            $daysUntilExpiry = $interval->days;
+            
+            // Έλεγχος αν το πιστοποιητικό πρέπει να ειδοποιηθεί με βάση τις περιόδους
+            foreach ($this->notificationPeriods['adr_certificate'] as $daysBeforeExpiry) {
+                // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
+                if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
+                    $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$cert['driver_id']}, license_type={$cert['adr_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
+                    
+                    // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
+                    if ($this->hasNotificationBeenSent($cert['driver_id'], 'adr_certificate', $cert['adr_type'], $cert['expiry_date'], $daysBeforeExpiry)) {
+                        $this->log("Η ειδοποίηση για τον οδηγό {$cert['driver_id']} και ADR τύπου {$cert['adr_type']} έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
+                        continue;
+                    }
+                    
+                    // Προετοιμασία του email
+                    $subject = "Ειδοποίηση λήξης πιστοποιητικού ADR - {$cert['adr_type']}";
+                    $message = $this->getEmailTemplate(
+                        'adr_certificate',
+                        [
+                            'first_name' => $cert['first_name'],
+                            'adr_type' => $cert['adr_type'],
+                            'expiry_date' => $cert['expiry_date'],
+                            'days_before_expiry' => $daysBeforeExpiry
+                        ]
+                    );
+                    
+                    // Αποστολή email
+                    $emailSent = false;
+                    if (!empty($cert['email'])) {
+                        $emailSent = $this->emailService->send($cert['email'], $subject, $message);
+                        $this->log("Αποστολή email στον οδηγό {$cert['driver_id']} για ADR τύπου {$cert['adr_type']}: " . ($emailSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
+                    } else {
+                        $this->log("Ο οδηγός {$cert['driver_id']} δεν έχει email", 'WARNING');
+                    }
+                    
+                    // Αποστολή SMS αν είναι λιγότερο από 15 ημέρες πριν τη λήξη
+                    $smsSent = false;
+                    if ($daysBeforeExpiry <= 15 && !empty($cert['phone'])) {
+                        $smsMessage = "DriveJob: Το πιστοποιητικό ADR τύπου {$cert['adr_type']} λήγει σε {$daysBeforeExpiry} " . 
+                                    ($daysBeforeExpiry == 1 ? "ημέρα" : "ημέρες") . ". Παρακαλούμε ανανεώστε το έγκαιρα.";
+                        $smsSent = $this->smsService->sendSms($cert['phone'], $smsMessage);
+                        $this->log("Αποστολή SMS στον οδηγό {$cert['driver_id']} για ADR τύπου {$cert['adr_type']}: " . ($smsSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
+                    }
+                    
+                    // Καταγραφή της ειδοποίησης
+                    if ($emailSent || $smsSent) {
+                        $this->recordNotification($cert['driver_id'], 'adr_certificate', $cert['adr_type'], $cert['expiry_date'], $daysBeforeExpiry);
+                        $sentNotifications[] = [
+                            'driver_id' => $cert['driver_id'],
+                            'driver_name' => $cert['first_name'] . ' ' . $cert['last_name'],
+                            'license_type' => $cert['adr_type'],
+                            'expiry_date' => $cert['expiry_date'],
+                            'days_before' => $daysBeforeExpiry,
+                            'email_sent' => $emailSent,
+                            'sms_sent' => $smsSent
+                        ];
+                    }
+                }
+            }
+        }
+        
+        return $sentNotifications;
+    } catch (PDOException $e) {
+        $this->log("Σφάλμα PDO κατά τον έλεγχο πιστοποιητικών ADR: " . $e->getMessage() . " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
+        $this->log("SQL State: " . $e->errorInfo[0] . ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
+        $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
+        return $sentNotifications;
+    } catch (Exception $e) {
+        $this->log("Γενικό σφάλμα κατά τον έλεγχο πιστοποιητικών ADR: " . $e->getMessage() . " (Τύπος: " . get_class($e) . ")", 'ERROR');
+        $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
+        return $sentNotifications;
+    }
+}
     
     /**
      * Έλεγχος για κάρτες ταχογράφου που λήγουν

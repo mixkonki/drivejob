@@ -3,7 +3,7 @@
         'name' => 'drivejob/drivejob',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '6c071793eac0fabda556bd650f21f0f77e615076',
+        'reference' => '6bb12b7df7a7ac48a437af28067e119f564cd417',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'drivejob/drivejob' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '6c071793eac0fabda556bd650f21f0f77e615076',
+            'reference' => '6bb12b7df7a7ac48a437af28067e119f564cd417',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

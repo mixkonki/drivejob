@@ -2,7 +2,7 @@
 namespace Drivejob\Services;
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 /**
  * Υπηρεσία αποστολής email
@@ -76,12 +76,28 @@ class EmailService {
      * @return bool Επιτυχία/αποτυχία
      */
     public function send($to, $subject, $message, $attachments = [], $cc = [], $bcc = []) {
-        
-        
         try {
             // Έλεγχος αν η βιβλιοθήκη PHPMailer είναι διαθέσιμη
             if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-                throw new \Exception('Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη.');
+                // Δοκιμή φόρτωσης μέσω Composer autoload
+                $autoloadPaths = [
+                    __DIR__ . '/../../vendor/autoload.php',
+                    __DIR__ . '/../vendor/autoload.php',
+                    __DIR__ . '/vendor/autoload.php',
+                    dirname(dirname(__DIR__)) . '/vendor/autoload.php'
+                ];
+                
+                foreach ($autoloadPaths as $path) {
+                    if (file_exists($path)) {
+                        require_once $path;
+                        break;
+                    }
+                }
+                
+                // Έλεγχος ξανά αν η κλάση είναι διαθέσιμη μετά τη φόρτωση
+                if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+                    throw new \Exception('Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη. Εγκαταστήστε την με: composer require phpmailer/phpmailer');
+                }
             }
             
             // Αρχικοποίηση του PHPMailer
@@ -150,12 +166,26 @@ class EmailService {
             $result = $mail->send();
             
             if ($this->debugMode) {
-                error_log('Email εστάλη στο: ' . ($is_array($to) ? implode(', ', $to) : $to));
+                error_log('Email εστάλη στο: ' . (is_array($to) ? implode(', ', $to) : $to));
                 error_log('Θέμα: ' . $subject);
             }
             
             return $result;
-        } catch (Exception $e) {
+        } catch (PHPMailerException $e) {
+            error_log('Σφάλμα PHPMailer: ' . $e->getMessage());
+            
+            if ($this->debugMode) {
+                // Debug του μηνύματος και του λάθους
+                error_log('Email failed to: ' . (is_array($to) ? implode(', ', $to) : $to));
+                error_log('Subject: ' . $subject);
+                error_log('PHPMailer Error: ' . $e->getMessage());
+                if ($e->getTraceAsString()) {
+                    error_log('Trace: ' . $e->getTraceAsString());
+                }
+            }
+            
+            return false;
+        } catch (\Exception $e) {
             error_log('Σφάλμα αποστολής email: ' . $e->getMessage());
             
             if ($this->debugMode) {
@@ -163,12 +193,13 @@ class EmailService {
                 error_log('Email failed to: ' . (is_array($to) ? implode(', ', $to) : $to));
                 error_log('Subject: ' . $subject);
                 error_log('Error: ' . $e->getMessage());
+                if ($e->getTraceAsString()) {
+                    error_log('Trace: ' . $e->getTraceAsString());
+                }
             }
             
             return false;
-            
         }
-        
     }
     
     /**
@@ -224,48 +255,49 @@ class EmailService {
     public function setDebugMode($enabled) {
         $this->debugMode = (bool)$enabled;
     }
+    
     /**
- * Επιστρέφει το SMTP host
- * 
- * @return string
- */
-public function getHost() {
-    return $this->host;
-}
+     * Επιστρέφει το SMTP host
+     * 
+     * @return string
+     */
+    public function getHost() {
+        return $this->host;
+    }
 
-/**
- * Επιστρέφει το port του SMTP server
- * 
- * @return int
- */
-public function getPort() {
-    return $this->port;
-}
+    /**
+     * Επιστρέφει το port του SMTP server
+     * 
+     * @return int
+     */
+    public function getPort() {
+        return $this->port;
+    }
 
-/**
- * Επιστρέφει το username του SMTP
- * 
- * @return string
- */
-public function getUsername() {
-    return $this->username;
-}
+    /**
+     * Επιστρέφει το username του SMTP
+     * 
+     * @return string
+     */
+    public function getUsername() {
+        return $this->username;
+    }
 
-/**
- * Επιστρέφει το email του αποστολέα
- * 
- * @return string
- */
-public function getSenderEmail() {
-    return $this->senderEmail;
-}
+    /**
+     * Επιστρέφει το email του αποστολέα
+     * 
+     * @return string
+     */
+    public function getSenderEmail() {
+        return $this->senderEmail;
+    }
 
-/**
- * Επιστρέφει το όνομα του αποστολέα
- * 
- * @return string
- */
-public function getSenderName() {
-    return $this->senderName;
-}
+    /**
+     * Επιστρέφει το όνομα του αποστολέα
+     * 
+     * @return string
+     */
+    public function getSenderName() {
+        return $this->senderName;
+    }
 }
