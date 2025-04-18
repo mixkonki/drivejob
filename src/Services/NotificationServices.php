@@ -4,6 +4,7 @@ namespace Drivejob\Services;
 use PDO;
 use DateTime;
 use Exception;
+use PDOException;
 
 /**
  * Υπηρεσία διαχείρισης όλων των ειδοποιήσεων στην εφαρμογή DriveJob
@@ -58,8 +59,18 @@ class NotificationServices {
         try {
             $this->log("Έναρξη ελέγχου για άδειες που λήγουν", 'INFO');
             
+            // Προσθήκη της διαδρομής προτύπων email αν έχει οριστεί
+            if (!isset($this->config['templates_path'])) {
+                $this->config['templates_path'] = ROOT_DIR . '/templates/emails/';
+            }
+            
             // Δημιουργία της υπηρεσίας ειδοποιήσεων λήξης αδειών
-            $expiryService = new LicenseExpiryNotificationService($this->pdo, $this->emailService, $this->smsService, $this->config);
+            $expiryService = new LicenseExpiryNotificationService(
+                $this->pdo, 
+                $this->emailService, 
+                $this->smsService, 
+                $this->config
+            );
             
             // Εκτέλεση του ελέγχου και αποστολή των ειδοποιήσεων
             $results = $expiryService->checkAndSendExpiryNotifications();
@@ -79,9 +90,22 @@ class NotificationServices {
             }
             
             return $results;
+        } catch (PDOException $e) {
+            $this->log("Σφάλμα βάσης δεδομένων κατά τον έλεγχο λήξης αδειών: " . $e->getMessage() . 
+                      " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
+            
+            if (isset($e->errorInfo)) {
+                $this->log("SQL State: " . $e->errorInfo[0] . 
+                          ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
+            }
+            
+            $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
+            throw $e; // Επανεκκίνηση της εξαίρεσης για να τη χειριστεί το κύριο script
         } catch (Exception $e) {
-            $this->log("Σφάλμα κατά τον έλεγχο λήξης αδειών: " . $e->getMessage(), 'ERROR');
-            throw $e;
+            $this->log("Γενικό σφάλμα κατά τον έλεγχο λήξης αδειών: " . $e->getMessage() . 
+                      " (Τύπος: " . get_class($e) . ")", 'ERROR');
+            $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
+            throw $e; // Επανεκκίνηση της εξαίρεσης για να τη χειριστεί το κύριο script
         }
     }
     
@@ -110,13 +134,22 @@ class NotificationServices {
             $message = $this->generateDailyReportEmail($results, $totalNotifications);
             
             // Αποστολή email στους διαχειριστές
-            return $this->emailService->send(
+            $sent = $this->emailService->send(
                 $this->config['admin_emails'],
                 $subject,
                 $message
             );
+            
+            if ($sent) {
+                $this->log("Καθημερινή αναφορά εστάλη επιτυχώς στους διαχειριστές", 'INFO');
+            } else {
+                $this->log("Αποτυχία αποστολής καθημερινής αναφοράς στους διαχειριστές", 'ERROR');
+            }
+            
+            return $sent;
         } catch (Exception $e) {
-            $this->log("Σφάλμα κατά την αποστολή καθημερινής αναφοράς: " . $e->getMessage(), 'ERROR');
+            $this->log("Σφάλμα κατά την αποστολή καθημερινής αναφοράς: " . $e->getMessage() . " (Τύπος: " . get_class($e) . ")", 'ERROR');
+            $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
             return false;
         }
     }
@@ -306,18 +339,42 @@ class NotificationServices {
                 );
                 
                 $success = $this->emailService->send($email, $subject, $message);
+                $this->log("Αποστολή email ειδοποίησης λήξης συμβολαίου στον χρήστη {$userId}: " . ($success ? "Επιτυχής" : "Αποτυχία"), 'INFO');
             }
             
             // Αποστολή SMS αν είναι λιγότερο από 15 ημέρες πριν τη λήξη και υπάρχει αριθμός τηλεφώνου
+            $smsSent = false;
             if ($phone && $daysUntilExpiry <= 15) {
                 $smsMessage = "DriveJob: Το συμβόλαιο {$contractType} λήγει σε {$daysUntilExpiry} " . 
                             ($daysUntilExpiry == 1 ? "ημέρα" : "ημέρες") . ". Παρακαλούμε ανανεώστε το έγκαιρα.";
-                $success = $this->smsService->sendSms($phone, $smsMessage) || $success;
+                $smsSent = $this->smsService->sendSms($phone, $smsMessage);
+                $this->log("Αποστολή SMS ειδοποίησης λήξης συμβολαίου στον χρήστη {$userId}: " . ($smsSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
+                $success = $success || $smsSent;
+            }
+            
+            // Καταγραφή της ειδοποίησης
+            if ($success) {
+                $this->recordNotification('contract_expiry', $userId, $userType, [
+                    'contract_type' => $contractType,
+                    'expiry_date' => $expiryDate,
+                    'days_until_expiry' => $daysUntilExpiry
+                ], $smsSent ? ($success ? 'both' : 'sms') : 'email');
             }
             
             return $success;
+        } catch (PDOException $e) {
+            $this->log("Σφάλμα βάσης δεδομένων κατά την αποστολή ειδοποίησης λήξης συμβολαίου: " . $e->getMessage() . 
+                      " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
+            
+            if (isset($e->errorInfo)) {
+                $this->log("SQL State: " . $e->errorInfo[0] . 
+                          ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
+            }
+            
+            return false;
         } catch (Exception $e) {
-            $this->log("Σφάλμα κατά την αποστολή ειδοποίησης λήξης συμβολαίου: " . $e->getMessage(), 'ERROR');
+            $this->log("Γενικό σφάλμα κατά την αποστολή ειδοποίησης λήξης συμβολαίου: " . $e->getMessage() . 
+                      " (Τύπος: " . get_class($e) . ")", 'ERROR');
             return false;
         }
     }
@@ -424,9 +481,28 @@ class NotificationServices {
                     VALUES (?, ?, ?, ?, ?, NOW())";
             
             $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute([$type, $userId, $userType, $jsonData, $method]);
+            $result = $stmt->execute([$type, $userId, $userType, $jsonData, $method]);
+            
+            if ($result) {
+                $this->log("Επιτυχής καταγραφή ειδοποίησης τύπου {$type} για χρήστη {$userId}", 'INFO');
+            } else {
+                $this->log("Αποτυχία καταγραφής ειδοποίησης τύπου {$type} για χρήστη {$userId}", 'ERROR');
+            }
+            
+            return $result;
+        } catch (PDOException $e) {
+            $this->log("Σφάλμα βάσης δεδομένων κατά την καταγραφή ειδοποίησης: " . $e->getMessage() . 
+                      " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
+            
+            if (isset($e->errorInfo)) {
+                $this->log("SQL State: " . $e->errorInfo[0] . 
+                          ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
+            }
+            
+            return false;
         } catch (Exception $e) {
-            $this->log("Σφάλμα κατά την καταγραφή ειδοποίησης: " . $e->getMessage(), 'ERROR');
+            $this->log("Γενικό σφάλμα κατά την καταγραφή ειδοποίησης: " . $e->getMessage() . 
+                      " (Τύπος: " . get_class($e) . ")", 'ERROR');
             return false;
         }
     }
@@ -455,9 +531,26 @@ class NotificationServices {
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             ";
             
-            return $this->pdo->exec($sql) !== false;
+            $result = $this->pdo->exec($sql) !== false;
+            if ($result) {
+                $this->log("Επιτυχής δημιουργία πίνακα notifications", 'INFO');
+            } else {
+                $this->log("Αποτυχία δημιουργίας πίνακα notifications", 'ERROR');
+            }
+            return $result;
+        } catch (PDOException $e) {
+            $this->log("Σφάλμα βάσης δεδομένων κατά τη δημιουργία του πίνακα ειδοποιήσεων: " . $e->getMessage() . 
+                      " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
+            
+            if (isset($e->errorInfo)) {
+                $this->log("SQL State: " . $e->errorInfo[0] . 
+                          ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
+            }
+            
+            return false;
         } catch (Exception $e) {
-            $this->log("Σφάλμα κατά τη δημιουργία του πίνακα ειδοποιήσεων: " . $e->getMessage(), 'ERROR');
+            $this->log("Γενικό σφάλμα κατά τη δημιουργία του πίνακα ειδοποιήσεων: " . $e->getMessage() . 
+                      " (Τύπος: " . get_class($e) . ")", 'ERROR');
             return false;
         }
     }
@@ -508,11 +601,11 @@ class NotificationServices {
                 \Drivejob\Core\Logger::log($level, $message, 'NotificationServices');
             } else {
                 // Εναλλακτικά, χρήση της error_log
-                error_log("[{$level}] NotificationServices: {$message}");
+                error_log("[" . date('Y-m-d H:i:s') . "] {$level} [NotificationServices]: {$message}");
             }
         } else {
             // Χρήση της error_log αν δεν υπάρχει η κλάση Logger
-            error_log("[{$level}] NotificationServices: {$message}");
+            error_log("[" . date('Y-m-d H:i:s') . "] {$level} [NotificationServices]: {$message}");
         }
     }
 }

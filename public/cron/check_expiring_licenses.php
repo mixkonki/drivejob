@@ -56,6 +56,99 @@ try {
         throw $e;
     }
     
+// Έλεγχος και δημιουργία των απαραίτητων πινάκων
+function initializeTables($pdo) {
+    error_log('Έλεγχος και δημιουργία απαραίτητων πινάκων...');
+    
+    $tables = [
+        'license_expiry_notifications' => "
+            CREATE TABLE IF NOT EXISTS license_expiry_notifications (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                driver_id INT NOT NULL,
+                license_category VARCHAR(50) NOT NULL,
+                license_type VARCHAR(50) NOT NULL,
+                expiry_date DATE NOT NULL,
+                days_before INT NOT NULL,
+                sent_at DATETIME NOT NULL,
+                INDEX (driver_id),
+                INDEX (license_category),
+                INDEX (expiry_date),
+                UNIQUE KEY unique_notification (driver_id, license_type, expiry_date, days_before)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ",
+        'notifications' => "
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                type VARCHAR(50) NOT NULL,
+                user_id INT NOT NULL,
+                user_type VARCHAR(20) NOT NULL,
+                data JSON,
+                method VARCHAR(10) NOT NULL,
+                sent_at DATETIME NOT NULL,
+                read_at DATETIME NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX (user_id, user_type),
+                INDEX (type),
+                INDEX (sent_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        "
+    ];
+    
+    // Ορισμός της σύνδεσης για το σωστό χειρισμό χαρακτήρων Unicode
+    $pdo->exec("SET NAMES utf8mb4");
+    $pdo->exec("SET CHARACTER SET utf8mb4");
+    $pdo->exec("SET SESSION collation_connection = 'utf8mb4_unicode_ci'");
+    
+    foreach ($tables as $tableName => $createStatement) {
+        try {
+            // Έλεγχος αν υπάρχει ήδη ο πίνακας
+            $tableCheck = $pdo->query("SHOW TABLES LIKE '{$tableName}'");
+            $tableExists = $tableCheck->rowCount() > 0;
+            
+            if ($tableExists) {
+                error_log("Πίνακας {$tableName} - Υπάρχει ήδη");
+            } else {
+                // Δημιουργία του πίνακα
+                $pdo->exec($createStatement);
+                error_log("Πίνακας {$tableName} - Δημιουργήθηκε επιτυχώς");
+            }
+        } catch (PDOException $e) {
+            error_log("Σφάλμα ελέγχου/δημιουργίας πίνακα {$tableName}: " . $e->getMessage());
+        }
+    }
+    
+    // Έλεγχος ύπαρξης βασικών πινάκων που χρειάζονται για τη λειτουργία
+    $requiredTables = [
+        'drivers', 
+        'driver_licenses', 
+        'driver_adr_certificates', 
+        'driver_tachograph_cards', 
+        'driver_operator_licenses', 
+        'driver_special_licenses'
+    ];
+    
+    foreach ($requiredTables as $tableName) {
+        try {
+            $tableCheck = $pdo->query("SHOW TABLES LIKE '{$tableName}'");
+            $tableExists = $tableCheck->rowCount() > 0;
+            
+            if ($tableExists) {
+                // Μέτρηση εγγραφών στον πίνακα
+                $countQuery = $pdo->query("SELECT COUNT(*) FROM {$tableName}");
+                $count = $countQuery->fetchColumn();
+                error_log("Πίνακας {$tableName} - Υπάρχει με {$count} εγγραφές");
+            } else {
+                error_log("ΠΡΟΣΟΧΗ: Πίνακας {$tableName} - ΔΕΝ υπάρχει! Το σύστημα ειδοποιήσεων μπορεί να μη λειτουργήσει σωστά.");
+            }
+        } catch (PDOException $e) {
+            error_log("Σφάλμα ελέγχου πίνακα {$tableName}: " . $e->getMessage());
+        }
+    }
+}
+
+// Κλήση της συνάρτησης αρχικοποίησης πινάκων
+initializeTables($pdo);
+
     // Φόρτωση των απαραίτητων αρχείων για τις υπηρεσίες
     $requiredFiles = [
         '/src/Services/EmailService.php',
