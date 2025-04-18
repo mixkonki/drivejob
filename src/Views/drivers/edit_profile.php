@@ -1,7 +1,7 @@
+```php
 <?php
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php';
-
 
 // Συμπερίληψη του Logger
 use Drivejob\Core\Logger;
@@ -9,18 +9,6 @@ use Drivejob\Core\Logger;
 // Αρχικοποίηση του Logger
 Logger::init();
 Logger::info("Φόρτωση της σελίδας edit_profile για τον οδηγό " . $driverId, "EditProfile");
-
-// Καταγραφή δεδομένων άδειας χειριστή για αποσφαλμάτωση
-if ($driverOperator) {
-    Logger::debug("Δεδομένα άδειας χειριστή: " . json_encode($driverOperator), "EditProfile");
-}
-
-if (!empty($driverOperatorSubSpecialities)) {
-    Logger::debug("Υποειδικότητες άδειας χειριστή: " . json_encode($driverOperatorSubSpecialities), "EditProfile");
-} else {
-    Logger::info("Δεν βρέθηκαν υποειδικότητες άδειας χειριστή", "EditProfile");
-}
-
 
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
 $errors = $_SESSION['errors'] ?? [];
@@ -45,33 +33,7 @@ window.selectedSubSpecialities = <?php
     ); 
 ?>;
 
-console.log('Δεδομένα υποειδικοτήτων από τη βάση:', window.driverOperatorSubSpecialities);
-console.log('Επιλεγμένες υποειδικότητες:', window.selectedSubSpecialities);
-</script>
-<script>
-// Αρχικοποίηση του operatorSubSpecialities αντικειμένου
-window.operatorSubSpecialities = {
-    '1': [
-        {id: '1.1', name: 'Εκσκαφείς όλων των τύπων', group: 'A'},
-        // ... υπόλοιπα δεδομένα
-    ],
-    // ... υπόλοιπες ειδικότητες
-};
-
 // Μετατροπή των δεδομένων από PHP σε JavaScript
-window.driverOperatorSubSpecialities = <?php echo json_encode($driverOperatorSubSpecialities ?? []); ?>;
-window.selectedSubSpecialities = <?php 
-    echo json_encode(
-        !empty($driverOperatorSubSpecialities) 
-            ? array_column($driverOperatorSubSpecialities, 'sub_speciality') 
-            : []
-    ); 
-?>;
-
-console.log('Δεδομένα υποειδικοτήτων από τη βάση:', window.driverOperatorSubSpecialities);
-console.log('Επιλεγμένες υποειδικότητες:', window.selectedSubSpecialities);
-
-// Φόρτωση του βελτιωμένου κώδικα για τις υποειδικότητες
 document.addEventListener('DOMContentLoaded', function() {
     // Αρχικοποίηση του global αντικειμένου από τα δεδομένα της βάσης
     window.allSelectedSubSpecialities = {};
@@ -114,155 +76,165 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <!-- Καρτέλες φόρμας -->
             <div class="form-tabs">
-            <nav class="tabs-nav">
-        <button type="button" class="tab-btn active" data-tab="personal-info">Προσωπικά Στοιχεία</button>
-        <button type="button" class="tab-btn" data-tab="contact-info">Στοιχεία Επικοινωνίας</button>
-        <button type="button" class="tab-btn" data-tab="driving-licenses">Άδειες Οδήγησης</button>
-        <button type="button" class="tab-btn" data-tab="adr-certificates">Πιστοποιητικά ADR</button>
-        <button type="button" class="tab-btn" data-tab="operator-licenses">Άδειες Χειριστή Μηχανημάτων</button>
-        <button type="button" class="tab-btn" data-tab="tachograph-card">Κάρτα Ψηφιακού Ταχογράφου</button>
-        <button type="button" class="tab-btn" data-tab="special-licenses">Ειδικές Άδειες</button>
-    </nav>
+                <nav class="tabs-nav">
+                    <button type="button" class="tab-btn active" data-tab="personal-info">Προσωπικά Στοιχεία</button>
+                    <button type="button" class="tab-btn" data-tab="contact-info">Στοιχεία Επικοινωνίας</button>
+                    <button type="button" class="tab-btn" data-tab="driving-licenses">Άδειες Οδήγησης</button>
+                    <button type="button" class="tab-btn" data-tab="adr-certificates">Πιστοποιητικά ADR</button>
+                    <button type="button" class="tab-btn" data-tab="operator-licenses">Άδειες Χειριστή Μηχανημάτων</button>
+                    <button type="button" class="tab-btn" data-tab="tachograph-card">Κάρτα Ψηφιακού Ταχογράφου</button>
+                    <button type="button" class="tab-btn" data-tab="special-licenses">Ειδικές Άδειες</button>
+                </nav>
                 
                 <div class="tab-content">
                     <!-- Καρτέλα Προσωπικών Στοιχείων -->
-<div class="tab-pane active" id="personal-info">
-    <h2>Προσωπικά Στοιχεία</h2>
-    
-    <div class="form-row">
-        <div class="form-group <?php echo isset($errors['first_name']) ? 'has-error' : ''; ?>">
-            <label for="first_name">Όνομα</label>
-            <input type="text" id="first_name" name="first_name" value="<?php echo old('first_name', $driverData['first_name'] ?? ''); ?>" required>
-            <?php if (isset($errors['first_name'])): ?>
-                <div class="error-message"><?php echo $errors['first_name']; ?></div>
-            <?php endif; ?>
-        </div>
-        
-        <div class="form-group <?php echo isset($errors['last_name']) ? 'has-error' : ''; ?>">
-            <label for="last_name">Επώνυμο</label>
-            <input type="text" id="last_name" name="last_name" value="<?php echo old('last_name', $driverData['last_name'] ?? ''); ?>" required>
-            <?php if (isset($errors['last_name'])): ?>
-                <div class="error-message"><?php echo $errors['last_name']; ?></div>
-            <?php endif; ?>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="birth_date">Ημερομηνία Γέννησης</label>
-            <input type="date" id="birth_date" name="birth_date" value="<?php echo old('birth_date', $driverData['birth_date'] ?? ''); ?>">
-            <div id="age_display" class="form-hint"></div>
-        </div>
-        
-        <div class="form-group">
-            <label for="marital_status">Οικογενειακή Κατάσταση</label>
-            <select id="marital_status" name="marital_status">
-                <option value="">Επιλέξτε</option>
-                <option value="single" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'single' ? 'selected' : ''; ?>>Άγαμος/η</option>
-                <option value="married" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'married' ? 'selected' : ''; ?>>Έγγαμος/η</option>
-                <option value="divorced" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'divorced' ? 'selected' : ''; ?>>Διαζευγμένος/η</option>
-                <option value="widowed" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'widowed' ? 'selected' : ''; ?>>Χήρος/α</option>
-                <option value="separated" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'separated' ? 'selected' : ''; ?>>Σε διάσταση</option>
-                <option value="civil_partnership" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'civil_partnership' ? 'selected' : ''; ?>>Σύμφωνο συμβίωσης</option>
-                <option value="no_answer" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'no_answer' ? 'selected' : ''; ?>>Δεν απαντώ</option>
-            </select>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="education_level">Γραμματικές Γνώσεις</label>
-            <select id="education_level" name="education_level">
-                <option value="">Επιλέξτε</option>
-                <option value="primary" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'primary' ? 'selected' : ''; ?>>Υποχρεωτική εκπαίδευση (Δημοτικό)</option>
-                <option value="secondary_low" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'secondary_low' ? 'selected' : ''; ?>>Γυμνάσιο</option>
-                <option value="secondary_high" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'secondary_high' ? 'selected' : ''; ?>>Λύκειο</option>
-                <option value="vocational" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'vocational' ? 'selected' : ''; ?>>Επαγγελματική Σχολή</option>
-                <option value="iek" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'iek' ? 'selected' : ''; ?>>ΙΕΚ</option>
-                <option value="tei" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'tei' ? 'selected' : ''; ?>>ΤΕΙ</option>
-                <option value="university" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'university' ? 'selected' : ''; ?>>Πανεπιστήμιο</option>
-                <option value="postgraduate" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'postgraduate' ? 'selected' : ''; ?>>Μεταπτυχιακό</option>
-                <option value="doctorate" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'doctorate' ? 'selected' : ''; ?>>Διδακτορικό</option>
-                <option value="no_answer" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'no_answer' ? 'selected' : ''; ?>>Δεν απαντώ</option>
-            </select>
-        </div>
-        
-        <div class="form-group">
-            <label for="military_service">Στρατιωτικές Υποχρεώσεις</label>
-            <select id="military_service" name="military_service">
-                <option value="">Επιλέξτε</option>
-                <option value="completed" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'completed' ? 'selected' : ''; ?>>Εκπληρωμένες</option>
-                <option value="exempt" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'exempt' ? 'selected' : ''; ?>>Απαλλαγή</option>
-                <option value="postponed" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'postponed' ? 'selected' : ''; ?>>Αναβολή</option>
-                <option value="unfulfilled" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'unfulfilled' ? 'selected' : ''; ?>>Μη εκπληρωμένες</option>
-                <option value="not_applicable" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'not_applicable' ? 'selected' : ''; ?>>Δεν απαιτείται</option>
-                <option value="no_answer" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'no_answer' ? 'selected' : ''; ?>>Δεν απαντώ</option>
-            </select>
-        </div>
-    </div>
-    
-    <div class="form-group">
-        <label for="about_me">Σχετικά με εμένα</label>
-        <textarea id="about_me" name="about_me" rows="5"><?php echo old('about_me', $driverData['about_me'] ?? ''); ?></textarea>
-        <p class="form-hint">Περιγράψτε τον εαυτό σας, την εμπειρία και τις δεξιότητές σας ως οδηγός.</p>
-    </div>
-    
-    <div class="form-group">
-        <label for="experience_years">Έτη Επαγγελματικής Εμπειρίας</label>
-        <input type="number" id="experience_years" name="experience_years" min="0" max="50" value="<?php echo old('experience_years', $driverData['experience_years'] ?? ''); ?>">
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="languages">Ξένες Γλώσσες</label>
-            <select id="languages" name="languages[]" multiple>
-                <option value="english" <?php echo isset($driverData['languages']) && in_array('english', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Αγγλικά</option>
-                <option value="french" <?php echo isset($driverData['languages']) && in_array('french', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Γαλλικά</option>
-                <option value="german" <?php echo isset($driverData['languages']) && in_array('german', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Γερμανικά</option>
-                <option value="italian" <?php echo isset($driverData['languages']) && in_array('italian', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Ιταλικά</option>
-                <option value="spanish" <?php echo isset($driverData['languages']) && in_array('spanish', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Ισπανικά</option>
-                <option value="russian" <?php echo isset($driverData['languages']) && in_array('russian', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Ρωσικά</option>
-                <option value="bulgarian" <?php echo isset($driverData['languages']) && in_array('bulgarian', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Βουλγαρικά</option>
-                <option value="romanian" <?php echo isset($driverData['languages']) && in_array('romanian', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Ρουμανικά</option>
-                <option value="albanian" <?php echo isset($driverData['languages']) && in_array('albanian', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Αλβανικά</option>
-                <option value="turkish" <?php echo isset($driverData['languages']) && in_array('turkish', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Τουρκικά</option>
-                <option value="other" <?php echo isset($driverData['languages']) && in_array('other', explode(',', $driverData['languages'])) ? 'selected' : ''; ?>>Άλλο</option>
-            </select>
-            <p class="form-hint">Επιλέξτε τις γλώσσες που γνωρίζετε (ctrl+click για πολλαπλή επιλογή)</p>
-        </div>
-        
-        <div class="form-group">
-            <label for="language_notes">Σημειώσεις για τις γλώσσες</label>
-            <textarea id="language_notes" name="language_notes" rows="2"><?php echo old('language_notes', $driverData['language_notes'] ?? ''); ?></textarea>
-            <p class="form-hint">π.χ. επίπεδο γνώσης, πιστοποιήσεις κλπ.</p>
-        </div>
-    </div>
-    
-    <div class="form-group">
-        <label for="profile_image">Φωτογραφία Προφίλ</label>
-        <?php if (isset($driverData['profile_image']) && $driverData['profile_image']): ?>
-            <div class="current-image">
-                <img src="<?php echo BASE_URL . htmlspecialchars($driverData['profile_image']); ?>" alt="Τρέχουσα φωτογραφία">
-                <p>Τρέχουσα φωτογραφία</p>
-            </div>
-        <?php endif; ?>
-        <input type="file" id="profile_image" name="profile_image" accept="image/jpeg, image/png, image/gif">
-        <p class="form-hint">Μέγιστο μέγεθος: 2MB. Επιτρεπόμενοι τύποι: JPEG, PNG, GIF</p>
-    </div>
-    
-    <div class="form-group">
-        <label for="resume_file">Βιογραφικό</label>
-        <?php if (isset($driverData['resume_file']) && $driverData['resume_file']): ?>
-            <div class="current-file">
-                <a href="<?php echo BASE_URL . htmlspecialchars($driverData['resume_file']); ?>" target="_blank">Προβολή τρέχοντος βιογραφικού</a>
-            </div>
-        <?php endif; ?>
-        <input type="file" id="resume_file" name="resume_file" accept=".pdf,.doc,.docx">
-        <p class="form-hint">Μέγιστο μέγεθος: 5MB. Επιτρεπόμενοι τύποι: PDF, DOC, DOCX</p>
-    </div>
-</div>
+                    <div class="tab-pane active" id="personal-info">
+                        <h2>Προσωπικά Στοιχεία</h2>
+                        
+                        <div class="form-row">
+                            <div class="form-group <?php echo isset($errors['first_name']) ? 'has-error' : ''; ?>">
+                                <label for="first_name">Όνομα</label>
+                                <input type="text" id="first_name" name="first_name" value="<?php echo old('first_name', $driverData['first_name'] ?? ''); ?>" required>
+                                <?php if (isset($errors['first_name'])): ?>
+                                    <div class="error-message"><?php echo $errors['first_name']; ?></div>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <div class="form-group <?php echo isset($errors['last_name']) ? 'has-error' : ''; ?>">
+                                <label for="last_name">Επώνυμο</label>
+                                <input type="text" id="last_name" name="last_name" value="<?php echo old('last_name', $driverData['last_name'] ?? ''); ?>" required>
+                                <?php if (isset($errors['last_name'])): ?>
+                                    <div class="error-message"><?php echo $errors['last_name']; ?></div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="birth_date">Ημερομηνία Γέννησης</label>
+                                <input type="date" id="birth_date" name="birth_date" value="<?php echo old('birth_date', $driverData['birth_date'] ?? ''); ?>">
+                                <div id="age_display" class="form-hint"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="marital_status">Οικογενειακή Κατάσταση</label>
+                                <select id="marital_status" name="marital_status">
+                                    <option value="">Επιλέξτε</option>
+                                    <option value="single" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'single' ? 'selected' : ''; ?>>Άγαμος/η</option>
+                                    <option value="married" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'married' ? 'selected' : ''; ?>>Έγγαμος/η</option>
+                                    <option value="divorced" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'divorced' ? 'selected' : ''; ?>>Διαζευγμένος/η</option>
+                                    <option value="widowed" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'widowed' ? 'selected' : ''; ?>>Χήρος/α</option>
+                                    <option value="separated" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'separated' ? 'selected' : ''; ?>>Σε διάσταση</option>
+                                    <option value="civil_partnership" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'civil_partnership' ? 'selected' : ''; ?>>Σύμφωνο συμβίωσης</option>
+                                    <option value="no_answer" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'no_answer' ? 'selected' : ''; ?>>Δεν απαντώ</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="education_level">Γραμματικές Γνώσεις</label>
+                                <select id="education_level" name="education_level">
+                                    <option value="">Επιλέξτε</option>
+                                    <option value="primary" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'primary' ? 'selected' : ''; ?>>Υποχρεωτική εκπαίδευση (Δημοτικό)</option>
+                                    <option value="secondary_low" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'secondary_low' ? 'selected' : ''; ?>>Γυμνάσιο</option>
+                                    <option value="secondary_high" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'secondary_high' ? 'selected' : ''; ?>>Λύκειο</option>
+                                    <option value="vocational" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'vocational' ? 'selected' : ''; ?>>Επαγγελματική Σχολή</option>
+                                    <option value="iek" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'iek' ? 'selected' : ''; ?>>ΙΕΚ</option>
+                                    <option value="tei" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'tei' ? 'selected' : ''; ?>>ΤΕΙ</option>
+                                    <option value="university" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'university' ? 'selected' : ''; ?>>Πανεπιστήμιο</option>
+                                    <option value="postgraduate" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'postgraduate' ? 'selected' : ''; ?>>Μεταπτυχιακό</option>
+                                    <option value="doctorate" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'doctorate' ? 'selected' : ''; ?>>Διδακτορικό</option>
+                                    <option value="no_answer" <?php echo old('education_level', $driverData['education_level'] ?? '') === 'no_answer' ? 'selected' : ''; ?>>Δεν απαντώ</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="military_service">Στρατιωτικές Υποχρεώσεις</label>
+                                <select id="military_service" name="military_service">
+                                    <option value="">Επιλέξτε</option>
+                                    <option value="completed" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'completed' ? 'selected' : ''; ?>>Εκπληρωμένες</option>
+                                    <option value="exempt" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'exempt' ? 'selected' : ''; ?>>Απαλλαγή</option>
+                                    <option value="postponed" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'postponed' ? 'selected' : ''; ?>>Αναβολή</option>
+                                    <option value="unfulfilled" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'unfulfilled' ? 'selected' : ''; ?>>Μη εκπληρωμένες</option>
+                                    <option value="not_applicable" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'not_applicable' ? 'selected' : ''; ?>>Δεν απαιτείται</option>
+                                    <option value="no_answer" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'no_answer' ? 'selected' : ''; ?>>Δεν απαντώ</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="about_me">Σχετικά με εμένα</label>
+                            <textarea id="about_me" name="about_me" rows="5"><?php echo old('about_me', $driverData['about_me'] ?? ''); ?></textarea>
+                            <p class="form-hint">Περιγράψτε τον εαυτό σας, την εμπειρία και τις δεξιότητές σας ως οδηγός.</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="experience_years">Έτη Επαγγελματικής Εμπειρίας</label>
+                            <input type="number" id="experience_years" name="experience_years" min="0" max="50" value="<?php echo old('experience_years', $driverData['experience_years'] ?? ''); ?>">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="languages">Ξένες Γλώσσες</label>
+                                <select id="languages" name="languages[]" multiple>
+                                    <?php 
+                                    $languageOptions = [
+                                        'english' => 'Αγγλικά',
+                                        'french' => 'Γαλλικά',
+                                        'german' => 'Γερμανικά',
+                                        'italian' => 'Ιταλικά',
+                                        'spanish' => 'Ισπανικά',
+                                        'russian' => 'Ρωσικά',
+                                        'bulgarian' => 'Βουλγαρικά',
+                                        'romanian' => 'Ρουμανικά',
+                                        'albanian' => 'Αλβανικά',
+                                        'turkish' => 'Τουρκικά',
+                                        'other' => 'Άλλο'
+                                    ];
+                                    
+                                    $selectedLanguages = isset($driverData['languages']) ? explode(',', $driverData['languages']) : [];
+                                    
+                                    foreach ($languageOptions as $value => $label): 
+                                    ?>
+                                        <option value="<?php echo $value; ?>" <?php echo in_array($value, $selectedLanguages) ? 'selected' : ''; ?>><?php echo $label; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <p class="form-hint">Επιλέξτε τις γλώσσες που γνωρίζετε (ctrl+click για πολλαπλή επιλογή)</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="language_notes">Σημειώσεις για τις γλώσσες</label>
+                                <textarea id="language_notes" name="language_notes" rows="2"><?php echo old('language_notes', $driverData['language_notes'] ?? ''); ?></textarea>
+                                <p class="form-hint">π.χ. επίπεδο γνώσης, πιστοποιήσεις κλπ.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="profile_image">Φωτογραφία Προφίλ</label>
+                            <?php if (isset($driverData['profile_image']) && $driverData['profile_image']): ?>
+                                <div class="current-image">
+                                    <img src="<?php echo BASE_URL . htmlspecialchars($driverData['profile_image']); ?>" alt="Τρέχουσα φωτογραφία">
+                                    <p>Τρέχουσα φωτογραφία</p>
+                                </div>
+                            <?php endif; ?>
+                            <input type="file" id="profile_image" name="profile_image" accept="image/jpeg, image/png, image/gif">
+                            <p class="form-hint">Μέγιστο μέγεθος: 2MB. Επιτρεπόμενοι τύποι: JPEG, PNG, GIF</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="resume_file">Βιογραφικό</label>
+                            <?php if (isset($driverData['resume_file']) && $driverData['resume_file']): ?>
+                                <div class="current-file">
+                                    <a href="<?php echo BASE_URL . htmlspecialchars($driverData['resume_file']); ?>" target="_blank">Προβολή τρέχοντος βιογραφικού</a>
+                                </div>
+                            <?php endif; ?>
+                            <input type="file" id="resume_file" name="resume_file" accept=".pdf,.doc,.docx">
+                            <p class="form-hint">Μέγιστο μέγεθος: 5MB. Επιτρεπόμενοι τύποι: PDF, DOC, DOCX</p>
+                        </div>
+                    </div>
                     
-                    <!-- Καρτέλα Στοιχείων Επικοινωνίας (ενσωματωμένα με Μέσα & Λογαριασμοί) -->
+                    <!-- Καρτέλα Στοιχείων Επικοινωνίας -->
                     <div class="tab-pane" id="contact-info">
                         <h2>Στοιχεία Επικοινωνίας</h2>
                         
@@ -359,1303 +331,590 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     
-                    <!-- Tab για Άδειες Οδήγησης με βελτιωμένη διάταξη -->
-<div class="tab-pane" id="driving-licenses">
-    <h2>Άδειες Οδήγησης</h2>
-    
-    <div class="license-section">
-        <div class="form-group checkbox-group">
-            <label for="driving_license" class="checkbox-label">
-                <input type="checkbox" id="driving_license" name="driving_license" value="1" <?php echo (!empty($driverLicenseTypes)) ? 'checked' : ''; ?>>
-                <span>Διαθέτω άδεια οδήγησης</span>
-            </label>
-        </div>
-        
-        <div id="driving_license_tab" class="license-details-tab <?php echo (empty($driverLicenseTypes)) ? 'hidden' : ''; ?>">
-            <!-- Εικόνες διπλώματος και σκανάρισμα -->
-            <div class="license-visual">
-                <div class="form-group">
-                    <label for="license_front_image">Εμπρόσθια Όψη Διπλώματος</label>
-                    <?php if (isset($driverData['license_front_image']) && $driverData['license_front_image']): ?>
-                        <div class="current-image">
-                            <img src="<?php echo BASE_URL . htmlspecialchars($driverData['license_front_image']); ?>" alt="Εμπρόσθια όψη διπλώματος">
-                            <p>Τρέχουσα εικόνα</p>
-                        </div>
-                    <?php endif; ?>
-                    <input type="file" id="license_front_image" name="license_front_image" accept="image/jpeg, image/png, image/gif">
-                    <button type="button" id="scan-license-front" class="btn-scan">
-                        <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
-                        Σκανάρισμα με OCR
-                    </button>
-                </div>
-                
-                <div class="form-group">
-                    <label for="license_back_image">Οπίσθια Όψη Διπλώματος</label>
-                    <?php if (isset($driverData['license_back_image']) && $driverData['license_back_image']): ?>
-                        <div class="current-image">
-                            <img src="<?php echo BASE_URL . htmlspecialchars($driverData['license_back_image']); ?>" alt="Οπίσθια όψη διπλώματος">
-                            <p>Τρέχουσα εικόνα</p>
-                        </div>
-                    <?php endif; ?>
-                    <input type="file" id="license_back_image" name="license_back_image" accept="image/jpeg, image/png, image/gif">
-                    <button type="button" id="scan-license-back" class="btn-scan">
-                        <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
-                        Σκανάρισμα με OCR
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Βασικές πληροφορίες άδειας -->
-            <div class="license-basic-info">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="license_number">Αριθμός Άδειας Οδήγησης</label>
-                        <input type="text" id="license_number" name="license_number" value="<?php echo old('license_number', $driverData['license_number'] ?? ''); ?>" placeholder="π.χ. 123456789">
-                        <p class="form-hint">Εισάγετε τον αριθμό που αναγράφεται στο πεδίο 5 της άδειας οδήγησης</p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="license_document_expiry">Ημερομηνία Λήξης Εντύπου Άδειας</label>
-                        <input type="date" id="license_document_expiry" name="license_document_expiry" value="<?php echo old('license_document_expiry', $driverData['license_document_expiry'] ?? ''); ?>">
-                        <p class="form-hint">Εισάγετε την ημερομηνία που αναγράφεται στο πεδίο 4β της άδειας οδήγησης</p>
-                    </div>
-                </div>
-                
-                <!-- Κωδικοί στήλης 12 του διπλώματος -->
-                <div class="form-group">
-                    <label for="license_codes">Κωδικοί Περιορισμών/Πληροφοριών (Στήλη 12)</label>
-                    <input type="text" id="license_codes" name="license_codes" value="<?php echo old('license_codes', $driverData['license_codes'] ?? ''); ?>" placeholder="π.χ. 01.01, 78, 95">
-                    <p class="form-hint">Εισάγετε τους κωδικούς που αναγράφονται στη στήλη 12 του διπλώματος, χωρισμένους με κόμμα</p>
-                </div>
-            </div>
-            
-            <!-- Κατηγορίες Αδειών Οδήγησης με πίνακα -->
-            <h4>Κατηγορίες Αδειών Οδήγησης</h4>
-            
-            <div class="license-categories-table">
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>Κατηγορία</th>
-                            <th>Περιγραφή</th>
-                            <th>Ενεργή</th>
-                            <th>Ημερομηνία Λήξης</th>
-                            <th>ΠΕΙ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Δίκυκλα -->
-                        <tr class="category-header">
-                            <td colspan="5"><strong>Δίκυκλα</strong></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/am.png" alt="AM">
-                                    <span>AM</span>
-                                </div>
-                            </td>
-                            <td>Μοτοποδήλατα</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="AM" <?php echo (in_array('AM', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[AM]" value="<?php 
-                                    echo old('license_expiry[AM]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'AM'));
-                                ?>">
-                            </td>
-                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/a1.png" alt="A1">
-                                    <span>A1</span>
-                                </div>
-                            </td>
-                            <td>Μοτοσυκλέτες έως 125 cc</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="A1" <?php echo (in_array('A1', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[A1]" value="<?php 
-                                    echo old('license_expiry[A1]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'A1'));
-                                ?>">
-                            </td>
-                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/a2.png" alt="A2">
-                                    <span>A2</span>
-                                </div>
-                            </td>
-                            <td>Μοτοσυκλέτες έως 35 kW</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="A2" <?php echo (in_array('A2', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[A2]" value="<?php 
-                                    echo old('license_expiry[A2]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'A2'));
-                                ?>">
-                            </td>
-                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/a.png" alt="A">
-                                    <span>A</span>
-                                </div>
-                            </td>
-                            <td>Μοτοσυκλέτες χωρίς περιορισμό</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="A" <?php echo (in_array('A', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[A]" value="<?php 
-                                    echo old('license_expiry[A]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'A'));
-                                ?>">
-                            </td>
-                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
-                        </tr>
+                    <!-- Tab για Άδειες Οδήγησης -->
+                    <div class="tab-pane" id="driving-licenses">
+                        <h2>Άδειες Οδήγησης</h2>
                         
-                        <!-- Επιβατικά -->
-                        <tr class="category-header">
-                            <td colspan="5"><strong>Επιβατικά</strong></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/b.png" alt="B">
-                                    <span>B</span>
-                                </div>
-                            </td>
-                            <td>Επιβατικά αυτοκίνητα</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="B" <?php echo (in_array('B', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
+                        <div class="license-section">
+                            <div class="form-group checkbox-group">
+                                <label for="driving_license" class="checkbox-label">
+                                    <input type="checkbox" id="driving_license" name="driving_license" value="1" <?php echo (!empty($driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                    <span>Διαθέτω άδεια οδήγησης</span>
                                 </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[B]" value="<?php 
-                                    echo old('license_expiry[B]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'B'));
-                                ?>">
-                            </td>
-                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/be.png" alt="BE">
-                                    <span>BE</span>
+                            </div>
+                            
+                            <div id="driving_license_tab" class="license-details-tab <?php echo (empty($driverLicenseTypes)) ? 'hidden' : ''; ?>">
+                                <!-- Εικόνες διπλώματος και σκανάρισμα -->
+                                <div class="license-visual">
+                                    <?php 
+                                    $licenseImages = [
+                                        ['id' => 'license_front_image', 'label' => 'Εμπρόσθια Όψη Διπλώματος', 'scan_id' => 'scan-license-front'],
+                                        ['id' => 'license_back_image', 'label' => 'Οπίσθια Όψη Διπλώματος', 'scan_id' => 'scan-license-back']
+                                    ];
+                                    
+                                    foreach ($licenseImages as $image):
+                                    ?>
+                                    <div class="form-group">
+                                        <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
+                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]): ?>
+                                            <div class="current-image">
+                                                <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
+                                                <p>Τρέχουσα εικόνα</p>
+                                            </div>
+                                        <?php endif; ?>
+                                        <input type="file" id="<?php echo $image['id']; ?>" name="<?php echo $image['id']; ?>" accept="image/jpeg, image/png, image/gif">
+                                        <button type="button" id="<?php echo $image['scan_id']; ?>" class="btn-scan">
+                                            <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
+                                            Σκανάρισμα με OCR
+                                        </button>
+                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
-                            </td>
-                            <td>Επιβατικά με ρυμουλκούμενο</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="BE" <?php echo (in_array('BE', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[BE]" value="<?php 
-                                    echo old('license_expiry[BE]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'BE'));
-                                ?>">
-                            </td>
-                            <td>— <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία --></td>
-                        </tr>
+                                
+                                <!-- Βασικές πληροφορίες άδειας -->
+                                <div class="license-basic-info">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="license_number">Αριθμός Άδειας Οδήγησης</label>
+                                            <input type="text" id="license_number" name="license_number" value="<?php echo old('license_number', $driverData['license_number'] ?? ''); ?>" placeholder="π.χ. 123456789">
+                                            <p class="form-hint">Εισάγετε τον αριθμό που αναγράφεται στο πεδίο 5 της άδειας οδήγησης</p>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="license_document_expiry">Ημερομηνία Λήξης Εντύπου Άδειας</label>
+                                            <input type="date" id="license_document_expiry" name="license_document_expiry" value="<?php echo old('license_document_expiry', $driverData['license_document_expiry'] ?? ''); ?>">
+                                            <p class="form-hint">Εισάγετε την ημερομηνία που αναγράφεται στο πεδίο 4β της άδειας οδήγησης</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Κωδικοί στήλης 12 του διπλώματος -->
+                                    <div class="form-group">
+                                        <label for="license_codes">Κωδικοί Περιορισμών/Πληροφοριών (Στήλη 12)</label>
+                                        <input type="text" id="license_codes" name="license_codes" value="<?php echo old('license_codes', $driverData['license_codes'] ?? ''); ?>" placeholder="π.χ. 01.01, 78, 95">
+                                        <p class="form-hint">Εισάγετε τους κωδικούς που αναγράφονται στη στήλη 12 του διπλώματος, χωρισμένους με κόμμα</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Κατηγορίες Αδειών Οδήγησης με πίνακα -->
+                                <h4>Κατηγορίες Αδειών Οδήγησης</h4>
+                                
+                                <div class="license-categories-table">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Κατηγορία</th>
+                                                <th>Περιγραφή</th>
+                                                <th>Ενεργή</th>
+                                                <th>Ημερομηνία Λήξης</th>
+                                                <th>ΠΕΙ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php 
+                                            // Καθορισμός των κατηγοριών αδειών οδήγησης και ομαδοποίησή τους
+                                            $licenseCategories = [
+                                                'Δίκυκλα' => [
+                                                    ['type' => 'AM', 'desc' => 'Μοτοποδήλατα', 'hasPei' => false],
+                                                    ['type' => 'A1', 'desc' => 'Μοτοσυκλέτες έως 125 cc', 'hasPei' => false],
+                                                    ['type' => 'A2', 'desc' => 'Μοτοσυκλέτες έως 35 kW', 'hasPei' => false],
+                                                    ['type' => 'A', 'desc' => 'Μοτοσυκλέτες χωρίς περιορισμό', 'hasPei' => false]
+                                                ],
+                                                'Επιβατικά' => [
+                                                    ['type' => 'B', 'desc' => 'Επιβατικά αυτοκίνητα', 'hasPei' => false],
+                                                    ['type' => 'BE', 'desc' => 'Επιβατικά με ρυμουλκούμενο', 'hasPei' => false]
+                                                ],
+                                                'Φορτηγά' => [
+                                                    ['type' => 'C1', 'desc' => 'Φορτηγά < 7.5t', 'hasPei' => true, 'peiType' => 'c'],
+                                                    ['type' => 'C1E', 'desc' => 'Φορτηγά < 7.5t με ρυμουλκούμενο', 'hasPei' => true, 'peiType' => 'c'],
+                                                    ['type' => 'C', 'desc' => 'Φορτηγά > 7.5t', 'hasPei' => true, 'peiType' => 'c'],
+                                                    ['type' => 'CE', 'desc' => 'Φορτηγά με ρυμουλκούμενο', 'hasPei' => true, 'peiType' => 'c']
+                                                ],
+                                                'Λεωφορεία' => [
+                                                    ['type' => 'D1', 'desc' => 'Μικρά λεωφορεία', 'hasPei' => true, 'peiType' => 'd'],
+                                                    ['type' => 'D1E', 'desc' => 'Μικρά λεωφορεία με ρυμουλκούμενο', 'hasPei' => true, 'peiType' => 'd'],
+                                                    ['type' => 'D', 'desc' => 'Λεωφορεία', 'hasPei' => true, 'peiType' => 'd'],
+                                                    ['type' => 'DE', 'desc' => 'Λεωφορεία με ρυμουλκούμενο', 'hasPei' => true, 'peiType' => 'd']
+                                                ]
+                                            ];
+                                            
+                                            // Βοηθητική συνάρτηση για την εύρεση ημερομηνίας λήξης κατηγορίας
+                                            function getExpiryDateForLicenseType($licenses, $type) {
+                                                foreach ($licenses as $license) {
+                                                    if ($license['license_type'] === $type) {
+                                                        return $license['expiry_date'] ?? '';
+                                                    }
+                                                }
+                                                return '';
+                                            }
+                                            
+                                            // Εμφάνιση των κατηγοριών αδειών
+                                            foreach ($licenseCategories as $categoryName => $licenses):
+                                            ?>
+                                                <tr class="category-header">
+                                                    <td colspan="<?php echo $categoryName === 'Φορτηγά' || $categoryName === 'Λεωφορεία' ? '4' : '5'; ?>"><strong><?php echo $categoryName; ?></strong></td>
+                                                    <?php if ($categoryName === 'Φορτηγά' || $categoryName === 'Λεωφορεία'): ?>
+                                                    <td><strong>ΠΕΙ</strong></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                                <?php foreach ($licenses as $license): ?>
+                                                <tr>
+                                                    <td>
+                                                        <div class="license-type-icon">
+                                                            <img src="<?php echo BASE_URL; ?>img/license_icons/<?php echo strtolower($license['type']); ?>.png" alt="<?php echo $license['type']; ?>">
+                                                            <span><?php echo $license['type']; ?></span>
+                                                        </div>
+                                                    </td>
+                                                    <td><?php echo $license['desc']; ?></td>
+                                                    <td>
+                                                        <label class="toggle-switch">
+                                                            <input type="checkbox" name="license_types[]" value="<?php echo $license['type']; ?>" <?php echo (in_array($license['type'], $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                                            <span class="toggle-slider"></span>
+                                                        </label>
+                                                    </td>
+                                                    <td>
+                                                        <input type="date" name="license_expiry[<?php echo $license['type']; ?>]" value="<?php echo old('license_expiry['.$license['type'].']', getExpiryDateForLicenseType($driverLicenses, $license['type'])); ?>">
+                                                    </td>
+                                                    <td>
+                                                        <?php if ($license['hasPei']): ?>
+                                                        <div class="pei-field">
+                                                            <label class="checkbox-label">
+                                                                <input type="checkbox" name="has_pei_<?php echo strtolower($license['type']); ?>" value="1" <?php echo (in_array($license['type'], $driverPEI)) ? 'checked' : ''; ?>>
+                                                                <span class="checkmark"></span>
+                                                            </label>
+                                                            <input type="date" name="pei_<?php echo $license['peiType']; ?>_expiry" value="<?php echo old('pei_'.$license['peiType'].'_expiry', ${$license['peiType'] == 'c' ? 'peiCExpiryDate' : 'peiDExpiryDate'} ?? ''); ?>" <?php echo (in_array($license['type'], $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                                        </div>
+                                                        <?php else: ?>
+                                                        — <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία -->
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                                <?php endforeach; ?>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Ενημερωτικό μήνυμα για ανανέωση -->
+                                <div class="expiry-reminder">
+                                    <h4>Πληροφορίες για την ανανέωση</h4>
+                                    <p>Η ανανέωση της άδειας οδήγησης μπορεί να γίνει στο χρονικό διάστημα δύο μηνών πριν την λήξη και το ΠΕΙ ενός έτους πριν την λήξη.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab για Πιστοποιητικά ADR -->
+                    <div class="tab-pane" id="adr-certificates">
+                        <h2>Πιστοποιητικά ADR</h2>
                         
-                        <!-- Φορτηγά -->
-                        <tr class="category-header">
-                            <td colspan="4"><strong>Φορτηγά</strong></td>
-                            <td><strong>ΠΕΙ</strong></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/c1.png" alt="C1">
-                                    <span>C1</span>
-                                </div>
-                            </td>
-                            <td>Φορτηγά < 7.5t</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="C1" <?php echo (in_array('C1', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
+                        <div class="license-section">
+                            <div class="form-group checkbox-group">
+                                <label for="adr_certificate" class="checkbox-label">
+                                    <input type="checkbox" id="adr_certificate" name="adr_certificate" value="1" <?php echo ($driverADR) ? 'checked' : ''; ?>>
+                                    <span>Διαθέτω πιστοποιητικό ADR</span>
                                 </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[C1]" value="<?php 
-                                    echo old('license_expiry[C1]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'C1'));
-                                ?>">
-                            </td>
-                            <td>
-                                <div class="pei-field">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="has_pei_c1" value="1" <?php echo (in_array('C1', $driverPEI)) ? 'checked' : ''; ?>>
-                                        <span class="checkmark"></span>
-                                    </label>
-                                    <input type="date" name="pei_c_expiry" value="<?php echo old('pei_c_expiry', $peiCExpiryDate ?? ''); ?>" <?php echo (in_array('C1', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                            </div>
+                            
+                            <div id="adr_certificate_tab" class="license-details-tab <?php echo (!$driverADR) ? 'hidden' : ''; ?>">
+                                <!-- Εικόνες πιστοποιητικού ADR και σκανάρισμα -->
+                                <div class="license-visual">
+                                    <?php 
+                                    $adrImages = [
+                                        ['id' => 'adr_front_image', 'label' => 'Εμπρόσθια Όψη Πιστοποιητικού ADR', 'scan_id' => 'scan-adr-front'],
+                                        ['id' => 'adr_back_image', 'label' => 'Οπίσθια Όψη Πιστοποιητικού ADR', 'scan_id' => 'scan-adr-back']
+                                    ];
+                                    
+                                    foreach ($adrImages as $image):
+                                    ?>
+                                    <div class="form-group">
+                                        <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
+                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]): ?>
+                                            <div class="current-image">
+                                                <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
+                                                <p>Τρέχουσα εικόνα</p>
+                                            </div>
+                                        <?php endif; ?>
+                                        <input type="file" id="<?php echo $image['id']; ?>" name="<?php echo $image['id']; ?>" accept="image/jpeg, image/png, image/gif">
+                                        <button type="button" id="<?php echo $image['scan_id']; ?>" class="btn-scan">
+                                            <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
+                                            Σκανάρισμα με OCR
+                                        </button>
+                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/c1e.png" alt="C1E">
-                                    <span>C1E</span>
+                                
+                                <!-- Βασικές πληροφορίες πιστοποιητικού ADR -->
+                                <div class="license-basic-info">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="adr_certificate_number">Αριθμός Πιστοποιητικού ADR</label>
+                                            <input type="text" id="adr_certificate_number" name="adr_certificate_number" value="<?php echo old('adr_certificate_number', $driverADR['certificate_number'] ?? ''); ?>" placeholder="π.χ. GR1234567">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="adr_certificate_expiry">Ημερομηνία Λήξης</label>
+                                            <input type="date" id="adr_certificate_expiry" name="adr_certificate_expiry" value="<?php echo old('adr_certificate_expiry', $driverADR ? $driverADR['expiry_date'] : ''); ?>">
+                                            <p class="form-hint">Το πιστοποιητικό ADR ανανεώνεται κάθε 5 έτη, και η ανανέωση μπορεί να γίνει κατά τον τελευταίο χρόνο πριν τη λήξη.</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </td>
-                            <td>Φορτηγά < 7.5t με ρυμουλκούμενο</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="C1E" <?php echo (in_array('C1E', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[C1E]" value="<?php 
-                                    echo old('license_expiry[C1E]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'C1E'));
-                                ?>">
-                            </td>
-                            <td>
-                                <div class="pei-field">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="has_pei_c1e" value="1" <?php echo (in_array('C1E', $driverPEI)) ? 'checked' : ''; ?>>
-                                        <span class="checkmark"></span>
-                                    </label>
-                                    <input type="date" name="pei_c_expiry" value="<?php echo old('pei_c_expiry', $peiCExpiryDate ?? ''); ?>" <?php echo (in_array('C1E', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                
+                                <h4>Κατηγορίες Πιστοποιητικού ADR</h4>
+                                <div class="adr-categories">
+                                    <?php 
+                                    $adrCategories = [
+                                        ['value' => 'Π1', 'label' => 'Π1 - Βασική + Πρακτική'],
+                                        ['value' => 'Π2', 'label' => 'Π2 - Βασική + Κλάση 1 (εκρηκτικά)'],
+                                        ['value' => 'Π3', 'label' => 'Π3 - Βασική + Κλάση 7 (ραδιενεργά)'],
+                                        ['value' => 'Π4', 'label' => 'Π4 - Βασική + Κλάση 1 (εκρηκτικά) + Κλάση 7 (ραδιενεργά)'],
+                                        ['value' => 'Π5', 'label' => 'Π5 - Βασική + Βυτία'],
+                                        ['value' => 'Π6', 'label' => 'Π6 - Βασική + Βυτία + Κλάση 1 (εκρηκτικά)'],
+                                        ['value' => 'Π7', 'label' => 'Π7 - Βασική + Βυτία + Κλάση 7 (ραδιενεργά)'],
+                                        ['value' => 'Π8', 'label' => 'Π8 - Βασική + Βυτία + Κλάση 1 (εκρηκτικά) + Κλάση 7 (ραδιενεργά)']
+                                    ];
+                                    
+                                    // Χωρισμός σε δύο στήλες
+                                    $adrCategoriesChunks = array_chunk($adrCategories, ceil(count($adrCategories) / 2));
+                                    
+                                    foreach ($adrCategoriesChunks as $chunk):
+                                    ?>
+                                    <div class="form-row">
+                                        <?php foreach ($chunk as $category): ?>
+                                        <div class="form-group">
+                                            <label class="radio-label">
+                                                <input type="radio" name="adr_certificate_type" value="<?php echo $category['value']; ?>" <?php echo ($driverADR && $driverADR['adr_type'] == $category['value']) ? 'checked' : ''; ?>>
+                                                <span><?php echo $category['label']; ?></span>
+                                            </label>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/c.png" alt="C">
-                                    <span>C</span>
+                                
+                                <!-- Ενημερωτικό μήνυμα για ανανέωση -->
+                                <div class="expiry-reminder">
+                                    <h4>Πληροφορίες για το πιστοποιητικό ADR</h4>
+                                    <p>Το πιστοποιητικό ADR οδηγού δίνει το δικαίωμα σε οδηγούς οχημάτων να μεταφέρουν επικίνδυνα εμπορεύματα σε συσκευασίες ή με βυτιοφόρα, όπως προβλέπονται από την Ευρωπαϊκή Συμφωνία για την Οδική Μεταφορά Επικίνδυνων Εμπορευμάτων ADR.</p>
+                                    <p>Ο οδηγός κατέχει μόνο μία από τις κατηγορίες ADR και η ανανέωση γίνεται κάθε 5 έτη κατά τον τελευταίο χρόνο πριν την λήξη του ADR.</p>
                                 </div>
-                            </td>
-                            <td>Φορτηγά > 7.5t</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="C" <?php echo (in_array('C', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[C]" value="<?php 
-                                    echo old('license_expiry[C]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'C'));
-                                ?>">
-                            </td>
-                            <td>
-                                <div class="pei-field">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="has_pei_c" value="1" <?php echo (in_array('C', $driverPEI)) ? 'checked' : ''; ?>>
-                                        <span class="checkmark"></span>
-                                    </label>
-                                    <input type="date" name="pei_c_expiry" value="<?php echo old('pei_c_expiry', $peiCExpiryDate ?? ''); ?>" <?php echo (in_array('C', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/ce.png" alt="CE">
-                                    <span>CE</span>
-                                </div>
-                            </td>
-                            <td>Φορτηγά με ρυμουλκούμενο</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="CE" <?php echo (in_array('CE', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[CE]" value="<?php 
-                                    echo old('license_expiry[CE]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'CE'));
-                                ?>">
-                            </td>
-                            <td>
-                                <div class="pei-field">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="has_pei_ce" value="1" <?php echo (in_array('CE', $driverPEI)) ? 'checked' : ''; ?>>
-                                        <span class="checkmark"></span>
-                                    </label>
-                                    <input type="date" name="pei_c_expiry" value="<?php echo old('pei_c_expiry', $peiCExpiryDate ?? ''); ?>" <?php echo (in_array('CE', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
-                                </div>
-                            </td>
-                        </tr>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab για Άδειες Χειριστή Μηχανημάτων Έργου -->
+                    <div class="tab-pane" id="operator-licenses">
+                        <h2>Άδειες Χειριστή Μηχανημάτων Έργου</h2>
                         
-                        <!-- Λεωφορεία -->
-                        <tr class="category-header">
-                            <td colspan="4"><strong>Λεωφορεία</strong></td>
-                            <td><strong>ΠΕΙ</strong></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/d1.png" alt="D1">
-                                    <span>D1</span>
-                                </div>
-                            </td>
-                            <td>Μικρά λεωφορεία</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="D1" <?php echo (in_array('D1', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
+                        <div class="license-section">
+                            <div class="form-group checkbox-group">
+                                <label for="operator_license" class="checkbox-label">
+                                    <input type="checkbox" id="operator_license" name="operator_license" value="1" <?php echo (isset($driverOperator) && $driverOperator) ? 'checked' : ''; ?>>
+                                    <span>Διαθέτω άδεια χειριστή μηχανημάτων έργου</span>
                                 </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[D1]" value="<?php 
-                                    echo old('license_expiry[D1]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'D1'));
-                                ?>">
-                            </td>
-                            <td>
-                                <div class="pei-field">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="has_pei_d1" value="1" <?php echo (in_array('D1', $driverPEI)) ? 'checked' : ''; ?>>
-                                        <span class="checkmark"></span>
-                                    </label>
-                                    <input type="date" name="pei_d_expiry" value="<?php echo old('pei_d_expiry', $peiDExpiryDate ?? ''); ?>" <?php echo (in_array('D1', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                            </div>
+                            
+                            <div id="operator_license_tab" class="license-details-tab <?php echo (!isset($driverOperator) || !$driverOperator) ? 'hidden' : ''; ?>">
+                                <!-- Εικόνες άδειας χειριστή και σκανάρισμα -->
+                                <div class="license-visual">
+                                    <?php 
+                                    $operatorImages = [
+                                        ['id' => 'operator_front_image', 'label' => 'Εμπρόσθια Όψη Άδειας Χειριστή', 'scan_id' => 'scan-operator-front'],
+                                        ['id' => 'operator_back_image', 'label' => 'Οπίσθια Όψη Άδειας Χειριστή', 'scan_id' => 'scan-operator-back']
+                                    ];
+                                    
+                                    foreach ($operatorImages as $image):
+                                    ?>
+                                    <div class="form-group">
+                                        <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
+                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]): ?>
+                                            <div class="current-image">
+                                                <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
+                                                <p>Τρέχουσα εικόνα</p>
+                                            </div>
+                                        <?php endif; ?>
+                                        <input type="file" id="<?php echo $image['id']; ?>" name="<?php echo $image['id']; ?>" accept="image/jpeg, image/png, image/gif">
+                                        <button type="button" id="<?php echo $image['scan_id']; ?>" class="btn-scan">
+                                            <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
+                                            Σκανάρισμα με OCR
+                                        </button>
+                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/d1e.png" alt="D1E">
-                                    <span>D1E</span>
+                                
+                                <!-- Βασικές πληροφορίες άδειας χειριστή -->
+                                <div class="license-basic-info">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="operator_license_number">Αριθμός Άδειας Χειριστή</label>
+                                            <input type="text" id="operator_license_number" name="operator_license_number" value="<?php echo old('operator_license_number', $driverOperator['license_number'] ?? ''); ?>" placeholder="π.χ. ΧΜΕ-1234">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="operator_license_expiry">Ημερομηνία Θεώρησης</label>
+                                            <input type="date" id="operator_license_expiry" name="operator_license_expiry" value="<?php echo old('operator_license_expiry', isset($driverOperator) && $driverOperator ? $driverOperator['expiry_date'] : ''); ?>">
+                                            <p class="form-hint">Οι άδειες χειριστή μηχανημάτων έργου είναι αορίστου διάρκειας και θεωρούνται κάθε έντεκα (11) έτη.</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </td>
-                            <td>Μικρά λεωφορεία με ρυμουλκούμενο</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="D1E" <?php echo (in_array('D1E', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
+                                
+                                <h4>Επιλογή Ειδικότητας και Υποειδικοτήτων</h4>
+                                
+                                <div class="form-group">
+                                    <label for="operator_speciality">Επιλέξτε Ειδικότητα</label>
+                                    <select id="operator_speciality" name="operator_speciality" onchange="loadSubSpecialities(this.value)">
+                                        <option value="">Επιλέξτε</option>
+                                        <?php 
+                                        $specialities = [
+                                            '1' => 'Εργασίες εκσκαφής και χωματουργικές',
+                                            '2' => 'Εργασίες ανύψωσης και μεταφοράς φορτίων',
+                                            '3' => 'Εργασίες οδοστρωσίας',
+                                            '4' => 'Εργασίες εξυπηρέτησης οδών και αεροδρομίων',
+                                            '5' => 'Εργασίες υπόγειων έργων και μεταλλείων',
+                                            '6' => 'Εργασίες έλξης',
+                                            '7' => 'Εργασίες διάτρησης και κοπής εδαφών',
+                                            '8' => 'Ειδικές εργασίες ανύψωσης'
+                                        ];
+                                        
+                                        foreach ($specialities as $id => $name):
+                                        ?>
+                                        <option value="<?php echo $id; ?>" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == $id) ? 'selected' : ''; ?>><?php echo $id; ?> - <?php echo $name; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                
+                                <div id="subSpecialityContainer" class="form-group" style="display: <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality']) ? 'block' : 'none'; ?>;">
+                                    <label>Επιλέξτε Υποειδικότητες</label>
+                                    <div id="subSpecialities" class="sub-specialities">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 15%">Κωδικός</th>
+                                                    <th style="width: 50%">Υποειδικότητα</th>
+                                                    <th style="width: 15%">Ενεργή</th>
+                                                    <th style="width: 20%">Ομάδα</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="subSpecialitiesTableBody">
+                                                <!-- Τα δεδομένα θα προστεθούν με JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Κρυφά πεδία για αποθήκευση επιλεγμένων υποειδικοτήτων και ομάδων -->
+                                <input type="hidden" id="all_selected_subspecialities" name="all_selected_subspecialities" value="">
+                                <input type="hidden" id="all_selected_groups" name="all_selected_groups" value="">
+
+                                <!-- Εμφάνιση επιλεγμένων υποειδικοτήτων -->
+                                <div class="selected-subspecialities">
+                                    <h5>Επιλεγμένες Υποειδικότητες</h5>
+                                    <?php if (isset($driverOperatorSubSpecialities) && !empty($driverOperatorSubSpecialities)): 
+                                        // Ταξινόμηση των υποειδικοτήτων με βάση το ID
+                                        usort($driverOperatorSubSpecialities, function($a, $b) {
+                                            $aSpecialityId = substr($a['sub_speciality'], 0, 1);
+                                            $aSubId = substr($a['sub_speciality'], 2);
+                                            
+                                            $bSpecialityId = substr($b['sub_speciality'], 0, 1);
+                                            $bSubId = substr($b['sub_speciality'], 2);
+                                            
+                                            if ($aSpecialityId == $bSpecialityId) {
+                                                return intval($aSubId) - intval($bSubId);
+                                            }
+                                            
+                                            return intval($aSpecialityId) - intval($bSpecialityId);
+                                        });
+                                        
+                                        // Ομαδοποίηση ανά ειδικότητα
+                                        $specialityGroups = [];
+                                        foreach ($driverOperatorSubSpecialities as $subSpec) {
+                                            $specialityId = substr($subSpec['sub_speciality'], 0, 1);
+                                            if (!isset($specialityGroups[$specialityId])) {
+                                                $specialityGroups[$specialityId] = [];
+                                            }
+                                            $specialityGroups[$specialityId][] = $subSpec;
+                                        }
+                                        
+                                        // Ορισμός των ονομάτων ειδικοτήτων
+                                        $specialityNames = $specialities;
+                                    ?>
+                                        <?php foreach ($specialityGroups as $specialityId => $subSpecialities): ?>
+                                            <div class="speciality-group">
+                                                <h6><?php echo $specialityId . ' - ' . ($specialityNames[$specialityId] ?? 'Ειδικότητα ' . $specialityId); ?></h6>
+                                                <ul class="selected-list">
+                                                    <?php foreach ($subSpecialities as $subSpec): 
+                                                        $subspecialityId = $subSpec['sub_speciality'];
+                                                        $groupType = $subSpec['group_type'] ?? 'A';
+                                                    ?>
+                                                    <li>
+                                                        <span class="subspeciality-id"><?php echo $subspecialityId; ?></span>
+                                                        <span class="subspeciality-name"><?php echo $subSpec['name'] ?? "Υποειδικότητα {$subspecialityId}"; ?></span>
+                                                        <span class="subspeciality-group">Ομάδα <?php echo $groupType; ?></span>
+                                                    </li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <ul class="selected-list">
+                                            <li class="no-items">Δεν έχουν επιλεγεί υποειδικότητες</li>
+                                        </ul>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Ενημερωτικό μήνυμα για άδεια χειριστή -->
+                                <div class="expiry-reminder">
+                                    <h4>Πληροφορίες για την Άδεια Χειριστή Μηχανημάτων Έργου</h4>
+                                    <p>Οι άδειες χειριστή μηχανημάτων έργου είναι αόριστης διάρκειας και θεωρούνται κάθε οκτώ έτη. Με την παράγραφο 1 του άρθρου 145 Νόμος 4887 η προθεσμία θεώρησής των αδειών χειριστή μηχανημάτων έργου, μετά την παρέλευση οκτώ (8) ετών, παρατείνεται κατά τρία (3) έτη και άρα η θεώρηση πραγματοποιείτε στα έντεκα (11) έτη.</p>
+                                    <p>Ως ημερομηνία έναρξης της ενδεκαετίας λαμβάνεται η 1η Ιανουαρίου του επόμενου έτους από τη χορήγηση ή την αντικατάσταση της άδειας χειριστή.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab για Κάρτα Ψηφιακού Ταχογράφου -->
+                    <div class="tab-pane" id="tachograph-card">
+                        <h2>Κάρτα Ψηφιακού Ταχογράφου</h2>
+                        
+                        <div class="license-section">
+                            <div class="form-group checkbox-group">
+                                <label for="tachograph_card" class="checkbox-label">
+                                    <input type="checkbox" id="tachograph_card" name="tachograph_card" value="1" <?php echo (isset($driverTachograph) && $driverTachograph) ? 'checked' : ''; ?>>
+                                    <span>Διαθέτω κάρτα ψηφιακού ταχογράφου</span>
                                 </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[D1E]" value="<?php 
-                                    echo old('license_expiry[D1E]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'D1E'));
-                                ?>">
-                            </td>
-                            <td>
-                                <div class="pei-field">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="has_pei_d1e" value="1" <?php echo (in_array('D1E', $driverPEI)) ? 'checked' : ''; ?>>
-                                        <span class="checkmark"></span>
-                                    </label>
-                                    <input type="date" name="pei_d_expiry" value="<?php echo old('pei_d_expiry', $peiDExpiryDate ?? ''); ?>" <?php echo (in_array('D1E', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                            </div>
+                            
+                            <div id="tachograph_card_tab" class="license-details-tab <?php echo (!isset($driverTachograph) || !$driverTachograph) ? 'hidden' : ''; ?>">
+                                <!-- Εικόνες κάρτας ταχογράφου και σκανάρισμα -->
+                                <div class="license-visual">
+                                    <?php 
+                                    $tachographImages = [
+                                        ['id' => 'tachograph_front_image', 'label' => 'Εμπρόσθια Όψη Κάρτας Ταχογράφου', 'scan_id' => 'scan-tachograph-front'],
+                                        ['id' => 'tachograph_back_image', 'label' => 'Οπίσθια Όψη Κάρτας Ταχογράφου', 'scan_id' => 'scan-tachograph-back']
+                                    ];
+                                    
+                                    foreach ($tachographImages as $image):
+                                    ?>
+                                    <div class="form-group">
+                                        <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
+                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]): ?>
+                                            <div class="current-image">
+                                                <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
+                                                <p>Τρέχουσα εικόνα</p>
+                                            </div>
+                                        <?php endif; ?>
+                                        <input type="file" id="<?php echo $image['id']; ?>" name="<?php echo $image['id']; ?>" accept="image/jpeg, image/png, image/gif">
+                                        <button type="button" id="<?php echo $image['scan_id']; ?>" class="btn-scan">
+                                            <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
+                                            Σκανάρισμα με OCR
+                                        </button>
+                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/d.png" alt="D">
-                                    <span>D</span>
+                                
+                                <!-- Βασικές πληροφορίες κάρτας ταχογράφου -->
+                                <div class="license-basic-info">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="tachograph_card_number">Αριθμός Κάρτας Ταχογράφου</label>
+                                            <input type="text" id="tachograph_card_number" name="tachograph_card_number" value="<?php echo old('tachograph_card_number', $driverTachograph['card_number'] ?? ''); ?>" placeholder="π.χ. GR1234567890">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="tachograph_card_expiry">Ημερομηνία Λήξης</label>
+                                            <input type="date" id="tachograph_card_expiry" name="tachograph_card_expiry" value="<?php echo old('tachograph_card_expiry', $driverTachograph['expiry_date'] ?? ''); ?>">
+                                        </div>
+                                    </div>
                                 </div>
-                            </td>
-                            <td>Λεωφορεία</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="D" <?php echo (in_array('D', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[D]" value="<?php 
-                                    echo old('license_expiry[D]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'D'));
-                                ?>">
-                            </td>
-                            <td>
-                                <div class="pei-field">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="has_pei_d" value="1" <?php echo (in_array('D', $driverPEI)) ? 'checked' : ''; ?>>
-                                        <span class="checkmark"></span>
-                                    </label>
-                                    <input type="date" name="pei_d_expiry" value="<?php echo old('pei_d_expiry', $peiDExpiryDate ?? ''); ?>" <?php echo (in_array('D', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                
+                                <!-- Ενημερωτικό μήνυμα για την κάρτα ταχογράφου -->
+                                <div class="expiry-reminder">
+                                    <h4>Πληροφορίες για την Κάρτα Ψηφιακού Ταχογράφου</h4>
+                                    <p>Με την κάρτα οδηγού ταυτοποιείται ο οδηγός και επιτρέπεται η αποθήκευση δεδομένων δραστηριότητας του οδηγού. Η κάρτα οδηγού είναι υποχρεωτική και η μοναδικότητά της ισχύει σε πανευρωπαϊκό επίπεδο.</p>
+                                    <p>Η κάρτα οδηγού είναι εξατομικευμένη (φέρει την ψηφιοποιημένη φωτογραφία και υπογραφή του κατόχου της) και η ισχύς της είναι για πέντε (5) έτη. Η ανανέωση μπορεί να γίνει το νωρίτερο δύο μήνες πριν την ημερομηνία λήξης της κάρτας.</p>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="license-type-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icons/de.png" alt="DE">
-                                    <span>DE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab για Ειδικές Άδειες -->
+                    <div class="tab-pane" id="special-licenses">
+                        <h2>Ειδικές Άδειες</h2>
+                        
+                        <div id="special-licenses-container">
+                            <!-- Λίστα ειδικών αδειών -->
+                            <?php if (isset($driverSpecialLicenses) && count($driverSpecialLicenses) > 0): ?>
+                                <?php foreach ($driverSpecialLicenses as $index => $license): ?>
+                                    <div class="special-license-item" id="special-license-item-<?php echo $index; ?>">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="special_license_type_<?php echo $index; ?>">Τύπος Άδειας</label>
+                                                <input type="text" id="special_license_type_<?php echo $index; ?>" name="special_license_type[]" value="<?php echo htmlspecialchars($license['license_type']); ?>" required>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="special_license_number_<?php echo $index; ?>">Αριθμός Άδειας</label>
+                                                <input type="text" id="special_license_number_<?php echo $index; ?>" name="special_license_number[]" value="<?php echo htmlspecialchars($license['license_number'] ?? ''); ?>">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="special_license_expiry_<?php echo $index; ?>">Ημερομηνία Λήξης</label>
+                                                <input type="date" id="special_license_expiry_<?php echo $index; ?>" name="special_license_expiry[]" value="<?php echo $license['expiry_date'] ?? ''; ?>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="special_license_details_<?php echo $index; ?>">Περιγραφή/Λεπτομέρειες</label>
+                                            <textarea id="special_license_details_<?php echo $index; ?>" name="special_license_details[]" rows="2"><?php echo htmlspecialchars($license['details'] ?? ''); ?></textarea>
+                                        </div>
+                                        
+                                        <button type="button" class="btn-secondary remove-special-license" data-index="<?php echo $index; ?>">Αφαίρεση</button>
+                                        <hr class="section-divider">
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                            
+                            <!-- Κενό στοιχείο για προσθήκη νέας άδειας (κρυμμένο αρχικά) -->
+                            <div class="special-license-item" id="special-license-template" style="display: none;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="special_license_type_new">Τύπος Άδειας</label>
+                                        <input type="text" id="special_license_type_new" name="special_license_type[]">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="special_license_number_new">Αριθμός Άδειας</label>
+                                        <input type="text" id="special_license_number_new" name="special_license_number[]">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="special_license_expiry_new">Ημερομηνία Λήξης</label>
+                                        <input type="date" id="special_license_expiry_new" name="special_license_expiry[]">
+                                    </div>
                                 </div>
-                            </td>
-                            <td>Λεωφορεία με ρυμουλκούμενο</td>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="license_types[]" value="DE" <?php echo (in_array('DE', $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                            <td>
-                                <input type="date" name="license_expiry[DE]" value="<?php 
-                                    echo old('license_expiry[DE]',
-                                    getExpiryDateForLicenseType($driverLicenses, 'DE'));
-                                ?>">
-                            </td>
-                            <td>
-                                <div class="pei-field">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="has_pei_de" value="1" <?php echo (in_array('DE', $driverPEI)) ? 'checked' : ''; ?>>
-                                        <span class="checkmark"></span>
-                                    </label>
-                                    <input type="date" name="pei_d_expiry" value="<?php echo old('pei_d_expiry', $peiDExpiryDate ?? ''); ?>" <?php echo (in_array('DE', $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                
+                                <div class="form-group">
+                                    <label for="special_license_details_new">Περιγραφή/Λεπτομέρειες</label>
+                                    <textarea id="special_license_details_new" name="special_license_details[]" rows="2"></textarea>
                                 </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Ενημερωτικό μήνυμα για ανανέωση -->
-            <div class="expiry-reminder">
-                <h4>Πληροφορίες για την ανανέωση</h4>
-                <p>Η ανανέωση της άδειας οδήγησης μπορεί να γίνει στο χρονικό διάστημα δύο μηνών πριν την λήξη και το ΠΕΙ ενός έτους πριν την λήξη.</p>
-            </div>
-        </div>
-    </div>
-</div>
-    
-<?php
-// Βοηθητική συνάρτηση για την εύρεση ημερομηνίας λήξης κατηγορίας
-function getExpiryDateForLicenseType($licenses, $type) {
-    foreach ($licenses as $license) {
-        if ($license['license_type'] === $type) {
-            return $license['expiry_date'] ?? '';
-        }
-    }
-    return '';
-}
-?>
-    
-<!-- Tab για Πιστοποιητικά ADR -->
-<div class="tab-pane" id="adr-certificates">
-    <h2>Πιστοποιητικά ADR</h2>
-                     
-    <div class="license-section">
-        <div class="form-group checkbox-group">
-            <label for="adr_certificate" class="checkbox-label">
-                <input type="checkbox" id="adr_certificate" name="adr_certificate" value="1" <?php echo ($driverADR) ? 'checked' : ''; ?>>
-                <span>Διαθέτω πιστοποιητικό ADR</span>
-            </label>
-        </div>
-        
-        <div id="adr_certificate_tab" class="license-details-tab <?php echo (!$driverADR) ? 'hidden' : ''; ?>">
-            <!-- Εικόνες πιστοποιητικού ADR και σκανάρισμα -->
-            <div class="license-visual">
-                <div class="form-group">
-                    <label for="adr_front_image">Εμπρόσθια Όψη Πιστοποιητικού ADR</label>
-                    <?php if (isset($driverData['adr_front_image']) && $driverData['adr_front_image']): ?>
-                        <div class="current-image">
-                            <img src="<?php echo BASE_URL . htmlspecialchars($driverData['adr_front_image']); ?>" alt="Εμπρόσθια όψη ADR">
-                            <p>Τρέχουσα εικόνα</p>
-                        </div>
-                    <?php endif; ?>
-                    <input type="file" id="adr_front_image" name="adr_front_image" accept="image/jpeg, image/png, image/gif">
-                    <button type="button" id="scan-adr-front" class="btn-scan">
-                        <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
-                        Σκανάρισμα με OCR
-                    </button>
-                </div>
-                
-                <div class="form-group">
-                    <label for="adr_back_image">Οπίσθια Όψη Πιστοποιητικού ADR</label>
-                    <?php if (isset($driverData['adr_back_image']) && $driverData['adr_back_image']): ?>
-                        <div class="current-image">
-                            <img src="<?php echo BASE_URL . htmlspecialchars($driverData['adr_back_image']); ?>" alt="Οπίσθια όψη ADR">
-                            <p>Τρέχουσα εικόνα</p>
-                        </div>
-                    <?php endif; ?>
-                    <input type="file" id="adr_back_image" name="adr_back_image" accept="image/jpeg, image/png, image/gif">
-                    <button type="button" id="scan-adr-back" class="btn-scan">
-                        <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
-                        Σκανάρισμα με OCR
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Βασικές πληροφορίες πιστοποιητικού ADR -->
-            <div class="license-basic-info">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="adr_certificate_number">Αριθμός Πιστοποιητικού ADR</label>
-                        <input type="text" id="adr_certificate_number" name="adr_certificate_number" value="<?php echo old('adr_certificate_number', $driverADR['certificate_number'] ?? ''); ?>" placeholder="π.χ. GR1234567">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="adr_certificate_expiry">Ημερομηνία Λήξης</label>
-                        <input type="date" id="adr_certificate_expiry" name="adr_certificate_expiry" value="<?php echo old('adr_certificate_expiry', $driverADR ? $driverADR['expiry_date'] : ''); ?>">
-                        <p class="form-hint">Το πιστοποιητικό ADR ανανεώνεται κάθε 5 έτη, και η ανανέωση μπορεί να γίνει κατά τον τελευταίο χρόνο πριν τη λήξη.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <h4>Κατηγορίες Πιστοποιητικού ADR</h4>
-            <div class="adr-categories">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="radio-label">
-                            <input type="radio" name="adr_certificate_type" value="Π1" <?php echo ($driverADR && $driverADR['adr_type'] == 'Π1') ? 'checked' : ''; ?>>
-                            <span>Π1 - Βασική + Πρακτική</span>
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="radio-label">
-                            <input type="radio" name="adr_certificate_type" value="Π2" <?php echo ($driverADR && $driverADR['adr_type'] == 'Π2') ? 'checked' : ''; ?>>
-                            <span>Π2 - Βασική + Κλάση 1 (εκρηκτικά)</span>
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="radio-label">
-                            <input type="radio" name="adr_certificate_type" value="Π3" <?php echo ($driverADR && $driverADR['adr_type'] == 'Π3') ? 'checked' : ''; ?>>
-                            <span>Π3 - Βασική + Κλάση 7 (ραδιενεργά)</span>
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="radio-label">
-                            <input type="radio" name="adr_certificate_type" value="Π4" <?php echo ($driverADR && $driverADR['adr_type'] == 'Π4') ? 'checked' : ''; ?>>
-                            <span>Π4 - Βασική + Κλάση 1 (εκρηκτικά) + Κλάση 7 (ραδιενεργά)</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="radio-label">
-                            <input type="radio" name="adr_certificate_type" value="Π5" <?php echo ($driverADR && $driverADR['adr_type'] == 'Π5') ? 'checked' : ''; ?>>
-                            <span>Π5 - Βασική + Βυτία</span>
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="radio-label">
-                            <input type="radio" name="adr_certificate_type" value="Π6" <?php echo ($driverADR && $driverADR['adr_type'] == 'Π6') ? 'checked' : ''; ?>>
-                            <span>Π6 - Βασική + Βυτία + Κλάση 1 (εκρηκτικά)</span>
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="radio-label">
-                            <input type="radio" name="adr_certificate_type" value="Π7" <?php echo ($driverADR && $driverADR['adr_type'] == 'Π7') ? 'checked' : ''; ?>>
-                            <span>Π7 - Βασική + Βυτία + Κλάση 7 (ραδιενεργά)</span>
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="radio-label">
-                            <input type="radio" name="adr_certificate_type" value="Π8" <?php echo ($driverADR && $driverADR['adr_type'] == 'Π8') ? 'checked' : ''; ?>>
-                            <span>Π8 - Βασική + Βυτία + Κλάση 1 (εκρηκτικά) + Κλάση 7 (ραδιενεργά)</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Ενημερωτικό μήνυμα για ανανέωση -->
-            <div class="expiry-reminder">
-                <h4>Πληροφορίες για το πιστοποιητικό ADR</h4>
-                <p>Το πιστοποιητικό ADR οδηγού δίνει το δικαίωμα σε οδηγούς οχημάτων να μεταφέρουν επικίνδυνα εμπορεύματα σε συσκευασίες ή με βυτιοφόρα, όπως προβλέπονται από την Ευρωπαϊκή Συμφωνία για την Οδική Μεταφορά Επικίνδυνων Εμπορευμάτων ADR.</p>
-                <p>Ο οδηγός κατέχει μόνο μία από τις κατηγορίες ADR και η ανανέωση γίνεται κάθε 5 έτη κατά τον τελευταίο χρόνο πριν την λήξη του ADR.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Tab για Κάρτα Ψηφιακού Ταχογράφου -->
-<div class="tab-pane" id="tachograph-card">
-    <h2>Κάρτα Ψηφιακού Ταχογράφου</h2>
-    
-    <div class="license-section">
-        <div class="form-group checkbox-group">
-            <label for="tachograph_card" class="checkbox-label">
-                <input type="checkbox" id="tachograph_card" name="tachograph_card" value="1" <?php echo (isset($driverTachograph) && $driverTachograph) ? 'checked' : ''; ?>>
-                <span>Διαθέτω κάρτα ψηφιακού ταχογράφου</span>
-            </label>
-        </div>
-        
-        <div id="tachograph_card_tab" class="license-details-tab <?php echo (!isset($driverTachograph) || !$driverTachograph) ? 'hidden' : ''; ?>">
-            <!-- Εικόνες κάρτας ταχογράφου και σκανάρισμα -->
-            <div class="license-visual">
-                <div class="form-group">
-                    <label for="tachograph_front_image">Εμπρόσθια Όψη Κάρτας Ταχογράφου</label>
-                    <?php if (isset($driverData['tachograph_front_image']) && $driverData['tachograph_front_image']): ?>
-                        <div class="current-image">
-                            <img src="<?php echo BASE_URL . htmlspecialchars($driverData['tachograph_front_image']); ?>" alt="Εμπρόσθια όψη κάρτας ταχογράφου">
-                            <p>Τρέχουσα εικόνα</p>
-                        </div>
-                    <?php endif; ?>
-                    <input type="file" id="tachograph_front_image" name="tachograph_front_image" accept="image/jpeg, image/png, image/gif">
-                    <button type="button" id="scan-tachograph-front" class="btn-scan">
-                        <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
-                        Σκανάρισμα με OCR
-                    </button>
-                </div>
-                
-                <div class="form-group">
-                    <label for="tachograph_back_image">Οπίσθια Όψη Κάρτας Ταχογράφου</label>
-                    <?php if (isset($driverData['tachograph_back_image']) && $driverData['tachograph_back_image']): ?>
-                        <div class="current-image">
-                            <img src="<?php echo BASE_URL . htmlspecialchars($driverData['tachograph_back_image']); ?>" alt="Οπίσθια όψη κάρτας ταχογράφου">
-                            <p>Τρέχουσα εικόνα</p>
-                        </div>
-                    <?php endif; ?>
-                    <input type="file" id="tachograph_back_image" name="tachograph_back_image" accept="image/jpeg, image/png, image/gif">
-                    <button type="button" id="scan-tachograph-back" class="btn-scan">
-                        <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
-                        Σκανάρισμα με OCR
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Βασικές πληροφορίες κάρτας ταχογράφου - ΔΙΟΡΘΩΜΕΝΟ ΤΜΗΜΑ -->
-            <div class="license-basic-info">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="tachograph_card_number">Αριθμός Κάρτας Ταχογράφου</label>
-                        <input type="text" id="tachograph_card_number" name="tachograph_card_number" value="<?php echo old('tachograph_card_number', $driverTachograph['card_number'] ?? ''); ?>" placeholder="π.χ. GR1234567890">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="tachograph_card_expiry">Ημερομηνία Λήξης</label>
-                        <input type="date" id="tachograph_card_expiry" name="tachograph_card_expiry" value="<?php echo old('tachograph_card_expiry', $driverTachograph['expiry_date'] ?? ''); ?>">
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Ενημερωτικό μήνυμα για την κάρτα ταχογράφου -->
-            <div class="expiry-reminder">
-                <h4>Πληροφορίες για την Κάρτα Ψηφιακού Ταχογράφου</h4>
-                <p>Με την κάρτα οδηγού ταυτοποιείται ο οδηγός και επιτρέπεται η αποθήκευση δεδομένων δραστηριότητας του οδηγού. Η κάρτα οδηγού είναι υποχρεωτική και η μοναδικότητά της ισχύει σε πανευρωπαϊκό επίπεδο.</p>
-                <p>Η κάρτα οδηγού είναι εξατομικευμένη (φέρει την ψηφιοποιημένη φωτογραφία και υπογραφή του κατόχου της) και η ισχύς της είναι για πέντε (5) έτη. Η ανανέωση μπορεί να γίνει το νωρίτερο δύο μήνες πριν την ημερομηνία λήξης της κάρτας.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Tab για Άδειες Χειριστή Μηχανημάτων Έργου - ΔΙΟΡΘΩΜΕΝΟ -->
-<div class="tab-pane" id="operator-licenses">
-    <h2>Άδειες Χειριστή Μηχανημάτων Έργου</h2>
-                     
-    <div class="license-section">
-        <div class="form-group checkbox-group">
-            <label for="operator_license" class="checkbox-label">
-                <input type="checkbox" id="operator_license" name="operator_license" value="1" <?php echo (isset($driverOperator) && $driverOperator) ? 'checked' : ''; ?>>
-                <span>Διαθέτω άδεια χειριστή μηχανημάτων έργου</span>
-            </label>
-        </div>
-        
-        <div id="operator_license_tab" class="license-details-tab <?php echo (!isset($driverOperator) || !$driverOperator) ? 'hidden' : ''; ?>">
-            <!-- Εικόνες άδειας χειριστή και σκανάρισμα -->
-            <div class="license-visual">
-                <div class="form-group">
-                    <label for="operator_front_image">Εμπρόσθια Όψη Άδειας Χειριστή</label>
-                    <?php if (isset($driverData['operator_front_image']) && $driverData['operator_front_image']): ?>
-                        <div class="current-image">
-                            <img src="<?php echo BASE_URL . htmlspecialchars($driverData['operator_front_image']); ?>" alt="Εμπρόσθια όψη άδειας χειριστή">
-                            <p>Τρέχουσα εικόνα</p>
-                        </div>
-                    <?php endif; ?>
-                    <input type="file" id="operator_front_image" name="operator_front_image" accept="image/jpeg, image/png, image/gif">
-                    <button type="button" id="scan-operator-front" class="btn-scan">
-                        <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
-                        Σκανάρισμα με OCR
-                    </button>
-                </div>
-                
-                <div class="form-group">
-                    <label for="operator_back_image">Οπίσθια Όψη Άδειας Χειριστή</label>
-                    <?php if (isset($driverData['operator_back_image']) && $driverData['operator_back_image']): ?>
-                        <div class="current-image">
-                            <img src="<?php echo BASE_URL . htmlspecialchars($driverData['operator_back_image']); ?>" alt="Οπίσθια όψη άδειας χειριστή">
-                            <p>Τρέχουσα εικόνα</p>
-                        </div>
-                    <?php endif; ?>
-                    <input type="file" id="operator_back_image" name="operator_back_image" accept="image/jpeg, image/png, image/gif">
-                    <button type="button" id="scan-operator-back" class="btn-scan">
-                        <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
-                        Σκανάρισμα με OCR
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Βασικές πληροφορίες άδειας χειριστή -->
-            <div class="license-basic-info">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="operator_license_number">Αριθμός Άδειας Χειριστή</label>
-                        <input type="text" id="operator_license_number" name="operator_license_number" value="<?php echo old('operator_license_number', $driverOperator['license_number'] ?? ''); ?>" placeholder="π.χ. ΧΜΕ-1234">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="operator_license_expiry">Ημερομηνία Θεώρησης</label>
-                        <input type="date" id="operator_license_expiry" name="operator_license_expiry" value="<?php echo old('operator_license_expiry', isset($driverOperator) && $driverOperator ? $driverOperator['expiry_date'] : ''); ?>">
-                        <p class="form-hint">Οι άδειες χειριστή μηχανημάτων έργου είναι αορίστου διάρκειας και θεωρούνται κάθε έντεκα (11) έτη.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <h4>Επιλογή Ειδικότητας και Υποειδικοτήτων</h4>
-            
-            <div class="form-group">
-                <label for="operator_speciality">Επιλέξτε Ειδικότητα</label>
-                <select id="operator_speciality" name="operator_speciality" onchange="loadSubSpecialities(this.value)">
-                    <option value="">Επιλέξτε</option>
-                    <option value="1" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '1') ? 'selected' : ''; ?>>1 - Εργασίες εκσκαφής και χωματουργικές</option>
-                    <option value="2" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '2') ? 'selected' : ''; ?>>2 - Εργασίες ανύψωσης και μεταφοράς φορτίων</option>
-                    <option value="3" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '3') ? 'selected' : ''; ?>>3 - Εργασίες οδοστρωσίας</option>
-                    <option value="4" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '4') ? 'selected' : ''; ?>>4 - Εργασίες εξυπηρέτησης οδών και αεροδρομίων</option>
-                    <option value="5" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '5') ? 'selected' : ''; ?>>5 - Εργασίες υπόγειων έργων και μεταλλείων</option>
-                    <option value="6" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '6') ? 'selected' : ''; ?>>6 - Εργασίες έλξης</option>
-                    <option value="7" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '7') ? 'selected' : ''; ?>>7 - Εργασίες διάτρησης και κοπής εδαφών</option>
-                    <option value="8" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == '8') ? 'selected' : ''; ?>>8 - Ειδικές εργασίες ανύψωσης</option>
-                </select>
-            </div>
-            
-           
-
-
-            <div id="subSpecialityContainer" class="form-group" style="display: <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality']) ? 'block' : 'none'; ?>;">
-    <label>Επιλέξτε Υποειδικότητες</label>
-    <div id="subSpecialities" class="sub-specialities">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th style="width: 15%">Κωδικός</th>
-                    <th style="width: 50%">Υποειδικότητα</th>
-                    <th style="width: 15%">Ενεργή</th>
-                    <th style="width: 20%">Ομάδα</th>
-                </tr>
-            </thead>
-            <tbody id="subSpecialitiesTableBody">
-                <!-- Τα δεδομένα θα προστεθούν με JavaScript -->
-            </tbody>
-        </table>
-    </div>
-    
-</div>
-<!-- Εμφάνιση επιλεγμένων υποειδικοτήτων -->
-<div class="selected-subspecialities">
-    <h5>Επιλεγμένες Υποειδικότητες</h5>
-    <?php 
-    if (isset($driverOperatorSubSpecialities) && !empty($driverOperatorSubSpecialities)): 
-        // Ταξινόμηση των υποειδικοτήτων με βάση το ID
-        usort($driverOperatorSubSpecialities, function($a, $b) {
-            $aSpecialityId = substr($a['sub_speciality'], 0, 1);
-            $aSubId = substr($a['sub_speciality'], 2);
-            
-            $bSpecialityId = substr($b['sub_speciality'], 0, 1);
-            $bSubId = substr($b['sub_speciality'], 2);
-            
-            if ($aSpecialityId == $bSpecialityId) {
-                return intval($aSubId) - intval($bSubId);
-            }
-            
-            return intval($aSpecialityId) - intval($bSpecialityId);
-        });
-        
-        // Ομαδοποίηση ανά ειδικότητα
-        $specialityGroups = [];
-        foreach ($driverOperatorSubSpecialities as $subSpec) {
-            $specialityId = substr($subSpec['sub_speciality'], 0, 1);
-            if (!isset($specialityGroups[$specialityId])) {
-                $specialityGroups[$specialityId] = [];
-            }
-            $specialityGroups[$specialityId][] = $subSpec;
-        }
-        
-        // Ορισμός των ονομάτων ειδικοτήτων
-        $specialityNames = [
-            '1' => 'Εργασίες εκσκαφής και χωματουργικές',
-            '2' => 'Εργασίες ανύψωσης και μεταφοράς φορτίων',
-            '3' => 'Εργασίες οδοστρωσίας',
-            '4' => 'Εργασίες εξυπηρέτησης οδών και αεροδρομίων',
-            '5' => 'Εργασίες υπόγειων έργων και μεταλλείων',
-            '6' => 'Εργασίες έλξης',
-            '7' => 'Εργασίες διάτρησης και κοπής εδαφών',
-            '8' => 'Ειδικές εργασίες ανύψωσης'
-        ];
-        
-        // Ορισμός των ονομάτων των υποειδικοτήτων
-        $allSubSpecialities = [
-            '1.1' => 'Εκσκαφείς όλων των τύπων',
-            '1.2' => 'Τσάπες φορτωτές (JCB)',
-            '1.3' => 'Προωθητές γαιών όλων των τύπων',
-            // ... (όλες οι υποειδικότητες που αναφέρω πιο πάνω)
-        ];
-        
-        // Εμφάνιση ανά ειδικότητα
-        foreach ($specialityGroups as $specialityId => $subSpecialities):
-    ?>
-        <div class="speciality-group">
-            <h6><?php echo $specialityId . ' - ' . ($specialityNames[$specialityId] ?? 'Ειδικότητα ' . $specialityId); ?></h6>
-            <ul class="selected-list">
-                <?php foreach ($subSpecialities as $subSpec): 
-                    $subspecialityId = $subSpec['sub_speciality'];
-                    $subspecialityName = $allSubSpecialities[$subspecialityId] ?? "Υποειδικότητα {$subspecialityId}";
-                    $groupType = $subSpec['group_type'] ?? 'A';
-                ?>
-                <li>
-                    <span class="subspeciality-id"><?php echo $subspecialityId; ?></span>
-                    <span class="subspeciality-name"><?php echo $subspecialityName; ?></span>
-                    <span class="subspeciality-group">Ομάδα <?php echo $groupType; ?></span>
-                </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    <?php 
-        endforeach;
-    else: 
-    ?>
-        <ul class="selected-list">
-            <li class="no-items">Δεν έχουν επιλεγεί υποειδικότητες</li>
-        </ul>
-    <?php endif; ?>
-</div>
-
-<!-- Ενημερωτικό μήνυμα για άδεια χειριστή -->
-<div class="expiry-reminder">
-    <h4>Πληροφορίες για την Άδεια Χειριστή Μηχανημάτων Έργου</h4>
-    <p>Οι άδειες χειριστή μηχανημάτων έργου είναι αόριστης διάρκειας και θεωρούνται κάθε οκτώ έτη. Με την παράγραφο 1 του άρθρου 145 Νόμος 4887 η προθεσμία θεώρησής των αδειών χειριστή μηχανημάτων έργου, μετά την παρέλευση οκτώ (8) ετών, παρατείνεται κατά τρία (3) έτη και άρα η θεώρηση πραγματοποιείτε στα έντεκα (11) έτη.</p>
-    <p>Ως ημερομηνία έναρξης της ενδεκαετίας λαμβάνεται η 1η Ιανουαρίου του επόμενου έτους από τη χορήγηση ή την αντικατάσταση της άδειας χειριστή.</p>
-</div>
-
-
-<!-- Προσθέστε αυτό το script για να αρχικοποιήσετε τις επιλεγμένες υποειδικότητες -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Αρχικοποίηση των επιλεγμένων υποειδικοτήτων από τη βάση δεδομένων
-        <?php 
-        if (isset($driverOperatorSubSpecialities) && !empty($driverOperatorSubSpecialities)): 
-            // Ταξινόμηση των υποειδικοτήτων με βάση το ID
-            usort($driverOperatorSubSpecialities, function($a, $b) {
-                $aSpecialityId = substr($a['sub_speciality'], 0, 1);
-                $aSubId = substr($a['sub_speciality'], 2);
-                
-                $bSpecialityId = substr($b['sub_speciality'], 0, 1);
-                $bSubId = substr($b['sub_speciality'], 2);
-                
-                if ($aSpecialityId == $bSpecialityId) {
-                    return intval($aSubId) - intval($bSubId);
-                }
-                
-                return intval($aSpecialityId) - intval($bSpecialityId);
-            });
-        ?>
-        window.selectedSubSpecialities = [
-            <?php foreach ($driverOperatorSubSpecialities as $subSpec): ?>
-            '<?php echo $subSpec['sub_speciality']; ?>',
-            <?php endforeach; ?>
-        ];
-        window.driverOperatorSubSpecialities = <?php echo json_encode($driverOperatorSubSpecialities); ?>;
-        <?php else: ?>
-        window.selectedSubSpecialities = [];
-        window.driverOperatorSubSpecialities = [];
-        <?php endif; ?>
-        
-        console.log('Δεδομένα υποειδικοτήτων από τη βάση:', window.driverOperatorSubSpecialities);
-        console.log('Επιλεγμένες υποειδικότητες:', window.selectedSubSpecialities);
-        
-        // Αρχικοποίηση του global αντικειμένου από τα δεδομένα της βάσης
-        window.allSelectedSubSpecialities = {};
-        
-        // Αν υπάρχουν δεδομένα από τη βάση, τα προσθέτουμε
-        if (window.driverOperatorSubSpecialities && Array.isArray(window.driverOperatorSubSpecialities)) {
-            window.driverOperatorSubSpecialities.forEach(spec => {
-                if (spec.sub_speciality) {
-                    window.allSelectedSubSpecialities[spec.sub_speciality] = {
-                        checked: true,
-                        group: spec.group_type || 'A'
-                    };
-                }
-            });
-        }
-        
-        // Αρχική φόρτωση των υποειδικοτήτων αν έχει επιλεγεί ειδικότητα
-        const specialitySelect = document.getElementById('operator_speciality');
-        if (specialitySelect && specialitySelect.value) {
-            window.loadSubSpecialities(specialitySelect.value);
-        }
-    });
-</script>
-            <!-- Tab για Ειδικές Άδειες -->
-<div class="tab-pane" id="special-licenses">
-    <h2>Ειδικές Άδειες</h2>
-    
-    <div id="special-licenses-container">
-        <!-- Λίστα ειδικών αδειών -->
-        <?php if (isset($driverSpecialLicenses) && count($driverSpecialLicenses) > 0): ?>
-            <?php foreach ($driverSpecialLicenses as $index => $license): ?>
-                <div class="special-license-item" id="special-license-item-<?php echo $index; ?>">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="special_license_type_<?php echo $index; ?>">Τύπος Άδειας</label>
-                            <input type="text" id="special_license_type_<?php echo $index; ?>" name="special_license_type[]" value="<?php echo htmlspecialchars($license['license_type']); ?>" required>
+                                
+                                <button type="button" class="btn-secondary remove-special-license" data-index="new">Αφαίρεση</button>
+                                <hr class="section-divider">
+                            </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="special_license_number_<?php echo $index; ?>">Αριθμός Άδειας</label>
-                            <input type="text" id="special_license_number_<?php echo $index; ?>" name="special_license_number[]" value="<?php echo htmlspecialchars($license['license_number'] ?? ''); ?>">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="special_license_expiry_<?php echo $index; ?>">Ημερομηνία Λήξης</label>
-                            <input type="date" id="special_license_expiry_<?php echo $index; ?>" name="special_license_expiry[]" value="<?php echo $license['expiry_date'] ?? ''; ?>">
-                        </div>
+                        <!-- Το κουμπί εμφανίζεται μόνο στην καρτέλα ειδικών αδειών -->
+                        <button type="button" id="add-special-license" class="btn-primary">Προσθήκη Ειδικής Άδειας</button>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="special_license_details_<?php echo $index; ?>">Περιγραφή/Λεπτομέρειες</label>
-                        <textarea id="special_license_details_<?php echo $index; ?>" name="special_license_details[]" rows="2"><?php echo htmlspecialchars($license['details'] ?? ''); ?></textarea>
-                    </div>
-                    
-                    <button type="button" class="btn-secondary remove-special-license" data-index="<?php echo $index; ?>">Αφαίρεση</button>
-                    <hr class="section-divider">
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-        
-        <!-- Κενό στοιχείο για προσθήκη νέας άδειας (κρυμμένο αρχικά) -->
-        <div class="special-license-item" id="special-license-template" style="display: none;">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="special_license_type_new">Τύπος Άδειας</label>
-                    <input type="text" id="special_license_type_new" name="special_license_type[]">
-                </div>
-                
-                <div class="form-group">
-                    <label for="special_license_number_new">Αριθμός Άδειας</label>
-                    <input type="text" id="special_license_number_new" name="special_license_number[]">
-                </div>
-                
-                <div class="form-group">
-                    <label for="special_license_expiry_new">Ημερομηνία Λήξης</label>
-                    <input type="date" id="special_license_expiry_new" name="special_license_expiry[]">
                 </div>
             </div>
             
-            <div class="form-group">
-                <label for="special_license_details_new">Περιγραφή/Λεπτομέρειες</label>
-                <textarea id="special_license_details_new" name="special_license_details[]" rows="2"></textarea>
-            </div>
-            
-            <button type="button" class="btn-secondary remove-special-license" data-index="new">Αφαίρεση</button>
-            <hr class="section-divider">
-        </div>
-    </div>
-    
-    <!-- Το κουμπί εμφανίζεται μόνο στην καρτέλα ειδικών αδειών -->
-    <button type="button" id="add-special-license" class="btn-primary">Προσθήκη Ειδικής Άδειας</button>
-</div>
-
-<div id="training_seminars_tab" class="license-details-tab <?php echo !(old('training_seminars', $driverData['training_seminars'] ?? 0)) ? 'hidden' : ''; ?>">
-    <div class="form-group">
-        <label for="training_details">Λεπτομέρειες Σεμιναρίων</label>
-        <textarea id="training_details" name="training_details" rows="4"><?php echo old('training_details', $driverData['training_details'] ?? ''); ?></textarea>
-        <p class="form-hint">Καταγράψτε τα σεμινάρια που έχετε παρακολουθήσει, τις ημερομηνίες και τους φορείς υλοποίησης.</p>
-    </div>
-</div>
-                </div>
-            </div>
-            
-
-       </div>
-       <div class="form-actions">
+            <div class="form-actions">
                 <button type="submit" class="btn-primary btn-save">Αποθήκευση Αλλαγών</button>
                 <a href="<?php echo BASE_URL; ?>drivers/driver_profile" class="btn-secondary">Ακύρωση</a>
             </div>
-            </form>
-
-    <script>
-    // Έλεγχος για διαθεσιμότητα του TesseractWrapper
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('TesseractWrapper διαθέσιμο:', typeof TesseractWrapper !== 'undefined');
-        console.log('TesseractWrapper:', TesseractWrapper);
-        
-        if (typeof TesseractWrapper !== 'undefined') {
-            console.log('TesseractWrapper.preprocessImage:', typeof TesseractWrapper.preprocessImage);
-        }
-    });
-    </script>
-
-<!-- Προσθέστε αυτό στο τέλος του edit_profile.php, πριν το κλείσιμο του </body> tag -->
-<script>
-/**
- * Ενημερώνει την επιλογή μιας υποειδικότητας
- * @param {HTMLElement} checkbox - Το checkbox που άλλαξε κατάσταση
- * @param {string} subSpecialityId - ID της υποειδικότητας
- */
-window.updateSubSpecialitySelection = function(checkbox, subSpecialityId) {
-    console.log(`Ενημέρωση επιλογής: ${subSpecialityId}, checked: ${checkbox.checked}`);
-    
-    if (!window.allSelectedSubSpecialities) {
-        window.allSelectedSubSpecialities = {};
-    }
-    
-    // Αποθήκευση της επιλογής
-    if (!window.allSelectedSubSpecialities[subSpecialityId]) {
-        window.allSelectedSubSpecialities[subSpecialityId] = {
-            checked: checkbox.checked,
-            group: 'A'  // Προεπιλεγμένη τιμή αν δεν έχει οριστεί
-        };
-    } else {
-        window.allSelectedSubSpecialities[subSpecialityId].checked = checkbox.checked;
-    }
-    
-    // Εμφάνιση/απόκρυψη των radio buttons ομάδων
-    const groupContainer = document.getElementById('group_container_' + subSpecialityId);
-    if (groupContainer) {
-        groupContainer.style.display = checkbox.checked ? 'block' : 'none';
-    }
-    
-    console.log("Αποθηκευμένες επιλογές:", window.allSelectedSubSpecialities);
-};
-
-/**
- * Ενημερώνει την ομάδα μιας υποειδικότητας
- * @param {string} subSpecialityId - ID της υποειδικότητας
- * @param {string} groupValue - Τιμή της ομάδας (A ή B)
- */
-window.updateSubSpecialityGroup = function(subSpecialityId, groupValue) {
-    console.log(`Ενημέρωση ομάδας: ${subSpecialityId}, group: ${groupValue}`);
-    
-    if (!window.allSelectedSubSpecialities) {
-        window.allSelectedSubSpecialities = {};
-    }
-    
-    // Ενημέρωση της ομάδας
-    if (!window.allSelectedSubSpecialities[subSpecialityId]) {
-        window.allSelectedSubSpecialities[subSpecialityId] = {
-            checked: true,  // Αν αλλάζουμε ομάδα, θεωρούμε ότι είναι επιλεγμένο
-            group: groupValue
-        };
-    } else {
-        window.allSelectedSubSpecialities[subSpecialityId].group = groupValue;
-    }
-    
-    console.log("Αποθηκευμένες επιλογές μετά την αλλαγή ομάδας:", window.allSelectedSubSpecialities);
-};
-
-/**
- * Προετοιμάζει τα δεδομένα για αποστολή πριν την υποβολή της φόρμας
- */
-window.prepareOperatorSpecialitiesForSubmission = function() {
-    console.log("Προετοιμασία δεδομένων για υποβολή");
-    
-    const form = document.getElementById('driverProfileForm');
-    if (!form) {
-        console.error("Δεν βρέθηκε η φόρμα!");
-        return;
-    }
-    
-    // Μετατροπή του αντικειμένου σε μορφή κατάλληλη για αποστολή
-    const selectedSubSpecialitiesArray = [];
-    const selectedGroupsObj = {};
-    
-    for (const subSpecId in window.allSelectedSubSpecialities) {
-        if (window.allSelectedSubSpecialities[subSpecId].checked) {
-            selectedSubSpecialitiesArray.push(subSpecId);
-            selectedGroupsObj[subSpecId] = window.allSelectedSubSpecialities[subSpecId].group;
-        }
-    }
-    
-    // Προσθήκη ή ενημέρωση των κρυφών πεδίων
-    let hiddenField = document.getElementById('all_selected_subspecialities');
-    if (!hiddenField) {
-        hiddenField = document.createElement('input');
-        hiddenField.type = 'hidden';
-        hiddenField.id = 'all_selected_subspecialities';
-        hiddenField.name = 'all_selected_subspecialities';
-        form.appendChild(hiddenField);
-    }
-    hiddenField.value = JSON.stringify(selectedSubSpecialitiesArray);
-    
-    let groupsField = document.getElementById('all_selected_groups');
-    if (!groupsField) {
-        groupsField = document.createElement('input');
-        groupsField.type = 'hidden';
-        groupsField.id = 'all_selected_groups';
-        groupsField.name = 'all_selected_groups';
-        form.appendChild(groupsField);
-    }
-    groupsField.value = JSON.stringify(selectedGroupsObj);
-    
-    console.log("Τελικά δεδομένα υποβολής:", {
-        subspecialities: selectedSubSpecialitiesArray,
-        groups: selectedGroupsObj
-    });
-};
-
-// Αντικατάσταση της υπάρχουσας loadSubSpecialities με τη βελτιωμένη έκδοση
-window.loadSubSpecialities = function(specialityId) {
-    console.log("Φόρτωση υποειδικοτήτων για ειδικότητα:", specialityId);
-    
-    const subSpecialityContainer = document.getElementById('subSpecialityContainer');
-    const tableBody = document.getElementById('subSpecialitiesTableBody');
-    
-    if (!subSpecialityContainer || !tableBody) {
-        console.error('Δεν βρέθηκαν τα απαραίτητα στοιχεία DOM');
-        return;
-    }
-    
-    // Αν δεν έχει επιλεγεί ειδικότητα, απόκρυψη του container
-    if (!specialityId) {
-        subSpecialityContainer.style.display = 'none';
-        return;
-    }
-    
-    // Αρχικοποίηση του allSelectedSubSpecialities αν δεν υπάρχει
-    if (!window.allSelectedSubSpecialities) {
-        window.allSelectedSubSpecialities = {};
-    }
-    
-    // Αποθήκευση των τρέχουσων επιλογών πριν την αλλαγή της εμφάνισης
-    const currentCheckboxes = tableBody.querySelectorAll('input[name="operator_sub_specialities[]"]');
-    currentCheckboxes.forEach(checkbox => {
-        const subSpecId = checkbox.value;
-        if (checkbox.checked) {
-            // Αποθήκευση της τρέχουσας επιλογής και της ομάδας
-            const groupRadios = document.querySelectorAll(`input[name="group_${subSpecId}"]`);
-            let selectedGroup = 'A';
-            groupRadios.forEach(radio => {
-                if (radio.checked) {
-                    selectedGroup = radio.value;
-                }
-            });
-            
-            // Ενημέρωση του global αντικειμένου
-            if (!window.allSelectedSubSpecialities[subSpecId]) {
-                window.allSelectedSubSpecialities[subSpecId] = {
-                    checked: true,
-                    group: selectedGroup
-                };
-            } else {
-                window.allSelectedSubSpecialities[subSpecId].checked = true;
-                window.allSelectedSubSpecialities[subSpecId].group = selectedGroup;
-            }
-        } else if (window.allSelectedSubSpecialities[subSpecId]) {
-            window.allSelectedSubSpecialities[subSpecId].checked = false;
-        }
-    });
-    
-    console.log("Αποθηκευμένες επιλογές:", window.allSelectedSubSpecialities);
-    
-    // Εμφάνιση του container και καθαρισμός του πίνακα
-    subSpecialityContainer.style.display = 'block';
-    tableBody.innerHTML = '';
-    
-    // Δημιουργία και προσθήκη των γραμμών του πίνακα για κάθε υποειδικότητα
-    if (window.operatorSubSpecialities && window.operatorSubSpecialities[specialityId]) {
-        window.operatorSubSpecialities[specialityId].forEach(item => {
-            const subSpecId = item.id;
-            
-            // Έλεγχος αν η υποειδικότητα είναι επιλεγμένη
-            let isChecked = false;
-            let groupValue = item.group || 'A';
-            
-            // Έλεγχος από το global αντικείμενο
-            if (window.allSelectedSubSpecialities[subSpecId]) {
-                isChecked = window.allSelectedSubSpecialities[subSpecId].checked;
-                groupValue = window.allSelectedSubSpecialities[subSpecId].group;
-            }
-            // Έλεγχος από τα αρχικά δεδομένα
-            else if (window.selectedSubSpecialities && window.selectedSubSpecialities.includes(subSpecId)) {
-                isChecked = true;
-                
-                // Εύρεση της ομάδας από τα δεδομένα της βάσης
-                if (window.driverOperatorSubSpecialities) {
-                    const found = window.driverOperatorSubSpecialities.find(
-                        spec => spec.sub_speciality === subSpecId
-                    );
-                    if (found && found.group_type) {
-                        groupValue = found.group_type;
-                    }
-                }
-                
-                // Αποθήκευση στο global αντικείμενο
-                window.allSelectedSubSpecialities[subSpecId] = {
-                    checked: true,
-                    group: groupValue
-                };
-            }
-            
-            // Δημιουργία της γραμμής του πίνακα
-            const row = document.createElement('tr');
-            
-            row.innerHTML = `
-                <td>${subSpecId}</td>
-                <td>${item.name}</td>
-                <td>
-                    <label class="toggle-switch">
-                        <input type="checkbox" name="operator_sub_specialities[]" value="${subSpecId}" ${isChecked ? 'checked' : ''} 
-                            onchange="updateSubSpecialitySelection(this, '${subSpecId}')">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </td>
-                <td>
-                    <div class="radio-group" id="group_container_${subSpecId}" ${isChecked ? '' : 'style="display:none;"'}>
-                        <label class="radio-label">
-                            <input type="radio" name="group_${subSpecId}" value="A" ${groupValue === 'A' ? 'checked' : ''} 
-                                onchange="updateSubSpecialityGroup('${subSpecId}', 'A')">
-                            <span>A</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="group_${subSpecId}" value="B" ${groupValue === 'B' ? 'checked' : ''} 
-                                onchange="updateSubSpecialityGroup('${subSpecId}', 'B')">
-                            <span>B</span>
-                        </label>
-                    </div>
-                </td>
-            `;
-            
-            tableBody.appendChild(row);
-        });
-    } else {
-        console.log(`Δεν βρέθηκαν υποειδικότητες για την ειδικότητα ${specialityId}`);
-    }
-};
-
-// Προσθήκη του listener υποβολής στη φόρμα
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('driverProfileForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            window.prepareOperatorSpecialitiesForSubmission();
-        });
-    }
-});
-</script>
+        </form>
+    </div>
 </main>
-
 
 <?php
 // Συμπερίληψη του footer

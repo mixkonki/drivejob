@@ -1,20 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Καταγραφή σφαλμάτων στην κονσόλα με λεπτομέρειες
+    // -------------------- Καταγραφή σφαλμάτων --------------------
     window.onerror = function(message, source, lineno, colno, error) {
         console.error('ΣΦΑΛΜΑ:', message, 'στη γραμμή', lineno, 'της πηγής', source);
         console.error('Λεπτομέρειες:', error);
         return false; // Επιτρέπει την κανονική διαχείριση σφαλμάτων του προγράμματος περιήγησης
     };
-    // ---- Λειτουργίες OCR (προσθήκη στην αρχή) ----
-    // Ορισμός των συναρτήσεων OCR που λείπουν
+
+    // -------------------- Ορισμός βοηθητικών συναρτήσεων OCR --------------------
     window.preprocessImageForOCR = function(imageDataUrl) {
-        return new Promise((resolve) => {
-            // Απλή επιστροφή της εικόνας χωρίς επεξεργασία
-            resolve(imageDataUrl);
-        });
+        return Promise.resolve(imageDataUrl);
     };
+    
     window.performOCR = function(imageData, languages) {
-        // Έλεγχος αν είναι διαθέσιμο το Tesseract
         if (typeof Tesseract === 'undefined') {
             return Promise.reject(new Error('Το Tesseract.js δεν είναι διαθέσιμο'));
         }
@@ -25,7 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return result.data.text;
         });
     };
-    // -------------------- Λειτουργία καρτελών --------------------
+
+    // -------------------- Αρχικοποίηση λειτουργίας καρτελών --------------------
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabPanes = document.querySelectorAll('.tab-pane');
     
@@ -75,17 +73,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // -------------------- Εμφάνιση/απόκρυψη λεπτομερειών αδειών --------------------
-    const checkboxToTabMap = {
-        'driving_license': 'driving_license_tab',
-        'adr_certificate': 'adr_certificate_tab',
-        'operator_license': 'operator_license_tab',
-        'tachograph_card': 'tachograph_card_tab',
-        'training_seminars': 'training_seminars_tab'
-    };
+    const licenseSections = [
+        { checkboxId: 'driving_license', tabId: 'driving_license_tab' },
+        { checkboxId: 'adr_certificate', tabId: 'adr_certificate_tab' },
+        { checkboxId: 'operator_license', tabId: 'operator_license_tab' },
+        { checkboxId: 'tachograph_card', tabId: 'tachograph_card_tab' },
+        { checkboxId: 'training_seminars', tabId: 'training_seminars_tab' }
+    ];
     
-    Object.keys(checkboxToTabMap).forEach(checkboxId => {
-        const checkbox = document.getElementById(checkboxId);
-        const tab = document.getElementById(checkboxToTabMap[checkboxId]);
+    licenseSections.forEach(section => {
+        const checkbox = document.getElementById(section.checkboxId);
+        const tab = document.getElementById(section.tabId);
         
         if (checkbox && tab) {
             // Αρχική κατάσταση
@@ -123,35 +121,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Συγχρονισμός ημερομηνιών ΠΕΙ για φορτηγά (C, CE, C1, C1E)
-    const peiCExpiryFields = document.querySelectorAll('input[name="pei_c_expiry"]');
-    peiCExpiryFields.forEach(field => {
-        field.addEventListener('change', function() {
-            if (this.disabled) return;
-            
-            const newDate = this.value;
-            peiCExpiryFields.forEach(f => {
-                if (f !== this && !f.disabled) {
-                    f.value = newDate;
-                }
+    // Συγχρονισμός ημερομηνιών ΠΕΙ για κατηγορίες
+    function syncExpiryDates(fieldNames) {
+        const fields = document.querySelectorAll(fieldNames);
+        fields.forEach(field => {
+            field.addEventListener('change', function() {
+                if (this.disabled) return;
+                
+                const newDate = this.value;
+                fields.forEach(f => {
+                    if (f !== this && !f.disabled) {
+                        f.value = newDate;
+                    }
+                });
             });
         });
-    });
+    }
     
-    // Συγχρονισμός ημερομηνιών ΠΕΙ για λεωφορεία (D, DE, D1, D1E)
-    const peiDExpiryFields = document.querySelectorAll('input[name="pei_d_expiry"]');
-    peiDExpiryFields.forEach(field => {
-        field.addEventListener('change', function() {
-            if (this.disabled) return;
-            
-            const newDate = this.value;
-            peiDExpiryFields.forEach(f => {
-                if (f !== this && !f.disabled) {
-                    f.value = newDate;
-                }
-            });
-        });
-    });
+    // Συγχρονισμός για ΠΕΙ φορτηγών (C) και λεωφορείων (D)
+    syncExpiryDates('input[name="pei_c_expiry"]');
+    syncExpiryDates('input[name="pei_d_expiry"]');
     
     // Χειρισμός των checkbox κατηγοριών αδειών
     const licenseTypeCheckboxes = document.querySelectorAll('input[name="license_types[]"]');
@@ -204,64 +193,70 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // -------------------- Χειρισμός εικόνων --------------------
+    // Γενική συνάρτηση για το χειρισμό της μεταφόρτωσης εικόνων
+    function handleImageUpload(input) {
+        if (!input.files || !input.files[0]) return;
+        
+        // Έλεγχος μεγέθους αρχείου (max 2MB)
+        const fileSize = input.files[0].size / 1024 / 1024; // σε MB
+        if (fileSize > 2) {
+            alert('Το αρχείο είναι πολύ μεγάλο. Μέγιστο επιτρεπόμενο μέγεθος: 2MB');
+            input.value = ''; // Καθαρισμός της επιλογής
+            return;
+        }
+        
+        // Έλεγχος τύπου αρχείου
+        const fileType = input.files[0].type;
+        if (!['image/jpeg', 'image/png', 'image/gif'].includes(fileType)) {
+            alert('Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.');
+            input.value = '';
+            return;
+        }
+        
+        // Εμφάνιση προεπισκόπησης
+        const parent = input.parentElement;
+        let previewContainer = parent.querySelector('.preview-image') || parent.querySelector('.current-image');
+        
+        if (!previewContainer) {
+            // Δημιουργία νέου container για προεπισκόπηση
+            previewContainer = document.createElement('div');
+            previewContainer.className = 'preview-image';
+            
+            const previewImg = document.createElement('img');
+            const previewText = document.createElement('p');
+            previewText.textContent = 'Προεπισκόπηση εικόνας';
+            
+            previewContainer.appendChild(previewImg);
+            previewContainer.appendChild(previewText);
+            
+            // Προσθήκη πριν από το input
+            parent.insertBefore(previewContainer, input);
+        } else {
+            // Ενημέρωση του υπάρχοντος container
+            const previewImg = previewContainer.querySelector('img');
+            if (previewImg) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.alt = file.name;
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+    }
+    
+    // Εφαρμογή σε όλα τα πεδία εικόνων
     const imageInputs = document.querySelectorAll('input[type="file"][accept*="image"]');
     imageInputs.forEach(input => {
         input.addEventListener('change', function() {
-            if (!this.files || !this.files[0]) return;
-            
-            // Έλεγχος μεγέθους αρχείου (max 2MB)
-            const fileSize = this.files[0].size / 1024 / 1024; // σε MB
-            if (fileSize > 2) {
-                alert('Το αρχείο είναι πολύ μεγάλο. Μέγιστο επιτρεπόμενο μέγεθος: 2MB');
-                this.value = ''; // Καθαρισμός της επιλογής
-                return;
-            }
-            
-            // Έλεγχος τύπου αρχείου
-            const fileType = this.files[0].type;
-            if (!['image/jpeg', 'image/png', 'image/gif'].includes(fileType)) {
-                alert('Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.');
-                this.value = '';
-                return;
-            }
-            
-            // Εμφάνιση προεπισκόπησης
-            const parent = this.parentElement;
-            let previewContainer = parent.querySelector('.preview-image') || parent.querySelector('.current-image');
-            
-            if (!previewContainer) {
-                // Δημιουργία νέου container για προεπισκόπηση
-                previewContainer = document.createElement('div');
-                previewContainer.className = 'preview-image';
-                
-                const previewImg = document.createElement('img');
-                const previewText = document.createElement('p');
-                previewText.textContent = 'Προεπισκόπηση εικόνας';
-                
-                previewContainer.appendChild(previewImg);
-                previewContainer.appendChild(previewText);
-                
-                // Προσθήκη πριν από το input
-                parent.insertBefore(previewContainer, this);
-            } else {
-                // Ενημέρωση του υπάρχοντος container
-                const previewImg = previewContainer.querySelector('img');
-                if (previewImg) {
-                    const file = this.files[0];
-                    const reader = new FileReader();
-                    
-                    reader.onload = function(e) {
-                        previewImg.src = e.target.result;
-                        previewImg.alt = file.name;
-                    };
-                    
-                    reader.readAsDataURL(file);
-                }
-            }
+            handleImageUpload(this);
         });
     });
     
-    // Έλεγχος για το αρχείο βιογραφικού
+    // Χειρισμός για το αρχείο βιογραφικού
     const resumeInput = document.getElementById('resume_file');
     if (resumeInput) {
         resumeInput.addEventListener('change', function() {
@@ -303,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const specialLicenseTemplate = document.getElementById('special-license-template');
     
     if (addSpecialLicenseBtn && specialLicensesContainer && specialLicenseTemplate) {
-        // Μετρητής για τις νέες άδειες - ΔΙΟΡΘΩΣΗ: Χρήση κάποιου μοναδικού ID για αποφυγή συγκρούσεων
+        // Μετρητής για τις νέες άδειες
         const existingItems = specialLicensesContainer.querySelectorAll('.special-license-item:not(#special-license-template)');
         let licenseCounter = existingItems.length > 0 ? existingItems.length : 0;
         
@@ -315,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
             clone.id = uniqueId;
             clone.style.display = 'block';
             
-            // Ενημέρωση των IDs και των ονομάτων των πεδίων
+            // Ενημέρωση των IDs των πεδίων
             const inputs = clone.querySelectorAll('input, textarea');
             inputs.forEach(input => {
                 // Ενημέρωση του ID χωρίς να αλλάξει το name
@@ -343,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
             licenseCounter++;
         });
         
-        // Αφαίρεση ειδικής άδειας (event delegation για καλύτερη απόδοση)
+        // Αφαίρεση ειδικής άδειας (event delegation)
         document.addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('remove-special-license')) {
                 const itemId = e.target.dataset.index;
@@ -417,426 +412,305 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-   // Ορισμός του αντικειμένου operatorSubSpecialities με όλες τις υποειδικότητες
-window.operatorSubSpecialities = {
-    '1': [
-        {id: '1.1', name: 'Εκσκαφείς όλων των τύπων', group: 'A'},
-        {id: '1.2', name: 'Τσάπες φορτωτές (JCB)', group: 'B'},
-        {id: '1.3', name: 'Προωθητές γαιών όλων των τύπων', group: 'A'},
-        {id: '1.4', name: 'Φορτωτές αλυσότροχοι και λαστιχοφόροι', group: 'A'},
-        {id: '1.5', name: 'Γερανοί - εκσκαφείς', group: 'A'},
-        {id: '1.6', name: 'Ισοπεδωτές (GRADER)', group: 'B'},
-        {id: '1.7', name: 'Αποξεστές (SCRAPERS)', group: 'B'},
-        {id: '1.8', name: 'Ανυψωτικά περονοφόρα μηχανήματα (κλαρκ)', group: 'A'},
-        {id: '1.9', name: 'Διαμορφωτές εδαφών', group: 'B'}
-    ],
-    '2': [
-        {id: '2.1', name: 'Γερανοί παντός τύπου', group: 'A'},
-        {id: '2.2', name: 'Γερανογέφυρες', group: 'A'},
-        {id: '2.3', name: 'Γερανοί - εκσκαφείς', group: 'B'},
-        {id: '2.4', name: 'Μηχανήματα απασχολούμενα στην κατασκευή στοών', group: 'B'},
-        {id: '2.5', name: 'Φορτωτές - εκφορτωτές λιμένων', group: 'B'},
-        {id: '2.6', name: 'Ηλεκτροκίνητα ανυψωτικά μηχανήματα', group: 'A'},
-        {id: '2.7', name: 'Πασσαλοπήκτες', group: 'A'},
-        {id: '2.8', name: 'Μηχανικοί πτύσσοβραχίονες για εργασίες σε ύψος', group: 'B'},
-        {id: '2.9', name: 'Περονοφόρα ανυψωτικά μηχανήματα (κλαρκ)', group: 'A'}
-    ],
-    '3': [
-        {id: '3.1', name: 'Μηχανήματα διάστρωσης υλικών οδοστρωσίας', group: 'A'},
-        {id: '3.2', name: 'Οδοστρωτήρες', group: 'A'},
-        {id: '3.3', name: 'Διαστρωτήρες σκυροδέματος (FINISHER)', group: 'A'},
-        {id: '3.4', name: 'Διαστρωτήρες ασφαλτοσκυροδέματος', group: 'B'},
-        {id: '3.5', name: 'Συμπιεστές - συμπυκνωτές', group: 'A'},
-        {id: '3.6', name: 'Δονητικές πλάκες', group: 'B'},
-        {id: '3.7', name: 'Μηχανήματα κατασκευής δαπέδων', group: 'A'},
-        {id: '3.8', name: 'Θραυστήρες μηχανημάτων οδοστρωσίας', group: 'B'},
-        {id: '3.9', name: 'Διαγραμμιστικές μηχανές', group: 'B'},
-        {id: '3.10', name: 'Εναποθέτες υλικών', group: 'B'},
-        {id: '3.11', name: 'Αυτοκινούμενοι διαστρωτήρες ασφάλτου', group: 'A'},
-        {id: '3.12', name: 'Μηχανήματα σταθεροποίησης του εδάφους', group: 'B'}
-    ],
-    '4': [
-        {id: '4.1', name: 'Αυτοκινούμενα σάρωθρα', group: 'A'},
-        {id: '4.2', name: 'Πολύσπαστα ανυψωτικά μηχανήματα', group: 'A'},
-        {id: '4.3', name: 'Μηχανήματα απόφραξης οχετών και φρεατίων', group: 'B'},
-        {id: '4.4', name: 'Αποχιονιστικά μηχανήματα', group: 'B'},
-        {id: '4.5', name: 'Αυτοκινούμενες αλατιέρες', group: 'A'},
-        {id: '4.6', name: 'Αυτοκινούμενοι διαστρωτήρες σκυροδέματος', group: 'B'},
-        {id: '4.7', name: 'Αυτοκινούμενοι διαστρωτήρες ασφάλτου', group: 'A'},
-        {id: '4.8', name: 'Διαγραμμιστικές μηχανές οδών', group: 'B'}
-    ],
-    '5': [
-        {id: '5.1', name: 'Μηχανήματα διάτρησης σηράγγων', group: 'A'},
-        {id: '5.2', name: 'Φορτωτές υπόγειων έργων', group: 'A'},
-        {id: '5.3', name: 'Περονοφόρα ανυψωτικά μηχανήματα (κλαρκ)', group: 'A'},
-        {id: '5.4', name: 'Μηχανήματα κατασκευής φρεάτων', group: 'B'},
-        {id: '5.5', name: 'Διατρητικά μηχανήματα', group: 'A'},
-        {id: '5.6', name: 'Εκσκαφείς υπόγειων έργων', group: 'A'}
-    ],
-    '6': [
-        {id: '6.1', name: 'Ελκυστήρες', group: 'A'},
-        {id: '6.2', name: 'Αυτοκινούμενοι αεροσυμπιεστές', group: 'B'}
-    ],
-    '7': [
-        {id: '7.1', name: 'Γεωτρύπανα', group: 'A'},
-        {id: '7.2', name: 'Διατρητικά μηχανήματα', group: 'A'},
-        {id: '7.3', name: 'Μηχανήματα πύκνωσης εδαφών χωρίς δόνηση', group: 'B'}
-    ],
-    '8': [
-        {id: '8.1', name: 'Γερανοί παντός τύπου', group: 'A'},
-        {id: '8.2', name: 'Γερανοί - εκσκαφείς', group: 'A'},
-        {id: '8.3', name: 'Αντλίες σκυροδέματος', group: 'B'},
-        {id: '8.4', name: 'Ανυψωτικές πλατφόρμες παντός τύπου', group: 'A'},
-        {id: '8.5', name: 'Περονοφόρα ανυψωτικά μηχανήματα (κλαρκ)', group: 'A'},
-        {id: '8.6', name: 'Αναβατόρια παντός τύπου', group: 'B'},
-        {id: '8.7', name: 'Μηχανικοί πτύσσοβραχίονες για εργασίες σε ύψος', group: 'B'},
-        {id: '8.8', name: 'Ανυψωτικά μηχανήματα εμπορευματοκιβωτίων', group: 'A'},
-        {id: '8.9', name: 'Εξέδρες εργασίας', group: 'B'}
-    ]
-};
-
-// --------- Παγκόσμιες μεταβλητές για τις υποειδικότητες ---------
-// Αντικείμενο που αποθηκεύει τις επιλεγμένες υποειδικότητες από όλες τις ειδικότητες
-window.allSelectedSubSpecialities = {};
-
-// Εισαγωγή δεδομένων από PHP στην αρχικοποίηση της σελίδας (αυτό θα προστεθεί με PHP)
-// window.driverOperatorSubSpecialities = [...]; // Τα δεδομένα από τη βάση
-// window.selectedSubSpecialities = [...];       // Οι επιλεγμένες υποειδικότητες
-
-// --------- Συναρτήσεις χειρισμού υποειδικοτήτων ---------
-
-/**
- * Φορτώνει τις υποειδικότητες μιας ειδικότητας
- * @param {string} specialityId - ID της ειδικότητας
- */
-window.loadSubSpecialities = function(specialityId) {
-    console.log("Φόρτωση υποειδικοτήτων για ειδικότητα:", specialityId);
-    
-    const subSpecialityContainer = document.getElementById('subSpecialityContainer');
-    const tableBody = document.getElementById('subSpecialitiesTableBody');
-    
-    if (!subSpecialityContainer || !tableBody) {
-        console.error('Δεν βρέθηκαν τα απαραίτητα στοιχεία DOM');
-        return;
-    }
-    
-    // Αν δεν έχει επιλεγεί ειδικότητα, απόκρυψη του container
-    if (!specialityId) {
-        subSpecialityContainer.style.display = 'none';
-        return;
-    }
-    
-    // Αρχικοποίηση του allSelectedSubSpecialities αν δεν υπάρχει
-    if (!window.allSelectedSubSpecialities) {
-        window.allSelectedSubSpecialities = {};
-    }
-    
-    // Αποθήκευση των τρέχουσων επιλογών πριν την αλλαγή της εμφάνισης
-    const currentCheckboxes = tableBody.querySelectorAll('input[name="operator_sub_specialities[]"]');
-    currentCheckboxes.forEach(checkbox => {
-        const subSpecId = checkbox.value;
-        if (checkbox.checked) {
-            // Αποθήκευση της τρέχουσας επιλογής και της ομάδας
-            const groupRadios = document.querySelectorAll(`input[name="group_${subSpecId}"]`);
-            let selectedGroup = 'A';
-            groupRadios.forEach(radio => {
-                if (radio.checked) {
-                    selectedGroup = radio.value;
-                }
-            });
-            
-            // Ενημέρωση του global αντικειμένου
-            if (!window.allSelectedSubSpecialities[subSpecId]) {
-                window.allSelectedSubSpecialities[subSpecId] = {
-                    checked: true,
-                    group: selectedGroup
-                };
-            } else {
-                window.allSelectedSubSpecialities[subSpecId].checked = true;
-                window.allSelectedSubSpecialities[subSpecId].group = selectedGroup;
-            }
-        } else if (window.allSelectedSubSpecialities[subSpecId]) {
-            window.allSelectedSubSpecialities[subSpecId].checked = false;
-        }
-    });
-    
-    console.log("Αποθηκευμένες επιλογές:", window.allSelectedSubSpecialities);
-    
-    // Εμφάνιση του container και καθαρισμός του πίνακα
-    subSpecialityContainer.style.display = 'block';
-    tableBody.innerHTML = '';
-    
-    // Δημιουργία και προσθήκη των γραμμών του πίνακα για κάθε υποειδικότητα
-    if (window.operatorSubSpecialities && window.operatorSubSpecialities[specialityId]) {
-        window.operatorSubSpecialities[specialityId].forEach(item => {
-            const subSpecId = item.id;
-            
-            // Μέσα στη συνάρτηση loadSubSpecialities
-// Στον κώδικα που φορτώνει τις υποειδικότητες για την τρέχουσα ειδικότητα
-
-// Έλεγχος αν η υποειδικότητα είναι επιλεγμένη
-let isChecked = false;
-let groupValue = 'A'; // Προεπιλεγμένη τιμή
-
-// 1. Πρώτα ελέγχουμε αν έχει ήδη επιλεγεί και αποθηκευτεί από τον χρήστη
-if (window.allSelectedSubSpecialities[subSpecId]) {
-    isChecked = window.allSelectedSubSpecialities[subSpecId].checked;
-    groupValue = window.allSelectedSubSpecialities[subSpecId].group;
-}
-// 2. Μετά ελέγχουμε από τη βάση δεδομένων (αποθηκευμένες προηγούμενες επιλογές)
-else if (window.selectedSubSpecialities && window.selectedSubSpecialities.includes(subSpecId)) {
-    isChecked = true;
-    
-    // Εύρεση της αποθηκευμένης ομάδας από τα δεδομένα της βάσης
-    if (window.driverOperatorSubSpecialities) {
-        const found = window.driverOperatorSubSpecialities.find(
-            spec => spec.sub_speciality === subSpecId
-        );
-        if (found && found.group_type) {
-            groupValue = found.group_type;
-        }
-    }
-    
-    // Αποθήκευση στο global αντικείμενο
-    window.allSelectedSubSpecialities[subSpecId] = {
-        checked: true,
-        group: groupValue
+    // -------------------- Υποειδικότητες Άδειας Χειριστή --------------------
+    // Ορισμός του αντικειμένου operatorSubSpecialities με όλες τις υποειδικότητες
+    window.operatorSubSpecialities = {
+        '1': [
+            {id: '1.1', name: 'Εκσκαφείς όλων των τύπων', group: 'A'},
+            {id: '1.2', name: 'Τσάπες φορτωτές (JCB)', group: 'B'},
+            {id: '1.3', name: 'Προωθητές γαιών όλων των τύπων', group: 'A'},
+            {id: '1.4', name: 'Φορτωτές αλυσότροχοι και λαστιχοφόροι', group: 'A'},
+            {id: '1.5', name: 'Γερανοί - εκσκαφείς', group: 'A'},
+            {id: '1.6', name: 'Ισοπεδωτές (GRADER)', group: 'B'},
+            {id: '1.7', name: 'Αποξεστές (SCRAPERS)', group: 'B'},
+            {id: '1.8', name: 'Ανυψωτικά περονοφόρα μηχανήματα (κλαρκ)', group: 'A'},
+            {id: '1.9', name: 'Διαμορφωτές εδαφών', group: 'B'}
+        ],
+        '2': [
+            {id: '2.1', name: 'Γερανοί παντός τύπου', group: 'A'},
+            {id: '2.2', name: 'Γερανογέφυρες', group: 'A'},
+            {id: '2.3', name: 'Γερανοί - εκσκαφείς', group: 'B'},
+            {id: '2.4', name: 'Μηχανήματα απασχολούμενα στην κατασκευή στοών', group: 'B'},
+            {id: '2.5', name: 'Φορτωτές - εκφορτωτές λιμένων', group: 'B'},
+            {id: '2.6', name: 'Ηλεκτροκίνητα ανυψωτικά μηχανήματα', group: 'A'},
+            {id: '2.7', name: 'Πασσαλοπήκτες', group: 'A'},
+            {id: '2.8', name: 'Μηχανικοί πτύσσοβραχίονες για εργασίες σε ύψος', group: 'B'},
+            {id: '2.9', name: 'Περονοφόρα ανυψωτικά μηχανήματα (κλαρκ)', group: 'A'}
+        ],
+        '3': [
+            {id: '3.1', name: 'Μηχανήματα διάστρωσης υλικών οδοστρωσίας', group: 'A'},
+            {id: '3.2', name: 'Οδοστρωτήρες', group: 'A'},
+            {id: '3.3', name: 'Διαστρωτήρες σκυροδέματος (FINISHER)', group: 'A'},
+            {id: '3.4', name: 'Διαστρωτήρες ασφαλτοσκυροδέματος', group: 'B'},
+            {id: '3.5', name: 'Συμπιεστές - συμπυκνωτές', group: 'A'},
+            {id: '3.6', name: 'Δονητικές πλάκες', group: 'B'},
+            {id: '3.7', name: 'Μηχανήματα κατασκευής δαπέδων', group: 'A'},
+            {id: '3.8', name: 'Θραυστήρες μηχανημάτων οδοστρωσίας', group: 'B'},
+            {id: '3.9', name: 'Διαγραμμιστικές μηχανές', group: 'B'},
+            {id: '3.10', name: 'Εναποθέτες υλικών', group: 'B'},
+            {id: '3.11', name: 'Αυτοκινούμενοι διαστρωτήρες ασφάλτου', group: 'A'},
+            {id: '3.12', name: 'Μηχανήματα σταθεροποίησης του εδάφους', group: 'B'}
+        ],
+        '4': [
+            {id: '4.1', name: 'Αυτοκινούμενα σάρωθρα', group: 'A'},
+            {id: '4.2', name: 'Πολύσπαστα ανυψωτικά μηχανήματα', group: 'A'},
+            {id: '4.3', name: 'Μηχανήματα απόφραξης οχετών και φρεατίων', group: 'B'},
+            {id: '4.4', name: 'Αποχιονιστικά μηχανήματα', group: 'B'},
+            {id: '4.5', name: 'Αυτοκινούμενες αλατιέρες', group: 'A'},
+            {id: '4.6', name: 'Αυτοκινούμενοι διαστρωτήρες σκυροδέματος', group: 'B'},
+            {id: '4.7', name: 'Αυτοκινούμενοι διαστρωτήρες ασφάλτου', group: 'A'},
+            {id: '4.8', name: 'Διαγραμμιστικές μηχανές οδών', group: 'B'}
+        ],
+        '5': [
+            {id: '5.1', name: 'Μηχανήματα διάτρησης σηράγγων', group: 'A'},
+            {id: '5.2', name: 'Φορτωτές υπόγειων έργων', group: 'A'},
+            {id: '5.3', name: 'Περονοφόρα ανυψωτικά μηχανήματα (κλαρκ)', group: 'A'},
+            {id: '5.4', name: 'Μηχανήματα κατασκευής φρεάτων', group: 'B'},
+            {id: '5.5', name: 'Διατρητικά μηχανήματα', group: 'A'},
+            {id: '5.6', name: 'Εκσκαφείς υπόγειων έργων', group: 'A'}
+        ],
+        '6': [
+            {id: '6.1', name: 'Ελκυστήρες', group: 'A'},
+            {id: '6.2', name: 'Αυτοκινούμενοι αεροσυμπιεστές', group: 'B'}
+        ],
+        '7': [
+            {id: '7.1', name: 'Γεωτρύπανα', group: 'A'},
+            {id: '7.2', name: 'Διατρητικά μηχανήματα', group: 'A'},
+            {id: '7.3', name: 'Μηχανήματα πύκνωσης εδαφών χωρίς δόνηση', group: 'B'}
+        ],
+        '8': [
+            {id: '8.1', name: 'Γερανοί παντός τύπου', group: 'A'},
+            {id: '8.2', name: 'Γερανοί - εκσκαφείς', group: 'A'},
+            {id: '8.3', name: 'Αντλίες σκυροδέματος', group: 'B'},
+            {id: '8.4', name: 'Ανυψωτικές πλατφόρμες παντός τύπου', group: 'A'},
+            {id: '8.5', name: 'Περονοφόρα ανυψωτικά μηχανήματα (κλαρκ)', group: 'A'},
+            {id: '8.6', name: 'Αναβατόρια παντός τύπου', group: 'B'},
+            {id: '8.7', name: 'Μηχανικοί πτύσσοβραχίονες για εργασίες σε ύψος', group: 'B'},
+            {id: '8.8', name: 'Ανυψωτικά μηχανήματα εμπορευματοκιβωτίων', group: 'A'},
+            {id: '8.9', name: 'Εξέδρες εργασίας', group: 'B'}
+        ]
     };
-}
-// 3. Τέλος, αν δεν έχει επιλεγεί ποτέ, χρησιμοποιούμε την προεπιλεγμένη τιμή από τα δεδομένα
-else {
-    // Χρησιμοποιούμε την προεπιλεγμένη τιμή από τα δεδομένα μόνο για προτεινόμενη επιλογή
-    groupValue = item.group || 'A';
-}
-            
-            // Δημιουργία της γραμμής του πίνακα
-            const row = document.createElement('tr');
-            
-            row.innerHTML = `
-                <td>${subSpecId}</td>
-                <td>${item.name}</td>
-                <td>
-                    <label class="toggle-switch">
-                        <input type="checkbox" name="operator_sub_specialities[]" value="${subSpecId}" ${isChecked ? 'checked' : ''} 
-                            onchange="updateSubSpecialitySelection(this, '${subSpecId}')">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </td>
-                <td>
-                    <div class="radio-group" id="group_container_${subSpecId}" ${isChecked ? '' : 'style="display:none;"'}>
-                        <label class="radio-label">
-                            <input type="radio" name="group_${subSpecId}" value="A" ${groupValue === 'A' ? 'checked' : ''} 
-                                onchange="updateSubSpecialityGroup('${subSpecId}', 'A')">
-                            <span>A</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="group_${subSpecId}" value="B" ${groupValue === 'B' ? 'checked' : ''} 
-                                onchange="updateSubSpecialityGroup('${subSpecId}', 'B')">
-                            <span>B</span>
-                        </label>
-                    </div>
-                </td>
-            `;
-            
-            tableBody.appendChild(row);
-        });
-    } else {
-        console.log(`Δεν βρέθηκαν υποειδικότητες για την ειδικότητα ${specialityId}`);
-    }
-};
 
-/**
- * Ενημερώνει την επιλογή μιας υποειδικότητας
- * @param {HTMLElement} checkbox - Το checkbox που άλλαξε κατάσταση
- * @param {string} subSpecialityId - ID της υποειδικότητας
- */
-window.updateSubSpecialitySelection = function(checkbox, subSpecialityId) {
-    console.log(`Ενημέρωση επιλογής: ${subSpecialityId}, checked: ${checkbox.checked}`);
-    
-    if (!window.allSelectedSubSpecialities) {
-        window.allSelectedSubSpecialities = {};
-    }
-    
-    // Αποθήκευση της επιλογής
-    if (!window.allSelectedSubSpecialities[subSpecialityId]) {
-        window.allSelectedSubSpecialities[subSpecialityId] = {
-            checked: checkbox.checked,
-            group: 'A'  // Προεπιλεγμένη τιμή αν δεν έχει οριστεί
-        };
-    } else {
-        window.allSelectedSubSpecialities[subSpecialityId].checked = checkbox.checked;
-    }
-    
-    // Εμφάνιση/απόκρυψη των radio buttons ομάδων
-    const groupContainer = document.getElementById('group_container_' + subSpecialityId);
-    if (groupContainer) {
-        groupContainer.style.display = checkbox.checked ? 'block' : 'none';
-    }
-    
-    console.log("Αποθηκευμένες επιλογές:", window.allSelectedSubSpecialities);
-};
-/**
- * Προετοιμάζει τα δεδομένα για αποστολή πριν την υποβολή της φόρμας
- */
-window.prepareOperatorSpecialitiesForSubmission = function() {
-    console.log("Προετοιμασία δεδομένων για υποβολή");
-    
-    const form = document.getElementById('driverProfileForm');
-    if (!form) {
-        console.error("Δεν βρέθηκε η φόρμα!");
-        return;
-    }
-    
-    // Συγχρονισμός των τιμών των ομάδων από τα radio buttons
-    const allRadioGroups = document.querySelectorAll('input[type="radio"][name^="group_"]:checked');
-    allRadioGroups.forEach(radio => {
-        const groupName = radio.name;
-        const subSpecId = groupName.replace('group_', '');
-        const groupValue = radio.value;
+    // Αντικείμενο που αποθηκεύει τις επιλεγμένες υποειδικότητες από όλες τις ειδικότητες
+    window.allSelectedSubSpecialities = window.allSelectedSubSpecialities || {};
+
+    /**
+     * Φορτώνει τις υποειδικότητες μιας ειδικότητας
+     * @param {string} specialityId - ID της ειδικότητας
+     */
+    window.loadSubSpecialities = function(specialityId) {
+        const subSpecialityContainer = document.getElementById('subSpecialityContainer');
+        const tableBody = document.getElementById('subSpecialitiesTableBody');
         
-        // Ενημέρωση του αντικειμένου μόνο αν υπάρχει ήδη και είναι επιλεγμένο
-        if (window.allSelectedSubSpecialities[subSpecId] && window.allSelectedSubSpecialities[subSpecId].checked) {
-            window.allSelectedSubSpecialities[subSpecId].group = groupValue;
-            console.log(`Συγχρονισμός ομάδας: ${subSpecId} => ${groupValue}`);
+        if (!subSpecialityContainer || !tableBody) {
+            console.error('Δεν βρέθηκαν τα απαραίτητα στοιχεία DOM');
+            return;
         }
-    });
-    
-    // Μετατροπή του αντικειμένου σε μορφή κατάλληλη για αποστολή
-    const selectedSubSpecialitiesArray = [];
-    const selectedGroupsObj = {};
-    
-    for (const subSpecId in window.allSelectedSubSpecialities) {
-        if (window.allSelectedSubSpecialities[subSpecId].checked) {
-            selectedSubSpecialitiesArray.push(subSpecId);
-            selectedGroupsObj[subSpecId] = window.allSelectedSubSpecialities[subSpecId].group;
+        
+        // Αν δεν έχει επιλεγεί ειδικότητα, απόκρυψη του container
+        if (!specialityId) {
+            subSpecialityContainer.style.display = 'none';
+            return;
         }
-    }
-    
-    // Προσθήκη ή ενημέρωση των κρυφών πεδίων
-    let hiddenField = document.getElementById('all_selected_subspecialities');
-    if (!hiddenField) {
-        hiddenField = document.createElement('input');
-        hiddenField.type = 'hidden';
-        hiddenField.id = 'all_selected_subspecialities';
-        hiddenField.name = 'all_selected_subspecialities';
-        form.appendChild(hiddenField);
-    }
-    hiddenField.value = JSON.stringify(selectedSubSpecialitiesArray);
-    
-    let groupsField = document.getElementById('all_selected_groups');
-    if (!groupsField) {
-        groupsField = document.createElement('input');
-        groupsField.type = 'hidden';
-        groupsField.id = 'all_selected_groups';
-        groupsField.name = 'all_selected_groups';
-        form.appendChild(groupsField);
-    }
-    groupsField.value = JSON.stringify(selectedGroupsObj);
-    
-    console.log("Τελικά δεδομένα υποβολής:", {
-        subspecialities: selectedSubSpecialitiesArray,
-        groups: selectedGroupsObj
-    });
-};
-
-/**
- * Ενημερώνει την ομάδα μιας υποειδικότητας
- * @param {string} subSpecialityId - ID της υποειδικότητας
- * @param {string} groupValue - Τιμή της ομάδας (A ή B)
- */
-window.updateSubSpecialityGroup = function(subSpecialityId, groupValue) {
-    console.log(`Ενημέρωση ομάδας: ${subSpecialityId}, group: ${groupValue}`);
-    
-    if (!window.allSelectedSubSpecialities) {
-        window.allSelectedSubSpecialities = {};
-    }
-    
-    // Ενημέρωση της ομάδας στο global αντικείμενο
-    if (!window.allSelectedSubSpecialities[subSpecialityId]) {
-        window.allSelectedSubSpecialities[subSpecialityId] = {
-            checked: true,  // Αν αλλάζουμε ομάδα, θεωρούμε ότι είναι επιλεγμένο
-            group: groupValue
-        };
-    } else {
-        window.allSelectedSubSpecialities[subSpecialityId].group = groupValue;
-    }
-    
-    console.log("Αποθηκευμένες επιλογές μετά την αλλαγή ομάδας:", window.allSelectedSubSpecialities);
-};
-
-/**
- * Προετοιμάζει τα δεδομένα για αποστολή πριν την υποβολή της φόρμας
- */
-window.prepareOperatorSpecialitiesForSubmission = function() {
-    console.log("Προετοιμασία δεδομένων για υποβολή");
-    
-    const form = document.getElementById('driverProfileForm');
-    if (!form) {
-        console.error("Δεν βρέθηκε η φόρμα!");
-        return;
-    }
-    
-    // Μετατροπή του αντικειμένου σε μορφή κατάλληλη για αποστολή
-    const selectedSubSpecialitiesArray = [];
-    const selectedGroupsObj = {};
-    
-    for (const subSpecId in window.allSelectedSubSpecialities) {
-        if (window.allSelectedSubSpecialities[subSpecId].checked) {
-            selectedSubSpecialitiesArray.push(subSpecId);
-            selectedGroupsObj[subSpecId] = window.allSelectedSubSpecialities[subSpecId].group;
+        
+        // Αποθήκευση των τρέχουσων επιλογών πριν την αλλαγή της εμφάνισης
+        const currentCheckboxes = tableBody.querySelectorAll('input[name="operator_sub_specialities[]"]');
+        currentCheckboxes.forEach(checkbox => {
+            const subSpecId = checkbox.value;
+            if (checkbox.checked) {
+                // Αποθήκευση της τρέχουσας επιλογής και της ομάδας
+                const groupRadios = document.querySelectorAll(`input[name="group_${subSpecId}"]`);
+                let selectedGroup = 'A';
+                groupRadios.forEach(radio => {
+                    if (radio.checked) {
+                        selectedGroup = radio.value;
+                    }
+                });
+                
+                // Ενημέρωση του global αντικειμένου
+                if (!window.allSelectedSubSpecialities[subSpecId]) {
+                    window.allSelectedSubSpecialities[subSpecId] = {
+                        checked: true,
+                        group: selectedGroup
+                    };
+                } else {
+                    window.allSelectedSubSpecialities[subSpecId].checked = true;
+                    window.allSelectedSubSpecialities[subSpecId].group = selectedGroup;
+                }
+            } else if (window.allSelectedSubSpecialities[subSpecId]) {
+                window.allSelectedSubSpecialities[subSpecId].checked = false;
+            }
+        });
+        
+        // Εμφάνιση του container και καθαρισμός του πίνακα
+        subSpecialityContainer.style.display = 'block';
+        tableBody.innerHTML = '';
+        
+        // Δημιουργία και προσθήκη των γραμμών του πίνακα για κάθε υποειδικότητα
+        if (window.operatorSubSpecialities && window.operatorSubSpecialities[specialityId]) {
+            window.operatorSubSpecialities[specialityId].forEach(item => {
+                const subSpecId = item.id;
+                
+                // Έλεγχος αν η υποειδικότητα είναι επιλεγμένη
+                let isChecked = false;
+                let groupValue = item.group || 'A';
+                
+                // Έλεγχος από το global αντικείμενο
+                if (window.allSelectedSubSpecialities[subSpecId]) {
+                    isChecked = window.allSelectedSubSpecialities[subSpecId].checked;
+                    groupValue = window.allSelectedSubSpecialities[subSpecId].group;
+                }
+                // Έλεγχος από τα αρχικά δεδομένα
+                else if (window.selectedSubSpecialities && window.selectedSubSpecialities.includes(subSpecId)) {
+                    isChecked = true;
+                    
+                    // Εύρεση της ομάδας από τα δεδομένα της βάσης
+                    if (window.driverOperatorSubSpecialities) {
+                        const found = window.driverOperatorSubSpecialities.find(
+                            spec => spec.sub_speciality === subSpecId
+                        );
+                        if (found && found.group_type) {
+                            groupValue = found.group_type;
+                        }
+                    }
+                    
+                    // Αποθήκευση στο global αντικείμενο
+                    window.allSelectedSubSpecialities[subSpecId] = {
+                        checked: true,
+                        group: groupValue
+                    };
+                }
+                
+                // Δημιουργία της γραμμής του πίνακα
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${subSpecId}</td>
+                    <td>${item.name}</td>
+                    <td>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="operator_sub_specialities[]" value="${subSpecId}" ${isChecked ? 'checked' : ''} 
+                                onchange="updateSubSpecialitySelection(this, '${subSpecId}')">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </td>
+                    <td>
+                        <div class="radio-group" id="group_container_${subSpecId}" ${isChecked ? '' : 'style="display:none;"'}>
+                            <label class="radio-label">
+                                <input type="radio" name="group_${subSpecId}" value="A" ${groupValue === 'A' ? 'checked' : ''} 
+                                    onchange="updateSubSpecialityGroup('${subSpecId}', 'A')">
+                                <span>A</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="group_${subSpecId}" value="B" ${groupValue === 'B' ? 'checked' : ''} 
+                                    onchange="updateSubSpecialityGroup('${subSpecId}', 'B')">
+                                <span>B</span>
+                            </label>
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        } else {
+            console.log(`Δεν βρέθηκαν υποειδικότητες για την ειδικότητα ${specialityId}`);
         }
-    }
-    
-    // Προσθήκη ή ενημέρωση των κρυφών πεδίων
-    let hiddenField = document.getElementById('all_selected_subspecialities');
-    if (!hiddenField) {
-        hiddenField = document.createElement('input');
-        hiddenField.type = 'hidden';
-        hiddenField.id = 'all_selected_subspecialities';
-        hiddenField.name = 'all_selected_subspecialities';
-        form.appendChild(hiddenField);
-    }
-    hiddenField.value = JSON.stringify(selectedSubSpecialitiesArray);
-    
-    let groupsField = document.getElementById('all_selected_groups');
-    if (!groupsField) {
-        groupsField = document.createElement('input');
-        groupsField.type = 'hidden';
-        groupsField.id = 'all_selected_groups';
-        groupsField.name = 'all_selected_groups';
-        form.appendChild(groupsField);
-    }
-    groupsField.value = JSON.stringify(selectedGroupsObj);
-    
-    console.log("Τελικά δεδομένα υποβολής:", {
-        subspecialities: selectedSubSpecialitiesArray,
-        groups: selectedGroupsObj
-    });
-};
+    };
 
-// --------- Εγκατάσταση event listeners ---------
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('driverProfileForm');
-    if (form) {
-        // Αρχικοποίηση του global αντικειμένου από τα δεδομένα της βάσης
+    /**
+     * Ενημερώνει την επιλογή μιας υποειδικότητας
+     * @param {HTMLElement} checkbox - Το checkbox που άλλαξε κατάσταση
+     * @param {string} subSpecialityId - ID της υποειδικότητας
+     */
+    window.updateSubSpecialitySelection = function(checkbox, subSpecialityId) {
         if (!window.allSelectedSubSpecialities) {
             window.allSelectedSubSpecialities = {};
         }
         
-        // Αν υπάρχουν δεδομένα από τη βάση, τα προσθέτουμε
-        if (window.driverOperatorSubSpecialities && window.driverOperatorSubSpecialities.length > 0) {
-            window.driverOperatorSubSpecialities.forEach(spec => {
-                if (spec.sub_speciality) {
-                    window.allSelectedSubSpecialities[spec.sub_speciality] = {
-                        checked: true,
-                        group: spec.group_type || 'A'
-                    };
-                }
-            });
-            console.log("Αρχικοποίηση από δεδομένα βάσης:", window.allSelectedSubSpecialities);
+        // Αποθήκευση της επιλογής
+        if (!window.allSelectedSubSpecialities[subSpecialityId]) {
+            window.allSelectedSubSpecialities[subSpecialityId] = {
+                checked: checkbox.checked,
+                group: 'A'  // Προεπιλεγμένη τιμή αν δεν έχει οριστεί
+            };
+        } else {
+            window.allSelectedSubSpecialities[subSpecialityId].checked = checkbox.checked;
         }
         
-        // Προσθήκη του listener υποβολής
+        // Εμφάνιση/απόκρυψη των radio buttons ομάδων
+        const groupContainer = document.getElementById('group_container_' + subSpecialityId);
+        if (groupContainer) {
+            groupContainer.style.display = checkbox.checked ? 'block' : 'none';
+        }
+    };
+
+    /**
+     * Ενημερώνει την ομάδα μιας υποειδικότητας
+     * @param {string} subSpecialityId - ID της υποειδικότητας
+     * @param {string} groupValue - Τιμή της ομάδας (A ή B)
+     */
+    window.updateSubSpecialityGroup = function(subSpecialityId, groupValue) {
+        if (!window.allSelectedSubSpecialities) {
+            window.allSelectedSubSpecialities = {};
+        }
+        
+        // Ενημέρωση της ομάδας
+        if (!window.allSelectedSubSpecialities[subSpecialityId]) {
+            window.allSelectedSubSpecialities[subSpecialityId] = {
+                checked: true,  // Αν αλλάζουμε ομάδα, θεωρούμε ότι είναι επιλεγμένο
+                group: groupValue
+            };
+        } else {
+            window.allSelectedSubSpecialities[subSpecialityId].group = groupValue;
+        }
+    };
+
+    /**
+     * Προετοιμάζει τα δεδομένα για αποστολή πριν την υποβολή της φόρμας
+     */
+    window.prepareOperatorSpecialitiesForSubmission = function() {
+        const form = document.getElementById('driverProfileForm');
+        if (!form) {
+            console.error("Δεν βρέθηκε η φόρμα!");
+            return;
+        }
+        
+        // Μετατροπή του αντικειμένου σε μορφή κατάλληλη για αποστολή
+        const selectedSubSpecialitiesArray = [];
+        const selectedGroupsObj = {};
+        
+        for (const subSpecId in window.allSelectedSubSpecialities) {
+            if (window.allSelectedSubSpecialities[subSpecId].checked) {
+                selectedSubSpecialitiesArray.push(subSpecId);
+                selectedGroupsObj[subSpecId] = window.allSelectedSubSpecialities[subSpecId].group;
+            }
+        }
+        
+        // Προσθήκη ή ενημέρωση των κρυφών πεδίων
+        let hiddenField = document.getElementById('all_selected_subspecialities');
+        if (!hiddenField) {
+            hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.id = 'all_selected_subspecialities';
+            hiddenField.name = 'all_selected_subspecialities';
+            form.appendChild(hiddenField);
+        }
+        hiddenField.value = JSON.stringify(selectedSubSpecialitiesArray);
+        
+        let groupsField = document.getElementById('all_selected_groups');
+        if (!groupsField) {
+            groupsField = document.createElement('input');
+            groupsField.type = 'hidden';
+            groupsField.id = 'all_selected_groups';
+            groupsField.name = 'all_selected_groups';
+            form.appendChild(groupsField);
+        }
+        groupsField.value = JSON.stringify(selectedGroupsObj);
+    };
+
+    // Προσθήκη του listener υποβολής στη φόρμα
+    const form = document.getElementById('driverProfileForm');
+    if (form) {
         form.addEventListener('submit', function(e) {
             window.prepareOperatorSpecialitiesForSubmission();
         });
@@ -847,281 +721,105 @@ document.addEventListener('DOMContentLoaded', function() {
             window.loadSubSpecialities(specialitySelect.value);
         }
     }
-});
 
-window.updateSubSpecialityGroup = function(subSpecialityId, groupValue) {
-    if (!window.selectedSubSpecialitiesMap) {
-        window.selectedSubSpecialitiesMap = {};
-    }
-    
-    // Ενημέρωση της ομάδας στο χάρτη
-    if (!window.selectedSubSpecialitiesMap[subSpecialityId]) {
-        window.selectedSubSpecialitiesMap[subSpecialityId] = {
-            checked: true, // Θεωρούμε ότι είναι επιλεγμένο αν αλλάζουμε την ομάδα
-            group: groupValue
-        };
-    } else {
-        window.selectedSubSpecialitiesMap[subSpecialityId].group = groupValue;
-    }
-    
-    console.log('Ενημερώθηκε η ομάδα:', subSpecialityId, window.selectedSubSpecialitiesMap[subSpecialityId]);
-};
-
-// Συνάρτηση για τη συλλογή όλων των επιλεγμένων υποειδικοτήτων πριν την υποβολή της φόρμας
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('driverProfileForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            // Συλλογή όλων των επιλεγμένων υποειδικοτήτων
-            let allSelectedSubSpecialities = [];
-            let allSelectedGroups = {};
-            
-            // Από το χάρτη αποθήκευσης
-            if (window.selectedSubSpecialitiesMap) {
-                for (let id in window.selectedSubSpecialitiesMap) {
-                    if (window.selectedSubSpecialitiesMap[id].checked) {
-                        allSelectedSubSpecialities.push(id);
-                        allSelectedGroups[id] = window.selectedSubSpecialitiesMap[id].group;
-                    }
-                }
-            }
-            
-            // Προσθήκη και των τρεχουσών επιλεγμένων (για ασφάλεια)
-            const currentCheckboxes = document.querySelectorAll('input[name="operator_sub_specialities[]"]:checked');
-            currentCheckboxes.forEach(checkbox => {
-                if (!allSelectedSubSpecialities.includes(checkbox.value)) {
-                    allSelectedSubSpecialities.push(checkbox.value);
-                    const groupValue = document.querySelector(`input[name="group_${checkbox.value}"]:checked`)?.value || 'A';
-                    allSelectedGroups[checkbox.value] = groupValue;
-                }
-            });
-            
-            // Δημιουργία κρυφών πεδίων για τη φόρμα
-            let hiddenField = document.getElementById('all_selected_subspecialities');
-            if (!hiddenField) {
-                hiddenField = document.createElement('input');
-                hiddenField.type = 'hidden';
-                hiddenField.id = 'all_selected_subspecialities';
-                hiddenField.name = 'all_selected_subspecialities';
-                form.appendChild(hiddenField);
-            }
-            hiddenField.value = JSON.stringify(allSelectedSubSpecialities);
-            
-            let groupsField = document.getElementById('all_selected_groups');
-            if (!groupsField) {
-                groupsField = document.createElement('input');
-                groupsField.type = 'hidden';
-                groupsField.id = 'all_selected_groups';
-                groupsField.name = 'all_selected_groups';
-                form.appendChild(groupsField);
-            }
-            groupsField.value = JSON.stringify(allSelectedGroups);
-            
-            console.log('Επιλεγμένες υποειδικότητες:', allSelectedSubSpecialities);
-            console.log('Επιλεγμένες ομάδες:', allSelectedGroups);
-        });
-    }
-});
-
-// Μετά τη συνάρτηση window.loadSubSpecialities
-
-// Συνάρτηση για την αποθήκευση όλων των επιλεγμένων υποειδικοτήτων πριν την υποβολή της φόρμας
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('driverProfileForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            // Συλλογή όλων των επιλεγμένων υποειδικοτήτων από το selectedSubSpecialitiesMap
-            let allSelectedSubSpecialities = [];
-            let allSelectedGroups = {};
-            
-            if (window.selectedSubSpecialitiesMap) {
-                for (let id in window.selectedSubSpecialitiesMap) {
-                    if (window.selectedSubSpecialitiesMap[id].checked) {
-                        allSelectedSubSpecialities.push(id);
-                        allSelectedGroups[id] = window.selectedSubSpecialitiesMap[id].group;
-                    }
-                }
-            }
-            
-            // Συλλογή και των τρεχουσών επιλεγμένων υποειδικοτήτων που εμφανίζονται στην οθόνη
-            const currentCheckboxes = document.querySelectorAll('input[name="operator_sub_specialities[]"]:checked');
-            currentCheckboxes.forEach(checkbox => {
-                if (!allSelectedSubSpecialities.includes(checkbox.value)) {
-                    allSelectedSubSpecialities.push(checkbox.value);
-                    const groupValue = document.querySelector(`input[name="group_${checkbox.value}"]:checked`)?.value || 'A';
-                    allSelectedGroups[checkbox.value] = groupValue;
-                }
-            });
-            
-            // Δημιουργία ή ενημέρωση κρυφών πεδίων για τη φόρμα
-            let hiddenField = document.getElementById('all_selected_subspecialities');
-            if (!hiddenField) {
-                hiddenField = document.createElement('input');
-                hiddenField.type = 'hidden';
-                hiddenField.id = 'all_selected_subspecialities';
-                hiddenField.name = 'all_selected_subspecialities';
-                form.appendChild(hiddenField);
-            }
-            hiddenField.value = JSON.stringify(allSelectedSubSpecialities);
-            
-            let groupsField = document.getElementById('all_selected_groups');
-            if (!groupsField) {
-                groupsField = document.createElement('input');
-                groupsField.type = 'hidden';
-                groupsField.id = 'all_selected_groups';
-                groupsField.name = 'all_selected_groups';
-                form.appendChild(groupsField);
-            }
-            groupsField.value = JSON.stringify(allSelectedGroups);
-        });
-    }
-});
-
-// Συνάρτηση για εμφάνιση/απόκρυψη των radio buttons ομάδων
-window.toggleGroupSelection = function(checkbox, subSpecialityId) {
-    const groupContainer = document.getElementById('group_container_' + subSpecialityId);
-    if (groupContainer) {
-        groupContainer.style.display = checkbox.checked ? 'block' : 'none';
-        
-        // Επιπρόσθετος έλεγχος κατάστασης
-        console.log('Checkbox ' + subSpecialityId + ' is ' + (checkbox.checked ? 'checked' : 'unchecked'));
-        const radioButtons = groupContainer.querySelectorAll('input[type="radio"]');
-        radioButtons.forEach(rb => {
-            console.log('Radio button ' + rb.value + ' is ' + (rb.checked ? 'selected' : 'not selected'));
-        });
-    }
-};
-    
     // -------------------- Διαχείριση OCR για σκανάρισμα εγγράφων --------------------
-    // Συνάρτηση βοηθός για αποσφαλμάτωση
-    function debugLog(message, data) {
-        console.log(`DEBUG-UI: ${message}`, data !== undefined ? data : '');
-    }
-    
-    // Τροποποίηση του τμήματος OCR στο driver_edit_profile.js
-const scanButtons = document.querySelectorAll('.btn-scan');
-scanButtons.forEach(button => {
-    button.addEventListener('click', function() {
-        // Έλεγχος για το TesseractSafe
-        debugLog('Checking if TesseractSafe exists', typeof TesseractSafe);
-        if (typeof TesseractSafe === 'undefined') {
-            console.error('Το TesseractSafe δεν έχει φορτωθεί σωστά.');
-            alert('Η λειτουργία OCR δεν είναι διαθέσιμη. Παρακαλώ εισάγετε τα στοιχεία χειροκίνητα.');
-            return;
-        }
-        
-        debugLog('TesseractSafe methods', Object.keys(TesseractSafe));
-        
-        const buttonId = this.id;
-        debugLog('Button ID', buttonId);
-        const targetInputId = buttonId.replace('scan-', '').replace('-front', '_front_image').replace('-back', '_back_image');
-        debugLog('Target input ID', targetInputId);
-        const fileInput = document.getElementById(targetInputId);
-        
-        if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-            alert('Παρακαλώ επιλέξτε πρώτα μια εικόνα για σκανάρισμα.');
-            return;
-        }
-        
-        debugLog('File selected', {
-            name: fileInput.files[0].name,
-            type: fileInput.files[0].type,
-            size: fileInput.files[0].size
-        });
-        
-        // Εμφάνιση ένδειξης φόρτωσης
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'loading-indicator';
-        loadingIndicator.innerHTML = '<span>Γίνεται επεξεργασία OCR...</span>';
-        this.parentNode.appendChild(loadingIndicator);
-        this.disabled = true;
-        
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            const imageDataUrl = e.target.result;
-            debugLog('Image loaded as data URL', {
-                urlLength: imageDataUrl.length,
-                startsWith: imageDataUrl.substring(0, 50) + '...'
-            });
+    const scanButtons = document.querySelectorAll('.btn-scan');
+    scanButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Έλεγχος για το Tesseract
+            if (typeof Tesseract === 'undefined') {
+                console.error('Το Tesseract δεν έχει φορτωθεί σωστά.');
+                alert('Η λειτουργία OCR δεν είναι διαθέσιμη. Παρακαλώ εισάγετε τα στοιχεία χειροκίνητα.');
+                return;
+            }
             
-            // Χρήση του TesseractSafe για OCR
-            try {
-                debugLog('Starting OCR process with TesseractSafe');
+            const buttonId = this.id;
+            const targetInputId = buttonId.replace('scan-', '').replace('-front', '_front_image').replace('-back', '_back_image');
+            const fileInput = document.getElementById(targetInputId);
+            
+            if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+                alert('Παρακαλώ επιλέξτε πρώτα μια εικόνα για σκανάρισμα.');
+                return;
+            }
+            
+            // Εμφάνιση ένδειξης φόρτωσης
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.className = 'loading-indicator';
+            loadingIndicator.innerHTML = '<span>Γίνεται επεξεργασία OCR...</span>';
+            this.parentNode.appendChild(loadingIndicator);
+            this.disabled = true;
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const imageDataUrl = e.target.result;
                 
-                // Απευθείας αναγνώριση χωρίς πολύπλοκες επιλογές και cloning
-                TesseractSafe.recognize(imageDataUrl, 'eng+ell')
-                    .then(result => {
-                        debugLog('OCR completed successfully', {
-                            hasData: !!result.data,
-                            textLength: result.data ? result.data.text.length : 0
+                // Χρήση του Tesseract για OCR
+                try {
+                    Tesseract.recognize(imageDataUrl, 'eng+ell')
+                        .then(result => {
+                            console.log("Αναγνωρισμένο κείμενο:", result.data.text);
+                            
+                            // Εξαγωγή πληροφοριών ανάλογα με τον τύπο του εγγράφου
+                            if (buttonId.includes('license')) {
+                                extractLicenseInfo(result.data.text);
+                            } else if (buttonId.includes('adr')) {
+                                extractADRInfo(result.data.text);
+                            } else if (buttonId.includes('tachograph')) {
+                                extractTachographInfo(result.data.text);
+                            } else if (buttonId.includes('operator')) {
+                                extractOperatorInfo(result.data.text);
+                            }
+                            
+                            // Αφαίρεση ένδειξης φόρτωσης
+                            loadingIndicator.remove();
+                            button.disabled = false;
+                            
+                            alert('Η αναγνώριση ολοκληρώθηκε. Παρακαλώ ελέγξτε τα πεδία και κάντε διορθώσεις όπου χρειάζεται.');
+                        })
+                        .catch(err => {
+                            console.error('Σφάλμα κατά την αναγνώριση OCR:', err);
+                            alert('Σφάλμα κατά την αναγνώριση. Παρακαλώ εισάγετε τα δεδομένα χειροκίνητα.');
+                            loadingIndicator.remove();
+                            button.disabled = false;
                         });
-                        
-                        console.log("Αναγνωρισμένο κείμενο:", result.data.text);
-                        
-                        // Εξαγωγή πληροφοριών ανάλογα με τον τύπο του εγγράφου
-                        if (buttonId.includes('license')) {
-                            debugLog('Extracting license info');
-                            extractLicenseInfo(result.data.text);
-                        } else if (buttonId.includes('adr')) {
-                            debugLog('Extracting ADR info');
-                            extractADRInfo(result.data.text);
-                        } else if (buttonId.includes('tachograph')) {
-                            debugLog('Extracting tachograph info');
-                            extractTachographInfo(result.data.text);
-                        } else if (buttonId.includes('operator')) {
-                            debugLog('Extracting operator info');
-                            extractOperatorInfo(result.data.text);
-                        }
-                        
-                        // Αφαίρεση ένδειξης φόρτωσης
-                        loadingIndicator.remove();
-                        button.disabled = false;
-                        
-                        alert('Η αναγνώριση ολοκληρώθηκε. Παρακαλώ ελέγξτε τα πεδία και κάντε διορθώσεις όπου χρειάζεται.');
-                    })
-                    .catch(err => {
-                        debugLog('Error in OCR processing', {
-                            message: err.message,
-                            type: err.constructor.name,
-                            stack: err.stack
-                        });
-                        
-                        console.error('Σφάλμα κατά την αναγνώριση OCR:', err);
-                        alert('Σφάλμα κατά την αναγνώριση. Παρακαλώ εισάγετε τα δεδομένα χειροκίνητα.');
-                        loadingIndicator.remove();
-                        button.disabled = false;
-                    });
-            } catch (error) {
-                debugLog('Error initializing OCR', {
-                    message: error.message,
-                    type: error.constructor.name,
-                    stack: error.stack
-                });
-                
-                console.error('Σφάλμα κατά την προετοιμασία OCR:', error);
-                alert('Σφάλμα προετοιμασίας OCR. Παρακαλώ εισάγετε τα δεδομένα χειροκίνητα.');
+                } catch (error) {
+                    console.error('Σφάλμα κατά την προετοιμασία OCR:', error);
+                    alert('Σφάλμα προετοιμασίας OCR. Παρακαλώ εισάγετε τα δεδομένα χειροκίνητα.');
+                    loadingIndicator.remove();
+                    button.disabled = false;
+                }
+            };
+            
+            reader.onerror = function(error) {
+                console.error('Σφάλμα ανάγνωσης αρχείου:', error);
+                alert('Σφάλμα κατά την ανάγνωση του αρχείου. Παρακαλώ προσπαθήστε ξανά.');
                 loadingIndicator.remove();
                 button.disabled = false;
-            }
-        };
-        
-        reader.onerror = function(error) {
-            debugLog('Error reading file', {
-                error: error
-            });
+            };
             
-            console.error('Σφάλμα ανάγνωσης αρχείου:', error);
-            alert('Σφάλμα κατά την ανάγνωση του αρχείου. Παρακαλώ προσπαθήστε ξανά.');
-            loadingIndicator.remove();
-            button.disabled = false;
-        };
-        
-        debugLog('Starting file read as data URL');
-        reader.readAsDataURL(file);
+            reader.readAsDataURL(file);
+        });
     });
-});
+    
+    // Συναρτήσεις εξαγωγής πληροφοριών (ορίζονται ως συναρτήσεις κενού περιεχομένου στην περίπτωση που δεν υπάρχουν οι εξαγωγές πληροφοριών)
+    window.extractLicenseInfo = window.extractLicenseInfo || function(text) { 
+        console.log("Εξαγωγή πληροφοριών άδειας οδήγησης από:", text); 
+    };
+    
+    window.extractADRInfo = window.extractADRInfo || function(text) { 
+        console.log("Εξαγωγή πληροφοριών ADR από:", text); 
+    };
+    
+    window.extractTachographInfo = window.extractTachographInfo || function(text) { 
+        console.log("Εξαγωγή πληροφοριών ταχογράφου από:", text); 
+    };
+    
+    window.extractOperatorInfo = window.extractOperatorInfo || function(text) { 
+        console.log("Εξαγωγή πληροφοριών άδειας χειριστή από:", text); 
+    };
+    
     // -------------------- Υποστήριξη για πολλαπλές επιλογές --------------------
     const multipleSelectElements = document.querySelectorAll('select[multiple]');
     multipleSelectElements.forEach(select => {
