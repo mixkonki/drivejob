@@ -1,86 +1,30 @@
-[18-Apr-2025 08:00:46 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-18 08:00:46 ---
-[18-Apr-2025 11:00:46 Europe/Athens] Φόρτωση του bootstrap.php
-[18-Apr-2025 11:00:46 Europe/Athens] Επιτυχής σύνδεση με τη βάση δεδομένων
-[18-Apr-2025 11:00:46 Europe/Athens] Φόρτωση ρυθμίσεων ειδοποιήσεων από: C:\wamp64\www\drivejob/config/notifications.php
-[18-Apr-2025 11:00:46 Europe/Athens] Εκτέλεση ελέγχου για άδειες που λήγουν...
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [NotificationServices]: INFO
+[18-Apr-2025 09:42:03 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-18 09:42:03 ---
+[18-Apr-2025 12:42:03 Europe/Athens] Φόρτωση του bootstrap.php
+[18-Apr-2025 12:42:03 Europe/Athens] Επιτυχής σύνδεση με τη βάση δεδομένων
+[18-Apr-2025 12:42:03 Europe/Athens] Έλεγχος και δημιουργία απαραίτητων πινάκων...
+[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας license_expiry_notifications - Υπάρχει ήδη
+[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας notifications - Υπάρχει ήδη
+[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας drivers - Υπάρχει με 2 εγγραφές
+[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας driver_licenses - Υπάρχει με 7 εγγραφές
+[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας driver_adr_certificates - Υπάρχει με 1 εγγραφές
+[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας driver_tachograph_cards - Υπάρχει με 1 εγγραφές
+[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας driver_operator_licenses - Υπάρχει με 1 εγγραφές
+[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας driver_special_licenses - Υπάρχει με 0 εγγραφές
+[18-Apr-2025 12:42:03 Europe/Athens] Φόρτωση ρυθμίσεων ειδοποιήσεων από: C:\wamp64\www\drivejob/config/notifications.php
+[18-Apr-2025 12:42:03 Europe/Athens] Εκτέλεση ελέγχου για άδειες που λήγουν...
+[18-Apr-2025 12:42:03 Europe/Athens] [2025-04-18 12:42:03] INFO [NotificationServices]: INFO
 
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: INFO
+[18-Apr-2025 12:42:03 Europe/Athens] [2025-04-18 12:42:03] INFO [LicenseExpiryNotification]: INFO
 
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: INFO
+[18-Apr-2025 12:42:03 Europe/Athens] [2025-04-18 12:42:03] INFO [LicenseExpiryNotification]: INFO
 
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
+[18-Apr-2025 12:42:03 Europe/Athens] [2025-04-18 12:42:03] INFO [LicenseExpiryNotification]: INFO
 
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: INFO
+[18-Apr-2025 12:42:03 Europe/Athens] [2025-04-18 12:42:03] INFO [LicenseExpiryNotification]: INFO
 
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: WARNING
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: WARNING
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: WARNING
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: WARNING
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: WARNING
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: ERROR
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [LicenseExpiryNotification]: WARNING
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [NotificationServices]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [NotificationServices]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [NotificationServices]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [NotificationServices]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [NotificationServices]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [NotificationServices]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] [2025-04-18 11:00:46] INFO [NotificationServices]: INFO
-
-[18-Apr-2025 11:00:46 Europe/Athens] Ολοκλήρωση ελέγχου.
-[18-Apr-2025 11:00:46 Europe/Athens] Συνολικές ειδοποιήσεις που στάλθηκαν: 0
-[18-Apr-2025 11:00:46 Europe/Athens] Κατηγορία driving_licenses: 0 ειδοποιήσεις
-[18-Apr-2025 11:00:46 Europe/Athens] Κατηγορία pei: 0 ειδοποιήσεις
-[18-Apr-2025 11:00:46 Europe/Athens] Κατηγορία adr_certificates: 0 ειδοποιήσεις
-[18-Apr-2025 11:00:46 Europe/Athens] Κατηγορία tachograph_cards: 0 ειδοποιήσεις
-[18-Apr-2025 11:00:46 Europe/Athens] Κατηγορία operator_licenses: 0 ειδοποιήσεις
-[18-Apr-2025 11:00:46 Europe/Athens] Κατηγορία special_licenses: 0 ειδοποιήσεις
-[18-Apr-2025 11:00:46 Europe/Athens] --- Επιτυχής ολοκλήρωση ελέγχου: 2025-04-18 11:00:46 ---
+[18-Apr-2025 12:42:03 Europe/Athens] PHP Fatal error:  Uncaught Error: Call to undefined method Drivejob\Services\EmailService::getHost() in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:134
+Stack trace:
+#0 C:\wamp64\www\drivejob\src\Services\NotificationServices.php(76): Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications()
+#1 C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php(253): Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications()
+#2 {main}
+  thrown in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 134
