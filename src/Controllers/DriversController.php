@@ -433,70 +433,138 @@ private function handleTachographCard($driverId) {
 /**
  * Διαχειρίζεται την άδεια χειριστή μηχανημάτων
  */
+/**
+ * Διαχειρίζεται την άδεια χειριστή μηχανημάτων
+ */
+/**
+ * Διαχειρίζεται την άδεια χειριστή μηχανημάτων
+ */
 private function handleOperatorLicense($driverId) {
+    // Χρήση του Logger για καταγραφή
+    Logger::init();
+    Logger::info("Έναρξη επεξεργασίας άδειας χειριστή για οδηγό $driverId", "OperatorLicense");
+    
     if (isset($_POST['operator_license']) && $_POST['operator_license'] == 1) {
-        // Καταγραφή των δεδομένων POST για αποσφαλμάτωση
-        error_log('POST operator_license data: ' . print_r($_POST, true));
+        Logger::debug("Δεδομένα POST για άδεια χειριστή: " . print_r($_POST, true), "OperatorLicense");
         
-        // Δημιουργία του πίνακα δεδομένων από το POST
+        // Δημιουργία του πίνακα δεδομένων
         $operatorData = [
             'speciality' => $_POST['operator_speciality'] ?? null,
             'license_number' => $_POST['operator_license_number'] ?? null,
             'expiry_date' => $_POST['operator_license_expiry'] ?? null
         ];
         
-        // Ανέβασμα εικόνων χειριστή αν υπάρχουν
+        Logger::info("Στοιχεία άδειας χειριστή: " . json_encode($operatorData), "OperatorLicense");
+        
+        // Ανέβασμα εικόνων αν υπάρχουν
         if (isset($_FILES['operator_front_image']) && $_FILES['operator_front_image']['error'] === UPLOAD_ERR_OK) {
-            $frontImagePath = $this->handleImageUpload($driverId, 'operator_front_image', 'uploads/operator_images/');
-            if ($frontImagePath) {
-                $this->driversModel->updateDriverDocumentImage($driverId, 'operator_front_image', $frontImagePath);
-            }
+            $frontImagePath = $this->handleDocumentImageUpload($driverId, 'operator_front_image', 'uploads/operator_images/', 'operator_front_image');
+            Logger::info("Ανέβηκε η εμπρόσθια εικόνα άδειας: $frontImagePath", "OperatorLicense");
         }
         
         if (isset($_FILES['operator_back_image']) && $_FILES['operator_back_image']['error'] === UPLOAD_ERR_OK) {
-            $backImagePath = $this->handleImageUpload($driverId, 'operator_back_image', 'uploads/operator_images/');
-            if ($backImagePath) {
-                $this->driversModel->updateDriverDocumentImage($driverId, 'operator_back_image', $backImagePath);
-            }
+            $backImagePath = $this->handleDocumentImageUpload($driverId, 'operator_back_image', 'uploads/operator_images/', 'operator_back_image');
+            Logger::info("Ανέβηκε η οπίσθια εικόνα άδειας: $backImagePath", "OperatorLicense");
         }
         
         // Ενημέρωση ή προσθήκη της άδειας χειριστή
         $operatorLicenseId = $this->driversModel->updateDriverOperatorLicense($driverId, $operatorData);
+        Logger::info("ID άδειας χειριστή: $operatorLicenseId", "OperatorLicense");
         
-        // Καταγραφή του αποτελέσματος της ενημέρωσης και του ID που προέκυψε
-        error_log('operatorLicenseId: ' . ($operatorLicenseId ? $operatorLicenseId : 'false'));
-        
-        // Διαχείριση υποειδικοτήτων
         if ($operatorLicenseId) {
-            // Διαγραφή προηγούμενων υποειδικοτήτων
+            // Διαγραφή υπαρχουσών υποειδικοτήτων
             $this->driversModel->deleteDriverOperatorSubSpecialities($operatorLicenseId);
+            Logger::info("Διαγράφηκαν οι παλιές υποειδικότητες", "OperatorLicense");
             
-            // Προσθήκη νέων υποειδικοτήτων
-            if (isset($_POST['operator_sub_specialities']) && is_array($_POST['operator_sub_specialities'])) {
-                foreach ($_POST['operator_sub_specialities'] as $subSpecialityId) {
-                    // Καθορισμός του τύπου ομάδας (A ή B)
-                    $groupKey = 'group_' . $subSpecialityId;
-                    $groupType = isset($_POST[$groupKey]) ? $_POST[$groupKey] : 'A';
+            // Λήψη των επιλεγμένων υποειδικοτήτων από τα κρυφά πεδία JSON
+            $selectedSubSpecialities = [];
+            $selectedGroups = [];
+            
+            // Λήψη από το πεδίο JSON
+            if (isset($_POST['all_selected_subspecialities']) && !empty($_POST['all_selected_subspecialities'])) {
+                try {
+                    $jsonData = $_POST['all_selected_subspecialities'];
+                    Logger::debug("JSON υποειδικοτήτων: $jsonData", "OperatorLicense");
                     
-                    // Καταγραφή των παραμέτρων
-                    error_log("Adding subspeciality: $subSpecialityId with group: $groupType");
+                    $selectedSubSpecialities = json_decode($jsonData, true);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        throw new \Exception("Σφάλμα JSON: " . json_last_error_msg());
+                    }
                     
-                    // Προσθήκη της υποειδικότητας
-                    $result = $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpecialityId, $groupType);
+                    Logger::info("Αποκωδικοποιήθηκαν " . count($selectedSubSpecialities) . " υποειδικότητες", "OperatorLicense");
+                } catch (\Exception $e) {
+                    Logger::error("Σφάλμα αποκωδικοποίησης JSON υποειδικοτήτων: " . $e->getMessage(), "OperatorLicense");
+                    $selectedSubSpecialities = [];
+                }
+            }
+            
+            // Λήψη των ομάδων
+            if (isset($_POST['all_selected_groups']) && !empty($_POST['all_selected_groups'])) {
+                try {
+                    $jsonData = $_POST['all_selected_groups'];
+                    Logger::debug("JSON ομάδων: $jsonData", "OperatorLicense");
                     
-                    // Καταγραφή αποτελέσματος
-                    error_log("Add result: " . ($result ? "true" : "false"));
+                    $selectedGroups = json_decode($jsonData, true);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        throw new \Exception("Σφάλμα JSON ομάδων: " . json_last_error_msg());
+                    }
+                    
+                    Logger::info("Αποκωδικοποιήθηκαν οι ομάδες για " . count($selectedGroups) . " υποειδικότητες", "OperatorLicense");
+                } catch (\Exception $e) {
+                    Logger::error("Σφάλμα αποκωδικοποίησης JSON ομάδων: " . $e->getMessage(), "OperatorLicense");
+                    $selectedGroups = [];
+                }
+            }
+            
+            // Εναλλακτική μέθοδος λήψης υποειδικοτήτων αν η JSON μέθοδος αποτύχει
+            if (empty($selectedSubSpecialities) && isset($_POST['operator_sub_specialities'])) {
+                if (is_array($_POST['operator_sub_specialities'])) {
+                    $selectedSubSpecialities = $_POST['operator_sub_specialities'];
+                } else {
+                    $selectedSubSpecialities = [$_POST['operator_sub_specialities']];
+                }
+                Logger::info("Χρήση εναλλακτικής μεθόδου. Βρέθηκαν " . count($selectedSubSpecialities) . " υποειδικότητες", "OperatorLicense");
+            }
+            
+            // Προσθήκη των επιλεγμένων υποειδικοτήτων
+            if (!empty($selectedSubSpecialities)) {
+                foreach ($selectedSubSpecialities as $subSpeciality) {
+                    // Καθορισμός της ομάδας (A ή B)
+                    $groupType = 'A'; // Προεπιλογή
+                    
+                    // Από το JSON αντικείμενο ομάδων
+                    if (isset($selectedGroups[$subSpeciality])) {
+                        $groupType = $selectedGroups[$subSpeciality];
+                    } 
+                    // Από τα άμεσα πεδία της φόρμας
+                    else if (isset($_POST["group_{$subSpeciality}"])) {
+                        $groupType = $_POST["group_{$subSpeciality}"];
+                    }
+                    
+                    Logger::info("Προσθήκη υποειδικότητας: $subSpeciality, Ομάδα: $groupType", "OperatorLicense");
+                    
+                    // Προσθήκη της υποειδικότητας με την ομάδα της
+                    $result = $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType);
+                    
+                    if ($result) {
+                        Logger::info("Επιτυχής προσθήκη υποειδικότητας: $subSpeciality", "OperatorLicense");
+                    } else {
+                        Logger::error("Αποτυχία προσθήκης υποειδικότητας: $subSpeciality", "OperatorLicense");
+                    }
                 }
             } else {
-                error_log('No subspecialities selected or POST data is not array');
+                Logger::warning("Δεν βρέθηκαν επιλεγμένες υποειδικότητες", "OperatorLicense");
             }
         } else {
-            error_log('Error: operatorLicenseId is invalid');
+            Logger::error("Αποτυχία δημιουργίας/ενημέρωσης άδειας χειριστή", "OperatorLicense");
         }
     } else {
         // Αν δεν έχει επιλεγεί η άδεια χειριστή, διαγράφουμε τα στοιχεία
+        Logger::info("Διαγραφή δεδομένων άδειας χειριστή (δεν επιλέχθηκε)", "OperatorLicense");
         $this->driversModel->deleteDriverOperatorLicense($driverId);
     }
+    
+    Logger::info("Ολοκλήρωση επεξεργασίας άδειας χειριστή", "OperatorLicense");
 }
 /**
  * Λαμβάνει τις συντεταγμένες από μια διεύθυνση μέσω της υπηρεσίας Geocoding

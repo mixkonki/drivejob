@@ -495,7 +495,23 @@ window.operatorSubSpecialities = {
     ]
 };
 
+// --------- Παγκόσμιες μεταβλητές για τις υποειδικότητες ---------
+// Αντικείμενο που αποθηκεύει τις επιλεγμένες υποειδικότητες από όλες τις ειδικότητες
+window.allSelectedSubSpecialities = {};
+
+// Εισαγωγή δεδομένων από PHP στην αρχικοποίηση της σελίδας (αυτό θα προστεθεί με PHP)
+// window.driverOperatorSubSpecialities = [...]; // Τα δεδομένα από τη βάση
+// window.selectedSubSpecialities = [...];       // Οι επιλεγμένες υποειδικότητες
+
+// --------- Συναρτήσεις χειρισμού υποειδικοτήτων ---------
+
+/**
+ * Φορτώνει τις υποειδικότητες μιας ειδικότητας
+ * @param {string} specialityId - ID της ειδικότητας
+ */
 window.loadSubSpecialities = function(specialityId) {
+    console.log("Φόρτωση υποειδικοτήτων για ειδικότητα:", specialityId);
+    
     const subSpecialityContainer = document.getElementById('subSpecialityContainer');
     const tableBody = document.getElementById('subSpecialitiesTableBody');
     
@@ -504,62 +520,118 @@ window.loadSubSpecialities = function(specialityId) {
         return;
     }
     
+    // Αν δεν έχει επιλεγεί ειδικότητα, απόκρυψη του container
     if (!specialityId) {
         subSpecialityContainer.style.display = 'none';
         return;
     }
     
-    // Αποθήκευση των τρεχόντων επιλογών πριν καθαρίσουμε τον πίνακα
-    if (!window.selectedSubSpecialitiesMap) {
-        window.selectedSubSpecialitiesMap = {};
+    // Αρχικοποίηση του allSelectedSubSpecialities αν δεν υπάρχει
+    if (!window.allSelectedSubSpecialities) {
+        window.allSelectedSubSpecialities = {};
     }
     
-    // Αποθήκευση των τρεχόντων επιλογών για την προηγούμενη ειδικότητα
+    // Αποθήκευση των τρέχουσων επιλογών πριν την αλλαγή της εμφάνισης
     const currentCheckboxes = tableBody.querySelectorAll('input[name="operator_sub_specialities[]"]');
     currentCheckboxes.forEach(checkbox => {
-        window.selectedSubSpecialitiesMap[checkbox.value] = {
-            checked: checkbox.checked,
-            group: document.querySelector(`input[name="group_${checkbox.value}"]:checked`)?.value || 'A'
-        };
+        const subSpecId = checkbox.value;
+        if (checkbox.checked) {
+            // Αποθήκευση της τρέχουσας επιλογής και της ομάδας
+            const groupRadios = document.querySelectorAll(`input[name="group_${subSpecId}"]`);
+            let selectedGroup = 'A';
+            groupRadios.forEach(radio => {
+                if (radio.checked) {
+                    selectedGroup = radio.value;
+                }
+            });
+            
+            // Ενημέρωση του global αντικειμένου
+            if (!window.allSelectedSubSpecialities[subSpecId]) {
+                window.allSelectedSubSpecialities[subSpecId] = {
+                    checked: true,
+                    group: selectedGroup
+                };
+            } else {
+                window.allSelectedSubSpecialities[subSpecId].checked = true;
+                window.allSelectedSubSpecialities[subSpecId].group = selectedGroup;
+            }
+        } else if (window.allSelectedSubSpecialities[subSpecId]) {
+            window.allSelectedSubSpecialities[subSpecId].checked = false;
+        }
     });
     
-    // Εμφάνιση του container
+    console.log("Αποθηκευμένες επιλογές:", window.allSelectedSubSpecialities);
+    
+    // Εμφάνιση του container και καθαρισμός του πίνακα
     subSpecialityContainer.style.display = 'block';
     tableBody.innerHTML = '';
     
-    // Εμφάνιση των υποειδικοτήτων της επιλεγμένης ειδικότητας
+    // Δημιουργία και προσθήκη των γραμμών του πίνακα για κάθε υποειδικότητα
     if (window.operatorSubSpecialities && window.operatorSubSpecialities[specialityId]) {
         window.operatorSubSpecialities[specialityId].forEach(item => {
+            const subSpecId = item.id;
+            
+            // Μέσα στη συνάρτηση loadSubSpecialities
+// Στον κώδικα που φορτώνει τις υποειδικότητες για την τρέχουσα ειδικότητα
+
+// Έλεγχος αν η υποειδικότητα είναι επιλεγμένη
+let isChecked = false;
+let groupValue = 'A'; // Προεπιλεγμένη τιμή
+
+// 1. Πρώτα ελέγχουμε αν έχει ήδη επιλεγεί και αποθηκευτεί από τον χρήστη
+if (window.allSelectedSubSpecialities[subSpecId]) {
+    isChecked = window.allSelectedSubSpecialities[subSpecId].checked;
+    groupValue = window.allSelectedSubSpecialities[subSpecId].group;
+}
+// 2. Μετά ελέγχουμε από τη βάση δεδομένων (αποθηκευμένες προηγούμενες επιλογές)
+else if (window.selectedSubSpecialities && window.selectedSubSpecialities.includes(subSpecId)) {
+    isChecked = true;
+    
+    // Εύρεση της αποθηκευμένης ομάδας από τα δεδομένα της βάσης
+    if (window.driverOperatorSubSpecialities) {
+        const found = window.driverOperatorSubSpecialities.find(
+            spec => spec.sub_speciality === subSpecId
+        );
+        if (found && found.group_type) {
+            groupValue = found.group_type;
+        }
+    }
+    
+    // Αποθήκευση στο global αντικείμενο
+    window.allSelectedSubSpecialities[subSpecId] = {
+        checked: true,
+        group: groupValue
+    };
+}
+// 3. Τέλος, αν δεν έχει επιλεγεί ποτέ, χρησιμοποιούμε την προεπιλεγμένη τιμή από τα δεδομένα
+else {
+    // Χρησιμοποιούμε την προεπιλεγμένη τιμή από τα δεδομένα μόνο για προτεινόμενη επιλογή
+    groupValue = item.group || 'A';
+}
+            
+            // Δημιουργία της γραμμής του πίνακα
             const row = document.createElement('tr');
             
-            // Έλεγχος αν η συγκεκριμένη υποειδικότητα είναι ήδη επιλεγμένη
-            // Είτε από την τρέχουσα αποθηκευμένη κατάσταση είτε από προηγούμενες επιλογές
-            const savedState = window.selectedSubSpecialitiesMap[item.id];
-            const isChecked = savedState ? savedState.checked : 
-                            (window.selectedSubSpecialities && window.selectedSubSpecialities.includes(item.id));
-            
-            // Καθορισμός της ομάδας (A ή B)
-            const groupValue = savedState ? savedState.group : item.group;
-            
-            // Δημιουργία περιεχομένου γραμμής
             row.innerHTML = `
-                <td>${item.id}</td>
+                <td>${subSpecId}</td>
                 <td>${item.name}</td>
                 <td>
                     <label class="toggle-switch">
-                        <input type="checkbox" name="operator_sub_specialities[]" value="${item.id}" ${isChecked ? 'checked' : ''} 
-                            onchange="toggleGroupSelection(this, '${item.id}')">
+                        <input type="checkbox" name="operator_sub_specialities[]" value="${subSpecId}" ${isChecked ? 'checked' : ''} 
+                            onchange="updateSubSpecialitySelection(this, '${subSpecId}')">
                         <span class="toggle-slider"></span>
                     </label>
                 </td>
                 <td>
-                    <div class="radio-group" id="group_container_${item.id}" ${isChecked ? '' : 'style="display:none;"'}>
+                    <div class="radio-group" id="group_container_${subSpecId}" ${isChecked ? '' : 'style="display:none;"'}>
                         <label class="radio-label">
-                            <input type="radio" name="group_${item.id}" value="A" ${groupValue === 'A' ? 'checked' : ''}>
+                            <input type="radio" name="group_${subSpecId}" value="A" ${groupValue === 'A' ? 'checked' : ''} 
+                                onchange="updateSubSpecialityGroup('${subSpecId}', 'A')">
                             <span>A</span>
                         </label>
                         <label class="radio-label">
-                            <input type="radio" name="group_${item.id}" value="B" ${groupValue === 'B' ? 'checked' : ''}>
+                            <input type="radio" name="group_${subSpecId}" value="B" ${groupValue === 'B' ? 'checked' : ''} 
+                                onchange="updateSubSpecialityGroup('${subSpecId}', 'B')">
                             <span>B</span>
                         </label>
                     </div>
@@ -569,9 +641,287 @@ window.loadSubSpecialities = function(specialityId) {
             tableBody.appendChild(row);
         });
     } else {
-        console.error('Δεν βρέθηκαν υποειδικότητες για την ειδικότητα:', specialityId);
+        console.log(`Δεν βρέθηκαν υποειδικότητες για την ειδικότητα ${specialityId}`);
     }
 };
+
+/**
+ * Ενημερώνει την επιλογή μιας υποειδικότητας
+ * @param {HTMLElement} checkbox - Το checkbox που άλλαξε κατάσταση
+ * @param {string} subSpecialityId - ID της υποειδικότητας
+ */
+window.updateSubSpecialitySelection = function(checkbox, subSpecialityId) {
+    console.log(`Ενημέρωση επιλογής: ${subSpecialityId}, checked: ${checkbox.checked}`);
+    
+    if (!window.allSelectedSubSpecialities) {
+        window.allSelectedSubSpecialities = {};
+    }
+    
+    // Αποθήκευση της επιλογής
+    if (!window.allSelectedSubSpecialities[subSpecialityId]) {
+        window.allSelectedSubSpecialities[subSpecialityId] = {
+            checked: checkbox.checked,
+            group: 'A'  // Προεπιλεγμένη τιμή αν δεν έχει οριστεί
+        };
+    } else {
+        window.allSelectedSubSpecialities[subSpecialityId].checked = checkbox.checked;
+    }
+    
+    // Εμφάνιση/απόκρυψη των radio buttons ομάδων
+    const groupContainer = document.getElementById('group_container_' + subSpecialityId);
+    if (groupContainer) {
+        groupContainer.style.display = checkbox.checked ? 'block' : 'none';
+    }
+    
+    console.log("Αποθηκευμένες επιλογές:", window.allSelectedSubSpecialities);
+};
+/**
+ * Προετοιμάζει τα δεδομένα για αποστολή πριν την υποβολή της φόρμας
+ */
+window.prepareOperatorSpecialitiesForSubmission = function() {
+    console.log("Προετοιμασία δεδομένων για υποβολή");
+    
+    const form = document.getElementById('driverProfileForm');
+    if (!form) {
+        console.error("Δεν βρέθηκε η φόρμα!");
+        return;
+    }
+    
+    // Συγχρονισμός των τιμών των ομάδων από τα radio buttons
+    const allRadioGroups = document.querySelectorAll('input[type="radio"][name^="group_"]:checked');
+    allRadioGroups.forEach(radio => {
+        const groupName = radio.name;
+        const subSpecId = groupName.replace('group_', '');
+        const groupValue = radio.value;
+        
+        // Ενημέρωση του αντικειμένου μόνο αν υπάρχει ήδη και είναι επιλεγμένο
+        if (window.allSelectedSubSpecialities[subSpecId] && window.allSelectedSubSpecialities[subSpecId].checked) {
+            window.allSelectedSubSpecialities[subSpecId].group = groupValue;
+            console.log(`Συγχρονισμός ομάδας: ${subSpecId} => ${groupValue}`);
+        }
+    });
+    
+    // Μετατροπή του αντικειμένου σε μορφή κατάλληλη για αποστολή
+    const selectedSubSpecialitiesArray = [];
+    const selectedGroupsObj = {};
+    
+    for (const subSpecId in window.allSelectedSubSpecialities) {
+        if (window.allSelectedSubSpecialities[subSpecId].checked) {
+            selectedSubSpecialitiesArray.push(subSpecId);
+            selectedGroupsObj[subSpecId] = window.allSelectedSubSpecialities[subSpecId].group;
+        }
+    }
+    
+    // Προσθήκη ή ενημέρωση των κρυφών πεδίων
+    let hiddenField = document.getElementById('all_selected_subspecialities');
+    if (!hiddenField) {
+        hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.id = 'all_selected_subspecialities';
+        hiddenField.name = 'all_selected_subspecialities';
+        form.appendChild(hiddenField);
+    }
+    hiddenField.value = JSON.stringify(selectedSubSpecialitiesArray);
+    
+    let groupsField = document.getElementById('all_selected_groups');
+    if (!groupsField) {
+        groupsField = document.createElement('input');
+        groupsField.type = 'hidden';
+        groupsField.id = 'all_selected_groups';
+        groupsField.name = 'all_selected_groups';
+        form.appendChild(groupsField);
+    }
+    groupsField.value = JSON.stringify(selectedGroupsObj);
+    
+    console.log("Τελικά δεδομένα υποβολής:", {
+        subspecialities: selectedSubSpecialitiesArray,
+        groups: selectedGroupsObj
+    });
+};
+
+/**
+ * Ενημερώνει την ομάδα μιας υποειδικότητας
+ * @param {string} subSpecialityId - ID της υποειδικότητας
+ * @param {string} groupValue - Τιμή της ομάδας (A ή B)
+ */
+window.updateSubSpecialityGroup = function(subSpecialityId, groupValue) {
+    console.log(`Ενημέρωση ομάδας: ${subSpecialityId}, group: ${groupValue}`);
+    
+    if (!window.allSelectedSubSpecialities) {
+        window.allSelectedSubSpecialities = {};
+    }
+    
+    // Ενημέρωση της ομάδας στο global αντικείμενο
+    if (!window.allSelectedSubSpecialities[subSpecialityId]) {
+        window.allSelectedSubSpecialities[subSpecialityId] = {
+            checked: true,  // Αν αλλάζουμε ομάδα, θεωρούμε ότι είναι επιλεγμένο
+            group: groupValue
+        };
+    } else {
+        window.allSelectedSubSpecialities[subSpecialityId].group = groupValue;
+    }
+    
+    console.log("Αποθηκευμένες επιλογές μετά την αλλαγή ομάδας:", window.allSelectedSubSpecialities);
+};
+
+/**
+ * Προετοιμάζει τα δεδομένα για αποστολή πριν την υποβολή της φόρμας
+ */
+window.prepareOperatorSpecialitiesForSubmission = function() {
+    console.log("Προετοιμασία δεδομένων για υποβολή");
+    
+    const form = document.getElementById('driverProfileForm');
+    if (!form) {
+        console.error("Δεν βρέθηκε η φόρμα!");
+        return;
+    }
+    
+    // Μετατροπή του αντικειμένου σε μορφή κατάλληλη για αποστολή
+    const selectedSubSpecialitiesArray = [];
+    const selectedGroupsObj = {};
+    
+    for (const subSpecId in window.allSelectedSubSpecialities) {
+        if (window.allSelectedSubSpecialities[subSpecId].checked) {
+            selectedSubSpecialitiesArray.push(subSpecId);
+            selectedGroupsObj[subSpecId] = window.allSelectedSubSpecialities[subSpecId].group;
+        }
+    }
+    
+    // Προσθήκη ή ενημέρωση των κρυφών πεδίων
+    let hiddenField = document.getElementById('all_selected_subspecialities');
+    if (!hiddenField) {
+        hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.id = 'all_selected_subspecialities';
+        hiddenField.name = 'all_selected_subspecialities';
+        form.appendChild(hiddenField);
+    }
+    hiddenField.value = JSON.stringify(selectedSubSpecialitiesArray);
+    
+    let groupsField = document.getElementById('all_selected_groups');
+    if (!groupsField) {
+        groupsField = document.createElement('input');
+        groupsField.type = 'hidden';
+        groupsField.id = 'all_selected_groups';
+        groupsField.name = 'all_selected_groups';
+        form.appendChild(groupsField);
+    }
+    groupsField.value = JSON.stringify(selectedGroupsObj);
+    
+    console.log("Τελικά δεδομένα υποβολής:", {
+        subspecialities: selectedSubSpecialitiesArray,
+        groups: selectedGroupsObj
+    });
+};
+
+// --------- Εγκατάσταση event listeners ---------
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('driverProfileForm');
+    if (form) {
+        // Αρχικοποίηση του global αντικειμένου από τα δεδομένα της βάσης
+        if (!window.allSelectedSubSpecialities) {
+            window.allSelectedSubSpecialities = {};
+        }
+        
+        // Αν υπάρχουν δεδομένα από τη βάση, τα προσθέτουμε
+        if (window.driverOperatorSubSpecialities && window.driverOperatorSubSpecialities.length > 0) {
+            window.driverOperatorSubSpecialities.forEach(spec => {
+                if (spec.sub_speciality) {
+                    window.allSelectedSubSpecialities[spec.sub_speciality] = {
+                        checked: true,
+                        group: spec.group_type || 'A'
+                    };
+                }
+            });
+            console.log("Αρχικοποίηση από δεδομένα βάσης:", window.allSelectedSubSpecialities);
+        }
+        
+        // Προσθήκη του listener υποβολής
+        form.addEventListener('submit', function(e) {
+            window.prepareOperatorSpecialitiesForSubmission();
+        });
+        
+        // Αρχική φόρτωση των υποειδικοτήτων αν έχει επιλεγεί ειδικότητα
+        const specialitySelect = document.getElementById('operator_speciality');
+        if (specialitySelect && specialitySelect.value) {
+            window.loadSubSpecialities(specialitySelect.value);
+        }
+    }
+});
+
+window.updateSubSpecialityGroup = function(subSpecialityId, groupValue) {
+    if (!window.selectedSubSpecialitiesMap) {
+        window.selectedSubSpecialitiesMap = {};
+    }
+    
+    // Ενημέρωση της ομάδας στο χάρτη
+    if (!window.selectedSubSpecialitiesMap[subSpecialityId]) {
+        window.selectedSubSpecialitiesMap[subSpecialityId] = {
+            checked: true, // Θεωρούμε ότι είναι επιλεγμένο αν αλλάζουμε την ομάδα
+            group: groupValue
+        };
+    } else {
+        window.selectedSubSpecialitiesMap[subSpecialityId].group = groupValue;
+    }
+    
+    console.log('Ενημερώθηκε η ομάδα:', subSpecialityId, window.selectedSubSpecialitiesMap[subSpecialityId]);
+};
+
+// Συνάρτηση για τη συλλογή όλων των επιλεγμένων υποειδικοτήτων πριν την υποβολή της φόρμας
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('driverProfileForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Συλλογή όλων των επιλεγμένων υποειδικοτήτων
+            let allSelectedSubSpecialities = [];
+            let allSelectedGroups = {};
+            
+            // Από το χάρτη αποθήκευσης
+            if (window.selectedSubSpecialitiesMap) {
+                for (let id in window.selectedSubSpecialitiesMap) {
+                    if (window.selectedSubSpecialitiesMap[id].checked) {
+                        allSelectedSubSpecialities.push(id);
+                        allSelectedGroups[id] = window.selectedSubSpecialitiesMap[id].group;
+                    }
+                }
+            }
+            
+            // Προσθήκη και των τρεχουσών επιλεγμένων (για ασφάλεια)
+            const currentCheckboxes = document.querySelectorAll('input[name="operator_sub_specialities[]"]:checked');
+            currentCheckboxes.forEach(checkbox => {
+                if (!allSelectedSubSpecialities.includes(checkbox.value)) {
+                    allSelectedSubSpecialities.push(checkbox.value);
+                    const groupValue = document.querySelector(`input[name="group_${checkbox.value}"]:checked`)?.value || 'A';
+                    allSelectedGroups[checkbox.value] = groupValue;
+                }
+            });
+            
+            // Δημιουργία κρυφών πεδίων για τη φόρμα
+            let hiddenField = document.getElementById('all_selected_subspecialities');
+            if (!hiddenField) {
+                hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.id = 'all_selected_subspecialities';
+                hiddenField.name = 'all_selected_subspecialities';
+                form.appendChild(hiddenField);
+            }
+            hiddenField.value = JSON.stringify(allSelectedSubSpecialities);
+            
+            let groupsField = document.getElementById('all_selected_groups');
+            if (!groupsField) {
+                groupsField = document.createElement('input');
+                groupsField.type = 'hidden';
+                groupsField.id = 'all_selected_groups';
+                groupsField.name = 'all_selected_groups';
+                form.appendChild(groupsField);
+            }
+            groupsField.value = JSON.stringify(allSelectedGroups);
+            
+            console.log('Επιλεγμένες υποειδικότητες:', allSelectedSubSpecialities);
+            console.log('Επιλεγμένες ομάδες:', allSelectedGroups);
+        });
+    }
+});
 
 // Μετά τη συνάρτηση window.loadSubSpecialities
 

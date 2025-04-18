@@ -1,0 +1,1200 @@
+[2025-04-18 09:51:45] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:51:45] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:52:40] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:52:40] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:53:13] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:53:13] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:53:13] DEBUG [DriversModel]: Λήψη υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 09:53:13] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:53:13] INFO [DriversModel]: Ο πίνακας driver_operator_sub_speciality_groups υπάρχει
+[2025-04-18 09:53:13] DEBUG [DriversModel]: Βρέθηκαν 1 υποειδικότητες με group_type
+[2025-04-18 09:53:13] INFO [EditProfile]: Φόρτωση της σελίδας edit_profile για τον οδηγό 26
+[2025-04-18 09:53:13] DEBUG [EditProfile]: Δεδομένα άδειας χειριστή: {"id":11,"driver_id":26,"speciality":"1","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:31:58","license_number":""}
+[2025-04-18 09:53:13] DEBUG [EditProfile]: Υποειδικότητες άδειας χειριστή: [{"id":46,"sub_speciality":"1.1","group_type":"A"}]
+[2025-04-18 09:53:23] INFO [OperatorLicense]: Έναρξη επεξεργασίας άδειας χειριστή για οδηγό 26
+[2025-04-18 09:53:23] DEBUG [OperatorLicense]: Δεδομένα POST για άδεια χειριστή: Array
+(
+    [csrf_token] => e3874dd59e4c89ca3693dc485e783b3e903282468ca8fa261de4251ec580dece
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-05-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 
+    [operator_license_expiry] => 
+    [operator_speciality] => 1
+    [operator_sub_specialities] => Array
+        (
+            [0] => 1.1
+        )
+
+    [group_1_1] => B
+    [group_1_2] => B
+    [group_1_3] => A
+    [group_1_4] => A
+    [group_1_5] => A
+    [group_1_6] => B
+    [group_1_7] => B
+    [group_1_8] => A
+    [group_1_9] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+    [all_selected_subspecialities] => ["1.1"]
+    [all_selected_groups] => {"1.1":"A"}
+)
+
+[2025-04-18 09:53:23] INFO [OperatorLicense]: Στοιχεία άδειας χειριστή: {"speciality":"1","license_number":"","expiry_date":""}
+[2025-04-18 09:54:48] INFO [OperatorLicense]: Έναρξη επεξεργασίας άδειας χειριστή για οδηγό 26
+[2025-04-18 09:54:48] DEBUG [OperatorLicense]: Δεδομένα POST για άδεια χειριστή: Array
+(
+    [csrf_token] => e3874dd59e4c89ca3693dc485e783b3e903282468ca8fa261de4251ec580dece
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-05-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 
+    [operator_license_expiry] => 
+    [operator_speciality] => 1
+    [operator_sub_specialities] => Array
+        (
+            [0] => 1.1
+        )
+
+    [group_1_1] => B
+    [group_1_2] => B
+    [group_1_3] => A
+    [group_1_4] => A
+    [group_1_5] => A
+    [group_1_6] => B
+    [group_1_7] => B
+    [group_1_8] => A
+    [group_1_9] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+    [all_selected_subspecialities] => ["1.1"]
+    [all_selected_groups] => {"1.1":"A"}
+)
+
+[2025-04-18 09:54:48] INFO [OperatorLicense]: Στοιχεία άδειας χειριστή: {"speciality":"1","license_number":"","expiry_date":""}
+[2025-04-18 09:54:48] INFO [DriversModel]: updateDriverOperatorLicense - Data: {"speciality":"1","license_number":"","expiry_date":""}
+[2025-04-18 09:54:48] INFO [DriversModel]: Driver ID: 26
+[2025-04-18 09:54:48] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:54:48] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:54:48] INFO [DriversModel]: Existing license: {"id":11,"driver_id":26,"speciality":"1","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:31:58","license_number":""}
+[2025-04-18 09:54:48] INFO [DriversModel]: Operator license updated successfully. License ID: 11
+[2025-04-18 09:54:48] INFO [OperatorLicense]: ID άδειας χειριστή: 11
+[2025-04-18 09:54:48] INFO [DriversModel]: Διαγραφή υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 09:54:48] INFO [DriversModel]: Βρέθηκαν 1 υποειδικότητες για διαγραφή
+[2025-04-18 09:54:48] INFO [DriversModel]: Διαγράφηκαν οι εγγραφές από τον πίνακα ομάδων
+[2025-04-18 09:54:48] INFO [DriversModel]: Διαγραφή υποειδικοτήτων: Επιτυχία
+[2025-04-18 09:54:48] INFO [OperatorLicense]: Διαγράφηκαν οι παλιές υποειδικότητες
+[2025-04-18 09:54:48] DEBUG [OperatorLicense]: JSON υποειδικοτήτων: ["1.1"]
+[2025-04-18 09:54:48] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν 1 υποειδικότητες
+[2025-04-18 09:54:48] DEBUG [OperatorLicense]: JSON ομάδων: {"1.1":"A"}
+[2025-04-18 09:54:48] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν οι ομάδες για 1 υποειδικότητες
+[2025-04-18 09:54:48] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 1.1, Ομάδα: A
+[2025-04-18 09:54:48] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=1.1, group=A
+[2025-04-18 09:54:48] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:54:48] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 09:54:48] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 1.1
+[2025-04-18 09:54:48] INFO [OperatorLicense]: Ολοκλήρωση επεξεργασίας άδειας χειριστή
+[2025-04-18 09:54:52] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:54:52] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:54:52] DEBUG [DriversModel]: Λήψη υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 09:54:52] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:54:52] INFO [DriversModel]: Ο πίνακας driver_operator_sub_speciality_groups υπάρχει
+[2025-04-18 09:54:52] DEBUG [DriversModel]: Βρέθηκαν 1 υποειδικότητες με group_type
+[2025-04-18 09:54:52] INFO [EditProfile]: Φόρτωση της σελίδας edit_profile για τον οδηγό 26
+[2025-04-18 09:54:52] DEBUG [EditProfile]: Δεδομένα άδειας χειριστή: {"id":11,"driver_id":26,"speciality":"1","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:31:58","license_number":""}
+[2025-04-18 09:54:52] DEBUG [EditProfile]: Υποειδικότητες άδειας χειριστή: [{"id":47,"sub_speciality":"1.1","group_type":"A"}]
+[2025-04-18 09:54:59] INFO [OperatorLicense]: Έναρξη επεξεργασίας άδειας χειριστή για οδηγό 26
+[2025-04-18 09:54:59] DEBUG [OperatorLicense]: Δεδομένα POST για άδεια χειριστή: Array
+(
+    [csrf_token] => 826b0c9ef008802337e8a361dcf3f2c38813158b9ef828437330d3af6537344e
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-05-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 
+    [operator_license_expiry] => 
+    [operator_speciality] => 1
+    [operator_sub_specialities] => Array
+        (
+            [0] => 1.1
+        )
+
+    [group_1_1] => B
+    [group_1_2] => B
+    [group_1_3] => A
+    [group_1_4] => A
+    [group_1_5] => A
+    [group_1_6] => B
+    [group_1_7] => B
+    [group_1_8] => A
+    [group_1_9] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+    [all_selected_subspecialities] => ["1.1"]
+    [all_selected_groups] => {"1.1":"A"}
+)
+
+[2025-04-18 09:54:59] INFO [OperatorLicense]: Στοιχεία άδειας χειριστή: {"speciality":"1","license_number":"","expiry_date":""}
+[2025-04-18 09:54:59] INFO [DriversModel]: updateDriverOperatorLicense - Data: {"speciality":"1","license_number":"","expiry_date":""}
+[2025-04-18 09:54:59] INFO [DriversModel]: Driver ID: 26
+[2025-04-18 09:54:59] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:54:59] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:54:59] INFO [DriversModel]: Existing license: {"id":11,"driver_id":26,"speciality":"1","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:31:58","license_number":""}
+[2025-04-18 09:54:59] INFO [DriversModel]: Operator license updated successfully. License ID: 11
+[2025-04-18 09:54:59] INFO [OperatorLicense]: ID άδειας χειριστή: 11
+[2025-04-18 09:54:59] INFO [DriversModel]: Διαγραφή υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 09:54:59] INFO [DriversModel]: Βρέθηκαν 1 υποειδικότητες για διαγραφή
+[2025-04-18 09:54:59] INFO [DriversModel]: Διαγράφηκαν οι εγγραφές από τον πίνακα ομάδων
+[2025-04-18 09:54:59] INFO [DriversModel]: Διαγραφή υποειδικοτήτων: Επιτυχία
+[2025-04-18 09:54:59] INFO [OperatorLicense]: Διαγράφηκαν οι παλιές υποειδικότητες
+[2025-04-18 09:54:59] DEBUG [OperatorLicense]: JSON υποειδικοτήτων: ["1.1"]
+[2025-04-18 09:54:59] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν 1 υποειδικότητες
+[2025-04-18 09:54:59] DEBUG [OperatorLicense]: JSON ομάδων: {"1.1":"A"}
+[2025-04-18 09:54:59] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν οι ομάδες για 1 υποειδικότητες
+[2025-04-18 09:54:59] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 1.1, Ομάδα: A
+[2025-04-18 09:54:59] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=1.1, group=A
+[2025-04-18 09:54:59] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:54:59] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 09:54:59] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 1.1
+[2025-04-18 09:54:59] INFO [OperatorLicense]: Ολοκλήρωση επεξεργασίας άδειας χειριστή
+[2025-04-18 09:55:01] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:55:01] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:55:01] DEBUG [DriversModel]: Λήψη υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 09:55:01] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:55:01] INFO [DriversModel]: Ο πίνακας driver_operator_sub_speciality_groups υπάρχει
+[2025-04-18 09:55:01] DEBUG [DriversModel]: Βρέθηκαν 1 υποειδικότητες με group_type
+[2025-04-18 09:55:01] INFO [EditProfile]: Φόρτωση της σελίδας edit_profile για τον οδηγό 26
+[2025-04-18 09:55:01] DEBUG [EditProfile]: Δεδομένα άδειας χειριστή: {"id":11,"driver_id":26,"speciality":"1","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:31:58","license_number":""}
+[2025-04-18 09:55:01] DEBUG [EditProfile]: Υποειδικότητες άδειας χειριστή: [{"id":48,"sub_speciality":"1.1","group_type":"A"}]
+[2025-04-18 09:55:42] INFO [OperatorLicense]: Έναρξη επεξεργασίας άδειας χειριστή για οδηγό 26
+[2025-04-18 09:55:42] DEBUG [OperatorLicense]: Δεδομένα POST για άδεια χειριστή: Array
+(
+    [csrf_token] => 6db96a00ce00b99fcb00674955775f114d07853f5fee411981a809d3543eb217
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-05-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 
+    [operator_license_expiry] => 
+    [operator_speciality] => 1
+    [operator_sub_specialities] => Array
+        (
+            [0] => 1.1
+        )
+
+    [group_1_1] => B
+    [group_1_2] => B
+    [group_1_3] => A
+    [group_1_4] => A
+    [group_1_5] => A
+    [group_1_6] => B
+    [group_1_7] => B
+    [group_1_8] => A
+    [group_1_9] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+    [all_selected_subspecialities] => ["1.1"]
+    [all_selected_groups] => {"1.1":"A"}
+)
+
+[2025-04-18 09:55:42] INFO [OperatorLicense]: Στοιχεία άδειας χειριστή: {"speciality":"1","license_number":"","expiry_date":""}
+[2025-04-18 09:55:42] INFO [DriversModel]: updateDriverOperatorLicense - Data: {"speciality":"1","license_number":"","expiry_date":""}
+[2025-04-18 09:55:42] INFO [DriversModel]: Driver ID: 26
+[2025-04-18 09:55:42] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:55:42] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:55:42] INFO [DriversModel]: Existing license: {"id":11,"driver_id":26,"speciality":"1","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:31:58","license_number":""}
+[2025-04-18 09:55:42] INFO [DriversModel]: Operator license updated successfully. License ID: 11
+[2025-04-18 09:55:42] INFO [OperatorLicense]: ID άδειας χειριστή: 11
+[2025-04-18 09:55:42] INFO [DriversModel]: Διαγραφή υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 09:55:42] INFO [DriversModel]: Βρέθηκαν 1 υποειδικότητες για διαγραφή
+[2025-04-18 09:55:42] INFO [DriversModel]: Διαγράφηκαν οι εγγραφές από τον πίνακα ομάδων
+[2025-04-18 09:55:42] INFO [DriversModel]: Διαγραφή υποειδικοτήτων: Επιτυχία
+[2025-04-18 09:55:42] INFO [OperatorLicense]: Διαγράφηκαν οι παλιές υποειδικότητες
+[2025-04-18 09:55:42] DEBUG [OperatorLicense]: JSON υποειδικοτήτων: ["1.1"]
+[2025-04-18 09:55:42] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν 1 υποειδικότητες
+[2025-04-18 09:55:42] DEBUG [OperatorLicense]: JSON ομάδων: {"1.1":"A"}
+[2025-04-18 09:55:42] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν οι ομάδες για 1 υποειδικότητες
+[2025-04-18 09:55:42] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 1.1, Ομάδα: A
+[2025-04-18 09:55:42] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=1.1, group=A
+[2025-04-18 09:55:42] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:55:42] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 09:55:42] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 1.1
+[2025-04-18 09:55:42] INFO [OperatorLicense]: Ολοκλήρωση επεξεργασίας άδειας χειριστή
+[2025-04-18 09:59:33] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:59:33] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:59:33] DEBUG [DriversModel]: Λήψη υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 09:59:33] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:59:33] INFO [DriversModel]: Ο πίνακας driver_operator_sub_speciality_groups υπάρχει
+[2025-04-18 09:59:33] DEBUG [DriversModel]: Βρέθηκαν 1 υποειδικότητες με group_type
+[2025-04-18 09:59:33] INFO [EditProfile]: Φόρτωση της σελίδας edit_profile για τον οδηγό 26
+[2025-04-18 09:59:33] DEBUG [EditProfile]: Δεδομένα άδειας χειριστή: {"id":11,"driver_id":26,"speciality":"1","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:31:58","license_number":""}
+[2025-04-18 09:59:33] DEBUG [EditProfile]: Υποειδικότητες άδειας χειριστή: [{"id":49,"sub_speciality":"1.1","group_type":"A"}]
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Έναρξη επεξεργασίας άδειας χειριστή για οδηγό 26
+[2025-04-18 09:59:44] DEBUG [OperatorLicense]: Δεδομένα POST για άδεια χειριστή: Array
+(
+    [csrf_token] => aca78a8fe6ab6115ce760ba476eeff43f1854659fe2ec91e62ef6a8f6fb6e10a
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-05-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 
+    [operator_license_expiry] => 
+    [operator_speciality] => 2
+    [operator_sub_specialities] => Array
+        (
+            [0] => 2.1
+            [1] => 2.2
+        )
+
+    [group_2_1] => A
+    [group_2_2] => B
+    [group_2_3] => B
+    [group_2_4] => B
+    [group_2_5] => B
+    [group_2_6] => A
+    [group_2_7] => A
+    [group_2_8] => B
+    [group_2_9] => A
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+    [all_selected_subspecialities] => ["1.1","2.1","2.2"]
+    [all_selected_groups] => {"1.1":"B","2.1":"A","2.2":"A"}
+)
+
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Στοιχεία άδειας χειριστή: {"speciality":"2","license_number":"","expiry_date":""}
+[2025-04-18 09:59:44] INFO [DriversModel]: updateDriverOperatorLicense - Data: {"speciality":"2","license_number":"","expiry_date":""}
+[2025-04-18 09:59:44] INFO [DriversModel]: Driver ID: 26
+[2025-04-18 09:59:44] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:59:44] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:59:44] INFO [DriversModel]: Existing license: {"id":11,"driver_id":26,"speciality":"1","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:31:58","license_number":""}
+[2025-04-18 09:59:44] INFO [DriversModel]: Operator license updated successfully. License ID: 11
+[2025-04-18 09:59:44] INFO [OperatorLicense]: ID άδειας χειριστή: 11
+[2025-04-18 09:59:44] INFO [DriversModel]: Διαγραφή υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 09:59:44] INFO [DriversModel]: Βρέθηκαν 1 υποειδικότητες για διαγραφή
+[2025-04-18 09:59:44] INFO [DriversModel]: Διαγράφηκαν οι εγγραφές από τον πίνακα ομάδων
+[2025-04-18 09:59:44] INFO [DriversModel]: Διαγραφή υποειδικοτήτων: Επιτυχία
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Διαγράφηκαν οι παλιές υποειδικότητες
+[2025-04-18 09:59:44] DEBUG [OperatorLicense]: JSON υποειδικοτήτων: ["1.1","2.1","2.2"]
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν 3 υποειδικότητες
+[2025-04-18 09:59:44] DEBUG [OperatorLicense]: JSON ομάδων: {"1.1":"B","2.1":"A","2.2":"A"}
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν οι ομάδες για 3 υποειδικότητες
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 1.1, Ομάδα: B
+[2025-04-18 09:59:44] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=1.1, group=B
+[2025-04-18 09:59:44] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:59:44] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 1.1
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 2.1, Ομάδα: A
+[2025-04-18 09:59:44] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=2.1, group=A
+[2025-04-18 09:59:44] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:59:44] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 2.1
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 2.2, Ομάδα: A
+[2025-04-18 09:59:44] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=2.2, group=A
+[2025-04-18 09:59:44] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:59:44] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 2.2
+[2025-04-18 09:59:44] INFO [OperatorLicense]: Ολοκλήρωση επεξεργασίας άδειας χειριστή
+[2025-04-18 09:59:46] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 09:59:46] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 09:59:46] DEBUG [DriversModel]: Λήψη υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 09:59:46] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 09:59:46] INFO [DriversModel]: Ο πίνακας driver_operator_sub_speciality_groups υπάρχει
+[2025-04-18 09:59:46] DEBUG [DriversModel]: Βρέθηκαν 3 υποειδικότητες με group_type
+[2025-04-18 09:59:46] INFO [EditProfile]: Φόρτωση της σελίδας edit_profile για τον οδηγό 26
+[2025-04-18 09:59:46] DEBUG [EditProfile]: Δεδομένα άδειας χειριστή: {"id":11,"driver_id":26,"speciality":"2","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:59:44","license_number":""}
+[2025-04-18 09:59:46] DEBUG [EditProfile]: Υποειδικότητες άδειας χειριστή: [{"id":50,"sub_speciality":"1.1","group_type":"B"},{"id":51,"sub_speciality":"2.1","group_type":"A"},{"id":52,"sub_speciality":"2.2","group_type":"A"}]
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Έναρξη επεξεργασίας άδειας χειριστή για οδηγό 26
+[2025-04-18 10:00:01] DEBUG [OperatorLicense]: Δεδομένα POST για άδεια χειριστή: Array
+(
+    [csrf_token] => 0729ceda8e33a0995b06cc974a6e32857ef8753d726ed691310a76fe3d55ecb8
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-05-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 
+    [operator_license_expiry] => 
+    [operator_speciality] => 2
+    [operator_sub_specialities] => Array
+        (
+            [0] => 2.1
+            [1] => 2.2
+        )
+
+    [group_2_1] => B
+    [group_2_2] => B
+    [group_2_3] => B
+    [group_2_4] => B
+    [group_2_5] => B
+    [group_2_6] => A
+    [group_2_7] => A
+    [group_2_8] => B
+    [group_2_9] => A
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+    [all_selected_subspecialities] => ["1.1","2.1","2.2"]
+    [all_selected_groups] => {"1.1":"B","2.1":"A","2.2":"A"}
+)
+
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Στοιχεία άδειας χειριστή: {"speciality":"2","license_number":"","expiry_date":""}
+[2025-04-18 10:00:01] INFO [DriversModel]: updateDriverOperatorLicense - Data: {"speciality":"2","license_number":"","expiry_date":""}
+[2025-04-18 10:00:01] INFO [DriversModel]: Driver ID: 26
+[2025-04-18 10:00:01] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 10:00:01] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 10:00:01] INFO [DriversModel]: Existing license: {"id":11,"driver_id":26,"speciality":"2","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:59:44","license_number":""}
+[2025-04-18 10:00:01] INFO [DriversModel]: Operator license updated successfully. License ID: 11
+[2025-04-18 10:00:01] INFO [OperatorLicense]: ID άδειας χειριστή: 11
+[2025-04-18 10:00:01] INFO [DriversModel]: Διαγραφή υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 10:00:01] INFO [DriversModel]: Βρέθηκαν 3 υποειδικότητες για διαγραφή
+[2025-04-18 10:00:01] INFO [DriversModel]: Διαγράφηκαν οι εγγραφές από τον πίνακα ομάδων
+[2025-04-18 10:00:01] INFO [DriversModel]: Διαγραφή υποειδικοτήτων: Επιτυχία
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Διαγράφηκαν οι παλιές υποειδικότητες
+[2025-04-18 10:00:01] DEBUG [OperatorLicense]: JSON υποειδικοτήτων: ["1.1","2.1","2.2"]
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν 3 υποειδικότητες
+[2025-04-18 10:00:01] DEBUG [OperatorLicense]: JSON ομάδων: {"1.1":"B","2.1":"A","2.2":"A"}
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν οι ομάδες για 3 υποειδικότητες
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 1.1, Ομάδα: B
+[2025-04-18 10:00:01] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=1.1, group=B
+[2025-04-18 10:00:01] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:00:01] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 1.1
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 2.1, Ομάδα: A
+[2025-04-18 10:00:01] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=2.1, group=A
+[2025-04-18 10:00:01] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:00:01] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 2.1
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 2.2, Ομάδα: A
+[2025-04-18 10:00:01] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=2.2, group=A
+[2025-04-18 10:00:01] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:00:01] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 2.2
+[2025-04-18 10:00:01] INFO [OperatorLicense]: Ολοκλήρωση επεξεργασίας άδειας χειριστή
+[2025-04-18 10:00:03] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 10:00:03] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 10:00:03] DEBUG [DriversModel]: Λήψη υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 10:00:03] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:00:03] INFO [DriversModel]: Ο πίνακας driver_operator_sub_speciality_groups υπάρχει
+[2025-04-18 10:00:03] DEBUG [DriversModel]: Βρέθηκαν 3 υποειδικότητες με group_type
+[2025-04-18 10:00:03] INFO [EditProfile]: Φόρτωση της σελίδας edit_profile για τον οδηγό 26
+[2025-04-18 10:00:03] DEBUG [EditProfile]: Δεδομένα άδειας χειριστή: {"id":11,"driver_id":26,"speciality":"2","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:59:44","license_number":""}
+[2025-04-18 10:00:03] DEBUG [EditProfile]: Υποειδικότητες άδειας χειριστή: [{"id":53,"sub_speciality":"1.1","group_type":"B"},{"id":54,"sub_speciality":"2.1","group_type":"A"},{"id":55,"sub_speciality":"2.2","group_type":"A"}]
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Έναρξη επεξεργασίας άδειας χειριστή για οδηγό 26
+[2025-04-18 10:00:12] DEBUG [OperatorLicense]: Δεδομένα POST για άδεια χειριστή: Array
+(
+    [csrf_token] => 2a339472840bf275693c7c31ae766ce748df0bb7c00788dfd499fdc3ab3fc62e
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-05-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 
+    [operator_license_expiry] => 
+    [operator_speciality] => 1
+    [operator_sub_specialities] => Array
+        (
+            [0] => 1.1
+        )
+
+    [group_1_1] => A
+    [group_1_2] => B
+    [group_1_3] => A
+    [group_1_4] => A
+    [group_1_5] => A
+    [group_1_6] => B
+    [group_1_7] => B
+    [group_1_8] => A
+    [group_1_9] => B
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+    [all_selected_subspecialities] => ["1.1","2.1","2.2"]
+    [all_selected_groups] => {"1.1":"B","2.1":"A","2.2":"A"}
+)
+
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Στοιχεία άδειας χειριστή: {"speciality":"1","license_number":"","expiry_date":""}
+[2025-04-18 10:00:12] INFO [DriversModel]: updateDriverOperatorLicense - Data: {"speciality":"1","license_number":"","expiry_date":""}
+[2025-04-18 10:00:12] INFO [DriversModel]: Driver ID: 26
+[2025-04-18 10:00:12] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 10:00:12] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 10:00:12] INFO [DriversModel]: Existing license: {"id":11,"driver_id":26,"speciality":"2","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 09:59:44","license_number":""}
+[2025-04-18 10:00:12] INFO [DriversModel]: Operator license updated successfully. License ID: 11
+[2025-04-18 10:00:12] INFO [OperatorLicense]: ID άδειας χειριστή: 11
+[2025-04-18 10:00:12] INFO [DriversModel]: Διαγραφή υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 10:00:12] INFO [DriversModel]: Βρέθηκαν 3 υποειδικότητες για διαγραφή
+[2025-04-18 10:00:12] INFO [DriversModel]: Διαγράφηκαν οι εγγραφές από τον πίνακα ομάδων
+[2025-04-18 10:00:12] INFO [DriversModel]: Διαγραφή υποειδικοτήτων: Επιτυχία
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Διαγράφηκαν οι παλιές υποειδικότητες
+[2025-04-18 10:00:12] DEBUG [OperatorLicense]: JSON υποειδικοτήτων: ["1.1","2.1","2.2"]
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν 3 υποειδικότητες
+[2025-04-18 10:00:12] DEBUG [OperatorLicense]: JSON ομάδων: {"1.1":"B","2.1":"A","2.2":"A"}
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν οι ομάδες για 3 υποειδικότητες
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 1.1, Ομάδα: B
+[2025-04-18 10:00:12] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=1.1, group=B
+[2025-04-18 10:00:12] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:00:12] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 1.1
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 2.1, Ομάδα: A
+[2025-04-18 10:00:12] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=2.1, group=A
+[2025-04-18 10:00:12] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:00:12] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 2.1
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 2.2, Ομάδα: A
+[2025-04-18 10:00:12] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=2.2, group=A
+[2025-04-18 10:00:12] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:00:12] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 2.2
+[2025-04-18 10:00:12] INFO [OperatorLicense]: Ολοκλήρωση επεξεργασίας άδειας χειριστή
+[2025-04-18 10:00:14] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 10:00:14] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 10:00:14] DEBUG [DriversModel]: Λήψη υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 10:00:14] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:00:14] INFO [DriversModel]: Ο πίνακας driver_operator_sub_speciality_groups υπάρχει
+[2025-04-18 10:00:14] DEBUG [DriversModel]: Βρέθηκαν 3 υποειδικότητες με group_type
+[2025-04-18 10:00:14] INFO [EditProfile]: Φόρτωση της σελίδας edit_profile για τον οδηγό 26
+[2025-04-18 10:00:14] DEBUG [EditProfile]: Δεδομένα άδειας χειριστή: {"id":11,"driver_id":26,"speciality":"1","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 10:00:12","license_number":""}
+[2025-04-18 10:00:14] DEBUG [EditProfile]: Υποειδικότητες άδειας χειριστή: [{"id":56,"sub_speciality":"1.1","group_type":"B"},{"id":57,"sub_speciality":"2.1","group_type":"A"},{"id":58,"sub_speciality":"2.2","group_type":"A"}]
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Έναρξη επεξεργασίας άδειας χειριστή για οδηγό 26
+[2025-04-18 10:02:46] DEBUG [OperatorLicense]: Δεδομένα POST για άδεια χειριστή: Array
+(
+    [csrf_token] => f2ff27c3b0e0a3a360409fd721d0d5d8a47b9a078d82de9a154d7d67b24ea630
+    [first_name] => hotmail
+    [last_name] => Κώστας
+    [birth_date] => 1965-01-09
+    [marital_status] => single
+    [education_level] => secondary_high
+    [military_service] => completed
+    [about_me] => εςταςετ
+    [experience_years] => 10
+    [languages] => Array
+        (
+            [0] => german
+            [1] => italian
+        )
+
+    [language_notes] => φδαγΔΓ
+    [phone] => 6972964602
+    [landline] => 2310528525
+    [email] => kostas.michailidis@hotmail.gr
+    [address] => Ολυμπου
+    [house_number] => 32
+    [postal_code] => 54631
+    [city] => Θεσσαλονίκη
+    [country] => Ελλάδα
+    [social_linkedin] => 
+    [social_facebook] => 
+    [social_twitter] => 
+    [social_instagram] => 
+    [current_password] => 
+    [new_password] => 
+    [confirm_password] => 
+    [driving_license] => 1
+    [license_number] => 002640980
+    [license_document_expiry] => 2028-01-09
+    [license_codes] => 95,01.01
+    [license_types] => Array
+        (
+            [0] => A
+            [1] => B
+            [2] => BE
+            [3] => C
+            [4] => CE
+            [5] => D
+            [6] => DE
+        )
+
+    [license_expiry] => Array
+        (
+            [A] => 2030-01-09
+            [B] => 2030-01-01
+            [BE] => 2030-01-01
+            [C] => 2025-05-31
+            [CE] => 2025-05-31
+            [D] => 2025-05-31
+            [DE] => 2025-05-31
+        )
+
+    [has_pei_c] => 1
+    [pei_c_expiry] => 2026-05-31
+    [has_pei_ce] => 1
+    [has_pei_d] => 1
+    [pei_d_expiry] => 2030-04-16
+    [has_pei_de] => 1
+    [adr_certificate] => 1
+    [adr_certificate_number] => GR1235122
+    [adr_certificate_expiry] => 2025-12-31
+    [adr_certificate_type] => Π2
+    [tachograph_card] => 1
+    [tachograph_card_number] => gr1251511222
+    [tachograph_card_expiry] => 2030-04-16
+    [operator_license] => 1
+    [operator_license_number] => 
+    [operator_license_expiry] => 
+    [operator_speciality] => 2
+    [operator_sub_specialities] => Array
+        (
+            [0] => 2.1
+            [1] => 2.2
+        )
+
+    [group_2_1] => B
+    [group_2_2] => B
+    [group_2_3] => B
+    [group_2_4] => B
+    [group_2_5] => B
+    [group_2_6] => A
+    [group_2_7] => A
+    [group_2_8] => B
+    [group_2_9] => A
+    [special_license_type] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_number] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_expiry] => Array
+        (
+            [0] => 
+        )
+
+    [special_license_details] => Array
+        (
+            [0] => 
+        )
+
+    [training_details] => 
+    [all_selected_subspecialities] => ["1.1","2.1","2.2"]
+    [all_selected_groups] => {"1.1":"B","2.1":"A","2.2":"A"}
+)
+
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Στοιχεία άδειας χειριστή: {"speciality":"2","license_number":"","expiry_date":""}
+[2025-04-18 10:02:46] INFO [DriversModel]: updateDriverOperatorLicense - Data: {"speciality":"2","license_number":"","expiry_date":""}
+[2025-04-18 10:02:46] INFO [DriversModel]: Driver ID: 26
+[2025-04-18 10:02:46] INFO [DriversModel]: Λήψη άδειας χειριστή για οδηγό: 26
+[2025-04-18 10:02:46] INFO [DriversModel]: Βρέθηκε η άδεια χειριστή με ID: 11
+[2025-04-18 10:02:46] INFO [DriversModel]: Existing license: {"id":11,"driver_id":26,"speciality":"1","expiry_date":null,"created_at":"2025-04-14 15:03:07","updated_at":"2025-04-18 10:00:12","license_number":""}
+[2025-04-18 10:02:46] INFO [DriversModel]: Operator license updated successfully. License ID: 11
+[2025-04-18 10:02:46] INFO [OperatorLicense]: ID άδειας χειριστή: 11
+[2025-04-18 10:02:46] INFO [DriversModel]: Διαγραφή υποειδικοτήτων για άδεια χειριστή: 11
+[2025-04-18 10:02:46] INFO [DriversModel]: Βρέθηκαν 3 υποειδικότητες για διαγραφή
+[2025-04-18 10:02:46] INFO [DriversModel]: Διαγράφηκαν οι εγγραφές από τον πίνακα ομάδων
+[2025-04-18 10:02:46] INFO [DriversModel]: Διαγραφή υποειδικοτήτων: Επιτυχία
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Διαγράφηκαν οι παλιές υποειδικότητες
+[2025-04-18 10:02:46] DEBUG [OperatorLicense]: JSON υποειδικοτήτων: ["1.1","2.1","2.2"]
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν 3 υποειδικότητες
+[2025-04-18 10:02:46] DEBUG [OperatorLicense]: JSON ομάδων: {"1.1":"B","2.1":"A","2.2":"A"}
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Αποκωδικοποιήθηκαν οι ομάδες για 3 υποειδικότητες
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 1.1, Ομάδα: B
+[2025-04-18 10:02:46] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=1.1, group=B
+[2025-04-18 10:02:46] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:02:46] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 1.1
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 2.1, Ομάδα: A
+[2025-04-18 10:02:46] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=2.1, group=A
+[2025-04-18 10:02:46] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:02:46] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 2.1
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Προσθήκη υποειδικότητας: 2.2, Ομάδα: A
+[2025-04-18 10:02:46] INFO [DriversModel]: Προσθήκη υποειδικότητας: license=11, subspeciality=2.2, group=A
+[2025-04-18 10:02:46] INFO [DriversModel]: Η στήλη group_type υπάρχει
+[2025-04-18 10:02:46] INFO [DriversModel]: Εισαγωγή με group_type: Επιτυχία
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Επιτυχής προσθήκη υποειδικότητας: 2.2
+[2025-04-18 10:02:46] INFO [OperatorLicense]: Ολοκλήρωση επεξεργασίας άδειας χειριστή
