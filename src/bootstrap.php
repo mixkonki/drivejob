@@ -7,7 +7,9 @@ if (!defined('IS_CLI')) {
 }
 
 // Ορισμός του ROOT_DIR
-define('ROOT_DIR', dirname(__DIR__));
+if (!defined('ROOT_DIR')) {
+    define('ROOT_DIR', dirname(__DIR__));
+}
 
 // Αυτόματη φόρτωση μέσω Composer
 require_once __DIR__ . '/../vendor/autoload.php';

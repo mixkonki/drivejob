@@ -1,0 +1,163 @@
+[18-Apr-2025 17:50:20 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-18 17:50:20 ---
+[18-Apr-2025 20:50:20 Europe/Athens] Φόρτωση του bootstrap.php
+[18-Apr-2025 20:50:20 Europe/Athens] Επιτυχής σύνδεση με τη βάση δεδομένων
+[18-Apr-2025 20:50:20 Europe/Athens] Έλεγχος και δημιουργία απαραίτητων πινάκων...
+[18-Apr-2025 20:50:20 Europe/Athens] Πίνακας license_expiry_notifications - Υπάρχει ήδη
+[18-Apr-2025 20:50:20 Europe/Athens] Πίνακας notifications - Υπάρχει ήδη
+[18-Apr-2025 20:50:20 Europe/Athens] Πίνακας drivers - Υπάρχει με 3 εγγραφές
+[18-Apr-2025 20:50:20 Europe/Athens] Πίνακας driver_licenses - Υπάρχει με 11 εγγραφές
+[18-Apr-2025 20:50:20 Europe/Athens] Πίνακας driver_adr_certificates - Υπάρχει με 2 εγγραφές
+[18-Apr-2025 20:50:20 Europe/Athens] Πίνακας driver_tachograph_cards - Υπάρχει με 1 εγγραφές
+[18-Apr-2025 20:50:20 Europe/Athens] Πίνακας driver_operator_licenses - Υπάρχει με 1 εγγραφές
+[18-Apr-2025 20:50:20 Europe/Athens] Πίνακας driver_special_licenses - Υπάρχει με 0 εγγραφές
+[18-Apr-2025 20:50:20 Europe/Athens] Φόρτωση ρυθμίσεων ειδοποιήσεων από: C:\wamp64\www\drivejob/config/notifications.php
+[18-Apr-2025 20:50:20 Europe/Athens] Εκτέλεση ελέγχου για άδειες που λήγουν...
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [NotificationServices]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: DEBUG
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: DEBUG
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: DEBUG
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: DEBUG
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: DEBUG
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: DEBUG
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: DEBUG
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: DEBUG
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [LicenseExpiryNotification]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [NotificationServices]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [NotificationServices]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [NotificationServices]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [NotificationServices]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [NotificationServices]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [NotificationServices]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] [2025-04-18 20:50:20] INFO [NotificationServices]: INFO
+
+[18-Apr-2025 20:50:20 Europe/Athens] Ολοκλήρωση ελέγχου.
+[18-Apr-2025 20:50:20 Europe/Athens] Συνολικές ειδοποιήσεις που στάλθηκαν: 0
+[18-Apr-2025 20:50:20 Europe/Athens] Κατηγορία driving_licenses: 0 ειδοποιήσεις
+[18-Apr-2025 20:50:20 Europe/Athens] Κατηγορία pei: 0 ειδοποιήσεις
+[18-Apr-2025 20:50:20 Europe/Athens] Κατηγορία adr_certificates: 0 ειδοποιήσεις
+[18-Apr-2025 20:50:20 Europe/Athens] Κατηγορία tachograph_cards: 0 ειδοποιήσεις
+[18-Apr-2025 20:50:20 Europe/Athens] Κατηγορία operator_licenses: 0 ειδοποιήσεις
+[18-Apr-2025 20:50:20 Europe/Athens] Κατηγορία special_licenses: 0 ειδοποιήσεις
+[18-Apr-2025 20:50:20 Europe/Athens] --- Επιτυχής ολοκλήρωση ελέγχου: 2025-04-18 20:50:20 ---

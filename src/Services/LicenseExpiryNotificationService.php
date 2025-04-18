@@ -796,7 +796,7 @@ private function checkAdrCertificates() {
                 foreach ($this->notificationPeriods['driving_license'] as $daysBeforeExpiry) {
                     // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
                     if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
-                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
+                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$card['driver_id']}, license_type=tachograph_card, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
                         // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
                         if ($this->hasNotificationBeenSent($card['driver_id'], 'tachograph_card', 'card', $card['expiry_date'], $daysBeforeExpiry)) {
                             $this->log("Η ειδοποίηση για τον οδηγό {$card['driver_id']} και την κάρτα ταχογράφου έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');

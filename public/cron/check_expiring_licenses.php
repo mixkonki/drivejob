@@ -6,6 +6,9 @@
 // Απενεργοποίηση της έξοδου buffer για να αποφύγουμε το "headers already sent"
 ob_start();
 
+// Ορισμός του base directory
+$baseDir = dirname(dirname(__DIR__));
+
 // Ορίζουμε ότι είμαστε σε CLI περιβάλλον
 if (!defined('ROOT_DIR')) {
     define('ROOT_DIR', $baseDir);
