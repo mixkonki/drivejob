@@ -59,10 +59,10 @@ class NotificationServices {
         try {
             $this->log("Έναρξη ελέγχου για άδειες που λήγουν", 'INFO');
             
-            // Προσθήκη της διαδρομής προτύπων email αν έχει οριστεί
-            if (!isset($this->config['templates_path'])) {
-                $this->config['templates_path'] = ROOT_DIR . '/templates/emails/';
-            }
+// Προσθήκη της διαδρομής προτύπων email αν έχει οριστεί
+if (!isset($this->config['templates_path'])) {
+    $this->config['templates_path'] = dirname(dirname(__DIR__)) . '/templates/emails/';
+}
             
             // Δημιουργία της υπηρεσίας ειδοποιήσεων λήξης αδειών
             $expiryService = new LicenseExpiryNotificationService(

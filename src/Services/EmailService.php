@@ -76,6 +76,8 @@ class EmailService {
      * @return bool Επιτυχία/αποτυχία
      */
     public function send($to, $subject, $message, $attachments = [], $cc = [], $bcc = []) {
+        
+        
         try {
             // Έλεγχος αν η βιβλιοθήκη PHPMailer είναι διαθέσιμη
             if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
@@ -164,7 +166,9 @@ class EmailService {
             }
             
             return false;
+            
         }
+        
     }
     
     /**
@@ -220,4 +224,48 @@ class EmailService {
     public function setDebugMode($enabled) {
         $this->debugMode = (bool)$enabled;
     }
+    /**
+ * Επιστρέφει το SMTP host
+ * 
+ * @return string
+ */
+public function getHost() {
+    return $this->host;
+}
+
+/**
+ * Επιστρέφει το port του SMTP server
+ * 
+ * @return int
+ */
+public function getPort() {
+    return $this->port;
+}
+
+/**
+ * Επιστρέφει το username του SMTP
+ * 
+ * @return string
+ */
+public function getUsername() {
+    return $this->username;
+}
+
+/**
+ * Επιστρέφει το email του αποστολέα
+ * 
+ * @return string
+ */
+public function getSenderEmail() {
+    return $this->senderEmail;
+}
+
+/**
+ * Επιστρέφει το όνομα του αποστολέα
+ * 
+ * @return string
+ */
+public function getSenderName() {
+    return $this->senderName;
+}
 }

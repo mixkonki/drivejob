@@ -1,6 +1,14 @@
 <?php
 // src/bootstrap.php
 
+// Ορισμός αν είμαστε σε περιβάλλον CLI (Command Line Interface)
+if (!defined('IS_CLI')) {
+    define('IS_CLI', php_sapi_name() === 'cli');
+}
+
+// Ορισμός του ROOT_DIR
+define('ROOT_DIR', dirname(__DIR__));
+
 // Αυτόματη φόρτωση μέσω Composer
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -33,29 +41,36 @@ use Drivejob\Core\DatabaseSessionHandler;
 // Έλεγχος αν πρέπει να χρησιμοποιηθεί ο Database Session Handler
 $useDbSessions = defined('USE_DB_SESSIONS') ? USE_DB_SESSIONS : false;
 
-if ($useDbSessions) {
-    // Ρύθμιση του Session Handler
-    $sessionHandler = new DatabaseSessionHandler($pdo, [
-        'lifetime' => 86400, // 24 ώρες
-        'table' => 'sessions'
-    ]);
-    Session::setHandler($sessionHandler);
-}
+// Ρύθμιση του session μόνο αν δεν είμαστε σε CLI περιβάλλον
+if (!IS_CLI) {
+    if ($useDbSessions) {
+        // Ρύθμιση του Session Handler
+        $sessionHandler = new DatabaseSessionHandler($pdo, [
+            'lifetime' => 86400, // 24 ώρες
+            'table' => 'sessions'
+        ]);
+        Session::setHandler($sessionHandler);
+    }
 
-// Έναρξη της συνεδρίας
-Session::start();
-
-// Έλεγχος για λήξη συνεδρίας λόγω αδράνειας (30 λεπτά)
-if (Session::isExpired(1800)) {
-    // Καταγραφή λήξης συνεδρίας
-    error_log("Session expired due to inactivity: " . Session::getId());
+    // Εκκίνηση της συνεδρίας
+    Session::start();
     
-    // Καταστροφή της συνεδρίας και ανακατεύθυνση στη σελίδα σύνδεσης αν ο χρήστης είναι συνδεδεμένος
-    if (Session::has('user_id')) {
-        Session::destroy();
-        if (!headers_sent() && !isset($_GET['ajax'])) {
-            header('Location: ' . BASE_URL . 'login.php?expired=1');
-            exit();
+    // Έλεγχος για μη ενεργές συνεδρίες
+    if (Session::isExpired(1800)) { // 30 λεπτά
+        // Καταγραφή λήξης συνεδρίας
+        error_log("Session expired due to inactivity: " . Session::getId());
+        
+        // Καταστροφή της συνεδρίας και ανακατεύθυνση στη σελίδα σύνδεσης αν ο χρήστης είναι συνδεδεμένος
+        if (Session::has('user_id')) {
+            Session::destroy();
+            Session::start();
+            if (!headers_sent() && !isset($_GET['ajax'])) {
+                header('Location: ' . BASE_URL . 'login.php?expired=1');
+                exit();
+            }
+        } else {
+            Session::destroy();
+            Session::start();
         }
     }
 }

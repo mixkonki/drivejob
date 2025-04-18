@@ -139,4 +139,39 @@ class SmsService {
         
         return $results;
     }
+    /**
+ * Επιστρέφει το URL του API
+ * 
+ * @return string
+ */
+public function getApiUrl() {
+    return $this->apiUrl;
+}
+
+/**
+ * Επιστρέφει το API key
+ * 
+ * @return string
+ */
+public function getApiKey() {
+    return $this->apiKey;
+}
+
+/**
+ * Επιστρέφει το όνομα αποστολέα
+ * 
+ * @return string
+ */
+public function getSender() {
+    return $this->sender;
+}
+
+/**
+ * Επιστρέφει αν είναι ενεργοποιημένο το debug mode
+ * 
+ * @return bool
+ */
+public function isDebugMode() {
+    return $this->debug;
+}
 }

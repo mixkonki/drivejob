@@ -1,11 +1,20 @@
 <?php
 /**
  * Cron job για τον έλεγχο αδειών που λήγουν και την αποστολή ειδοποιήσεων
- * 
- * Αυτό το script πρέπει να εκτελείται καθημερινά μέσω του crontab
- * Παράδειγμα εντολής crontab:
- * 0 9 * * * php /path/to/drivejob/public/cron/check_expiring_licenses.php
  */
+
+// Απενεργοποίηση της έξοδου buffer για να αποφύγουμε το "headers already sent"
+ob_start();
+
+// Ορίζουμε ότι είμαστε σε CLI περιβάλλον
+if (!defined('ROOT_DIR')) {
+    define('ROOT_DIR', $baseDir);
+}
+
+
+$logFile = ROOT_DIR . '/logs/license_notifications_' . date('Y-m-d') . '.log';
+ini_set('error_log', $logFile);
+ini_set('log_errors', 1);
 
 // Αρχικοποίηση του συστήματος καταγραφής
 $baseDir = dirname(dirname(__DIR__)); // Αυτό είναι το Root Directory

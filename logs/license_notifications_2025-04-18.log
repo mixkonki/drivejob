@@ -1,30 +1,298 @@
-[18-Apr-2025 09:42:03 UTC] --- Έναρξη ελέγχου αδειών που λήγουν: 2025-04-18 09:42:03 ---
-[18-Apr-2025 12:42:03 Europe/Athens] Φόρτωση του bootstrap.php
-[18-Apr-2025 12:42:03 Europe/Athens] Επιτυχής σύνδεση με τη βάση δεδομένων
-[18-Apr-2025 12:42:03 Europe/Athens] Έλεγχος και δημιουργία απαραίτητων πινάκων...
-[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας license_expiry_notifications - Υπάρχει ήδη
-[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας notifications - Υπάρχει ήδη
-[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας drivers - Υπάρχει με 2 εγγραφές
-[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας driver_licenses - Υπάρχει με 7 εγγραφές
-[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας driver_adr_certificates - Υπάρχει με 1 εγγραφές
-[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας driver_tachograph_cards - Υπάρχει με 1 εγγραφές
-[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας driver_operator_licenses - Υπάρχει με 1 εγγραφές
-[18-Apr-2025 12:42:03 Europe/Athens] Πίνακας driver_special_licenses - Υπάρχει με 0 εγγραφές
-[18-Apr-2025 12:42:03 Europe/Athens] Φόρτωση ρυθμίσεων ειδοποιήσεων από: C:\wamp64\www\drivejob/config/notifications.php
-[18-Apr-2025 12:42:03 Europe/Athens] Εκτέλεση ελέγχου για άδειες που λήγουν...
-[18-Apr-2025 12:42:03 Europe/Athens] [2025-04-18 12:42:03] INFO [NotificationServices]: INFO
-
-[18-Apr-2025 12:42:03 Europe/Athens] [2025-04-18 12:42:03] INFO [LicenseExpiryNotification]: INFO
-
-[18-Apr-2025 12:42:03 Europe/Athens] [2025-04-18 12:42:03] INFO [LicenseExpiryNotification]: INFO
-
-[18-Apr-2025 12:42:03 Europe/Athens] [2025-04-18 12:42:03] INFO [LicenseExpiryNotification]: INFO
-
-[18-Apr-2025 12:42:03 Europe/Athens] [2025-04-18 12:42:03] INFO [LicenseExpiryNotification]: INFO
-
-[18-Apr-2025 12:42:03 Europe/Athens] PHP Fatal error:  Uncaught Error: Call to undefined method Drivejob\Services\EmailService::getHost() in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:134
-Stack trace:
-#0 C:\wamp64\www\drivejob\src\Services\NotificationServices.php(76): Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications()
-#1 C:\wamp64\www\drivejob\public\cron\check_expiring_licenses.php(253): Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications()
-#2 {main}
-  thrown in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 134
+[18-Apr-2025 17:22:10 UTC] --- Έναρξη απλοποιημένου ελέγχου αδειών: 2025-04-18 17:22:10 ---
+[18-Apr-2025 20:22:10 Europe/Athens] Επιτυχής σύνδεση με τη βάση δεδομένων
+[18-Apr-2025 20:22:10 Europe/Athens] Φόρτωση ρυθμίσεων ειδοποιήσεων από: C:\wamp64\www\drivejob/config/notifications.php
+[18-Apr-2025 20:22:10 Europe/Athens] Εκτέλεση ελέγχου για άδειες που λήγουν...
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [NotificationServices]: Έναρξη ελέγχου για άδειες που λήγουν
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Φόρτωση προσαρμοσμένων περιόδων ειδοποίησης: {"driving_license":[60,30,15,7,1],"pei":[60,30,15,7,1],"adr_certificate":[60,30,15,7,1],"tachograph_card":[60,30,15,7,1],"operator_license":[180,90,30,15],"special_license":[60,30,15,7,1]}
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Μέγιστος αριθμός ημερών ελέγχου: 185
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Χρήση προσαρμοσμένης διαδρομής προτύπων: C:\wamp64\www\drivejob/templates/emails/
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Διαδρομή προτύπων: C:\wamp64\www\drivejob/templates/emails/
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Έναρξη ελέγχου για άδειες που λήγουν...
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Διαδρομή προτύπων: C:\wamp64\www\drivejob/templates/emails/
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Έλεγχος ρυθμίσεων email - Data: {
+    "smtp_host": "smtp.thessdrive.gr",
+    "sender_email": "info@thessdrive.gr",
+    "debug_mode": true
+}
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Έλεγχος ρυθμίσεων SMS - Data: {
+    "sms_api_url": "https:\/\/api.yoursmsservice.gr\/send",
+    "sms_sender": "DriveJob",
+    "debug_mode": true
+}
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Πίνακας drivers: Υπάρχει
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Αριθμός εγγραφών: 3
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Πίνακας driver_licenses: Υπάρχει
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Αριθμός εγγραφών: 11
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Επερχόμενες λήξεις (60 ημέρες): 8
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Πίνακας driver_adr_certificates: Υπάρχει
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Αριθμός εγγραφών: 2
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Επερχόμενες λήξεις (60 ημέρες): 1
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Πίνακας driver_tachograph_cards: Υπάρχει
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Αριθμός εγγραφών: 1
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Επερχόμενες λήξεις (60 ημέρες): 0
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Πίνακας driver_operator_licenses: Υπάρχει
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Αριθμός εγγραφών: 1
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Επερχόμενες λήξεις (60 ημέρες): 0
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Πίνακας driver_special_licenses: Υπάρχει
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Αριθμός εγγραφών: 0
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Επερχόμενες λήξεις (60 ημέρες): 0
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Πίνακας license_expiry_notifications: Υπάρχει
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]:   Αριθμός εγγραφών: 0
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Έλεγχος για άδειες οδήγησης που λήγουν μεταξύ τώρα και 2025-10-20
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκαν 8 άδειες οδήγησης που λήγουν στο επόμενο διάστημα - Data: [
+    {
+        "driver_id": 26,
+        "first_name": "hotmail",
+        "last_name": "Κώστας",
+        "email": "kostas.michailidis@hotmail.gr",
+        "phone": "6972964602",
+        "license_type": "C",
+        "expiry_date": "2025-05-31"
+    },
+    {
+        "driver_id": 26,
+        "first_name": "hotmail",
+        "last_name": "Κώστας",
+        "email": "kostas.michailidis@hotmail.gr",
+        "phone": "6972964602",
+        "license_type": "CE",
+        "expiry_date": "2025-05-31"
+    },
+    {
+        "driver_id": 26,
+        "first_name": "hotmail",
+        "last_name": "Κώστας",
+        "email": "kostas.michailidis@hotmail.gr",
+        "phone": "6972964602",
+        "license_type": "D",
+        "expiry_date": "2025-05-31"
+    },
+    {
+        "driver_id": 26,
+        "first_name": "hotmail",
+        "last_name": "Κώστας",
+        "email": "kostas.michailidis@hotmail.gr",
+        "phone": "6972964602",
+        "license_type": "DE",
+        "expiry_date": "2025-05-31"
+    },
+    {
+        "driver_id": 28,
+        "first_name": "Test",
+        "last_name": "Driver",
+        "email": "test@drivejob.gr",
+        "phone": "6912345678",
+        "license_type": "C",
+        "expiry_date": "2025-05-18"
+    },
+    {
+        "driver_id": 28,
+        "first_name": "Test",
+        "last_name": "Driver",
+        "email": "test@drivejob.gr",
+        "phone": "6912345678",
+        "license_type": "B",
+        "expiry_date": "2025-05-03"
+    },
+    {
+        "driver_id": 28,
+        "first_name": "Test",
+        "last_name": "Driver",
+        "email": "test@drivejob.gr",
+        "phone": "6912345678",
+        "license_type": "A",
+        "expiry_date": "2025-04-25"
+    },
+    {
+        "driver_id": 28,
+        "first_name": "Test",
+        "last_name": "Driver",
+        "email": "test@drivejob.gr",
+        "phone": "6912345678",
+        "license_type": "BE",
+        "expiry_date": "2025-04-19"
+    }
+]
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] DEBUG [LicenseExpiryNotification]: Άδεια οδήγησης driver_id=26, license_type=C, expiry_date=2025-05-31, days_until_expiry=42
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] DEBUG [LicenseExpiryNotification]: Άδεια οδήγησης driver_id=26, license_type=CE, expiry_date=2025-05-31, days_until_expiry=42
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] DEBUG [LicenseExpiryNotification]: Άδεια οδήγησης driver_id=26, license_type=D, expiry_date=2025-05-31, days_until_expiry=42
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] DEBUG [LicenseExpiryNotification]: Άδεια οδήγησης driver_id=26, license_type=DE, expiry_date=2025-05-31, days_until_expiry=42
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] DEBUG [LicenseExpiryNotification]: Άδεια οδήγησης driver_id=28, license_type=C, expiry_date=2025-05-18, days_until_expiry=29
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=28, license_type=C, days_before_expiry=30, actual_days=29
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=28, license_type=C, days_before_expiry=30
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] ERROR [LicenseExpiryNotification]: Σφάλμα κατά την αποστολή email στον οδηγό 28: Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη. - Data: {
+    "exception": "Exception",
+    "message": "Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη.",
+    "code": 0,
+    "file": "C:\\wamp64\\www\\drivejob\\src\\Services\\EmailService.php",
+    "line": 84,
+    "trace": "#0 C:\\wamp64\\www\\drivejob\\src\\Services\\LicenseExpiryNotificationService.php(333): Drivejob\\Services\\EmailService->send('test@drivejob.g...', '\\xCE\\x95\\xCE\\xB9\\xCE\\xB4\\xCE\\xBF\\xCF\\x80\\xCE\\xBF\\xCE\\xAF\\xCE...', '<!DOCTYPE html>...')\n#1 C:\\wamp64\\www\\drivejob\\src\\Services\\LicenseExpiryNotificationService.php(170): Drivejob\\Services\\LicenseExpiryNotificationService->checkDrivingLicenses()\n#2 C:\\wamp64\\www\\drivejob\\src\\Services\\NotificationServices.php(76): Drivejob\\Services\\LicenseExpiryNotificationService->checkAndSendExpiryNotifications()\n#3 C:\\wamp64\\www\\drivejob\\public\\cron\\check_licenses_simple.php(196): Drivejob\\Services\\NotificationServices->checkAndSendLicenseExpiryNotifications()\n#4 {main}"
+}
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] DEBUG [LicenseExpiryNotification]: Άδεια οδήγησης driver_id=28, license_type=B, expiry_date=2025-05-03, days_until_expiry=14
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=28, license_type=B, days_before_expiry=15, actual_days=14
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=28, license_type=B, days_before_expiry=15
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] ERROR [LicenseExpiryNotification]: Σφάλμα κατά την αποστολή email στον οδηγό 28: Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη. - Data: {
+    "exception": "Exception",
+    "message": "Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη.",
+    "code": 0,
+    "file": "C:\\wamp64\\www\\drivejob\\src\\Services\\EmailService.php",
+    "line": 84,
+    "trace": "#0 C:\\wamp64\\www\\drivejob\\src\\Services\\LicenseExpiryNotificationService.php(333): Drivejob\\Services\\EmailService->send('test@drivejob.g...', '\\xCE\\x95\\xCE\\xB9\\xCE\\xB4\\xCE\\xBF\\xCF\\x80\\xCE\\xBF\\xCE\\xAF\\xCE...', '<!DOCTYPE html>...')\n#1 C:\\wamp64\\www\\drivejob\\src\\Services\\LicenseExpiryNotificationService.php(170): Drivejob\\Services\\LicenseExpiryNotificationService->checkDrivingLicenses()\n#2 C:\\wamp64\\www\\drivejob\\src\\Services\\NotificationServices.php(76): Drivejob\\Services\\LicenseExpiryNotificationService->checkAndSendExpiryNotifications()\n#3 C:\\wamp64\\www\\drivejob\\public\\cron\\check_licenses_simple.php(196): Drivejob\\Services\\NotificationServices->checkAndSendLicenseExpiryNotifications()\n#4 {main}"
+}
+[18-Apr-2025 20:22:10 Europe/Athens] Αποστολή SMS προς: 6912345678, Μήνυμα: DriveJob: Η άδεια οδήγησης κατηγορίας B λήγει σε 15 ημέρες. Παρακαλούμε ανανεώστε την έγκαιρα.
+[18-Apr-2025 20:22:10 Europe/Athens] CURL Error: Could not resolve host: api.yoursmsservice.gr
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Αποστολή SMS στον οδηγό 28 για άδεια B: Αποτυχία
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] DEBUG [LicenseExpiryNotification]: Άδεια οδήγησης driver_id=28, license_type=A, expiry_date=2025-04-25, days_until_expiry=6
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=28, license_type=A, days_before_expiry=7, actual_days=6
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=28, license_type=A, days_before_expiry=7
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] ERROR [LicenseExpiryNotification]: Σφάλμα κατά την αποστολή email στον οδηγό 28: Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη. - Data: {
+    "exception": "Exception",
+    "message": "Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη.",
+    "code": 0,
+    "file": "C:\\wamp64\\www\\drivejob\\src\\Services\\EmailService.php",
+    "line": 84,
+    "trace": "#0 C:\\wamp64\\www\\drivejob\\src\\Services\\LicenseExpiryNotificationService.php(333): Drivejob\\Services\\EmailService->send('test@drivejob.g...', '\\xCE\\x95\\xCE\\xB9\\xCE\\xB4\\xCE\\xBF\\xCF\\x80\\xCE\\xBF\\xCE\\xAF\\xCE...', '<!DOCTYPE html>...')\n#1 C:\\wamp64\\www\\drivejob\\src\\Services\\LicenseExpiryNotificationService.php(170): Drivejob\\Services\\LicenseExpiryNotificationService->checkDrivingLicenses()\n#2 C:\\wamp64\\www\\drivejob\\src\\Services\\NotificationServices.php(76): Drivejob\\Services\\LicenseExpiryNotificationService->checkAndSendExpiryNotifications()\n#3 C:\\wamp64\\www\\drivejob\\public\\cron\\check_licenses_simple.php(196): Drivejob\\Services\\NotificationServices->checkAndSendLicenseExpiryNotifications()\n#4 {main}"
+}
+[18-Apr-2025 20:22:10 Europe/Athens] Αποστολή SMS προς: 6912345678, Μήνυμα: DriveJob: Η άδεια οδήγησης κατηγορίας A λήγει σε 7 ημέρες. Παρακαλούμε ανανεώστε την έγκαιρα.
+[18-Apr-2025 20:22:10 Europe/Athens] CURL Error: Could not resolve host: api.yoursmsservice.gr
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Αποστολή SMS στον οδηγό 28 για άδεια A: Αποτυχία
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] DEBUG [LicenseExpiryNotification]: Άδεια οδήγησης driver_id=28, license_type=BE, expiry_date=2025-04-19, days_until_expiry=0
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=28, license_type=BE, days_before_expiry=1, actual_days=0
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=28, license_type=BE, days_before_expiry=1
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] ERROR [LicenseExpiryNotification]: Σφάλμα κατά την αποστολή email στον οδηγό 28: Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη. - Data: {
+    "exception": "Exception",
+    "message": "Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη.",
+    "code": 0,
+    "file": "C:\\wamp64\\www\\drivejob\\src\\Services\\EmailService.php",
+    "line": 84,
+    "trace": "#0 C:\\wamp64\\www\\drivejob\\src\\Services\\LicenseExpiryNotificationService.php(333): Drivejob\\Services\\EmailService->send('test@drivejob.g...', '\\xCE\\x95\\xCE\\xB9\\xCE\\xB4\\xCE\\xBF\\xCF\\x80\\xCE\\xBF\\xCE\\xAF\\xCE...', '<!DOCTYPE html>...')\n#1 C:\\wamp64\\www\\drivejob\\src\\Services\\LicenseExpiryNotificationService.php(170): Drivejob\\Services\\LicenseExpiryNotificationService->checkDrivingLicenses()\n#2 C:\\wamp64\\www\\drivejob\\src\\Services\\NotificationServices.php(76): Drivejob\\Services\\LicenseExpiryNotificationService->checkAndSendExpiryNotifications()\n#3 C:\\wamp64\\www\\drivejob\\public\\cron\\check_licenses_simple.php(196): Drivejob\\Services\\NotificationServices->checkAndSendLicenseExpiryNotifications()\n#4 {main}"
+}
+[18-Apr-2025 20:22:10 Europe/Athens] Αποστολή SMS προς: 6912345678, Μήνυμα: DriveJob: Η άδεια οδήγησης κατηγορίας BE λήγει σε 1 ημέρα. Παρακαλούμε ανανεώστε την έγκαιρα.
+[18-Apr-2025 20:22:10 Europe/Athens] CURL Error: Could not resolve host: api.yoursmsservice.gr
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Αποστολή SMS στον οδηγό 28 για άδεια BE: Αποτυχία
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Ολοκλήρωση ελέγχου αδειών οδήγησης. Στάλθηκαν 0 ειδοποιήσεις - Data: []
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκαν 1 ΠΕΙ κατηγορίας C που λήγουν στο επόμενο διάστημα
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Undefined variable $license in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 545
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkPeiCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:173
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   5. Drivejob\Services\LicenseExpiryNotificationService->checkSpecificPeiType($peiCategory = 'C', $expiryDateField = 'pei_expiry_c', $currentDate = class DateTime { public $date = '2025-04-18 20:22:10.940601'; public $timezone_type = 3; public $timezone = 'Europe/Athens' }) C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:460
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Trying to access array offset on value of type null in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 545
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkPeiCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:173
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   5. Drivejob\Services\LicenseExpiryNotificationService->checkSpecificPeiType($peiCategory = 'C', $expiryDateField = 'pei_expiry_c', $currentDate = class DateTime { public $date = '2025-04-18 20:22:10.940601'; public $timezone_type = 3; public $timezone = 'Europe/Athens' }) C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:460
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Undefined variable $license in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 545
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkPeiCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:173
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   5. Drivejob\Services\LicenseExpiryNotificationService->checkSpecificPeiType($peiCategory = 'C', $expiryDateField = 'pei_expiry_c', $currentDate = class DateTime { public $date = '2025-04-18 20:22:10.940601'; public $timezone_type = 3; public $timezone = 'Europe/Athens' }) C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:460
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Trying to access array offset on value of type null in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 545
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkPeiCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:173
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   5. Drivejob\Services\LicenseExpiryNotificationService->checkSpecificPeiType($peiCategory = 'C', $expiryDateField = 'pei_expiry_c', $currentDate = class DateTime { public $date = '2025-04-18 20:22:10.940601'; public $timezone_type = 3; public $timezone = 'Europe/Athens' }) C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:460
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=, license_type=, days_before_expiry=30, actual_days=29
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] ERROR [LicenseExpiryNotification]: Γενικό σφάλμα κατά τον έλεγχο ΠΕΙ κατηγορίας C: Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη. (Τύπος: Exception)
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] DEBUG [LicenseExpiryNotification]: Ίχνος στοίβας: #0 C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php(567): Drivejob\Services\EmailService->send('test@drivejob.g...', '\xCE\x95\xCE\xB9\xCE\xB4\xCE\xBF\xCF\x80\xCE\xBF\xCE\xAF\xCE...', '<!DOCTYPE html>...')
+#1 C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php(460): Drivejob\Services\LicenseExpiryNotificationService->checkSpecificPeiType('C', 'pei_expiry_c', Object(DateTime))
+#2 C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php(173): Drivejob\Services\LicenseExpiryNotificationService->checkPeiCertificates()
+#3 C:\wamp64\www\drivejob\src\Services\NotificationServices.php(76): Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications()
+#4 C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php(196): Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications()
+#5 {main}
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκαν 1 ΠΕΙ κατηγορίας D που λήγουν στο επόμενο διάστημα
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Undefined variable $license in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 545
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkPeiCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:173
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   5. Drivejob\Services\LicenseExpiryNotificationService->checkSpecificPeiType($peiCategory = 'D', $expiryDateField = 'pei_expiry_d', $currentDate = class DateTime { public $date = '2025-04-18 20:22:10.940601'; public $timezone_type = 3; public $timezone = 'Europe/Athens' }) C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:466
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Trying to access array offset on value of type null in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 545
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkPeiCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:173
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   5. Drivejob\Services\LicenseExpiryNotificationService->checkSpecificPeiType($peiCategory = 'D', $expiryDateField = 'pei_expiry_d', $currentDate = class DateTime { public $date = '2025-04-18 20:22:10.940601'; public $timezone_type = 3; public $timezone = 'Europe/Athens' }) C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:466
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Undefined variable $license in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 545
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkPeiCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:173
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   5. Drivejob\Services\LicenseExpiryNotificationService->checkSpecificPeiType($peiCategory = 'D', $expiryDateField = 'pei_expiry_d', $currentDate = class DateTime { public $date = '2025-04-18 20:22:10.940601'; public $timezone_type = 3; public $timezone = 'Europe/Athens' }) C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:466
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Trying to access array offset on value of type null in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 545
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkPeiCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:173
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   5. Drivejob\Services\LicenseExpiryNotificationService->checkSpecificPeiType($peiCategory = 'D', $expiryDateField = 'pei_expiry_d', $currentDate = class DateTime { public $date = '2025-04-18 20:22:10.940601'; public $timezone_type = 3; public $timezone = 'Europe/Athens' }) C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:466
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=, license_type=, days_before_expiry=30, actual_days=29
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] ERROR [LicenseExpiryNotification]: Γενικό σφάλμα κατά τον έλεγχο ΠΕΙ κατηγορίας D: Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη. (Τύπος: Exception)
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] DEBUG [LicenseExpiryNotification]: Ίχνος στοίβας: #0 C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php(567): Drivejob\Services\EmailService->send('test@drivejob.g...', '\xCE\x95\xCE\xB9\xCE\xB4\xCE\xBF\xCF\x80\xCE\xBF\xCE\xAF\xCE...', '<!DOCTYPE html>...')
+#1 C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php(466): Drivejob\Services\LicenseExpiryNotificationService->checkSpecificPeiType('D', 'pei_expiry_d', Object(DateTime))
+#2 C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php(173): Drivejob\Services\LicenseExpiryNotificationService->checkPeiCertificates()
+#3 C:\wamp64\www\drivejob\src\Services\NotificationServices.php(76): Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications()
+#4 C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php(196): Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications()
+#5 {main}
+[18-Apr-2025 20:22:10 Europe/Athens] [2025-04-18 20:22:10] INFO [LicenseExpiryNotification]: Βρέθηκαν 1 πιστοποιητικά ADR που λήγουν στο επόμενο διάστημα
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Undefined variable $license in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 670
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkAdrCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:176
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Trying to access array offset on value of type null in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 670
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkAdrCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:176
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Undefined variable $license in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 670
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkAdrCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:176
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Warning:  Trying to access array offset on value of type null in C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php on line 670
+[18-Apr-2025 20:22:10 Europe/Athens] PHP Stack trace:
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   1. {main}() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:0
+[18-Apr-2025 20:22:10 Europe/Athens] PHP   2. Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications() C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php:196
+[18-Apr-2025 20:22:11 Europe/Athens] PHP   3. Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications() C:\wamp64\www\drivejob\src\Services\NotificationServices.php:76
+[18-Apr-2025 20:22:11 Europe/Athens] PHP   4. Drivejob\Services\LicenseExpiryNotificationService->checkAdrCertificates() C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php:176
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [LicenseExpiryNotification]: Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id=, license_type=, days_before_expiry=30, actual_days=29
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] ERROR [LicenseExpiryNotification]: Γενικό σφάλμα κατά τον έλεγχο πιστοποιητικών ADR: Η βιβλιοθήκη PHPMailer δεν είναι διαθέσιμη. (Τύπος: Exception)
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] DEBUG [LicenseExpiryNotification]: Ίχνος στοίβας: #0 C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php(692): Drivejob\Services\EmailService->send('test@drivejob.g...', '\xCE\x95\xCE\xB9\xCE\xB4\xCE\xBF\xCF\x80\xCE\xBF\xCE\xAF\xCE...', '<!DOCTYPE html>...')
+#1 C:\wamp64\www\drivejob\src\Services\LicenseExpiryNotificationService.php(176): Drivejob\Services\LicenseExpiryNotificationService->checkAdrCertificates()
+#2 C:\wamp64\www\drivejob\src\Services\NotificationServices.php(76): Drivejob\Services\LicenseExpiryNotificationService->checkAndSendExpiryNotifications()
+#3 C:\wamp64\www\drivejob\public\cron\check_licenses_simple.php(196): Drivejob\Services\NotificationServices->checkAndSendLicenseExpiryNotifications()
+#4 {main}
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [LicenseExpiryNotification]: Βρέθηκαν 0 κάρτες ταχογράφου που λήγουν στο επόμενο διάστημα
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [LicenseExpiryNotification]: Βρέθηκαν 0 άδειες χειριστή που λήγουν στο επόμενο διάστημα
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [LicenseExpiryNotification]: Βρέθηκαν 0 ειδικές άδειες που λήγουν στο επόμενο διάστημα
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [NotificationServices]: Κατηγορία driving_licenses: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [NotificationServices]: Κατηγορία pei: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [NotificationServices]: Κατηγορία adr_certificates: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [NotificationServices]: Κατηγορία tachograph_cards: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [NotificationServices]: Κατηγορία operator_licenses: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [NotificationServices]: Κατηγορία special_licenses: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] [2025-04-18 20:22:11] INFO [NotificationServices]: Συνολικές ειδοποιήσεις που στάλθηκαν: 0
+[18-Apr-2025 20:22:11 Europe/Athens] Ολοκλήρωση ελέγχου.
+[18-Apr-2025 20:22:11 Europe/Athens] Συνολικές ειδοποιήσεις που στάλθηκαν: 0
+[18-Apr-2025 20:22:11 Europe/Athens] Κατηγορία driving_licenses: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] Κατηγορία pei: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] Κατηγορία adr_certificates: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] Κατηγορία tachograph_cards: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] Κατηγορία operator_licenses: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] Κατηγορία special_licenses: 0 ειδοποιήσεις
+[18-Apr-2025 20:22:11 Europe/Athens] --- Επιτυχής ολοκλήρωση απλοποιημένου ελέγχου: 2025-04-18 20:22:11 ---

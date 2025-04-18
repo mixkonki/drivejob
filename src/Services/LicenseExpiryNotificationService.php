@@ -62,7 +62,7 @@ class LicenseExpiryNotificationService {
         $this->smsService = $smsService;
         
         // Ορισμός της διαδρομής προτύπων
-        $this->templatesPath = ROOT_DIR . '/templates/emails/';
+        $this->templatesPath = dirname(dirname(__DIR__)) . '/templates/emails/';
         
         // Αρχικοποίηση του Logger
         if (!class_exists('Drivejob\Core\Logger') || !method_exists('Drivejob\Core\Logger', 'isInitialized')) {
@@ -108,15 +108,17 @@ class LicenseExpiryNotificationService {
             }
         }
         
-        // Έλεγχος ύπαρξης του φακέλου προτύπων
-        if (!is_dir($this->templatesPath)) {
-            try {
-                mkdir($this->templatesPath, 0755, true);
-                $this->log("Δημιουργήθηκε ο φάκελος προτύπων: {$this->templatesPath}", 'INFO');
-            } catch (Exception $e) {
-                $this->log("Αδυναμία δημιουργίας φακέλου προτύπων: {$e->getMessage()}", 'ERROR');
-            }
-        }
+       // Έλεγχος ύπαρξης του φακέλου προτύπων
+if (!is_dir($this->templatesPath)) {
+    try {
+        mkdir($this->templatesPath, 0755, true);
+        $this->log("Δημιουργήθηκε ο φάκελος προτύπων: {$this->templatesPath}", 'INFO');
+    } catch (Exception $e) {
+        $this->log("Αδυναμία δημιουργίας φακέλου προτύπων: {$e->getMessage()}", 'ERROR');
+    }
+}
+
+$this->log("Διαδρομή προτύπων: {$this->templatesPath}", 'INFO');
     }
     
     /**
@@ -124,10 +126,29 @@ class LicenseExpiryNotificationService {
      * 
      * @return array Αποτελέσματα ειδοποιήσεων ανά κατηγορία
      */
+
+
+     
+    
     public function checkAndSendExpiryNotifications() {
         try {
             $this->log("Έναρξη ελέγχου για άδειες που λήγουν...", 'INFO');
             $results = [];
+             // Έλεγχος διαδρομής προτύπων
+        $this->log("Διαδρομή προτύπων: {$this->templatesPath}", 'INFO');
+        
+        if (!is_dir($this->templatesPath)) {
+            $this->log("Ο φάκελος προτύπων {$this->templatesPath} δεν υπάρχει!", 'ERROR');
+            mkdir($this->templatesPath, 0755, true);
+            $this->log("Δημιουργήθηκε ο φάκελος προτύπων", 'INFO');
+        }
+        
+        // Έλεγχος αν υπάρχει πρότυπο email
+        $generalTemplateFile = $this->templatesPath . "license_expiry_general.php";
+        if (!file_exists($generalTemplateFile)) {
+            $this->log("Το πρότυπο {$generalTemplateFile} δεν υπάρχει!", 'ERROR');
+            $this->createTemplateFile('general');
+        }
             
             // Έλεγχος ρυθμίσεων email και SMS
             $this->log("Έλεγχος ρυθμίσεων email", 'INFO', [
@@ -279,7 +300,9 @@ class LicenseExpiryNotificationService {
                 
                 // Έλεγχος αν η άδεια πρέπει να ειδοποιηθεί με βάση τις περιόδους
                 foreach ($this->notificationPeriods['driving_license'] as $daysBeforeExpiry) {
-                    if ($daysUntilExpiry == $daysBeforeExpiry) {
+                    // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
+                    if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
+                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
                         $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}", 'INFO');
                         
                         // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
@@ -516,8 +539,10 @@ class LicenseExpiryNotificationService {
                 $daysUntilExpiry = $interval->days;
                 
                 // Έλεγχος αν το ΠΕΙ πρέπει να ειδοποιηθεί με βάση τις περιόδους
-                foreach ($this->notificationPeriods['pei'] as $daysBeforeExpiry) {
-                    if ($daysUntilExpiry == $daysBeforeExpiry) {
+                foreach ($this->notificationPeriods['driving_license'] as $daysBeforeExpiry) {
+                    // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
+                    if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
+                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
                         // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
                         if ($this->hasNotificationBeenSent($pei['driver_id'], 'pei', "PEI-{$peiCategory}", $pei['expiry_date'], $daysBeforeExpiry)) {
                             $this->log("Η ειδοποίηση για τον οδηγό {$pei['driver_id']} και ΠΕΙ κατηγορίας {$peiCategory} έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
@@ -639,8 +664,10 @@ class LicenseExpiryNotificationService {
                 $daysUntilExpiry = $interval->days;
                 
                 // Έλεγχος αν το πιστοποιητικό πρέπει να ειδοποιηθεί με βάση τις περιόδους
-                foreach ($this->notificationPeriods['adr_certificate'] as $daysBeforeExpiry) {
-                    if ($daysUntilExpiry == $daysBeforeExpiry) {
+                foreach ($this->notificationPeriods['driving_license'] as $daysBeforeExpiry) {
+                    // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
+                    if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
+                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
                         // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
                         if ($this->hasNotificationBeenSent($cert['driver_id'], 'adr_certificate', $cert['adr_type'], $cert['expiry_date'], $daysBeforeExpiry)) {
                             $this->log("Η ειδοποίηση για τον οδηγό {$cert['driver_id']} και ADR τύπου {$cert['adr_type']} έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
@@ -762,8 +789,10 @@ class LicenseExpiryNotificationService {
                 $daysUntilExpiry = $interval->days;
                 
                 // Έλεγχος αν η κάρτα πρέπει να ειδοποιηθεί με βάση τις περιόδους
-                foreach ($this->notificationPeriods['tachograph_card'] as $daysBeforeExpiry) {
-                    if ($daysUntilExpiry == $daysBeforeExpiry) {
+                foreach ($this->notificationPeriods['driving_license'] as $daysBeforeExpiry) {
+                    // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
+                    if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
+                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
                         // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
                         if ($this->hasNotificationBeenSent($card['driver_id'], 'tachograph_card', 'card', $card['expiry_date'], $daysBeforeExpiry)) {
                             $this->log("Η ειδοποίηση για τον οδηγό {$card['driver_id']} και την κάρτα ταχογράφου έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
@@ -886,8 +915,10 @@ class LicenseExpiryNotificationService {
                 $daysUntilExpiry = $interval->days;
                 
                 // Έλεγχος αν η άδεια πρέπει να ειδοποιηθεί με βάση τις περιόδους
-                foreach ($this->notificationPeriods['operator_license'] as $daysBeforeExpiry) {
-                    if ($daysUntilExpiry == $daysBeforeExpiry) {
+                foreach ($this->notificationPeriods['driving_license'] as $daysBeforeExpiry) {
+                    // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
+                    if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
+                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
                         // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
                         if ($this->hasNotificationBeenSent($license['driver_id'], 'operator_license', $license['speciality'], $license['expiry_date'], $daysBeforeExpiry)) {
                             $this->log("Η ειδοποίηση για τον οδηγό {$license['driver_id']} και την άδεια χειριστή ειδικότητας {$license['speciality']} έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
@@ -1016,8 +1047,10 @@ class LicenseExpiryNotificationService {
                 $daysUntilExpiry = $interval->days;
                 
                 // Έλεγχος αν η άδεια πρέπει να ειδοποιηθεί με βάση τις περιόδους
-                foreach ($this->notificationPeriods['special_license'] as $daysBeforeExpiry) {
-                    if ($daysUntilExpiry == $daysBeforeExpiry) {
+                foreach ($this->notificationPeriods['driving_license'] as $daysBeforeExpiry) {
+                    // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
+                    if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
+                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
                         // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
                         if ($this->hasNotificationBeenSent($license['driver_id'], 'special_license', $license['license_type'], $license['expiry_date'], $daysBeforeExpiry)) {
                             $this->log("Η ειδοποίηση για τον οδηγό {$license['driver_id']} και την ειδική άδεια {$license['license_type']} έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
@@ -1864,12 +1897,10 @@ private function generateLicenseExpiryEmailTemplate($firstName, $licenseCategory
      */
     private function tableExists($tableName) {
         try {
-            $stmt = $this->pdo->prepare("SHOW TABLES LIKE ?");
-            $stmt->execute([$tableName]);
-            return $stmt->rowCount() > 0;
+            $result = $this->pdo->query("SHOW TABLES LIKE '{$tableName}'");
+            return $result && $result->rowCount() > 0;
         } catch (PDOException $e) {
             $this->log("Σφάλμα PDO κατά τον έλεγχο του πίνακα {$tableName}: " . $e->getMessage() . " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
-            $this->log("SQL State: " . $e->errorInfo[0] . ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
             return false;
         } catch (Exception $e) {
             $this->log("Γενικό σφάλμα κατά τον έλεγχο του πίνακα {$tableName}: " . $e->getMessage() . " (Τύπος: " . get_class($e) . ")", 'ERROR');
@@ -1886,12 +1917,11 @@ private function generateLicenseExpiryEmailTemplate($firstName, $licenseCategory
      */
     private function columnExists($tableName, $columnName) {
         try {
-            $stmt = $this->pdo->prepare("SHOW COLUMNS FROM {$tableName} LIKE ?");
-            $stmt->execute([$columnName]);
-            return $stmt->rowCount() > 0;
+            $sql = "SHOW COLUMNS FROM {$tableName} LIKE '{$columnName}'";
+            $result = $this->pdo->query($sql);
+            return $result && $result->rowCount() > 0;
         } catch (PDOException $e) {
             $this->log("Σφάλμα PDO κατά τον έλεγχο της στήλης {$columnName} στον πίνακα {$tableName}: " . $e->getMessage() . " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
-            $this->log("SQL State: " . $e->errorInfo[0] . ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
             return false;
         } catch (Exception $e) {
             $this->log("Γενικό σφάλμα κατά τον έλεγχο της στήλης {$columnName} στον πίνακα {$tableName}: " . $e->getMessage() . " (Τύπος: " . get_class($e) . ")", 'ERROR');
@@ -1909,9 +1939,9 @@ private function generateLicenseExpiryEmailTemplate($firstName, $licenseCategory
 private function log($message, $level = 'INFO', $data = null) {
     // Προσθήκη δεδομένων στο μήνυμα καταγραφής αν υπάρχουν
     if ($data !== null) {
-        // Μετατροπή των δεδομένων σε αναγνώσιμη μορφή
+        // Μετατροπή των δεδομένων σε αναλυτική αναγνώσιμη μορφή
         if (is_array($data) || is_object($data)) {
-            $dataStr = json_encode($data, JSON_UNESCAPED_UNICODE);
+            $dataStr = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
             $message .= " - Data: " . $dataStr;
         } else {
             $message .= " - Data: " . (string)$data;
