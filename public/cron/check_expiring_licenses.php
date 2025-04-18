@@ -36,8 +36,7 @@ try {
         }
     }
     
-    // Απευθείας δημιουργία σύνδεσης PDO αντί για φόρτωση του database.php
-    // καθώς το αρχείο αυτό δημιουργεί ήδη μια σύνδεση
+    // Σύνδεση με τη βάση δεδομένων
     $pdo = null;
     
     try {
@@ -57,188 +56,57 @@ try {
         throw $e;
     }
     
-    // Δημιουργία του φακέλου Services αν δεν υπάρχει
-    $servicesDir = ROOT_DIR . '/src/Services';
-    if (!is_dir($servicesDir)) {
-        mkdir($servicesDir, 0755, true);
-        error_log('Δημιουργήθηκε ο φάκελος Services');
-    }
+    // Φόρτωση των απαραίτητων αρχείων για τις υπηρεσίες
+    $requiredFiles = [
+        '/src/Services/EmailService.php',
+        '/src/Services/SmsService.php',
+        '/src/Services/LicenseExpiryNotificationService.php',
+        '/src/Services/NotificationServices.php'
+    ];
     
-    // Ελέγχουμε και δημιουργούμε τα αρχεία υπηρεσιών αν δεν υπάρχουν
-    $emailServiceFile = $servicesDir . '/EmailService.php';
-    $smsServiceFile = $servicesDir . '/SmsService.php';
-    $notificationServiceFile = $servicesDir . '/LicenseExpiryNotificationService.php';
-    
-    // Ελέγχουμε και δημιουργούμε το EmailService.php
-    if (!file_exists($emailServiceFile)) {
-        $emailServiceContent = '<?php
-namespace Drivejob\Services;
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-/**
- * Υπηρεσία αποστολής email
- */
-class EmailService {
-    private $host;
-    private $port;
-    private $username;
-    private $password;
-    private $senderEmail;
-    private $senderName;
-    private $debugMode;
-    
-    public function __construct($host, $port, $username, $password, $senderEmail, $senderName, $debugMode = false) {
-        $this->host = $host;
-        $this->port = $port;
-        $this->username = $username;
-        $this->password = $password;
-        $this->senderEmail = $senderEmail;
-        $this->senderName = $senderName;
-        $this->debugMode = $debugMode;
-    }
-    
-    public function send($to, $subject, $message, $attachments = [], $cc = [], $bcc = []) {
-        if ($this->debugMode) {
-            error_log("DEBUG: Αποστολή email στο {$to} με θέμα: {$subject}");
-            return true;
+    foreach ($requiredFiles as $file) {
+        $filePath = ROOT_DIR . $file;
+        if (!file_exists($filePath)) {
+            error_log("Προειδοποίηση: Το αρχείο {$file} δεν βρέθηκε.");
+            continue;
         }
-        
-        try {
-            // Εδώ θα υπήρχε ο κώδικας αποστολής email με PHPMailer
-            // Στη λειτουργία debug, απλά επιστρέφουμε true
-            return true;
-        } catch (Exception $e) {
-            error_log("Σφάλμα αποστολής email: " . $e->getMessage());
-            return false;
-        }
-    }
-}';
-        file_put_contents($emailServiceFile, $emailServiceContent);
-        error_log('Δημιουργήθηκε το αρχείο EmailService.php');
+        require_once $filePath;
     }
     
-    // Ελέγχουμε και δημιουργούμε το SmsService.php
-    if (!file_exists($smsServiceFile)) {
-        $smsServiceContent = '<?php
-namespace Drivejob\Services;
-
-/**
- * Υπηρεσία αποστολής SMS
- */
-class SmsService {
-    private $apiKey;
-    private $apiUrl;
-    private $sender;
-    private $debugMode;
-    
-    public function __construct($apiKey, $apiUrl, $sender, $debugMode = false) {
-        $this->apiKey = $apiKey;
-        $this->apiUrl = $apiUrl;
-        $this->sender = $sender;
-        $this->debugMode = $debugMode;
-    }
-    
-    public function send($to, $message) {
-        if ($this->debugMode) {
-            error_log("DEBUG: Αποστολή SMS στο {$to}: {$message}");
-            return true;
-        }
-        
-        try {
-            // Εδώ θα υπήρχε ο κώδικας αποστολής SMS
-            // Στη λειτουργία debug, απλά επιστρέφουμε true
-            return true;
-        } catch (Exception $e) {
-            error_log("Σφάλμα αποστολής SMS: " . $e->getMessage());
-            return false;
-        }
-    }
-}';
-        file_put_contents($smsServiceFile, $smsServiceContent);
-        error_log('Δημιουργήθηκε το αρχείο SmsService.php');
-    }
-    
-    // Ελέγχουμε και δημιουργούμε το LicenseExpiryNotificationService.php
-    if (!file_exists($notificationServiceFile)) {
-        $notificationServiceContent = '<?php
-namespace Drivejob\Services;
-
-use PDO;
-use DateTime;
-use Exception;
-
-/**
- * Υπηρεσία για τον έλεγχο αδειών που λήγουν και την αποστολή ειδοποιήσεων
- */
-class LicenseExpiryNotificationService {
-    private $pdo;
-    private $emailService;
-    private $smsService;
-    
-    public function __construct(PDO $pdo, EmailService $emailService, SmsService $smsService) {
-        $this->pdo = $pdo;
-        $this->emailService = $emailService;
-        $this->smsService = $smsService;
-    }
-    
-    public function checkAndSendExpiryNotifications() {
-        try {
-            // Έλεγχος για την ύπαρξη των απαραίτητων πινάκων
-            $tableExists = $this->tableExists("driver_licenses");
-            if (!$tableExists) {
-                error_log("Ο πίνακας driver_licenses δεν υπάρχει");
-                return [
-                    "driving_licenses" => [],
-                    "pei" => [],
-                    "adr_certificates" => [],
-                    "tachograph_cards" => [],
-                    "operator_licenses" => [],
-                    "special_licenses" => []
-                ];
-            }
-            
-            error_log("Το σύστημα ειδοποιήσεων λειτουργεί σε λειτουργία δοκιμής");
-            
-            // Εδώ θα υπήρχε ο κώδικας ελέγχου των αδειών που λήγουν
-            // Για δοκιμή, επιστρέφουμε ένα κενό αποτέλεσμα
-            return [
-                "driving_licenses" => [],
-                "pei" => [],
-                "adr_certificates" => [],
-                "tachograph_cards" => [],
-                "operator_licenses" => [],
-                "special_licenses" => []
-            ];
-        } catch (Exception $e) {
-            error_log("Σφάλμα στον έλεγχο αδειών: " . $e->getMessage());
-            throw $e;
-        }
-    }
-    
-    private function tableExists($tableName) {
-        try {
-            $result = $this->pdo->query("SHOW TABLES LIKE \'{$tableName}\'");
-            return $result->rowCount() > 0;
-        } catch (Exception $e) {
-            error_log("Σφάλμα στον έλεγχο ύπαρξης πίνακα: " . $e->getMessage());
-            return false;
-        }
-    }
-}';
-        file_put_contents($notificationServiceFile, $notificationServiceContent);
-        error_log('Δημιουργήθηκε το αρχείο LicenseExpiryNotificationService.php');
-    }
-    
-    // Φόρτωση των υπηρεσιών
-    require_once $emailServiceFile;
-    require_once $smsServiceFile;
-    require_once $notificationServiceFile;
-    
-    // Φόρτωση των ρυθμίσεων ειδοποιήσεων από το υπάρχον αρχείο
+    // Φόρτωση των ρυθμίσεων ειδοποιήσεων
     $notificationsConfigFile = ROOT_DIR . '/config/notifications.php';
-    $config = include $notificationsConfigFile;
+    $config = [];
+    
+    if (file_exists($notificationsConfigFile)) {
+        $config = include $notificationsConfigFile;
+        error_log('Φόρτωση ρυθμίσεων ειδοποιήσεων από: ' . $notificationsConfigFile);
+    } else {
+        error_log('Το αρχείο ρυθμίσεων δεν βρέθηκε. Χρήση προεπιλεγμένων ρυθμίσεων.');
+        // Προεπιλεγμένες ρυθμίσεις αν δεν υπάρχει το αρχείο config
+        $config = [
+            'smtp_host' => 'smtp.example.com',
+            'smtp_port' => 587,
+            'smtp_username' => 'user@example.com',
+            'smtp_password' => 'password',
+            'sender_email' => 'notifications@example.com',
+            'sender_name' => 'DriveJob Ειδοποιήσεις',
+            'sms_api_key' => 'your_sms_api_key_here',
+            'sms_api_url' => 'https://api.smsservice.example/send',
+            'sms_sender' => 'DriveJob',
+            'debug_mode' => true,
+            'notification_periods' => [
+                'driving_license' => [60, 30, 15, 7, 1],
+                'pei' => [60, 30, 15, 7, 1],
+                'adr_certificate' => [60, 30, 15, 7, 1],
+                'tachograph_card' => [60, 30, 15, 7, 1],
+                'operator_license' => [180, 90, 30, 15],
+                'special_license' => [60, 30, 15, 7, 1]
+            ],
+            'max_notifications_per_run' => 100,
+            'admin_emails' => ['admin@example.com'],
+            'daily_report_enabled' => false
+        ];
+    }
     
     // Έλεγχος και δημιουργία του πίνακα ειδοποιήσεων αν δεν υπάρχει
     $tableCheckSQL = "SHOW TABLES LIKE 'license_expiry_notifications'";
@@ -284,12 +152,12 @@ class LicenseExpiryNotificationService {
         $config['debug_mode']
     );
     
-    // Αρχικοποίηση της υπηρεσίας ειδοποιήσεων
-    $notificationService = new \Drivejob\Services\LicenseExpiryNotificationService($pdo, $emailService, $smsService);
+    // Αρχικοποίηση της κεντρικής υπηρεσίας ειδοποιήσεων
+    $notificationService = new \Drivejob\Services\NotificationServices($pdo, $emailService, $smsService, $config);
     
     // Έλεγχος και αποστολή ειδοποιήσεων
     error_log('Εκτέλεση ελέγχου για άδειες που λήγουν...');
-    $results = $notificationService->checkAndSendExpiryNotifications();
+    $results = $notificationService->checkAndSendLicenseExpiryNotifications();
     
     // Καταγραφή των αποτελεσμάτων
     error_log('Ολοκλήρωση ελέγχου.');
@@ -304,6 +172,13 @@ class LicenseExpiryNotificationService {
         
         foreach ($results as $category => $notifications) {
             error_log("Κατηγορία {$category}: " . count($notifications) . " ειδοποιήσεις");
+        }
+        
+        // Αποθήκευση των αποτελεσμάτων για διαγνωστικούς σκοπούς αν είναι ενεργοποιημένη η λειτουργία debug
+        if ($config['debug_mode'] && $totalNotifications > 0) {
+            $resultsFile = ROOT_DIR . '/logs/notifications_results_' . date('Y-m-d_H-i-s') . '.json';
+            file_put_contents($resultsFile, json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            error_log('Αποθήκευση αποτελεσμάτων στο αρχείο: ' . $resultsFile);
         }
     } else {
         error_log('Δεν επιστράφηκαν αποτελέσματα από την υπηρεσία ειδοποιήσεων');
