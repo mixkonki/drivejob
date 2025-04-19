@@ -259,7 +259,7 @@ include ROOT_DIR . '/src/Views/header.php';
                                 ?>
                                     <div class="license-category-item">
                                         <div class="category-icon">
-                                            <img src="<?php echo BASE_URL; ?>img/license_icons/<?php echo strtolower($category); ?>.png" alt="<?php echo $category; ?>">
+                                          
                                             <span class="category-code"><?php echo $category; ?></span>
                                         </div>
                                         <div class="category-details">

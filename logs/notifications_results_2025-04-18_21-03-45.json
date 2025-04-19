@@ -1,0 +1,75 @@
+{
+    "driving_licenses": [
+        {
+            "driver_id": 26,
+            "driver_name": "hotmail Κώστας",
+            "license_type": "A, B, BE, C, CE, D, DE",
+            "expiry_date": "2025-04-25",
+            "days_before": 7,
+            "email_sent": true,
+            "sms_sent": false
+        },
+        {
+            "driver_id": 28,
+            "driver_name": "Test Driver",
+            "license_type": "C, B, A, BE",
+            "expiry_date": "2025-04-19",
+            "days_before": 1,
+            "email_sent": true,
+            "sms_sent": false
+        }
+    ],
+    "pei": [
+        {
+            "driver_id": 28,
+            "driver_name": "Test Driver",
+            "license_type": "PEI-C",
+            "expiry_date": "2025-05-18",
+            "days_before": 30,
+            "email_sent": true,
+            "sms_sent": false
+        },
+        {
+            "driver_id": 28,
+            "driver_name": "Test Driver",
+            "license_type": "PEI-D",
+            "expiry_date": "2025-05-18",
+            "days_before": 30,
+            "email_sent": true,
+            "sms_sent": false
+        }
+    ],
+    "adr_certificates": [
+        {
+            "driver_id": 26,
+            "driver_name": "hotmail Κώστας",
+            "license_type": "Π2",
+            "expiry_date": "2025-05-03",
+            "days_before": 15,
+            "email_sent": true,
+            "sms_sent": false
+        },
+        {
+            "driver_id": 28,
+            "driver_name": "Test Driver",
+            "license_type": "Π1",
+            "expiry_date": "2025-05-18",
+            "days_before": 30,
+            "email_sent": true,
+            "sms_sent": false
+        }
+    ],
+    "tachograph_cards": [
+        {
+            "driver_id": 26,
+            "driver_name": "hotmail Κώστας",
+            "license_type": "Ταχογράφος",
+            "expiry_date": "2025-05-18",
+            "days_before": 30,
+            "email_sent": true,
+            "sms_sent": false
+        }
+    ],
+    "operator_licenses": [],
+    "special_licenses": []
+}

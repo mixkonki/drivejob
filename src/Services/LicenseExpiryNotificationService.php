@@ -263,7 +263,7 @@ $this->log("Διαδρομή προτύπων: {$this->templatesPath}", 'INFO');
             
             $this->log("Έλεγχος για άδειες οδήγησης που λήγουν μεταξύ τώρα και " . $maxDateString, 'INFO');
             
-            // Εύρεση όλων των αδειών που λήγουν στο επόμενο διάστημα
+            // Τροποποιημένο SQL για να βρίσκει μόνο την πιο κοντινή ημερομηνία λήξης για κάθε οδηγό
             $sql = "
                 SELECT 
                     d.id as driver_id, 
@@ -271,8 +271,8 @@ $this->log("Διαδρομή προτύπων: {$this->templatesPath}", 'INFO');
                     d.last_name, 
                     d.email, 
                     d.phone,
-                    dl.license_type, 
-                    dl.expiry_date
+                    MIN(dl.expiry_date) as expiry_date,
+                    GROUP_CONCAT(dl.license_type SEPARATOR ', ') as license_types
                 FROM 
                     drivers d
                 JOIN 
@@ -280,6 +280,8 @@ $this->log("Διαδρομή προτύπων: {$this->templatesPath}", 'INFO');
                 WHERE 
                     dl.expiry_date BETWEEN CURDATE() AND :max_date
                     AND d.is_verified = 1
+                GROUP BY 
+                    d.id
             ";
             
             $stmt = $this->pdo->prepare($sql);
@@ -288,156 +290,74 @@ $this->log("Διαδρομή προτύπων: {$this->templatesPath}", 'INFO');
             ]);
             
             $expiringLicenses = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $this->log("Βρέθηκαν " . count($expiringLicenses) . " άδειες οδήγησης που λήγουν στο επόμενο διάστημα", 'INFO', $expiringLicenses);
+            $this->log("Βρέθηκαν " . count($expiringLicenses) . " οδηγοί με άδειες οδήγησης που λήγουν στο επόμενο διάστημα", 'INFO');
             
-            // Έλεγχος για κάθε άδεια
+            // Έλεγχος για κάθε οδηγό
             foreach ($expiringLicenses as $license) {
                 $expiryDate = new DateTime($license['expiry_date']);
                 $interval = $currentDate->diff($expiryDate);
                 $daysUntilExpiry = $interval->days;
                 
-                $this->log("Άδεια οδήγησης driver_id={$license['driver_id']}, license_type={$license['license_type']}, expiry_date={$license['expiry_date']}, days_until_expiry={$daysUntilExpiry}", 'DEBUG');
-                
                 // Έλεγχος αν η άδεια πρέπει να ειδοποιηθεί με βάση τις περιόδους
                 foreach ($this->notificationPeriods['driving_license'] as $daysBeforeExpiry) {
-                    // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα για να πιάσουμε περιπτώσεις όπου η ώρα δημιουργεί διαφορά
+                    // Επιτρέπουμε απόκλιση μέχρι 1 ημέρα
                     if (abs($daysUntilExpiry - $daysBeforeExpiry) <= 1) {
-                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}, actual_days={$daysUntilExpiry}", 'INFO');
-                        $this->log("Βρέθηκε άδεια που χρειάζεται ειδοποίηση: driver_id={$license['driver_id']}, license_type={$license['license_type']}, days_before_expiry={$daysBeforeExpiry}", 'INFO');
-                        
-                        // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για τη συγκεκριμένη περίοδο
-                        $alreadySent = $this->hasNotificationBeenSent($license['driver_id'], 'driving_license', $license['license_type'], $license['expiry_date'], $daysBeforeExpiry);
-                        
-                        if ($alreadySent) {
-                            $this->log("Η ειδοποίηση για τον οδηγό {$license['driver_id']} και άδεια {$license['license_type']} έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
+                        // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση
+                        if ($this->hasNotificationBeenSent($license['driver_id'], 'driving_license', 'all', $license['expiry_date'], $daysBeforeExpiry)) {
+                            $this->log("Η ειδοποίηση για τον οδηγό {$license['driver_id']} έχει ήδη σταλεί για {$daysBeforeExpiry} ημέρες", 'INFO');
                             continue;
                         }
                         
-                        try {
-                            // Προετοιμασία του email
-                            $subject = "Ειδοποίηση λήξης άδειας οδήγησης - {$license['license_type']}";
-                            $message = $this->getEmailTemplate(
-                                'driving_license',
-                                [
-                                    'first_name' => $license['first_name'],
-                                    'license_type' => $license['license_type'],
-                                    'expiry_date' => $license['expiry_date'],
-                                    'days_before_expiry' => $daysBeforeExpiry
-                                ]
-                            );
-                            
-                            // Αποστολή email
-                            $emailSent = false;
-                            if (!empty($license['email'])) {
-                                try {
-                                    $emailSent = $this->emailService->send($license['email'], $subject, $message);
-                                    $this->log("Αποστολή email στον οδηγό {$license['driver_id']} για άδεια {$license['license_type']}: " . ($emailSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
-                                } catch (Exception $e) {
-                                    $this->log("Σφάλμα κατά την αποστολή email στον οδηγό {$license['driver_id']}: " . $e->getMessage(), 'ERROR', [
-                                        'exception' => get_class($e),
-                                        'message' => $e->getMessage(),
-                                        'code' => $e->getCode(),
-                                        'file' => $e->getFile(),
-                                        'line' => $e->getLine(),
-                                        'trace' => $e->getTraceAsString()
-                                    ]);
-                                }
-                            } else {
-                                $this->log("Ο οδηγός {$license['driver_id']} δεν έχει email", 'WARNING');
-                            }
-                            
-                            // Αποστολή SMS αν είναι λιγότερο από 15 ημέρες πριν τη λήξη
-                            $smsSent = false;
-                            if ($daysBeforeExpiry <= 15 && !empty($license['phone'])) {
-                                try {
-                                    $smsMessage = "DriveJob: Η άδεια οδήγησης κατηγορίας {$license['license_type']} λήγει σε {$daysBeforeExpiry} " . 
-                                                ($daysBeforeExpiry == 1 ? "ημέρα" : "ημέρες") . ". Παρακαλούμε ανανεώστε την έγκαιρα.";
-                                    $smsSent = $this->smsService->sendSms($license['phone'], $smsMessage);
-                                    $this->log("Αποστολή SMS στον οδηγό {$license['driver_id']} για άδεια {$license['license_type']}: " . ($smsSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
-                                } catch (Exception $e) {
-                                    $this->log("Σφάλμα κατά την αποστολή SMS στον οδηγό {$license['driver_id']}: " . $e->getMessage(), 'ERROR', [
-                                        'exception' => get_class($e),
-                                        'message' => $e->getMessage(),
-                                        'code' => $e->getCode(),
-                                        'file' => $e->getFile(),
-                                        'line' => $e->getLine(),
-                                        'trace' => $e->getTraceAsString()
-                                    ]);
-                                }
-                            }
-                            
-                            // Καταγραφή της ειδοποίησης
-                            if ($emailSent || $smsSent) {
-                                try {
-                                    $recorded = $this->recordNotification($license['driver_id'], 'driving_license', $license['license_type'], $license['expiry_date'], $daysBeforeExpiry);
-                                    if ($recorded) {
-                                        $this->log("Επιτυχής καταγραφή ειδοποίησης για τον οδηγό {$license['driver_id']}", 'INFO');
-                                    } else {
-                                        $this->log("Αποτυχία καταγραφής ειδοποίησης για τον οδηγό {$license['driver_id']}", 'WARNING');
-                                    }
-                                } catch (Exception $e) {
-                                    $this->log("Σφάλμα κατά την καταγραφή ειδοποίησης για τον οδηγό {$license['driver_id']}: " . $e->getMessage(), 'ERROR', [
-                                        'exception' => get_class($e),
-                                        'message' => $e->getMessage(),
-                                        'code' => $e->getCode(),
-                                        'file' => $e->getFile(),
-                                        'line' => $e->getLine(),
-                                        'trace' => $e->getTraceAsString()
-                                    ]);
-                                }
-                                
-                                $sentNotifications[] = [
-                                    'driver_id' => $license['driver_id'],
-                                    'driver_name' => $license['first_name'] . ' ' . $license['last_name'],
-                                    'license_type' => $license['license_type'],
-                                    'expiry_date' => $license['expiry_date'],
-                                    'days_before' => $daysBeforeExpiry,
-                                    'email_sent' => $emailSent,
-                                    'sms_sent' => $smsSent
-                                ];
-                            }
-                        } catch (Exception $e) {
-                            $this->log("Γενικό σφάλμα κατά την επεξεργασία ειδοποίησης για τον οδηγό {$license['driver_id']}: " . $e->getMessage(), 'ERROR', [
-                                'exception' => get_class($e),
-                                'message' => $e->getMessage(),
-                                'code' => $e->getCode(),
-                                'file' => $e->getFile(),
-                                'line' => $e->getLine(),
-                                'trace' => $e->getTraceAsString()
-                            ]);
+                        // Προετοιμασία του email - χρησιμοποιείται η λίστα των κατηγοριών
+                        $subject = "Ειδοποίηση λήξης άδειας οδήγησης";
+                        $message = $this->getEmailTemplate(
+                            'driving_license',
+                            [
+                                'first_name' => $license['first_name'],
+                                'license_type' => $license['license_types'], // Εδώ περνάμε όλες τις κατηγορίες
+                                'expiry_date' => $license['expiry_date'],
+                                'days_before_expiry' => $daysBeforeExpiry
+                            ]
+                        );
+                        
+                        // Αποστολή email
+                        $emailSent = false;
+                        if (!empty($license['email'])) {
+                            $emailSent = $this->emailService->send($license['email'], $subject, $message);
+                            $this->log("Αποστολή email στον οδηγό {$license['driver_id']} για όλες τις άδειες: " . ($emailSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
+                        }
+                        
+                        // Αποστολή SMS αν είναι λιγότερο από 15 ημέρες πριν τη λήξη
+                        $smsSent = false;
+                        if ($daysBeforeExpiry <= 15 && !empty($license['phone'])) {
+                            $smsMessage = "DriveJob: Η άδεια οδήγησής σας λήγει σε {$daysBeforeExpiry} " . 
+                                        ($daysBeforeExpiry == 1 ? "ημέρα" : "ημέρες") . ". Παρακαλούμε ανανεώστε την έγκαιρα.";
+                            $smsSent = $this->smsService->sendSms($license['phone'], $smsMessage);
+                        }
+                        
+                        // Καταγραφή της ειδοποίησης - χρησιμοποιούμε 'all' ως τύπο άδειας
+                        if ($emailSent || $smsSent) {
+                            $this->recordNotification($license['driver_id'], 'driving_license', 'all', $license['expiry_date'], $daysBeforeExpiry);
+                            $sentNotifications[] = [
+                                'driver_id' => $license['driver_id'],
+                                'driver_name' => $license['first_name'] . ' ' . $license['last_name'],
+                                'license_type' => $license['license_types'],
+                                'expiry_date' => $license['expiry_date'],
+                                'days_before' => $daysBeforeExpiry,
+                                'email_sent' => $emailSent,
+                                'sms_sent' => $smsSent
+                            ];
                         }
                     }
                 }
             }
             
-            $this->log("Ολοκλήρωση ελέγχου αδειών οδήγησης. Στάλθηκαν " . count($sentNotifications) . " ειδοποιήσεις", 'INFO', $sentNotifications);
-            return $sentNotifications;
-        } catch (PDOException $e) {
-            $this->log("Σφάλμα PDO κατά τον έλεγχο αδειών οδήγησης: " . $e->getMessage() . " (Κωδικός: " . $e->getCode() . ")", 'ERROR', [
-                'exception' => get_class($e),
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'sql_state' => $e->errorInfo[0] ?? 'N/A',
-                'driver_error_code' => $e->errorInfo[1] ?? 'N/A',
-                'driver_error_message' => $e->errorInfo[2] ?? 'N/A',
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
             return $sentNotifications;
         } catch (Exception $e) {
-            $this->log("Γενικό σφάλμα κατά τον έλεγχο αδειών οδήγησης: " . $e->getMessage() . " (Τύπος: " . get_class($e) . ")", 'ERROR', [
-                'exception' => get_class($e),
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            $this->log("Σφάλμα κατά τον έλεγχο αδειών οδήγησης: " . $e->getMessage(), 'ERROR');
             return $sentNotifications;
         }
     }
-    
     /**
      * Έλεγχος για ΠΕΙ που λήγουν
      * 

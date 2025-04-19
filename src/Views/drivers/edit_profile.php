@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 <tr>
                                                     <td>
                                                         <div class="license-type-icon">
-                                                            <img src="<?php echo BASE_URL; ?>img/license_icons/<?php echo strtolower($license['type']); ?>.png" alt="<?php echo $license['type']; ?>">
+                                                            
                                                             <span><?php echo $license['type']; ?></span>
                                                         </div>
                                                     </td>

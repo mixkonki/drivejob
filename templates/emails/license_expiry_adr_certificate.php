@@ -21,7 +21,7 @@
     <div class="content">
         <p>Αγαπητέ/ή <?php echo $first_name; ?>,</p>
         
-        <p>Σας ενημερώνουμε ότι το <strong>Πιστοποιητικό ADR</strong> σας <strong>τύπου <?php echo $adr_type; ?></strong> 
+        <p>Σας ενημερώνουμε ότι το <strong>Πιστοποιητικό ADR</strong> σας <strong>κατηγορίας <?php echo $adr_type; ?></strong> 
         πρόκειται να λήξει σε <span class="warning"><?php echo $days_before_expiry == 1 ? "μία ημέρα" : $days_before_expiry . " ημέρες"; ?></span>, 
         στις <strong><?php echo date("d/m/Y", strtotime($expiry_date)); ?></strong>.</p>
         
