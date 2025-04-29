@@ -552,7 +552,7 @@
     .rating-main-layout {
         flex-direction: column;
     }
-    
+
     .rating-side-column {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -564,23 +564,23 @@
     .rating-overview {
         flex-direction: column;
     }
-    
+
     .rating-circle-container {
         margin: 0 auto;
     }
-    
+
     .rating-actions {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .rating-side-column {
         display: block;
     }
-    
+
     .training-courses {
         flex-direction: column;
     }
-    
+
     .course-item {
         width: 100%;
     }

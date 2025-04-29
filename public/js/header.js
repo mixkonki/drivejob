@@ -1,14 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     const dropdown = document.querySelector('.dropdown');
-    
+
     // Εάν το dropdown δεν υπάρχει, επιστρέφουμε πρόωρα
     if (!dropdown) {
         return;
     }
-    
+
     const dropdownMenu = dropdown.querySelector('.dropdown-menu');
     const dropdownButton = dropdown.querySelector('.dropdown-toggle');
-    
+
     // Εάν το dropdownMenu ή το dropdownButton δεν υπάρχουν, επιστρέφουμε πρόωρα
     if (!dropdownMenu || !dropdownButton) {
         return;

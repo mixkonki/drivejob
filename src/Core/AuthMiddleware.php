@@ -1,4 +1,5 @@
 <?php
+
 namespace Drivejob\Core;
 
 class AuthMiddleware
@@ -10,48 +11,41 @@ class AuthMiddleware
     {
         error_log("AuthMiddleware::isLoggedIn - Checking if user is logged in");
         error_log("Session data: " . print_r($_SESSION, true));
-        
-        // Βεβαιωνόμαστε ότι η συνεδρία είναι ενεργή
+// Βεβαιωνόμαστε ότι η συνεδρία είναι ενεργή
         Session::start();
-        
         if (!Session::has('user_id')) {
             error_log("No user_id in session - redirecting to login");
-            
-            // Αποθήκευση της τρέχουσας URL για επιστροφή μετά τη σύνδεση
+        // Αποθήκευση της τρέχουσας URL για επιστροφή μετά τη σύνδεση
             if (isset($_SERVER['REQUEST_URI'])) {
                 Session::set('redirect_after_login', $_SERVER['REQUEST_URI']);
             }
-            
+
             header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
-        
+
         error_log("User is logged in with ID: " . Session::get('user_id'));
         return true;
     }
-    
+
     public static function hasRole($role)
     {
         error_log("AuthMiddleware::hasRole - Checking if user has role: " . $role);
-        
-        // Πρώτα ελέγχουμε αν ο χρήστης είναι συνδεδεμένος
+// Πρώτα ελέγχουμε αν ο χρήστης είναι συνδεδεμένος
         self::isLoggedIn();
-        
         error_log("User role is: " . Session::get('role'));
-        
-        // Έλεγχος αν ο χρήστης έχει τον απαιτούμενο ρόλο
+// Έλεγχος αν ο χρήστης έχει τον απαιτούμενο ρόλο
         if (Session::get('role') !== $role) {
             error_log("Role mismatch - redirecting to access-denied.php at URL: " . BASE_URL . 'access-denied.php');
-            
-            // Ανακατεύθυνση στην σελίδα άρνησης πρόσβασης
+// Ανακατεύθυνση στην σελίδα άρνησης πρόσβασης
             header('Location: ' . BASE_URL . 'access-denied.php');
             exit();
         }
-        
+
         error_log("User has required role, continuing");
         return true;
     }
-    
+
     /**
      * Ελέγχει αν ο χρήστης έχει έναν από τους απαιτούμενους ρόλους
      */
@@ -59,28 +53,24 @@ class AuthMiddleware
     {
         // Πρώτα ελέγχουμε αν ο χρήστης είναι συνδεδεμένος
         self::isLoggedIn();
-        
-        // Έλεγχος αν ο χρήστης έχει έναν από τους απαιτούμενους ρόλους
+// Έλεγχος αν ο χρήστης έχει έναν από τους απαιτούμενους ρόλους
         if (!in_array(Session::get('role'), $roles)) {
-            // Καταγραφή αποσφαλμάτωσης
-            error_log(
-                date('[Y-m-d H:i:s] ') . 
-                "AnyRole check failed - user has role '" . Session::get('role') . 
-                "', required one of: " . implode(', ', $roles) . 
-                " - redirecting to access denied\n"
-            );
-            
-            // Ανακατεύθυνση στην σελίδα άρνησης πρόσβασης
+// Καταγραφή αποσφαλμάτωσης
+            error_log(date('[Y-m-d H:i:s] ') .
+                "AnyRole check failed - user has role '" . Session::get('role') .
+                "', required one of: " . implode(', ', $roles) .
+                " - redirecting to access denied\n");
+// Ανακατεύθυνση στην σελίδα άρνησης πρόσβασης
             header('Location: ' . BASE_URL . 'access-denied.php');
             exit();
         }
-        
+
         return true;
     }
-    
+
     /**
      * Ελέγχει αν ο χρήστης είναι ο ιδιοκτήτης του αντικειμένου
-     * 
+     *
      * @param int $ownerId ID του ιδιοκτήτη του αντικειμένου
      * @return bool true αν ο χρήστης είναι ο ιδιοκτήτης, διαφορετικά ανακατεύθυνση
      */
@@ -88,24 +78,20 @@ class AuthMiddleware
     {
         // Πρώτα ελέγχουμε αν ο χρήστης είναι συνδεδεμένος
         self::isLoggedIn();
-        
         if (Session::get('user_id') != $ownerId) {
-            // Καταγραφή αποσφαλμάτωσης
-            error_log(
-                date('[Y-m-d H:i:s] ') . 
-                "Owner check failed - user id: " . Session::get('user_id') . 
-                ", owner id: " . $ownerId . 
-                " - redirecting to access denied\n"
-            );
-            
-            // Ανακατεύθυνση στην σελίδα άρνησης πρόσβασης
-            header('Location: ' . BASE_URL . 'access-denied.php');
+        // Καταγραφή αποσφαλμάτωσης
+            error_log(date('[Y-m-d H:i:s] ') .
+                "Owner check failed - user id: " . Session::get('user_id') .
+                ", owner id: " . $ownerId .
+                " - redirecting to access denied\n");
+        // Ανακατεύθυνση στην σελίδα άρνησης πρόσβασης
+                    header('Location: ' . BASE_URL . 'access-denied.php');
             exit();
         }
-        
+
         return true;
     }
-    
+
     /**
      * Ελέγχει αν ο χρήστης έχει επαληθεύσει το email του
      */
@@ -113,80 +99,70 @@ class AuthMiddleware
     {
         // Πρώτα ελέγχουμε αν ο χρήστης είναι συνδεδεμένος
         self::isLoggedIn();
-        
-        // Λήψη του χρήστη από τη βάση δεδομένων
+// Λήψη του χρήστη από τη βάση δεδομένων
         global $pdo;
-        
         $role = Session::get('role');
         $userId = Session::get('user_id');
-        
         if ($role === 'driver') {
             $sql = "SELECT is_verified FROM drivers WHERE id = ?";
         } else {
             $sql = "SELECT is_verified FROM companies WHERE id = ?";
         }
-        
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$userId]);
         $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-        
         if (!$result || !$result['is_verified']) {
-            // Καταγραφή αποσφαλμάτωσης
-            error_log(
-                date('[Y-m-d H:i:s] ') . 
-                "Verification check failed - user id: " . $userId . 
-                ", role: " . $role . 
-                " - redirecting to verification required\n"
-            );
-            
-            // Ανακατεύθυνση στην σελίδα απαίτησης επαλήθευσης
-            header('Location: ' . BASE_URL . 'verification-required.php');
+        // Καταγραφή αποσφαλμάτωσης
+            error_log(date('[Y-m-d H:i:s] ') .
+                "Verification check failed - user id: " . $userId .
+                ", role: " . $role .
+                " - redirecting to verification required\n");
+        // Ανακατεύθυνση στην σελίδα απαίτησης επαλήθευσης
+                    header('Location: ' . BASE_URL . 'verification-required.php');
             exit();
         }
-        
+
         return true;
     }
-    
+
     /**
      * Προστασία από επιθέσεις CSRF
-     * 
+     *
      * @param string $token Token CSRF από τη φόρμα
      * @return bool true αν το token είναι έγκυρο, διαφορετικά ανακατεύθυνση
      */
     public static function validateCSRF($token)
     {
         if (!isset($token) || !CSRF::validateToken($token)) {
-            // Καταγραφή αποσφαλμάτωσης
-            error_log(
-                date('[Y-m-d H:i:s] ') . 
-                "CSRF validation failed - redirecting to error\n"
-            );
-            
-            // Ανακατεύθυνση στην σελίδα σφάλματος CSRF
+// Καταγραφή αποσφαλμάτωσης
+            error_log(date('[Y-m-d H:i:s] ') .
+                "CSRF validation failed - redirecting to error\n");
+// Ανακατεύθυνση στην σελίδα σφάλματος CSRF
             header('Location: ' . BASE_URL . 'csrf-error.php');
             exit();
         }
-        
+
         return true;
     }
-    
+
     /**
      * Έλεγχος αν η συνεδρία έχει λήξει λόγω αδράνειας
-     * 
+     *
      * @param int $maxIdleTime Μέγιστος χρόνος αδράνειας σε δευτερόλεπτα
      * @return bool true αν η συνεδρία είναι ενεργή, διαφορετικά ανακατεύθυνση
      */
     public static function checkSessionTimeout($maxIdleTime = 1800) // 30 λεπτά προεπιλογή
+
     {
         if (Session::isExpired($maxIdleTime)) {
-            // Καταστροφή της συνεδρίας
+// Καταστροφή της συνεδρίας
             Session::destroy();
-            
-            // Ανακατεύθυνση στη σελίδα σύνδεσης με μήνυμα λήξης
+// Ανακατεύθυνση στη σελίδα σύνδεσης με μήνυμα λήξης
             header('Location: ' . BASE_URL . 'login.php?expired=1');
             exit();
         }
-        
+
         return true;
     }
 }

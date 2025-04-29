@@ -1,6 +1,6 @@
-<?php 
+<?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 
 use Drivejob\Core\Session;
 
@@ -183,7 +183,7 @@ Session::remove('old_input');
                 <div class="form-group">
                     <label>Ετικέτες</label>
                     <div class="tags-container">
-                        <?php foreach ($allTags as $tag): ?>
+                        <?php foreach ($allTags as $tag) : ?>
                             <div class="tag-item">
                                 <label>
                                     <input type="checkbox" name="tags[]" value="<?php echo $tag['id']; ?>" <?php echo in_array($tag['id'], $selectedTagIds) ? 'checked' : ''; ?>>
@@ -227,7 +227,7 @@ Session::remove('old_input');
     document.addEventListener('DOMContentLoaded', initGooglePlaces);
 </script>
 
-<?php 
+<?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php'; 
+include ROOT_DIR . '/src/Views/footer.php';
 ?>

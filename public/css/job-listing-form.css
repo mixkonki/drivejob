@@ -1,5 +1,5 @@
-/* 
- * CSS για τη φόρμα δημιουργίας αγγελιών 
+/*
+ * CSS για τη φόρμα δημιουργίας αγγελιών
  * DriveJob Platform
  */
 
@@ -775,20 +775,20 @@ input[type="range"] {
     .form-columns {
         flex-direction: column;
     }
-    
+
     .form-row {
         flex-direction: column;
     }
-    
+
     .schedule-option, .vehicle-type-card {
         width: 100%;
     }
-    
+
     .form-actions {
         flex-direction: column;
     }
-    
-    .form-actions button, 
+
+    .form-actions button,
     .form-actions a {
         width: 100%;
         margin-bottom: 10px;

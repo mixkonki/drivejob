@@ -1,20 +1,20 @@
-<?php 
+<?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 ?>
 
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-profile.css">
 
 <main>
     <div class="container">
-        <?php if (isset($_SESSION['success_message'])): ?>
+        <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
                 <?php echo $_SESSION['success_message']; ?>
                 <?php unset($_SESSION['success_message']); ?>
             </div>
         <?php endif; ?>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -25,9 +25,9 @@ include ROOT_DIR . '/src/Views/header.php';
         <div class="driver-profile-header">
             <div class="driver-info">
                 <div class="driver-photo-container">
-                    <?php if (isset($driver['profile_image']) && $driver['profile_image']): ?>
+                    <?php if (isset($driver['profile_image']) && $driver['profile_image']) : ?>
                         <img src="<?php echo BASE_URL . htmlspecialchars($driver['profile_image']); ?>" alt="Φωτογραφία προφίλ" class="driver-photo">
-                    <?php else: ?>
+                    <?php else : ?>
                         <img src="<?php echo BASE_URL; ?>img/default_profile.png" alt="Προεπιλεγμένη φωτογραφία" class="driver-photo">
                     <?php endif; ?>
                 </div>
@@ -35,25 +35,25 @@ include ROOT_DIR . '/src/Views/header.php';
                     <h1><?php echo htmlspecialchars($driver['first_name'] . ' ' . $driver['last_name']); ?></h1>
                     
                     <div class="driver-meta">
-                        <?php if (isset($driver['city']) && $driver['city']): ?>
+                        <?php if (isset($driver['city']) && $driver['city']) : ?>
                             <div class="driver-location">
                                 <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
                                 <span><?php echo htmlspecialchars($driver['city'] . ', ' . $driver['country']); ?></span>
                             </div>
                         <?php endif; ?>
                         
-                        <?php if (isset($driver['experience_years']) && $driver['experience_years']): ?>
+                        <?php if (isset($driver['experience_years']) && $driver['experience_years']) : ?>
                             <div class="driver-experience">
                                 <img src="<?php echo BASE_URL; ?>img/experience_icon.png" alt="Εμπειρία">
                                 <span><?php echo $driver['experience_years']; ?> έτη εμπειρίας</span>
                             </div>
                         <?php endif; ?>
                         
-                        <?php if (isset($averageRating) && $averageRating > 0): ?>
+                        <?php if (isset($averageRating) && $averageRating > 0) : ?>
                             <div class="driver-rating">
                                 <img src="<?php echo BASE_URL; ?>img/rating_icon.png" alt="Αξιολόγηση">
                                 <div class="stars">
-                                    <?php 
+                                    <?php
                                     $rating = round($averageRating * 2) / 2; // Στρογγυλοποίηση στο πλησιέστερο 0.5
                                     for ($i = 1; $i <= 5; $i++) {
                                         if ($i <= $rating) {
@@ -71,7 +71,7 @@ include ROOT_DIR . '/src/Views/header.php';
                         <?php endif; ?>
                     </div>
                     
-                    <?php if (isset($driver['available_for_work'])): ?>
+                    <?php if (isset($driver['available_for_work'])) : ?>
                         <div class="driver-availability <?php echo $driver['available_for_work'] ? 'available' : 'not-available'; ?>">
                             <?php echo $driver['available_for_work'] ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία'; ?>
                         </div>
@@ -80,13 +80,13 @@ include ROOT_DIR . '/src/Views/header.php';
             </div>
             
             <div class="driver-actions">
-                <?php if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'company'): ?>
+                <?php if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'company') : ?>
                     <a href="<?php echo BASE_URL; ?>messages/create/<?php echo $driver['id']; ?>" class="btn-primary">
                         <img src="<?php echo BASE_URL; ?>img/message_icon.png" alt="Μήνυμα">
                         Επικοινωνία
                     </a>
                     
-                    <?php if (isset($driver['cv_file']) && $driver['cv_file']): ?>
+                    <?php if (isset($driver['cv_file']) && $driver['cv_file']) : ?>
                         <a href="<?php echo BASE_URL . htmlspecialchars($driver['cv_file']); ?>" class="btn-secondary" target="_blank">
                             <img src="<?php echo BASE_URL; ?>img/download_icon.png" alt="Κατέβασμα">
                             Κατέβασμα Βιογραφικού
@@ -101,7 +101,7 @@ include ROOT_DIR . '/src/Views/header.php';
             <!-- Αριστερή Στήλη -->
             <div class="profile-main">
                 <!-- Περίληψη / Σχετικά με εμένα -->
-                <?php if (isset($driver['about_me']) && $driver['about_me']): ?>
+                <?php if (isset($driver['about_me']) && $driver['about_me']) : ?>
                     <section class="profile-section">
                         <h2>Σχετικά με εμένα</h2>
                         <div class="about-me">
@@ -111,7 +111,7 @@ include ROOT_DIR . '/src/Views/header.php';
                 <?php endif; ?>
                 
 <!-- Δεξιότητες Οδηγού - διορθωμένη έκδοση -->
-<?php if (isset($driverSkills) && is_array($driverSkills) && !empty($driverSkills)): ?>
+<?php if (isset($driverSkills) && is_array($driverSkills) && !empty($driverSkills)) : ?>
     <section class="profile-section">
         <h2>Δεξιότητες</h2>
         <div class="driver-skills">
@@ -143,46 +143,46 @@ include ROOT_DIR . '/src/Views/header.php';
             $foundSkills = false; // Ένα flag για να ξέρουμε αν βρέθηκε τουλάχιστον μία δεξιότητα
 
             // Ελέγχουμε κάθε κλειδί δεξιότητας από τον πίνακα $skillLabels
-            foreach ($skillLabels as $skillKey => $skillLabel):
+            foreach ($skillLabels as $skillKey => $skillLabel) :
                 // Αν το κλειδί υπάρχει στο $driverSkills και η τιμή του είναι 1 (δηλαδή ο οδηγός την έχει)
-                if (isset($driverSkills[$skillKey]) && $driverSkills[$skillKey] == 1):
+                if (isset($driverSkills[$skillKey]) && $driverSkills[$skillKey] == 1) :
                     $foundSkills = true; // Βρήκαμε τουλάχιστον μία δεξιότητα
-            ?>
+                    ?>
                     <div class="skill-tag">
                         <span class="skill-name"><?php echo htmlspecialchars($skillLabel); ?></span>
                     </div>
-            <?php
+                    <?php
                 endif;
             endforeach;
 
             // Αν δεν βρέθηκε καμία δεξιότητα, εμφανίζουμε μήνυμα
-            if (!$foundSkills):
-            ?>
+            if (!$foundSkills) :
+                ?>
                 <p class="no-skills">Δεν έχουν καταχωρηθεί δεξιότητες.</p>
             <?php endif; ?>
         </div>
-        <?php if (!empty($driverData['additional_skills'])): ?>
+        <?php if (!empty($driverData['additional_skills'])) : ?>
              <div class="additional-skills">
                  <h4>Επιπλέον Δεξιότητες</h4>
                  <p><?php echo nl2br(htmlspecialchars($driverData['additional_skills'])); ?></p>
              </div>
         <?php endif; ?>
     </section>
-<?php else: ?>
+<?php else : ?>
      <section class="profile-section">
          <h2>Δεξιότητες</h2>
          <p class="no-skills">Δεν έχουν καταχωρηθεί δεξιότητες.</p>
-         <?php if (!empty($driverData['additional_skills'])): ?>
+         <?php if (!empty($driverData['additional_skills'])) : ?>
              <div class="additional-skills">
                  <h4>Επιπλέον Δεξιότητες</h4>
                  <p><?php echo nl2br(htmlspecialchars($driverData['additional_skills'])); ?></p>
              </div>
-        <?php endif; ?>
+         <?php endif; ?>
      </section>
 <?php endif; ?>
                 
                 <!-- Εμπειρία Εργασίας -->
-                <?php if (isset($driver['work_experience']) && $driver['work_experience']): ?>
+                <?php if (isset($driver['work_experience']) && $driver['work_experience']) : ?>
                     <section class="profile-section">
                         <h2>Εμπειρία Εργασίας</h2>
                         <div class="work-experience">
@@ -192,11 +192,11 @@ include ROOT_DIR . '/src/Views/header.php';
                 <?php endif; ?>
                 
                 <!-- Αξιολογήσεις -->
-                <?php if (isset($driverReviews) && !empty($driverReviews)): ?>
+                <?php if (isset($driverReviews) && !empty($driverReviews)) : ?>
                     <section class="profile-section">
                         <h2>Αξιολογήσεις</h2>
                         <div class="driver-reviews">
-                            <?php foreach ($driverReviews as $review): ?>
+                            <?php foreach ($driverReviews as $review) : ?>
                                 <div class="review-item">
                                     <div class="review-header">
                                         <div class="reviewer-info">
@@ -204,7 +204,7 @@ include ROOT_DIR . '/src/Views/header.php';
                                             <span class="review-date"><?php echo date('d/m/Y', strtotime($review['created_at'])); ?></span>
                                         </div>
                                         <div class="review-rating">
-                                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <?php for ($i = 1; $i <= 5; $i++) : ?>
                                                 <span class="star <?php echo $i <= $review['rating'] ? 'filled' : ''; ?>">★</span>
                                             <?php endfor; ?>
                                         </div>
@@ -222,11 +222,11 @@ include ROOT_DIR . '/src/Views/header.php';
             <!-- Δεξιά Στήλη -->
             <div class="profile-sidebar">
                 <!-- Άδειες Οδήγησης -->
-                <?php if (isset($driverLicenses) && !empty($driverLicenses)): ?>
+                <?php if (isset($driverLicenses) && !empty($driverLicenses)) : ?>
                     <section class="profile-card">
                         <h3>Άδειες Οδήγησης</h3>
                         <div class="license-badges">
-                            <?php foreach ($driverLicenseTypes as $licenseType): ?>
+                            <?php foreach ($driverLicenseTypes as $licenseType) : ?>
                                 <span class="license-badge"><?php echo htmlspecialchars($licenseType); ?></span>
                             <?php endforeach; ?>
                         </div>
@@ -234,54 +234,54 @@ include ROOT_DIR . '/src/Views/header.php';
                 <?php endif; ?>
                 
                 <!-- Ειδικές Πιστοποιήσεις -->
-                <?php 
-                $hasCertifications = 
-                    (isset($driver['adr_certificate']) && $driver['adr_certificate']) || 
-                    (isset($driver['operator_license']) && $driver['operator_license']) || 
+                <?php
+                $hasCertifications =
+                    (isset($driver['adr_certificate']) && $driver['adr_certificate']) ||
+                    (isset($driver['operator_license']) && $driver['operator_license']) ||
                     (isset($driver['tachograph_card']) && $driver['tachograph_card']);
-                    
-                if ($hasCertifications):
-                ?>
+
+                if ($hasCertifications) :
+                    ?>
                     <section class="profile-card">
                         <h3>Πιστοποιήσεις</h3>
                         <div class="certifications">
                             <ul class="certification-list">
-                                <?php if (isset($driver['adr_certificate']) && $driver['adr_certificate']): ?>
+                                <?php if (isset($driver['adr_certificate']) && $driver['adr_certificate']) : ?>
                                     <li class="certification-item">
                                         <img src="<?php echo BASE_URL; ?>img/adr_icon.png" alt="ADR">
                                         <div class="certification-info">
                                             <h4>Πιστοποιητικό ADR</h4>
-                                            <?php if (isset($driver['adr_classes']) && $driver['adr_classes']): ?>
+                                            <?php if (isset($driver['adr_classes']) && $driver['adr_classes']) : ?>
                                                 <p>Κατηγορίες: <?php echo htmlspecialchars($driver['adr_classes']); ?></p>
                                             <?php endif; ?>
-                                            <?php if (isset($driver['adr_certificate_expiry']) && $driver['adr_certificate_expiry']): ?>
+                                            <?php if (isset($driver['adr_certificate_expiry']) && $driver['adr_certificate_expiry']) : ?>
                                                 <p>Λήξη: <?php echo date('d/m/Y', strtotime($driver['adr_certificate_expiry'])); ?></p>
                                             <?php endif; ?>
                                         </div>
                                     </li>
                                 <?php endif; ?>
                                 
-                                <?php if (isset($driver['operator_license']) && $driver['operator_license']): ?>
+                                <?php if (isset($driver['operator_license']) && $driver['operator_license']) : ?>
                                     <li class="certification-item">
                                         <img src="<?php echo BASE_URL; ?>img/operator_icon.png" alt="Χειριστής">
                                         <div class="certification-info">
                                             <h4>Άδεια Χειριστή Μηχανημάτων</h4>
-                                            <?php if (isset($driver['operator_license_type']) && $driver['operator_license_type']): ?>
+                                            <?php if (isset($driver['operator_license_type']) && $driver['operator_license_type']) : ?>
                                                 <p>Τύπος: <?php echo htmlspecialchars($driver['operator_license_type']); ?></p>
                                             <?php endif; ?>
-                                            <?php if (isset($driver['operator_license_expiry']) && $driver['operator_license_expiry']): ?>
+                                            <?php if (isset($driver['operator_license_expiry']) && $driver['operator_license_expiry']) : ?>
                                                 <p>Λήξη: <?php echo date('d/m/Y', strtotime($driver['operator_license_expiry'])); ?></p>
                                             <?php endif; ?>
                                         </div>
                                     </li>
                                 <?php endif; ?>
                                 
-                                <?php if (isset($driver['tachograph_card']) && $driver['tachograph_card']): ?>
+                                <?php if (isset($driver['tachograph_card']) && $driver['tachograph_card']) : ?>
                                     <li class="certification-item">
                                         <img src="<?php echo BASE_URL; ?>img/tachograph_icon.png" alt="Ταχογράφος">
                                         <div class="certification-info">
                                             <h4>Κάρτα Ταχογράφου</h4>
-                                            <?php if (isset($driver['tachograph_card_expiry']) && $driver['tachograph_card_expiry']): ?>
+                                            <?php if (isset($driver['tachograph_card_expiry']) && $driver['tachograph_card_expiry']) : ?>
                                                 <p>Λήξη: <?php echo date('d/m/Y', strtotime($driver['tachograph_card_expiry'])); ?></p>
                                             <?php endif; ?>
                                         </div>
@@ -293,20 +293,30 @@ include ROOT_DIR . '/src/Views/header.php';
                 <?php endif; ?>
                 
                 <!-- Προτιμώμενα Οχήματα -->
-                <?php if (isset($driver['preferred_vehicle_type']) && $driver['preferred_vehicle_type']): ?>
+                <?php if (isset($driver['preferred_vehicle_type']) && $driver['preferred_vehicle_type']) : ?>
                     <section class="profile-card">
                         <h3>Προτιμώμενα Οχήματα</h3>
                         <div class="preferred-vehicles">
                             <?php
                             $vehicleType = $driver['preferred_vehicle_type'];
                             $vehicleText = '';
-                            
+
                             switch ($vehicleType) {
-                                case 'car': $vehicleText = 'Αυτοκίνητο'; break;
-                                case 'van': $vehicleText = 'Βαν'; break;
-                                case 'truck': $vehicleText = 'Φορτηγό'; break;
-                                case 'bus': $vehicleText = 'Λεωφορείο'; break;
-                                case 'machinery': $vehicleText = 'Μηχάνημα Έργου'; break;
+                                case 'car':
+                                    $vehicleText = 'Αυτοκίνητο';
+                                    break;
+                                case 'van':
+                                    $vehicleText = 'Βαν';
+                                    break;
+                                case 'truck':
+                                    $vehicleText = 'Φορτηγό';
+                                    break;
+                                case 'bus':
+                                    $vehicleText = 'Λεωφορείο';
+                                    break;
+                                case 'machinery':
+                                    $vehicleText = 'Μηχάνημα Έργου';
+                                    break;
                             }
                             ?>
                             <div class="vehicle-badge <?php echo $vehicleType; ?>">
@@ -318,71 +328,71 @@ include ROOT_DIR . '/src/Views/header.php';
                 <?php endif; ?>
                 
                 <!-- Προτιμώμενο Ωράριο -->
-                <?php if (isset($driver['preferred_schedule']) && $driver['preferred_schedule']): ?>
+                <?php if (isset($driver['preferred_schedule']) && $driver['preferred_schedule']) : ?>
                     <section class="profile-card">
                         <h3>Προτιμώμενο Ωράριο</h3>
                         <div class="preferred-schedule">
                             <?php
                             $scheduleArray = is_array($driver['preferred_schedule']) ? $driver['preferred_schedule'] : explode(',', $driver['preferred_schedule']);
-                            
-                            foreach ($scheduleArray as $schedule): 
+
+                            foreach ($scheduleArray as $schedule) :
                                 $scheduleText = '';
                                 $scheduleIcon = '';
-                                
+
                                 switch (trim($schedule)) {
-                                    case 'morning': 
+                                    case 'morning':
                                         $scheduleText = 'Πρωινό (06:00-14:00)';
                                         $scheduleIcon = 'morning';
                                         break;
-                                    case 'afternoon': 
+                                    case 'afternoon':
                                         $scheduleText = 'Απογευματινό (14:00-22:00)';
                                         $scheduleIcon = 'afternoon';
                                         break;
-                                    case 'night': 
+                                    case 'night':
                                         $scheduleText = 'Βραδινό (22:00-06:00)';
                                         $scheduleIcon = 'night';
                                         break;
-                                    case 'shifts': 
+                                    case 'shifts':
                                         $scheduleText = 'Εναλλασσόμενες Βάρδιες';
                                         $scheduleIcon = 'shifts';
                                         break;
-                                    case 'weekend': 
+                                    case 'weekend':
                                         $scheduleText = 'Σαββατοκύριακα';
                                         $scheduleIcon = 'weekend';
                                         break;
-                                    case 'flexible': 
+                                    case 'flexible':
                                         $scheduleText = 'Ευέλικτο Ωράριο';
                                         $scheduleIcon = 'flexible';
                                         break;
                                 }
-                                
-                                if (!empty($scheduleText)):
-                            ?>
+
+                                if (!empty($scheduleText)) :
+                                    ?>
                                 <div class="schedule-item">
                                     <img src="<?php echo BASE_URL; ?>img/schedule_<?php echo $scheduleIcon; ?>_icon.png" alt="<?php echo $scheduleText; ?>">
                                     <span><?php echo $scheduleText; ?></span>
                                 </div>
-                            <?php 
+                                    <?php
                                 endif;
-                            endforeach; 
+                            endforeach;
                             ?>
                         </div>
                     </section>
                 <?php endif; ?>
                 
                 <!-- Στοιχεία Επικοινωνίας (ορατά μόνο σε εταιρείες) -->
-                <?php if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'company'): ?>
+                <?php if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'company') : ?>
                     <section class="profile-card contact-info">
                         <h3>Στοιχεία Επικοινωνίας</h3>
                         
-                        <?php if (isset($driver['email']) && $driver['email']): ?>
+                        <?php if (isset($driver['email']) && $driver['email']) : ?>
                             <div class="contact-item">
                                 <img src="<?php echo BASE_URL; ?>img/email_icon.png" alt="Email">
                                 <a href="mailto:<?php echo htmlspecialchars($driver['email']); ?>"><?php echo htmlspecialchars($driver['email']); ?></a>
                             </div>
                         <?php endif; ?>
                         
-                        <?php if (isset($driver['phone']) && $driver['phone']): ?>
+                        <?php if (isset($driver['phone']) && $driver['phone']) : ?>
                             <div class="contact-item">
                                 <img src="<?php echo BASE_URL; ?>img/phone_icon.png" alt="Τηλέφωνο">
                                 <a href="tel:<?php echo htmlspecialchars($driver['phone']); ?>"><?php echo htmlspecialchars($driver['phone']); ?></a>
@@ -401,23 +411,31 @@ include ROOT_DIR . '/src/Views/header.php';
         </div>
         
         <!-- Αγγελίες Οδηγού -->
-        <?php if (isset($listings) && count($listings['results']) > 0): ?>
+        <?php if (isset($listings) && count($listings['results']) > 0) : ?>
             <section class="driver-listings">
                 <h2>Αγγελίες Οδηγού</h2>
                 
                 <div class="job-listings">
-                    <?php foreach ($listings['results'] as $listing): ?>
+                    <?php foreach ($listings['results'] as $listing) : ?>
                         <div class="job-listing-card">
                             <div class="job-listing-header">
                                 <h3><a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>"><?php echo htmlspecialchars($listing['title']); ?></a></h3>
                                 <div>
                                     <span class="job-type <?php echo $listing['job_type']; ?>">
-                                        <?php 
+                                        <?php
                                         switch ($listing['job_type']) {
-                                            case 'full_time': echo 'Πλήρης Απασχόληση'; break;
-                                            case 'part_time': echo 'Μερική Απασχόληση'; break;
-                                            case 'contract': echo 'Σύμβαση Έργου'; break;
-                                            case 'temporary': echo 'Προσωρινή Απασχόληση'; break;
+                                            case 'full_time':
+                                                echo 'Πλήρης Απασχόληση';
+                                                break;
+                                            case 'part_time':
+                                                echo 'Μερική Απασχόληση';
+                                                break;
+                                            case 'contract':
+                                                echo 'Σύμβαση Έργου';
+                                                break;
+                                            case 'temporary':
+                                                echo 'Προσωρινή Απασχόληση';
+                                                break;
                                         }
                                         ?>
                                     </span>
@@ -436,7 +454,7 @@ include ROOT_DIR . '/src/Views/header.php';
                                 <div class="job-listing-detail">
                                     <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Όχημα">
                                     <span>
-                                        <?php 
+                                        <?php
                                         $vehicleTypes = [];
                                         if (isset($listing['vehicle_types'])) {
                                             $vehicleTypes = is_array($listing['vehicle_types']) ? $listing['vehicle_types'] : explode(',', $listing['vehicle_types']);
@@ -445,33 +463,54 @@ include ROOT_DIR . '/src/Views/header.php';
                                             $vehicleLabels = [];
                                             foreach ($vehicleTypes as $type) {
                                                 switch (trim($type)) {
-                                                    case 'car': $vehicleLabels[] = 'Αυτοκίνητο'; break;
-                                                    case 'van': $vehicleLabels[] = 'Βαν'; break;
-                                                    case 'truck': $vehicleLabels[] = 'Φορτηγό'; break;
-                                                    case 'bus': $vehicleLabels[] = 'Λεωφορείο'; break;
-                                                    case 'machinery': $vehicleLabels[] = 'Μηχάνημα Έργου'; break;
+                                                    case 'car':
+                                                        $vehicleLabels[] = 'Αυτοκίνητο';
+                                                        break;
+                                                    case 'van':
+                                                        $vehicleLabels[] = 'Βαν';
+                                                        break;
+                                                    case 'truck':
+                                                        $vehicleLabels[] = 'Φορτηγό';
+                                                        break;
+                                                    case 'bus':
+                                                        $vehicleLabels[] = 'Λεωφορείο';
+                                                        break;
+                                                    case 'machinery':
+                                                        $vehicleLabels[] = 'Μηχάνημα Έργου';
+                                                        break;
                                                 }
                                             }
                                             echo implode(', ', $vehicleLabels);
                                         } else {
                                             switch ($listing['vehicle_type'] ?? '') {
-                                                case 'car': echo 'Αυτοκίνητο'; break;
-                                                case 'van': echo 'Βαν'; break;
-                                                case 'truck': echo 'Φορτηγό'; break;
-                                                case 'bus': echo 'Λεωφορείο'; break;
-                                                case 'machinery': echo 'Μηχάνημα Έργου'; break;
-                                                default: echo 'Δεν καθορίστηκε';
+                                                case 'car':
+                                                    echo 'Αυτοκίνητο';
+                                                    break;
+                                                case 'van':
+                                                    echo 'Βαν';
+                                                    break;
+                                                case 'truck':
+                                                    echo 'Φορτηγό';
+                                                    break;
+                                                case 'bus':
+                                                    echo 'Λεωφορείο';
+                                                    break;
+                                                case 'machinery':
+                                                    echo 'Μηχάνημα Έργου';
+                                                    break;
+                                                default:
+                                                    echo 'Δεν καθορίστηκε';
                                             }
                                         }
                                         ?>
                                     </span>
                                 </div>
                                 
-                                <?php if ($listing['salary_min'] || $listing['salary_max']): ?>
+                                <?php if ($listing['salary_min'] || $listing['salary_max']) : ?>
                                     <div class="job-listing-detail">
                                         <img src="<?php echo BASE_URL; ?>img/salary_icon.png" alt="Αμοιβή">
                                         <span>
-                                            <?php 
+                                            <?php
                                             if ($listing['salary_min'] && $listing['salary_max']) {
                                                 echo number_format($listing['salary_min']) . '€ - ' . number_format($listing['salary_max']) . '€';
                                             } elseif ($listing['salary_min']) {
@@ -497,7 +536,7 @@ include ROOT_DIR . '/src/Views/header.php';
                     <?php endforeach; ?>
                 </div>
                 
-                <?php if (count($listings['results']) >= 5): ?>
+                <?php if (count($listings['results']) >= 5) : ?>
                     <div class="view-all-listings">
                         <a href="<?php echo BASE_URL; ?>job-listings/driver/<?php echo $driver['id']; ?>" class="btn-secondary">
                             Προβολή Όλων των Αγγελιών
@@ -1047,7 +1086,7 @@ include ROOT_DIR . '/src/Views/header.php';
     }
 </style>
 
-<?php 
+<?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php'; 
+include ROOT_DIR . '/src/Views/footer.php';
 ?>

@@ -1,4 +1,5 @@
 <?php
+
 // Αρχικοποίηση της εφαρμογής
 require_once __DIR__ . '/../../src/bootstrap.php';
 
@@ -73,4 +74,3 @@ if (!empty($errorMessage)) {
 echo '</main>'; // Κλείσιμο του main
 
 include ROOT_DIR . '/src/Views/footer.php'; // Footer
-?>

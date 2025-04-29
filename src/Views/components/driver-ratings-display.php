@@ -1,28 +1,29 @@
 <!-- Τμήμα βαθμολογίας και αξιολογήσεων οδηγού -->
 <div class="driver-rating-section">
-    <?php if (isset($averageRating) && $averageRating > 0): ?>
+    <?php if (isset($averageRating) && $averageRating > 0) : ?>
         <div class="driver-rating-overview">
             <div class="rating-header">
                 <h3>Βαθμολογία Οδηγού</h3>
                 <div class="rating-score">
                     <div class="rating-stars">
-                        <?php 
+                        <?php
                         $rating = round($averageRating * 2) / 2; // Στρογγυλοποίηση στο πλησιέστερο 0.5
-                        for ($i = 1; $i <= 5; $i++): 
-                            if ($i <= $rating): // Πλήρες αστέρι
-                        ?>
+                        for ($i = 1; $i <= 5; $i++) :
+                            if ($i <= $rating) : // Πλήρες αστέρι
+                                ?>
                             <span class="star filled">★</span>
-                        <?php elseif ($i - 0.5 == $rating): // Μισό αστέρι ?>
+                            <?php elseif ($i - 0.5 == $rating) : // Μισό αστέρι ?>
                             <span class="star half">★</span>
-                        <?php else: // Κενό αστέρι ?>
+                            <?php else : // Κενό αστέρι ?>
                             <span class="star">★</span>
-                        <?php endif; endfor; ?>
+                            <?php endif;
+                        endfor; ?>
                     </div>
                     <div class="rating-value"><?php echo number_format($averageRating, 1); ?>/5</div>
                 </div>
             </div>
             
-            <?php if (isset($driverRatings) && !empty($driverRatings)): ?>
+            <?php if (isset($driverRatings) && !empty($driverRatings)) : ?>
                 <div class="rating-details">
                     <div class="rating-categories">
                         <div class="rating-category">
@@ -70,27 +71,27 @@
         </div>
     <?php endif; ?>
     
-    <?php if (isset($driverReviews) && !empty($driverReviews)): ?>
+    <?php if (isset($driverReviews) && !empty($driverReviews)) : ?>
         <div class="driver-reviews">
             <h3>Αξιολογήσεις</h3>
             
             <div class="reviews-list">
-                <?php foreach ($driverReviews as $review): ?>
+                <?php foreach ($driverReviews as $review) : ?>
                     <div class="review-item">
                         <div class="review-header">
                             <div class="reviewer-info">
                                 <h4><?php echo htmlspecialchars($review['company_name'] ?? 'Ανώνυμος'); ?></h4>
                                 <span class="review-date">
-                                    <?php 
+                                    <?php
                                     echo isset($review['created_at']) ? date('d/m/Y', strtotime($review['created_at'])) : '';
                                     ?>
                                 </span>
                             </div>
                             <div class="review-stars">
-                                <?php 
+                                <?php
                                 $reviewRating = isset($review['rating']) ? intval($review['rating']) : 0;
-                                for ($i = 1; $i <= 5; $i++): 
-                                ?>
+                                for ($i = 1; $i <= 5; $i++) :
+                                    ?>
                                     <span class="star <?php echo $i <= $reviewRating ? 'filled' : ''; ?>">★</span>
                                 <?php endfor; ?>
                             </div>
@@ -102,13 +103,13 @@
                 <?php endforeach; ?>
             </div>
             
-            <?php if (count($driverReviews) > 3): ?>
+            <?php if (count($driverReviews) > 3) : ?>
                 <div class="see-all-reviews">
                     <button id="load-more-reviews" class="btn-secondary">Δείτε περισσότερες αξιολογήσεις</button>
                 </div>
             <?php endif; ?>
         </div>
-    <?php elseif (isset($averageRating) && $averageRating > 0): ?>
+    <?php elseif (isset($averageRating) && $averageRating > 0) : ?>
         <p class="no-reviews-message">Δεν υπάρχουν ακόμη αναλυτικές αξιολογήσεις.</p>
     <?php endif; ?>
 </div>

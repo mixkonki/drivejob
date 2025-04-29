@@ -344,16 +344,16 @@
     .question-group {
         grid-template-columns: 1fr;
     }
-    
+
     .telematics-metrics {
         grid-template-columns: 1fr;
     }
-    
+
     .form-actions {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .form-actions button,
     .form-actions a {
         width: 100%;

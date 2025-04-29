@@ -337,7 +337,7 @@
     margin-bottom: 20px;
 }
 
-.profile-about-section, 
+.profile-about-section,
 .profile-experience-section {
     flex: 1;
     min-width: 300px;
@@ -810,16 +810,16 @@
     .profile-header {
         flex-direction: column;
     }
-    
+
     .profile-image-wrapper {
         margin: 0 auto;
     }
-    
-    .profile-info, 
+
+    .profile-info,
     .profile-stats-header {
         width: 100%;
     }
-    
+
     .profile-stats {
         justify-content: center;
     }
@@ -829,24 +829,24 @@
     .profile-row {
         flex-direction: column;
     }
-    
+
     .tabs-nav {
         flex-wrap: wrap;
     }
-    
+
     .tab-btn {
         flex: 1 1 auto;
         text-align: center;
     }
-    
+
     .profile-qualifications {
         grid-template-columns: 1fr;
     }
-    
+
     .qualification-badges {
         justify-content: center;
     }
-    
+
     .profile-stats li {
         min-width: 100px;
     }
@@ -865,12 +865,12 @@
 
 /* Βελτίωση εμφάνισης του πίνακα προσόντων για μικρές οθόνες */
 @media (max-width: 576px) {
-    .driver-qualifications th, 
+    .driver-qualifications th,
     .driver-qualifications td {
         padding: 8px 6px;
         font-size: 13px;
     }
-    
+
     .driver-qualifications th:nth-child(4),
     .driver-qualifications td:nth-child(4) {
         display: none;

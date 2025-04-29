@@ -1,4 +1,4 @@
-<?php 
+<?php
 // Συμπερίληψη του config.php για να οριστούν οι σταθερές
 require_once __DIR__ . '/../config/config.php';
 // Αυτόματη φόρτωση μέσω Composer
@@ -16,12 +16,12 @@ require_once __DIR__ . '/../vendor/autoload.php';
     <link rel="stylesheet" href="../css/styles.css"> <!-- Σύνδεση με το styles.css -->
 </head>
 <body>
-<?php 
+<?php
 // Συμπερίληψη του config.php για να οριστούν οι σταθερές
 require_once __DIR__ . '/../config/config.php';
 
 // Συμπερίληψη του header
-include '../src/Views/header.php'; 
+include '../src/Views/header.php';
 ?>
 <main>
 <div class="container">
@@ -45,10 +45,10 @@ include '../src/Views/header.php';
     </form>
 </div>
 </main>
-<?php 
+<?php
 
 // Συμπερίληψη του footer
-include '../src/Views/footer.php'; 
+include '../src/Views/footer.php';
 ?>
 </body>
 </html>

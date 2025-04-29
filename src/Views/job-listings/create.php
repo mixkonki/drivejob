@@ -1,6 +1,6 @@
-<?php 
+<?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 
 // Καθορισμός αν ο χρήστης είναι οδηγός ή εταιρεία
 $isDriver = isset($_SESSION['role']) && $_SESSION['role'] === 'driver';
@@ -16,12 +16,13 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
         <h1><?php echo $pageTitle; ?></h1>
         
         <?php
+
         use Drivejob\Core\Session;
-        
+
         // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
         $errors = Session::get('errors', []);
         $oldInput = Session::get('old_input', []);
-        
+
         // Καθαρισμός των session μεταβλητών μετά την ανάκτησή τους
         Session::remove('errors');
         Session::remove('old_input');
@@ -40,7 +41,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                 <div class="form-group <?php echo isset($errors['title']) ? 'has-error' : ''; ?>">
                     <label for="title">Τίτλος Αγγελίας</label>
                     <input type="text" id="title" name="title" value="<?php echo isset($oldInput['title']) ? htmlspecialchars($oldInput['title']) : ''; ?>" required>
-                    <?php if (isset($errors['title'])): ?>
+                    <?php if (isset($errors['title'])) : ?>
                         <div class="error-message"><?php echo $errors['title']; ?></div>
                     <?php endif; ?>
                 </div>
@@ -48,19 +49,19 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                 <div class="form-group">
                     <label for="job_type">Τύπος Απασχόλησης</label>
                     <select id="job_type" name="job_type" required>
-                        <option value="full_time" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'full_time' ? 'selected' : 
+                        <option value="full_time" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'full_time' ? 'selected' :
                             (isset($driverProfile['preferred_job_type']) && $driverProfile['preferred_job_type'] === 'full_time' ? 'selected' : ''); ?>>
                             Πλήρης Απασχόληση
                         </option>
-                        <option value="part_time" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'part_time' ? 'selected' : 
+                        <option value="part_time" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'part_time' ? 'selected' :
                             (isset($driverProfile['preferred_job_type']) && $driverProfile['preferred_job_type'] === 'part_time' ? 'selected' : ''); ?>>
                             Μερική Απασχόληση
                         </option>
-                        <option value="contract" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'contract' ? 'selected' : 
+                        <option value="contract" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'contract' ? 'selected' :
                             (isset($driverProfile['preferred_job_type']) && $driverProfile['preferred_job_type'] === 'contract' ? 'selected' : ''); ?>>
                             Σύμβαση Έργου
                         </option>
-                        <option value="temporary" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'temporary' ? 'selected' : 
+                        <option value="temporary" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'temporary' ? 'selected' :
                             (isset($driverProfile['preferred_job_type']) && $driverProfile['preferred_job_type'] === 'temporary' ? 'selected' : ''); ?>>
                             Προσωρινή Απασχόληση
                         </option>
@@ -70,9 +71,9 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                 <div class="form-group">
                     <label for="description">Περιγραφή</label>
                     <textarea id="description" name="description" rows="6" required><?php echo isset($oldInput['description']) ? htmlspecialchars($oldInput['description']) : ''; ?></textarea>
-                    <?php if ($isDriver): ?>
+                    <?php if ($isDriver) : ?>
                     <p class="help-text">Περιγράψτε την εμπειρία σας, τα προσόντα σας και τους τύπους εργασίας που αναζητάτε.</p>
-                    <?php else: ?>
+                    <?php else : ?>
                     <p class="help-text">Περιγράψτε λεπτομερώς τη θέση, τις αρμοδιότητες και το προφίλ του ιδανικού υποψηφίου.</p>
                     <?php endif; ?>
                 </div>
@@ -191,25 +192,25 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                     <?php echo (isset($driverProfile['adr_certificate']) && $driverProfile['adr_certificate']) ? 'checked' : 'disabled'; ?>>
                 <span class="certification-name">Πιστοποιητικό ADR</span>
             </label>
-            <?php if (!(isset($driverProfile['adr_certificate']) && $driverProfile['adr_certificate'])): ?>
+            <?php if (!(isset($driverProfile['adr_certificate']) && $driverProfile['adr_certificate'])) : ?>
                 <span class="certification-missing">(Δεν έχετε δηλώσει)</span>
             <?php endif; ?>
         </div>
-        <?php if (isset($driverProfile['adr_certificate']) && $driverProfile['adr_certificate']): ?>
+        <?php if (isset($driverProfile['adr_certificate']) && $driverProfile['adr_certificate']) : ?>
             <div class="certification-details">
                 <p><strong>Κατηγορία:</strong> 
-                <?php 
+                <?php
                     $adrClasses = '';
-                    if (isset($driverAdr) && !empty($driverAdr)) {
-                        $types = array_column($driverAdr, 'adr_type');
-                        $adrClasses = implode(', ', $types);
-                    } else {
-                        $adrClasses = $driverProfile['adr_classes'] ?? 'Δεν έχει καθοριστεί';
-                    }
-                    echo htmlspecialchars($adrClasses); 
+                if (isset($driverAdr) && !empty($driverAdr)) {
+                    $types = array_column($driverAdr, 'adr_type');
+                    $adrClasses = implode(', ', $types);
+                } else {
+                    $adrClasses = $driverProfile['adr_classes'] ?? 'Δεν έχει καθοριστεί';
+                }
+                    echo htmlspecialchars($adrClasses);
                 ?>
                 </p>
-                <?php if (isset($driverProfile['adr_certificate_expiry']) && $driverProfile['adr_certificate_expiry']): ?>
+                <?php if (isset($driverProfile['adr_certificate_expiry']) && $driverProfile['adr_certificate_expiry']) : ?>
                     <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverProfile['adr_certificate_expiry'])); ?></p>
                 <?php endif; ?>
             </div>
@@ -224,42 +225,42 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                     <?php echo (isset($driverProfile['operator_license']) && $driverProfile['operator_license']) ? 'checked' : 'disabled'; ?>>
                 <span class="certification-name">Άδεια Χειριστή Μηχανημάτων</span>
             </label>
-            <?php if (!(isset($driverProfile['operator_license']) && $driverProfile['operator_license'])): ?>
+            <?php if (!(isset($driverProfile['operator_license']) && $driverProfile['operator_license'])) : ?>
                 <span class="certification-missing">(Δεν έχετε δηλώσει)</span>
             <?php endif; ?>
         </div>
-        <?php if (isset($driverProfile['operator_license']) && $driverProfile['operator_license']): ?>
+        <?php if (isset($driverProfile['operator_license']) && $driverProfile['operator_license']) : ?>
             <div class="certification-details">
                 <p><strong>Τύπος:</strong> 
-                <?php 
+                <?php
                     $operatorTypes = '';
-                    if (isset($driverOperator) && !empty($driverOperator)) {
-                        // Συγκέντρωση όλων των ειδικοτήτων
-                        $specialities = array_column($driverOperator, 'speciality');
-                        // Συγκέντρωση όλων των υπο-ειδικοτήτων
-                        $subSpecialities = [];
-                        foreach ($driverOperator as $license) {
-                            if (isset($license['sub_specialities']) && !empty($license['sub_specialities'])) {
-                                foreach ($license['sub_specialities'] as $subSpec) {
-                                    $subSpecialities[] = $subSpec['sub_speciality'];
-                                }
+                if (isset($driverOperator) && !empty($driverOperator)) {
+                    // Συγκέντρωση όλων των ειδικοτήτων
+                    $specialities = array_column($driverOperator, 'speciality');
+                    // Συγκέντρωση όλων των υπο-ειδικοτήτων
+                    $subSpecialities = [];
+                    foreach ($driverOperator as $license) {
+                        if (isset($license['sub_specialities']) && !empty($license['sub_specialities'])) {
+                            foreach ($license['sub_specialities'] as $subSpec) {
+                                $subSpecialities[] = $subSpec['sub_speciality'];
                             }
                         }
-                        
-                        if (!empty($subSpecialities)) {
-                            $operatorTypes = implode(', ', $subSpecialities);
-                        } else if (!empty($specialities)) {
-                            $operatorTypes = implode(', ', $specialities);
-                        } else {
-                            $operatorTypes = 'Δεν έχει καθοριστεί';
-                        }
-                    } else {
-                        $operatorTypes = $driverProfile['operator_license_type'] ?? 'Δεν έχει καθοριστεί';
                     }
-                    echo htmlspecialchars($operatorTypes); 
+
+                    if (!empty($subSpecialities)) {
+                        $operatorTypes = implode(', ', $subSpecialities);
+                    } elseif (!empty($specialities)) {
+                        $operatorTypes = implode(', ', $specialities);
+                    } else {
+                        $operatorTypes = 'Δεν έχει καθοριστεί';
+                    }
+                } else {
+                    $operatorTypes = $driverProfile['operator_license_type'] ?? 'Δεν έχει καθοριστεί';
+                }
+                    echo htmlspecialchars($operatorTypes);
                 ?>
                 </p>
-                <?php if (isset($driverProfile['operator_license_expiry']) && $driverProfile['operator_license_expiry']): ?>
+                <?php if (isset($driverProfile['operator_license_expiry']) && $driverProfile['operator_license_expiry']) : ?>
                     <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverProfile['operator_license_expiry'])); ?></p>
                 <?php endif; ?>
             </div>
@@ -274,28 +275,28 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                     <?php echo (isset($driverProfile['tachograph_card']) && $driverProfile['tachograph_card']) ? 'checked' : 'disabled'; ?>>
                 <span class="certification-name">Κάρτα Ταχογράφου</span>
             </label>
-            <?php if (!(isset($driverProfile['tachograph_card']) && $driverProfile['tachograph_card'])): ?>
+            <?php if (!(isset($driverProfile['tachograph_card']) && $driverProfile['tachograph_card'])) : ?>
                 <span class="certification-missing">(Δεν έχετε δηλώσει)</span>
             <?php endif; ?>
         </div>
-        <?php if (isset($driverProfile['tachograph_card']) && $driverProfile['tachograph_card']): ?>
+        <?php if (isset($driverProfile['tachograph_card']) && $driverProfile['tachograph_card']) : ?>
             <div class="certification-details">
-                <?php 
+                <?php
                     $tachographNumber = '';
                     $tachographExpiry = null;
-                    if (isset($driverTachograph) && !empty($driverTachograph)) {
-                        $tachographNumber = $driverTachograph[0]['card_number'] ?? '';
-                        $tachographExpiry = $driverTachograph[0]['expiry_date'] ?? null;
-                    } else {
-                        $tachographExpiry = $driverProfile['tachograph_card_expiry'] ?? null;
-                    }
-                    
-                    if (!empty($tachographNumber)): 
-                ?>
+                if (isset($driverTachograph) && !empty($driverTachograph)) {
+                    $tachographNumber = $driverTachograph[0]['card_number'] ?? '';
+                    $tachographExpiry = $driverTachograph[0]['expiry_date'] ?? null;
+                } else {
+                    $tachographExpiry = $driverProfile['tachograph_card_expiry'] ?? null;
+                }
+
+                if (!empty($tachographNumber)) :
+                    ?>
                     <p><strong>Αριθμός:</strong> <?php echo htmlspecialchars($tachographNumber); ?></p>
                 <?php endif; ?>
                 
-                <?php if ($tachographExpiry): ?>
+                <?php if ($tachographExpiry) : ?>
                     <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($tachographExpiry)); ?></p>
                 <?php endif; ?>
             </div>
@@ -349,7 +350,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                     <div class="form-group">
                         <label for="salary_min">Ελάχιστη Αμοιβή (€)</label>
                         <input type="number" id="salary_min" name="salary_min" min="0" step="100" 
-                               value="<?php echo isset($oldInput['salary_min']) ? htmlspecialchars($oldInput['salary_min']) : 
+                               value="<?php echo isset($oldInput['salary_min']) ? htmlspecialchars($oldInput['salary_min']) :
                                    ($isDriver && isset($driverProfile['salary_expectations']) ? $driverProfile['salary_expectations'] : ''); ?>">
                     </div>
                     
@@ -362,10 +363,10 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                     <div class="form-group">
                         <label for="salary_type">Τύπος Αμοιβής</label>
                         <select id="salary_type" name="salary_type">
-                            <?php if ($isDriver): ?>
+                            <?php if ($isDriver) : ?>
                                 <option value="monthly" <?php echo isset($oldInput['salary_type']) && $oldInput['salary_type'] === 'monthly' ? 'selected' : 'selected'; ?>>Ανά μήνα</option>
                                 <option value="yearly" <?php echo isset($oldInput['salary_type']) && $oldInput['salary_type'] === 'yearly' ? 'selected' : ''; ?>>Ανά έτος</option>
-                            <?php else: ?>
+                            <?php else : ?>
                                 <option value="" <?php echo !isset($oldInput['salary_type']) || $oldInput['salary_type'] === '' ? 'selected' : ''; ?>>Επιλέξτε</option>
                                 <option value="hourly" <?php echo isset($oldInput['salary_type']) && $oldInput['salary_type'] === 'hourly' ? 'selected' : ''; ?>>Ανά ώρα</option>
                                 <option value="daily" <?php echo isset($oldInput['salary_type']) && $oldInput['salary_type'] === 'daily' ? 'selected' : ''; ?>>Ανά ημέρα</option>
@@ -384,9 +385,9 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                 <div class="form-group">
                     <label for="location">Διεύθυνση/Περιοχή</label>
                     <input type="text" id="location" name="location" 
-                           value="<?php echo isset($oldInput['location']) ? htmlspecialchars($oldInput['location']) : 
+                           value="<?php echo isset($oldInput['location']) ? htmlspecialchars($oldInput['location']) :
                                ($isDriver && isset($driverProfile['city']) ? $driverProfile['city'] . ', ' . $driverProfile['country'] : ''); ?>" required>
-                    <?php if ($isDriver): ?>
+                    <?php if ($isDriver) : ?>
                     <div class="location-options">
                         <label>
                             <input type="checkbox" id="use_profile_location" name="use_profile_location" value="1" checked>
@@ -397,20 +398,20 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                 </div>
                 
                 <!-- Κρυφά πεδία για συντεταγμένες που συμπληρώνονται αυτόματα -->
-                <input type="hidden" id="latitude" name="latitude" value="<?php echo isset($oldInput['latitude']) ? htmlspecialchars($oldInput['latitude']) : 
+                <input type="hidden" id="latitude" name="latitude" value="<?php echo isset($oldInput['latitude']) ? htmlspecialchars($oldInput['latitude']) :
                     ($isDriver && isset($driverProfile['latitude']) ? $driverProfile['latitude'] : ''); ?>">
-                <input type="hidden" id="longitude" name="longitude" value="<?php echo isset($oldInput['longitude']) ? htmlspecialchars($oldInput['longitude']) : 
+                <input type="hidden" id="longitude" name="longitude" value="<?php echo isset($oldInput['longitude']) ? htmlspecialchars($oldInput['longitude']) :
                     ($isDriver && isset($driverProfile['longitude']) ? $driverProfile['longitude'] : ''); ?>">
                 
                 <div class="form-group">
                     <label for="radius">Ακτίνα Αναζήτησης: <span id="radius-value">20</span> χλμ</label>
                     <div class="range-slider">
                         <input type="range" id="radius-slider" min="0" max="300" step="5" 
-                               value="<?php echo isset($oldInput['radius']) ? htmlspecialchars($oldInput['radius']) : 
+                               value="<?php echo isset($oldInput['radius']) ? htmlspecialchars($oldInput['radius']) :
                                    ($isDriver && isset($driverProfile['preferred_radius']) ? $driverProfile['preferred_radius'] : '20'); ?>"
                                oninput="updateRadius(this.value)">
                     </div>
-                    <input type="hidden" id="radius" name="radius" value="<?php echo isset($oldInput['radius']) ? htmlspecialchars($oldInput['radius']) : 
+                    <input type="hidden" id="radius" name="radius" value="<?php echo isset($oldInput['radius']) ? htmlspecialchars($oldInput['radius']) :
                                ($isDriver && isset($driverProfile['preferred_radius']) ? $driverProfile['preferred_radius'] : '20'); ?>">
                 </div>
                 
@@ -455,7 +456,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
         <div class="vehicle-type-grid">
             <label class="vehicle-type-card">
                 <input type="checkbox" name="vehicle_types[]" value="car" 
-                    <?php echo isset($oldInput['vehicle_types']) && in_array('car', $oldInput['vehicle_types']) ? 'checked' : 
+                    <?php echo isset($oldInput['vehicle_types']) && in_array('car', $oldInput['vehicle_types']) ? 'checked' :
                         (isset($driverProfile['preferred_vehicle_type']) && $driverProfile['preferred_vehicle_type'] === 'car' ? 'checked' : ''); ?>>
                 <div class="vehicle-card-content">
                     <div class="vehicle-icon car-icon"></div>
@@ -465,7 +466,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
             
             <label class="vehicle-type-card">
                 <input type="checkbox" name="vehicle_types[]" value="van" 
-                    <?php echo isset($oldInput['vehicle_types']) && in_array('van', $oldInput['vehicle_types']) ? 'checked' : 
+                    <?php echo isset($oldInput['vehicle_types']) && in_array('van', $oldInput['vehicle_types']) ? 'checked' :
                         (isset($driverProfile['preferred_vehicle_type']) && $driverProfile['preferred_vehicle_type'] === 'van' ? 'checked' : ''); ?>>
                 <div class="vehicle-card-content">
                     <div class="vehicle-icon van-icon"></div>
@@ -475,7 +476,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
             
             <label class="vehicle-type-card">
                 <input type="checkbox" name="vehicle_types[]" value="truck" 
-                    <?php echo isset($oldInput['vehicle_types']) && in_array('truck', $oldInput['vehicle_types']) ? 'checked' : 
+                    <?php echo isset($oldInput['vehicle_types']) && in_array('truck', $oldInput['vehicle_types']) ? 'checked' :
                         (isset($driverProfile['preferred_vehicle_type']) && $driverProfile['preferred_vehicle_type'] === 'truck' ? 'checked' : ''); ?>>
                 <div class="vehicle-card-content">
                     <div class="vehicle-icon truck-icon"></div>
@@ -485,7 +486,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
             
             <label class="vehicle-type-card">
                 <input type="checkbox" name="vehicle_types[]" value="bus" 
-                    <?php echo isset($oldInput['vehicle_types']) && in_array('bus', $oldInput['vehicle_types']) ? 'checked' : 
+                    <?php echo isset($oldInput['vehicle_types']) && in_array('bus', $oldInput['vehicle_types']) ? 'checked' :
                         (isset($driverProfile['preferred_vehicle_type']) && $driverProfile['preferred_vehicle_type'] === 'bus' ? 'checked' : ''); ?>>
                 <div class="vehicle-card-content">
                     <div class="vehicle-icon bus-icon"></div>
@@ -495,7 +496,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
             
             <label class="vehicle-type-card">
                 <input type="checkbox" name="vehicle_types[]" value="machinery" 
-                    <?php echo isset($oldInput['vehicle_types']) && in_array('machinery', $oldInput['vehicle_types']) ? 'checked' : 
+                    <?php echo isset($oldInput['vehicle_types']) && in_array('machinery', $oldInput['vehicle_types']) ? 'checked' :
                         (isset($driverProfile['preferred_vehicle_type']) && $driverProfile['preferred_vehicle_type'] === 'machinery' ? 'checked' : ''); ?>>
                 <div class="vehicle-card-content">
                     <div class="vehicle-icon machinery-icon"></div>
@@ -505,7 +506,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
         </div>
     </div>
     
-    <?php if (isset($errors['vehicle_types'])): ?>
+    <?php if (isset($errors['vehicle_types'])) : ?>
         <div class="error-message"><?php echo $errors['vehicle_types']; ?></div>
     <?php endif; ?>
 </div>
@@ -549,7 +550,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
 </section>
             
             <!-- Ενότητα με διαφορετικό περιεχόμενο ανάλογα με τον ρόλο -->
-            <?php if ($isDriver): ?>
+            <?php if ($isDriver) : ?>
             <!-- Προσόντα & Δεξιότητες για Οδηγούς -->
             <section class="form-section">
                 <h2>Προσόντα & Δεξιότητες</h2>
@@ -557,22 +558,22 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                 <!-- Αντικατάσταση του περιττού πεδίου "Απαιτούμενη Άδεια" με απλή εμφάνιση των αδειών από το προφίλ -->
 <div class="form-group">
     <label>Άδειες Οδήγησης</label>
-    <?php if (isset($driverProfile) && !empty($driverProfile['license_codes'])): ?>
+                <?php if (isset($driverProfile) && !empty($driverProfile['license_codes'])) : ?>
         <div class="driver-licenses-summary">
             <p>Οι παρακάτω άδειες από το προφίλ σας θα εμφανίζονται στην αγγελία:</p>
             <div class="license-badges">
-                <?php foreach (explode(',', $driverProfile['license_codes']) as $category): ?>
-                    <?php if (!empty(trim($category))): ?>
+                    <?php foreach (explode(',', $driverProfile['license_codes']) as $category) : ?>
+                        <?php if (!empty(trim($category))) : ?>
                         <span class="license-badge"><?php echo htmlspecialchars(trim($category)); ?></span>
-                    <?php endif; ?>
-                <?php endforeach; ?>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
             </div>
             <p class="help-text">Οι άδειες εμφανίζονται αυτόματα από το προφίλ σας. <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Επεξεργασία προφίλ</a></p>
         </div>
-    <?php else: ?>
+                <?php else : ?>
         <p class="no-licenses">Δεν έχετε καταχωρήσει άδειες στο προφίλ σας. 
             <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Προσθέστε τώρα</a> για καλύτερη προβολή της αγγελίας σας.</p>
-    <?php endif; ?>
+                <?php endif; ?>
 </div>
                 
                 <!-- Επιλογή για εμφάνιση προσόντων από το προφίλ -->
@@ -610,7 +611,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                 <div class="form-group">
                     <label for="experience_years">Συνολικά Έτη Εμπειρίας</label>
                     <input type="number" id="experience_years" name="experience_years" min="0" 
-                           value="<?php echo isset($oldInput['experience_years']) ? htmlspecialchars($oldInput['experience_years']) : 
+                           value="<?php echo isset($oldInput['experience_years']) ? htmlspecialchars($oldInput['experience_years']) :
                                (isset($driverProfile['experience_years']) ? $driverProfile['experience_years'] : ''); ?>">
                 </div>
                 
@@ -624,7 +625,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
             </section>
             </section>
             
-            <?php else: ?>
+            <?php else : ?>
             <!-- Απαιτήσεις για Επιχειρήσεις -->
             <section class="form-section">
                 <h2>Απαιτήσεις</h2>
@@ -672,29 +673,29 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                 <div class="form-group">
                     <label for="contact_email">Email Επικοινωνίας</label>
                     <input type="email" id="contact_email" name="contact_email" 
-                           value="<?php echo isset($oldInput['contact_email']) ? htmlspecialchars($oldInput['contact_email']) : 
+                           value="<?php echo isset($oldInput['contact_email']) ? htmlspecialchars($oldInput['contact_email']) :
                                (isset($driverProfile['email']) ? htmlspecialchars($driverProfile['email']) : ''); ?>">
                 </div>
                 
                 <div class="form-group">
                     <label for="contact_phone">Τηλέφωνο Επικοινωνίας</label>
                     <input type="tel" id="contact_phone" name="contact_phone" 
-                           value="<?php echo isset($oldInput['contact_phone']) ? htmlspecialchars($oldInput['contact_phone']) : 
+                           value="<?php echo isset($oldInput['contact_phone']) ? htmlspecialchars($oldInput['contact_phone']) :
                                (isset($driverProfile['phone']) ? htmlspecialchars($driverProfile['phone']) : ''); ?>">
                 </div>
                 
                 <div class="form-group">
                     <label for="expires_at">Ημερομηνία Λήξης</label>
                     <input type="date" id="expires_at" name="expires_at" 
-                           value="<?php echo isset($oldInput['expires_at']) ? htmlspecialchars($oldInput['expires_at']) : 
+                           value="<?php echo isset($oldInput['expires_at']) ? htmlspecialchars($oldInput['expires_at']) :
                                date('Y-m-d', strtotime('+30 days')); ?>">
                 </div>
                 
                 <div class="form-group">
                     <label>Ετικέτες</label>
                     <div class="tags-container">
-                        <?php if (is_array($tags) && !empty($tags)): ?>
-                            <?php foreach ($tags as $tag): ?>
+                        <?php if (is_array($tags) && !empty($tags)) : ?>
+                            <?php foreach ($tags as $tag) : ?>
                                 <div class="tag-item">
                                     <label>
                                         <input type="checkbox" name="tags[]" value="<?php echo $tag['id']; ?>" <?php echo isset($oldInput['tags']) && is_array($oldInput['tags']) && in_array($tag['id'], $oldInput['tags']) ? 'checked' : ''; ?>>
@@ -702,7 +703,7 @@ $pageTitle = $isDriver ? 'Δημιουργία Αγγελίας Αναζήτησ
                                     </label>
                                 </div>
                             <?php endforeach; ?>
-                        <?php else: ?>
+                        <?php else : ?>
                             <p>Δεν υπάρχουν διαθέσιμες ετικέτες.</p>
                         <?php endif; ?>
                     </div>

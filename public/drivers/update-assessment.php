@@ -1,4 +1,4 @@
-<?php 
+<?php
 // Συμπερίληψη του header
 require_once __DIR__ . '/../../src/bootstrap.php';
 require_once ROOT_DIR . '/config/database.php';
@@ -28,7 +28,7 @@ $driverAssessment = $controller->getDriverAssessment($driverId);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Επεξεργασία της φόρμας και αποθήκευση της αυτοαξιολόγησης
     $result = $controller->updateDriverAssessment();
-    
+
     if ($result) {
         $_SESSION['success_message'] = 'Η αυτοαξιολόγησή σας ενημερώθηκε με επιτυχία.';
         header('Location: ' . BASE_URL . 'drivers/driver_profile#self-assessment');
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 ?>
 
 <!-- Σύνδεση με το CSS αρχείο του προφίλ οδηγού και της αυτοαξιολόγησης -->
@@ -53,14 +53,14 @@ include ROOT_DIR . '/src/Views/header.php';
             <p>Αξιολογήστε τις οδηγικές και επαγγελματικές σας ικανότητες για να βελτιώσετε το προφίλ σας.</p>
         </div>
         
-        <?php if (isset($_SESSION['success_message'])): ?>
+        <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
                 <?php echo $_SESSION['success_message']; ?>
                 <?php unset($_SESSION['success_message']); ?>
             </div>
         <?php endif; ?>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -68,7 +68,7 @@ include ROOT_DIR . '/src/Views/header.php';
         <?php endif; ?>
         
         <!-- Εμφάνιση των μετρήσεων που έχουν συλλεχθεί από το κινητό (αν υπάρχουν) -->
-        <?php if (isset($driverAssessment['telemetry_data']) && !empty($driverAssessment['telemetry_data'])): ?>
+        <?php if (isset($driverAssessment['telemetry_data']) && !empty($driverAssessment['telemetry_data'])) : ?>
         <section class="assessment-section telematics-section">
             <h2>Δεδομένα Τηλεματικής</h2>
             <div class="telematics-data">
@@ -144,7 +144,7 @@ include ROOT_DIR . '/src/Views/header.php';
                 </div>
             </div>
         </section>
-        <?php else: ?>
+        <?php else : ?>
         <section class="assessment-section telematics-section inactive">
             <h2>Δεδομένα Τηλεματικής</h2>
             <div class="telematics-data">

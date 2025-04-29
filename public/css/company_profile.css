@@ -422,35 +422,35 @@
         flex-direction: column;
         text-align: center;
     }
-    
+
     .profile-image {
         margin-right: 0;
         margin-bottom: 20px;
     }
-    
+
     .profile-actions {
         justify-content: center;
     }
-    
+
     .info-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .profile-section-footer {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .profile-section-footer .btn-primary,
     .profile-section-footer .btn-secondary {
         width: 100%;
         text-align: center;
     }
-    
+
     .tab-nav {
         flex-direction: column;
     }
-    
+
     .tab-btn {
         width: 100%;
         text-align: center;

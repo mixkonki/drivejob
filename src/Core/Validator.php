@@ -1,4 +1,5 @@
 <?php
+
 // src/Core/Validator.php
 
 namespace Drivejob\Core;
@@ -7,12 +8,11 @@ class Validator
 {
     private $errors = [];
     private $data;
-    
     public function __construct($data)
     {
         $this->data = $data;
     }
-    
+
     /**
      * Ελέγχει αν ένα πεδίο είναι υποχρεωτικό
      */
@@ -21,10 +21,10 @@ class Validator
         if (!isset($this->data[$field]) || trim($this->data[$field]) === '') {
             $this->errors[$field] = $message ?? "Το πεδίο {$field} είναι υποχρεωτικό.";
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Ελέγχει αν ένα πεδίο είναι έγκυρο email
      */
@@ -33,10 +33,10 @@ class Validator
         if (isset($this->data[$field]) && !filter_var($this->data[$field], FILTER_VALIDATE_EMAIL)) {
             $this->errors[$field] = $message ?? "Το πεδίο {$field} πρέπει να είναι έγκυρο email.";
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Ελέγχει το ελάχιστο μήκος ενός πεδίου
      */
@@ -45,10 +45,10 @@ class Validator
         if (isset($this->data[$field]) && strlen($this->data[$field]) < $length) {
             $this->errors[$field] = $message ?? "Το πεδίο {$field} πρέπει να έχει τουλάχιστον {$length} χαρακτήρες.";
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Ελέγχει το μέγιστο μήκος ενός πεδίου
      */
@@ -57,10 +57,10 @@ class Validator
         if (isset($this->data[$field]) && strlen($this->data[$field]) > $length) {
             $this->errors[$field] = $message ?? "Το πεδίο {$field} πρέπει να έχει το πολύ {$length} χαρακτήρες.";
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Ελέγχει αν ένα πεδίο είναι αριθμός
      */
@@ -69,23 +69,25 @@ class Validator
         if (isset($this->data[$field]) && !is_numeric($this->data[$field])) {
             $this->errors[$field] = $message ?? "Το πεδίο {$field} πρέπει να είναι αριθμός.";
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Ελέγχει αν ένα πεδίο ταιριάζει με ένα άλλο (π.χ. για έλεγχο κωδικού)
      */
     public function matches($field, $matchField, $message = null)
     {
-        if (isset($this->data[$field], $this->data[$matchField]) && 
-            $this->data[$field] !== $this->data[$matchField]) {
+        if (
+            isset($this->data[$field], $this->data[$matchField]) &&
+            $this->data[$field] !== $this->data[$matchField]
+        ) {
             $this->errors[$field] = $message ?? "Το πεδίο {$field} πρέπει να ταιριάζει με το {$matchField}.";
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Ελέγχει αν ένα πεδίο ταιριάζει με μια έκφραση regex
      */
@@ -94,10 +96,10 @@ class Validator
         if (isset($this->data[$field]) && !preg_match($pattern, $this->data[$field])) {
             $this->errors[$field] = $message ?? "Το πεδίο {$field} δεν είναι σε έγκυρη μορφή.";
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Ελέγχει αν το πεδίο είναι μέσα σε ένα σύνολο επιτρεπόμενων τιμών
      */
@@ -106,10 +108,10 @@ class Validator
         if (isset($this->data[$field]) && !in_array($this->data[$field], $list)) {
             $this->errors[$field] = $message ?? "Το πεδίο {$field} περιέχει μη αποδεκτή τιμή.";
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Ελέγχει αν η επικύρωση είναι επιτυχής
      */
@@ -117,7 +119,7 @@ class Validator
     {
         return empty($this->errors);
     }
-    
+
     /**
      * Επιστρέφει τα σφάλματα επικύρωσης
      */
@@ -125,7 +127,7 @@ class Validator
     {
         return $this->errors;
     }
-    
+
     /**
      * Επιστρέφει το μήνυμα σφάλματος για ένα συγκεκριμένο πεδίο
      */
@@ -133,7 +135,7 @@ class Validator
     {
         return $this->errors[$field] ?? null;
     }
-    
+
     /**
      * Επιστρέφει τα επικυρωμένα δεδομένα
      */
@@ -141,7 +143,7 @@ class Validator
     {
         return $this->data;
     }
-    
+
     /**
      * Καθαρίζει τα δεδομένα από επικίνδυνους χαρακτήρες
      */
@@ -154,7 +156,7 @@ class Validator
         } else {
             $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
         }
-        
+
         return $data;
     }
     /**
@@ -164,8 +166,8 @@ class Validator
  * @param int $maxTokenAge Μέγιστος χρόνος ζωής του token σε δευτερόλεπτα (προαιρετικό)
  * @return bool true εάν το token είναι έγκυρο, false διαφορετικά
  */
-public static function validate($token, $maxTokenAge = 7200)
-{
-    return self::validateToken($token, $maxTokenAge);
-}
+    public static function validate($token, $maxTokenAge = 7200)
+    {
+        return self::validateToken($token, $maxTokenAge);
+    }
 }

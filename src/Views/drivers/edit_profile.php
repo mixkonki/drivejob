@@ -25,13 +25,13 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 <script>
 // Αρχικοποίηση δεδομένων από τη βάση
 window.driverOperatorSubSpecialities = <?php echo json_encode($driverOperatorSubSpecialities ?? []); ?>;
-window.selectedSubSpecialities = <?php 
+window.selectedSubSpecialities = <?php
     echo json_encode(
-        !empty($driverOperatorSubSpecialities) 
-            ? array_column($driverOperatorSubSpecialities, 'sub_speciality') 
+        !empty($driverOperatorSubSpecialities)
+            ? array_column($driverOperatorSubSpecialities, 'sub_speciality')
             : []
-    ); 
-?>;
+    );
+    ?>;
 
 // Μετατροπή των δεδομένων από PHP σε JavaScript
 document.addEventListener('DOMContentLoaded', function() {
@@ -57,14 +57,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <h1>Επεξεργασία Προφίλ Οδηγού</h1>
         
-        <?php if (isset($_SESSION['success_message'])): ?>
+        <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
                 <?php echo $_SESSION['success_message']; ?>
                 <?php unset($_SESSION['success_message']); ?>
             </div>
         <?php endif; ?>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="form-group <?php echo isset($errors['first_name']) ? 'has-error' : ''; ?>">
                                 <label for="first_name">Όνομα</label>
                                 <input type="text" id="first_name" name="first_name" value="<?php echo old('first_name', $driverData['first_name'] ?? ''); ?>" required>
-                                <?php if (isset($errors['first_name'])): ?>
+                                <?php if (isset($errors['first_name'])) : ?>
                                     <div class="error-message"><?php echo $errors['first_name']; ?></div>
                                 <?php endif; ?>
                             </div>
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="form-group <?php echo isset($errors['last_name']) ? 'has-error' : ''; ?>">
                                 <label for="last_name">Επώνυμο</label>
                                 <input type="text" id="last_name" name="last_name" value="<?php echo old('last_name', $driverData['last_name'] ?? ''); ?>" required>
-                                <?php if (isset($errors['last_name'])): ?>
+                                <?php if (isset($errors['last_name'])) : ?>
                                     <div class="error-message"><?php echo $errors['last_name']; ?></div>
                                 <?php endif; ?>
                             </div>
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         <div class="form-group">
                             <label for="profile_image">Φωτογραφία Προφίλ</label>
-                            <?php if (isset($driverData['profile_image']) && $driverData['profile_image']): ?>
+                            <?php if (isset($driverData['profile_image']) && $driverData['profile_image']) : ?>
                                 <div class="current-image">
                                     <img src="<?php echo BASE_URL . htmlspecialchars($driverData['profile_image']); ?>" alt="Τρέχουσα φωτογραφία">
                                     <p>Τρέχουσα φωτογραφία</p>
@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         <div class="form-group">
                             <label for="resume_file">Βιογραφικό</label>
-                            <?php if (isset($driverData['resume_file']) && $driverData['resume_file']): ?>
+                            <?php if (isset($driverData['resume_file']) && $driverData['resume_file']) : ?>
                                 <div class="current-file">
                                     <a href="<?php echo BASE_URL . htmlspecialchars($driverData['resume_file']); ?>" target="_blank">Προβολή τρέχοντος βιογραφικού</a>
                                 </div>
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="form-group <?php echo isset($errors['phone']) ? 'has-error' : ''; ?>">
                             <label for="phone">Κινητό Τηλέφωνο</label>
                             <input type="tel" id="phone" name="phone" value="<?php echo old('phone', $driverData['phone'] ?? ''); ?>" required>
-                            <?php if (isset($errors['phone'])): ?>
+                            <?php if (isset($errors['phone'])) : ?>
                                 <div class="error-message"><?php echo $errors['phone']; ?></div>
                             <?php endif; ?>
                         </div>
@@ -314,17 +314,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div id="driving_license_tab" class="license-details-tab <?php echo (empty($driverLicenseTypes)) ? 'hidden' : ''; ?>">
                                 <!-- Εικόνες διπλώματος και σκανάρισμα -->
                                 <div class="license-visual">
-                                    <?php 
+                                    <?php
                                     $licenseImages = [
                                         ['id' => 'license_front_image', 'label' => 'Εμπρόσθια Όψη Διπλώματος', 'scan_id' => 'scan-license-front'],
                                         ['id' => 'license_back_image', 'label' => 'Οπίσθια Όψη Διπλώματος', 'scan_id' => 'scan-license-back']
                                     ];
-                                    
-                                    foreach ($licenseImages as $image):
-                                    ?>
+
+                                    foreach ($licenseImages as $image) :
+                                        ?>
                                     <div class="form-group">
                                         <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
-                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]): ?>
+                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]) : ?>
                                             <div class="current-image">
                                                 <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
                                                 <p>Τρέχουσα εικόνα</p>
@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php 
+                                            <?php
                                             // Καθορισμός των κατηγοριών αδειών οδήγησης και ομαδοποίησή τους
                                             $licenseCategories = [
                                                 'Δίκυκλα' => [
@@ -404,9 +404,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                                     ['type' => 'DE', 'desc' => 'Λεωφορεία με ρυμουλκούμενο', 'hasPei' => true, 'peiType' => 'd']
                                                 ]
                                             ];
-                                            
+
                                             // Βοηθητική συνάρτηση για την εύρεση ημερομηνίας λήξης κατηγορίας
-                                            function getExpiryDateForLicenseType($licenses, $type) {
+                                            function getExpiryDateForLicenseType($licenses, $type)
+                                            {
                                                 foreach ($licenses as $license) {
                                                     if ($license['license_type'] === $type) {
                                                         return $license['expiry_date'] ?? '';
@@ -414,17 +415,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 }
                                                 return '';
                                             }
-                                            
+
                                             // Εμφάνιση των κατηγοριών αδειών
-                                            foreach ($licenseCategories as $categoryName => $licenses):
-                                            ?>
+                                            foreach ($licenseCategories as $categoryName => $licenses) :
+                                                ?>
                                                 <tr class="category-header">
                                                     <td colspan="<?php echo $categoryName === 'Φορτηγά' || $categoryName === 'Λεωφορεία' ? '4' : '5'; ?>"><strong><?php echo $categoryName; ?></strong></td>
-                                                    <?php if ($categoryName === 'Φορτηγά' || $categoryName === 'Λεωφορεία'): ?>
+                                                    <?php if ($categoryName === 'Φορτηγά' || $categoryName === 'Λεωφορεία') : ?>
                                                     <td><strong>ΠΕΙ</strong></td>
                                                     <?php endif; ?>
                                                 </tr>
-                                                <?php foreach ($licenses as $license): ?>
+                                                <?php foreach ($licenses as $license) : ?>
                                                 <tr>
                                                     <td>
                                                         <div class="license-type-icon">
@@ -440,18 +441,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                                         </label>
                                                     </td>
                                                     <td>
-                                                        <input type="date" name="license_expiry[<?php echo $license['type']; ?>]" value="<?php echo old('license_expiry['.$license['type'].']', getExpiryDateForLicenseType($driverLicenses, $license['type'])); ?>">
+                                                        <input type="date" name="license_expiry[<?php echo $license['type']; ?>]" value="<?php echo old('license_expiry[' . $license['type'] . ']', getExpiryDateForLicenseType($driverLicenses, $license['type'])); ?>">
                                                     </td>
                                                     <td>
-                                                        <?php if ($license['hasPei']): ?>
+                                                        <?php if ($license['hasPei']) : ?>
                                                         <div class="pei-field">
                                                             <label class="checkbox-label">
                                                                 <input type="checkbox" name="has_pei_<?php echo strtolower($license['type']); ?>" value="1" <?php echo (in_array($license['type'], $driverPEI)) ? 'checked' : ''; ?>>
                                                                 <span class="checkmark"></span>
                                                             </label>
-                                                            <input type="date" name="pei_<?php echo $license['peiType']; ?>_expiry" value="<?php echo old('pei_'.$license['peiType'].'_expiry', ${$license['peiType'] == 'c' ? 'peiCExpiryDate' : 'peiDExpiryDate'} ?? ''); ?>" <?php echo (in_array($license['type'], $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                                            <input type="date" name="pei_<?php echo $license['peiType']; ?>_expiry" value="<?php echo old('pei_' . $license['peiType'] . '_expiry', ${$license['peiType'] == 'c' ? 'peiCExpiryDate' : 'peiDExpiryDate'} ?? ''); ?>" <?php echo (in_array($license['type'], $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
                                                         </div>
-                                                        <?php else: ?>
+                                                        <?php else : ?>
                                                         — <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία -->
                                                         <?php endif; ?>
                                                     </td>
@@ -486,17 +487,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div id="adr_certificate_tab" class="license-details-tab <?php echo (!$driverADR) ? 'hidden' : ''; ?>">
                                 <!-- Εικόνες πιστοποιητικού ADR και σκανάρισμα -->
                                 <div class="license-visual">
-                                    <?php 
+                                    <?php
                                     $adrImages = [
                                         ['id' => 'adr_front_image', 'label' => 'Εμπρόσθια Όψη Πιστοποιητικού ADR', 'scan_id' => 'scan-adr-front'],
                                         ['id' => 'adr_back_image', 'label' => 'Οπίσθια Όψη Πιστοποιητικού ADR', 'scan_id' => 'scan-adr-back']
                                     ];
-                                    
-                                    foreach ($adrImages as $image):
-                                    ?>
+
+                                    foreach ($adrImages as $image) :
+                                        ?>
                                     <div class="form-group">
                                         <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
-                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]): ?>
+                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]) : ?>
                                             <div class="current-image">
                                                 <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
                                                 <p>Τρέχουσα εικόνα</p>
@@ -529,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 
                                 <h4>Κατηγορίες Πιστοποιητικού ADR</h4>
                                 <div class="adr-categories">
-                                    <?php 
+                                    <?php
                                     $adrCategories = [
                                         ['value' => 'Π1', 'label' => 'Π1 - Βασική + Πρακτική'],
                                         ['value' => 'Π2', 'label' => 'Π2 - Βασική + Κλάση 1 (εκρηκτικά)'],
@@ -540,14 +541,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                         ['value' => 'Π7', 'label' => 'Π7 - Βασική + Βυτία + Κλάση 7 (ραδιενεργά)'],
                                         ['value' => 'Π8', 'label' => 'Π8 - Βασική + Βυτία + Κλάση 1 (εκρηκτικά) + Κλάση 7 (ραδιενεργά)']
                                     ];
-                                    
+
                                     // Χωρισμός σε δύο στήλες
                                     $adrCategoriesChunks = array_chunk($adrCategories, ceil(count($adrCategories) / 2));
-                                    
-                                    foreach ($adrCategoriesChunks as $chunk):
-                                    ?>
+
+                                    foreach ($adrCategoriesChunks as $chunk) :
+                                        ?>
                                     <div class="form-row">
-                                        <?php foreach ($chunk as $category): ?>
+                                        <?php foreach ($chunk as $category) : ?>
                                         <div class="form-group">
                                             <label class="radio-label">
                                                 <input type="radio" name="adr_certificate_type" value="<?php echo $category['value']; ?>" <?php echo ($driverADR && $driverADR['adr_type'] == $category['value']) ? 'checked' : ''; ?>>
@@ -584,17 +585,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div id="operator_license_tab" class="license-details-tab <?php echo (!isset($driverOperator) || !$driverOperator) ? 'hidden' : ''; ?>">
                                 <!-- Εικόνες άδειας χειριστή και σκανάρισμα -->
                                 <div class="license-visual">
-                                    <?php 
+                                    <?php
                                     $operatorImages = [
                                         ['id' => 'operator_front_image', 'label' => 'Εμπρόσθια Όψη Άδειας Χειριστή', 'scan_id' => 'scan-operator-front'],
                                         ['id' => 'operator_back_image', 'label' => 'Οπίσθια Όψη Άδειας Χειριστή', 'scan_id' => 'scan-operator-back']
                                     ];
-                                    
-                                    foreach ($operatorImages as $image):
-                                    ?>
+
+                                    foreach ($operatorImages as $image) :
+                                        ?>
                                     <div class="form-group">
                                         <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
-                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]): ?>
+                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]) : ?>
                                             <div class="current-image">
                                                 <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
                                                 <p>Τρέχουσα εικόνα</p>
@@ -631,7 +632,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <label for="operator_speciality">Επιλέξτε Ειδικότητα</label>
                                     <select id="operator_speciality" name="operator_speciality" onchange="loadSubSpecialities(this.value)">
                                         <option value="">Επιλέξτε</option>
-                                        <?php 
+                                        <?php
                                         $specialities = [
                                             '1' => 'Εργασίες εκσκαφής και χωματουργικές',
                                             '2' => 'Εργασίες ανύψωσης και μεταφοράς φορτίων',
@@ -642,9 +643,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                             '7' => 'Εργασίες διάτρησης και κοπής εδαφών',
                                             '8' => 'Ειδικές εργασίες ανύψωσης'
                                         ];
-                                        
-                                        foreach ($specialities as $id => $name):
-                                        ?>
+
+                                        foreach ($specialities as $id => $name) :
+                                            ?>
                                         <option value="<?php echo $id; ?>" <?php echo (isset($driverOperator) && $driverOperator && $driverOperator['speciality'] == $id) ? 'selected' : ''; ?>><?php echo $id; ?> - <?php echo $name; ?></option>
                                         <?php endforeach; ?>
                                     </select>
@@ -676,22 +677,22 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <!-- Εμφάνιση επιλεγμένων υποειδικοτήτων -->
                                 <div class="selected-subspecialities">
                                     <h5>Επιλεγμένες Υποειδικότητες</h5>
-                                    <?php if (isset($driverOperatorSubSpecialities) && !empty($driverOperatorSubSpecialities)): 
+                                    <?php if (isset($driverOperatorSubSpecialities) && !empty($driverOperatorSubSpecialities)) :
                                         // Ταξινόμηση των υποειδικοτήτων με βάση το ID
-                                        usort($driverOperatorSubSpecialities, function($a, $b) {
+                                        usort($driverOperatorSubSpecialities, function ($a, $b) {
                                             $aSpecialityId = substr($a['sub_speciality'], 0, 1);
                                             $aSubId = substr($a['sub_speciality'], 2);
-                                            
+
                                             $bSpecialityId = substr($b['sub_speciality'], 0, 1);
                                             $bSubId = substr($b['sub_speciality'], 2);
-                                            
+
                                             if ($aSpecialityId == $bSpecialityId) {
                                                 return intval($aSubId) - intval($bSubId);
                                             }
-                                            
+
                                             return intval($aSpecialityId) - intval($bSpecialityId);
                                         });
-                                        
+
                                         // Ομαδοποίηση ανά ειδικότητα
                                         $specialityGroups = [];
                                         foreach ($driverOperatorSubSpecialities as $subSpec) {
@@ -701,18 +702,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                             }
                                             $specialityGroups[$specialityId][] = $subSpec;
                                         }
-                                        
+
                                         // Ορισμός των ονομάτων ειδικοτήτων
                                         $specialityNames = $specialities;
-                                    ?>
-                                        <?php foreach ($specialityGroups as $specialityId => $subSpecialities): ?>
+                                        ?>
+                                        <?php foreach ($specialityGroups as $specialityId => $subSpecialities) : ?>
                                             <div class="speciality-group">
                                                 <h6><?php echo $specialityId . ' - ' . ($specialityNames[$specialityId] ?? 'Ειδικότητα ' . $specialityId); ?></h6>
                                                 <ul class="selected-list">
-                                                    <?php foreach ($subSpecialities as $subSpec): 
+                                                    <?php foreach ($subSpecialities as $subSpec) :
                                                         $subspecialityId = $subSpec['sub_speciality'];
                                                         $groupType = $subSpec['group_type'] ?? 'A';
-                                                    ?>
+                                                        ?>
                                                     <li>
                                                         <span class="subspeciality-id"><?php echo $subspecialityId; ?></span>
                                                         <span class="subspeciality-name"><?php echo $subSpec['name'] ?? "Υποειδικότητα {$subspecialityId}"; ?></span>
@@ -722,7 +723,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 </ul>
                                             </div>
                                         <?php endforeach; ?>
-                                    <?php else: ?>
+                                    <?php else : ?>
                                         <ul class="selected-list">
                                             <li class="no-items">Δεν έχουν επιλεγεί υποειδικότητες</li>
                                         </ul>
@@ -754,17 +755,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div id="tachograph_card_tab" class="license-details-tab <?php echo (!isset($driverTachograph) || !$driverTachograph) ? 'hidden' : ''; ?>">
                                 <!-- Εικόνες κάρτας ταχογράφου και σκανάρισμα -->
                                 <div class="license-visual">
-                                    <?php 
+                                    <?php
                                     $tachographImages = [
                                         ['id' => 'tachograph_front_image', 'label' => 'Εμπρόσθια Όψη Κάρτας Ταχογράφου', 'scan_id' => 'scan-tachograph-front'],
                                         ['id' => 'tachograph_back_image', 'label' => 'Οπίσθια Όψη Κάρτας Ταχογράφου', 'scan_id' => 'scan-tachograph-back']
                                     ];
-                                    
-                                    foreach ($tachographImages as $image):
-                                    ?>
+
+                                    foreach ($tachographImages as $image) :
+                                        ?>
                                     <div class="form-group">
                                         <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
-                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]): ?>
+                                        <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]) : ?>
                                             <div class="current-image">
                                                 <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
                                                 <p>Τρέχουσα εικόνα</p>
@@ -810,8 +811,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         <div id="special-licenses-container">
                             <!-- Λίστα ειδικών αδειών -->
-                            <?php if (isset($driverSpecialLicenses) && count($driverSpecialLicenses) > 0): ?>
-                                <?php foreach ($driverSpecialLicenses as $index => $license): ?>
+                            <?php if (isset($driverSpecialLicenses) && count($driverSpecialLicenses) > 0) : ?>
+                                <?php foreach ($driverSpecialLicenses as $index => $license) : ?>
                                     <div class="special-license-item" id="special-license-item-<?php echo $index; ?>">
                                         <div class="form-row">
                                             <div class="form-group">
@@ -992,10 +993,10 @@ document.addEventListener('DOMContentLoaded', function() {
         <p class="form-info">Συμπληρώστε τα οχήματα στα οποία έχετε επαγγελματική εμπειρία:</p>
         
         <div id="vehicle-experience-list">
-            <?php 
-            if (isset($driverVehicleExperience) && !empty($driverVehicleExperience)): 
-                foreach ($driverVehicleExperience as $index => $exp): 
-            ?>
+            <?php
+            if (isset($driverVehicleExperience) && !empty($driverVehicleExperience)) :
+                foreach ($driverVehicleExperience as $index => $exp) :
+                    ?>
             <div class="vehicle-experience-entry">
                 <div class="form-row">
                     <div class="form-group">
@@ -1027,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <label>Τύπος Οχήματος:</label>
                         <select name="vehicle_experience[<?php echo $index; ?>][vehicle_type]" class="vehicle-type-select">
                             <option value="">Επιλέξτε τύπο...</option>
-                            <?php if ($exp['vehicle_category']): ?>
+                            <?php if ($exp['vehicle_category']) : ?>
                                 <!-- Οι επιλογές θα συμπληρωθούν με JavaScript ανάλογα με την κατηγορία -->
                                 <!-- Προς το παρόν, απλά εμφανίζουμε την αποθηκευμένη τιμή -->
                                 <option value="<?php echo htmlspecialchars($exp['vehicle_type']); ?>" selected><?php echo htmlspecialchars($exp['vehicle_type_name'] ?? $exp['vehicle_type']); ?></option>
@@ -1059,10 +1060,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 <button type="button" class="btn-remove-vehicle" data-index="<?php echo $index; ?>">Αφαίρεση</button>
             </div>
-            <?php 
+                    <?php
                 endforeach;
-            else: 
-            ?>
+            else :
+                ?>
             <div class="vehicle-experience-entry">
                 <div class="form-row">
                     <div class="form-group">
@@ -1220,10 +1221,10 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="certifications-container">
     <h4>Πιστοποιήσεις</h4>
     <div id="certifications-list">
-        <?php 
-        if (isset($driverCertifications) && !empty($driverCertifications)): 
-            foreach ($driverCertifications as $index => $cert): 
-        ?>
+        <?php
+        if (isset($driverCertifications) && !empty($driverCertifications)) :
+            foreach ($driverCertifications as $index => $cert) :
+                ?>
         <div class="certification-entry">
             <div class="form-row">
                 <div class="form-group">
@@ -1251,10 +1252,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <button type="button" class="btn-remove-certification" data-index="<?php echo $index; ?>">Αφαίρεση</button>
         </div>
-        <?php 
+                <?php
             endforeach;
-        else: 
-        ?>
+        else :
+            ?>
         <div class="certification-entry">
             <div class="form-row">
                 <div class="form-group">

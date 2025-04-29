@@ -491,22 +491,22 @@ h1 {
     .job-listing-content {
         flex-direction: column;
     }
-    
+
     .search-filters form {
         flex-direction: column;
     }
-    
+
     .job-listing-header {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .job-listing-header .job-type,
     .job-listing-header .listing-type {
         margin-top: 10px;
         margin-left: 0;
     }
-    
+
     .job-listing-actions {
         flex-direction: column;
         align-items: center;

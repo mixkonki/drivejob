@@ -1,6 +1,6 @@
-<?php 
+<?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
 use Drivejob\Core\Session;
@@ -18,7 +18,7 @@ Session::remove('old_input');
     <div class="container">
         <h1>Δημιουργία Αγγελίας Αναζήτησης Εργασίας</h1>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -42,7 +42,7 @@ Session::remove('old_input');
                         <div class="form-group <?php echo isset($errors['title']) ? 'has-error' : ''; ?>">
                             <label for="title">Τίτλος Αγγελίας</label>
                             <input type="text" id="title" name="title" value="<?php echo isset($oldInput['title']) ? htmlspecialchars($oldInput['title']) : ''; ?>" required>
-                            <?php if (isset($errors['title'])): ?>
+                            <?php if (isset($errors['title'])) : ?>
                                 <div class="error-message"><?php echo $errors['title']; ?></div>
                             <?php endif; ?>
                             <p class="help-text">Γράψτε έναν σύντομο, περιγραφικό τίτλο που αναδεικνύει την ειδικότητά σας</p>
@@ -51,19 +51,19 @@ Session::remove('old_input');
                         <div class="form-group">
                             <label for="job_type">Τύπος Απασχόλησης</label>
                             <select id="job_type" name="job_type" required>
-                                <option value="full_time" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'full_time' ? 'selected' : 
+                                <option value="full_time" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'full_time' ? 'selected' :
                                     (isset($driverProfile['preferred_job_type']) && $driverProfile['preferred_job_type'] === 'full_time' ? 'selected' : ''); ?>>
                                     Πλήρης Απασχόληση
                                 </option>
-                                <option value="part_time" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'part_time' ? 'selected' : 
+                                <option value="part_time" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'part_time' ? 'selected' :
                                     (isset($driverProfile['preferred_job_type']) && $driverProfile['preferred_job_type'] === 'part_time' ? 'selected' : ''); ?>>
                                     Μερική Απασχόληση
                                 </option>
-                                <option value="contract" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'contract' ? 'selected' : 
+                                <option value="contract" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'contract' ? 'selected' :
                                     (isset($driverProfile['preferred_job_type']) && $driverProfile['preferred_job_type'] === 'contract' ? 'selected' : ''); ?>>
                                     Σύμβαση Έργου
                                 </option>
-                                <option value="temporary" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'temporary' ? 'selected' : 
+                                <option value="temporary" <?php echo isset($oldInput['job_type']) && $oldInput['job_type'] === 'temporary' ? 'selected' :
                                     (isset($driverProfile['preferred_job_type']) && $driverProfile['preferred_job_type'] === 'temporary' ? 'selected' : ''); ?>>
                                     Προσωρινή Απασχόληση
                                 </option>
@@ -73,7 +73,7 @@ Session::remove('old_input');
                         <div class="form-group <?php echo isset($errors['description']) ? 'has-error' : ''; ?>">
                             <label for="description">Περιγραφή Υπηρεσιών</label>
                             <textarea id="description" name="description" rows="6" required><?php echo isset($oldInput['description']) ? htmlspecialchars($oldInput['description']) : (isset($driverProfile['about_me']) ? htmlspecialchars($driverProfile['about_me']) : ''); ?></textarea>
-                            <?php if (isset($errors['description'])): ?>
+                            <?php if (isset($errors['description'])) : ?>
                                 <div class="error-message"><?php echo $errors['description']; ?></div>
                             <?php endif; ?>
                             <p class="help-text">Περιγράψτε την εμπειρία σας, τα προσόντα σας και τους τύπους εργασίας που αναζητάτε</p>
@@ -87,9 +87,9 @@ Session::remove('old_input');
                         <div class="form-group <?php echo isset($errors['location']) ? 'has-error' : ''; ?>">
                             <label for="location">Τοποθεσία</label>
                             <input type="text" id="location" name="location" 
-                                value="<?php echo isset($oldInput['location']) ? htmlspecialchars($oldInput['location']) : 
+                                value="<?php echo isset($oldInput['location']) ? htmlspecialchars($oldInput['location']) :
                                     (isset($driverProfile['city']) ? htmlspecialchars($driverProfile['city'] . ', ' . $driverProfile['country']) : ''); ?>" required>
-                            <?php if (isset($errors['location'])): ?>
+                            <?php if (isset($errors['location'])) : ?>
                                 <div class="error-message"><?php echo $errors['location']; ?></div>
                             <?php endif; ?>
                             <div class="location-options">
@@ -101,9 +101,9 @@ Session::remove('old_input');
                         </div>
                         
                         <!-- Κρυφά πεδία για συντεταγμένες που συμπληρώνονται αυτόματα -->
-                        <input type="hidden" id="latitude" name="latitude" value="<?php echo isset($oldInput['latitude']) ? htmlspecialchars($oldInput['latitude']) : 
+                        <input type="hidden" id="latitude" name="latitude" value="<?php echo isset($oldInput['latitude']) ? htmlspecialchars($oldInput['latitude']) :
                             (isset($driverProfile['latitude']) ? htmlspecialchars($driverProfile['latitude']) : ''); ?>">
-                        <input type="hidden" id="longitude" name="longitude" value="<?php echo isset($oldInput['longitude']) ? htmlspecialchars($oldInput['longitude']) : 
+                        <input type="hidden" id="longitude" name="longitude" value="<?php echo isset($oldInput['longitude']) ? htmlspecialchars($oldInput['longitude']) :
                             (isset($driverProfile['longitude']) ? htmlspecialchars($driverProfile['longitude']) : ''); ?>">
                         
                         <!-- Ακτίνα Αναζήτησης -->
@@ -111,11 +111,11 @@ Session::remove('old_input');
                             <label for="radius">Ακτίνα Αναζήτησης: <span id="radius-value">20</span> χλμ</label>
                             <div class="range-slider">
                                 <input type="range" id="radius-slider" min="0" max="300" step="5" 
-                                    value="<?php echo isset($oldInput['radius']) ? htmlspecialchars($oldInput['radius']) : 
+                                    value="<?php echo isset($oldInput['radius']) ? htmlspecialchars($oldInput['radius']) :
                                         (isset($driverProfile['preferred_radius']) ? htmlspecialchars($driverProfile['preferred_radius']) : '20'); ?>"
                                     oninput="updateRadius(this.value)">
                             </div>
-                            <input type="hidden" id="radius" name="radius" value="<?php echo isset($oldInput['radius']) ? htmlspecialchars($oldInput['radius']) : 
+                            <input type="hidden" id="radius" name="radius" value="<?php echo isset($oldInput['radius']) ? htmlspecialchars($oldInput['radius']) :
                                 (isset($driverProfile['preferred_radius']) ? htmlspecialchars($driverProfile['preferred_radius']) : '20'); ?>">
                         </div>
                         
@@ -140,7 +140,7 @@ Session::remove('old_input');
                             <div class="form-group">
                                 <label for="salary_min">Ελάχιστη Αμοιβή (€)</label>
                                 <input type="number" id="salary_min" name="salary_min" min="0" step="100" 
-                                       value="<?php echo isset($oldInput['salary_min']) ? htmlspecialchars($oldInput['salary_min']) : 
+                                       value="<?php echo isset($oldInput['salary_min']) ? htmlspecialchars($oldInput['salary_min']) :
                                            (isset($driverProfile['salary_expectations']) ? $driverProfile['salary_expectations'] : ''); ?>">
                             </div>
                             
@@ -292,7 +292,7 @@ Session::remove('old_input');
                                 <div class="vehicle-type-grid">
                                     <label class="vehicle-type-card">
                                         <input type="checkbox" name="vehicle_types[]" value="car" 
-                                            <?php echo isset($oldInput['vehicle_types']) && in_array('car', $oldInput['vehicle_types']) ? 'checked' : 
+                                            <?php echo isset($oldInput['vehicle_types']) && in_array('car', $oldInput['vehicle_types']) ? 'checked' :
                                                 (isset($driverProfile['preferred_vehicle_type']) && $driverProfile['preferred_vehicle_type'] === 'car' ? 'checked' : ''); ?>>
                                         <div class="vehicle-card-content">
                                             <div class="vehicle-icon car-icon"></div>
@@ -302,7 +302,7 @@ Session::remove('old_input');
                                     
                                     <label class="vehicle-type-card">
                                         <input type="checkbox" name="vehicle_types[]" value="van" 
-                                            <?php echo isset($oldInput['vehicle_types']) && in_array('van', $oldInput['vehicle_types']) ? 'checked' : 
+                                            <?php echo isset($oldInput['vehicle_types']) && in_array('van', $oldInput['vehicle_types']) ? 'checked' :
                                                 (isset($driverProfile['preferred_vehicle_type']) && $driverProfile['preferred_vehicle_type'] === 'van' ? 'checked' : ''); ?>>
                                         <div class="vehicle-card-content">
                                             <div class="vehicle-icon van-icon"></div>
@@ -312,7 +312,7 @@ Session::remove('old_input');
                                     
                                     <label class="vehicle-type-card">
                                         <input type="checkbox" name="vehicle_types[]" value="truck" 
-                                            <?php echo isset($oldInput['vehicle_types']) && in_array('truck', $oldInput['vehicle_types']) ? 'checked' : 
+                                            <?php echo isset($oldInput['vehicle_types']) && in_array('truck', $oldInput['vehicle_types']) ? 'checked' :
                                                 (isset($driverProfile['preferred_vehicle_type']) && $driverProfile['preferred_vehicle_type'] === 'truck' ? 'checked' : ''); ?>>
                                         <div class="vehicle-card-content">
                                             <div class="vehicle-icon truck-icon"></div>
@@ -322,7 +322,7 @@ Session::remove('old_input');
                                     
                                     <label class="vehicle-type-card">
                                         <input type="checkbox" name="vehicle_types[]" value="bus" 
-                                            <?php echo isset($oldInput['vehicle_types']) && in_array('bus', $oldInput['vehicle_types']) ? 'checked' : 
+                                            <?php echo isset($oldInput['vehicle_types']) && in_array('bus', $oldInput['vehicle_types']) ? 'checked' :
                                                 (isset($driverProfile['preferred_vehicle_type']) && $driverProfile['preferred_vehicle_type'] === 'bus' ? 'checked' : ''); ?>>
                                         <div class="vehicle-card-content">
                                             <div class="vehicle-icon bus-icon"></div>
@@ -332,7 +332,7 @@ Session::remove('old_input');
                                     
                                     <label class="vehicle-type-card">
                                         <input type="checkbox" name="vehicle_types[]" value="machinery" 
-                                            <?php echo isset($oldInput['vehicle_types']) && in_array('machinery', $oldInput['vehicle_types']) ? 'checked' : 
+                                            <?php echo isset($oldInput['vehicle_types']) && in_array('machinery', $oldInput['vehicle_types']) ? 'checked' :
                                                 (isset($driverProfile['preferred_vehicle_type']) && $driverProfile['preferred_vehicle_type'] === 'machinery' ? 'checked' : ''); ?>>
                                         <div class="vehicle-card-content">
                                             <div class="vehicle-icon machinery-icon"></div>
@@ -342,7 +342,7 @@ Session::remove('old_input');
                                 </div>
                             </div>
                             
-                            <?php if (isset($errors['vehicle_types'])): ?>
+                            <?php if (isset($errors['vehicle_types'])) : ?>
                                 <div class="error-message"><?php echo $errors['vehicle_types']; ?></div>
                             <?php endif; ?>
                         </div>
@@ -355,19 +355,19 @@ Session::remove('old_input');
                         <!-- Άδειες Οδήγησης -->
                         <div class="form-group">
                             <h3>Άδειες Οδήγησης</h3>
-                            <?php if (isset($driverProfile) && !empty($driverLicenseTypes)): ?>
+                            <?php if (isset($driverProfile) && !empty($driverLicenseTypes)) : ?>
                                 <div class="driver-licenses-summary">
                                     <p>Οι παρακάτω άδειες από το προφίλ σας θα εμφανίζονται στην αγγελία:</p>
                                     <div class="license-badges">
-                                        <?php foreach ($driverLicenseTypes as $category): ?>
-                                            <?php if (!empty(trim($category))): ?>
+                                        <?php foreach ($driverLicenseTypes as $category) : ?>
+                                            <?php if (!empty(trim($category))) : ?>
                                                 <span class="license-badge"><?php echo htmlspecialchars(trim($category)); ?></span>
                                             <?php endif; ?>
                                         <?php endforeach; ?>
                                     </div>
                                     <p class="help-text">Οι άδειες εμφανίζονται αυτόματα από το προφίλ σας. <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Επεξεργασία προφίλ</a></p>
                                 </div>
-                            <?php else: ?>
+                            <?php else : ?>
                                 <p class="no-licenses">Δεν έχετε καταχωρήσει άδειες στο προφίλ σας. 
                                     <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Προσθέστε τώρα</a> για καλύτερη προβολή της αγγελίας σας.</p>
                             <?php endif; ?>
@@ -380,7 +380,7 @@ Session::remove('old_input');
                         <div class="form-group">
                             <label for="experience_years">Συνολικά Έτη Εμπειρίας</label>
                             <input type="number" id="experience_years" name="experience_years" min="0" 
-                                value="<?php echo isset($oldInput['experience_years']) ? htmlspecialchars($oldInput['experience_years']) : 
+                                value="<?php echo isset($oldInput['experience_years']) ? htmlspecialchars($oldInput['experience_years']) :
                                     (isset($driverProfile['experience_years']) ? $driverProfile['experience_years'] : ''); ?>">
                         </div>
                         
@@ -404,14 +404,14 @@ Session::remove('old_input');
                                                 <?php echo (isset($driverProfile['adr_certificate']) && $driverProfile['adr_certificate']) ? 'checked' : 'disabled'; ?>>
                                             <span class="certification-name">Πιστοποιητικό ADR</span>
                                         </label>
-                                        <?php if (!(isset($driverProfile['adr_certificate']) && $driverProfile['adr_certificate'])): ?>
+                                        <?php if (!(isset($driverProfile['adr_certificate']) && $driverProfile['adr_certificate'])) : ?>
                                             <span class="certification-missing">(Δεν έχετε δηλώσει)</span>
                                         <?php endif; ?>
                                     </div>
-                                    <?php if (isset($driverProfile['adr_certificate']) && $driverProfile['adr_certificate']): ?>
+                                    <?php if (isset($driverProfile['adr_certificate']) && $driverProfile['adr_certificate']) : ?>
                                         <div class="certification-details">
                                             <p><strong>Κατηγορία:</strong> <?php echo htmlspecialchars($driverProfile['adr_classes'] ?? 'Δεν έχει καθοριστεί'); ?></p>
-                                            <?php if (isset($driverProfile['adr_certificate_expiry']) && $driverProfile['adr_certificate_expiry']): ?>
+                                            <?php if (isset($driverProfile['adr_certificate_expiry']) && $driverProfile['adr_certificate_expiry']) : ?>
                                                 <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverProfile['adr_certificate_expiry'])); ?></p>
                                             <?php endif; ?>
                                         </div>
@@ -426,14 +426,14 @@ Session::remove('old_input');
                                                 <?php echo (isset($driverProfile['operator_license']) && $driverProfile['operator_license']) ? 'checked' : 'disabled'; ?>>
                                             <span class="certification-name">Άδεια Χειριστή Μηχανημάτων</span>
                                         </label>
-                                        <?php if (!(isset($driverProfile['operator_license']) && $driverProfile['operator_license'])): ?>
+                                        <?php if (!(isset($driverProfile['operator_license']) && $driverProfile['operator_license'])) : ?>
                                             <span class="certification-missing">(Δεν έχετε δηλώσει)</span>
                                         <?php endif; ?>
                                     </div>
-                                    <?php if (isset($driverProfile['operator_license']) && $driverProfile['operator_license']): ?>
+                                    <?php if (isset($driverProfile['operator_license']) && $driverProfile['operator_license']) : ?>
                                         <div class="certification-details">
                                             <p><strong>Τύπος:</strong> <?php echo htmlspecialchars($driverProfile['operator_license_type'] ?? 'Δεν έχει καθοριστεί'); ?></p>
-                                            <?php if (isset($driverProfile['operator_license_expiry']) && $driverProfile['operator_license_expiry']): ?>
+                                            <?php if (isset($driverProfile['operator_license_expiry']) && $driverProfile['operator_license_expiry']) : ?>
                                                 <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverProfile['operator_license_expiry'])); ?></p>
                                             <?php endif; ?>
                                         </div>
@@ -448,13 +448,13 @@ Session::remove('old_input');
                                                 <?php echo (isset($driverProfile['tachograph_card']) && $driverProfile['tachograph_card']) ? 'checked' : 'disabled'; ?>>
                                             <span class="certification-name">Κάρτα Ταχογράφου</span>
                                         </label>
-                                        <?php if (!(isset($driverProfile['tachograph_card']) && $driverProfile['tachograph_card'])): ?>
+                                        <?php if (!(isset($driverProfile['tachograph_card']) && $driverProfile['tachograph_card'])) : ?>
                                             <span class="certification-missing">(Δεν έχετε δηλώσει)</span>
                                         <?php endif; ?>
                                     </div>
-                                    <?php if (isset($driverProfile['tachograph_card']) && $driverProfile['tachograph_card']): ?>
+                                    <?php if (isset($driverProfile['tachograph_card']) && $driverProfile['tachograph_card']) : ?>
                                         <div class="certification-details">
-                                            <?php if (isset($driverProfile['tachograph_card_expiry']) && $driverProfile['tachograph_card_expiry']): ?>
+                                            <?php if (isset($driverProfile['tachograph_card_expiry']) && $driverProfile['tachograph_card_expiry']) : ?>
                                                 <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverProfile['tachograph_card_expiry'])); ?></p>
                                             <?php endif; ?>
                                         </div>
@@ -480,21 +480,21 @@ Session::remove('old_input');
                         <div class="form-group">
                             <label for="contact_email">Email Επικοινωνίας</label>
                             <input type="email" id="contact_email" name="contact_email" 
-                                value="<?php echo isset($oldInput['contact_email']) ? htmlspecialchars($oldInput['contact_email']) : 
+                                value="<?php echo isset($oldInput['contact_email']) ? htmlspecialchars($oldInput['contact_email']) :
                                     (isset($driverProfile['email']) ? htmlspecialchars($driverProfile['email']) : ''); ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="contact_phone">Τηλέφωνο Επικοινωνίας</label>
                             <input type="tel" id="contact_phone" name="contact_phone" 
-                                value="<?php echo isset($oldInput['contact_phone']) ? htmlspecialchars($oldInput['contact_phone']) : 
+                                value="<?php echo isset($oldInput['contact_phone']) ? htmlspecialchars($oldInput['contact_phone']) :
                                     (isset($driverProfile['phone']) ? htmlspecialchars($driverProfile['phone']) : ''); ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="expires_at">Ημερομηνία Λήξης Αγγελίας</label>
                             <input type="date" id="expires_at" name="expires_at" 
-                                value="<?php echo isset($oldInput['expires_at']) ? htmlspecialchars($oldInput['expires_at']) : 
+                                value="<?php echo isset($oldInput['expires_at']) ? htmlspecialchars($oldInput['expires_at']) :
                                     date('Y-m-d', strtotime('+30 days')); ?>">
                         </div>
                     </section>
@@ -507,8 +507,8 @@ Session::remove('old_input');
                 
                 <div class="form-group">
                     <div class="tags-container">
-                        <?php if (isset($tags) && is_array($tags) && !empty($tags)): ?>
-                            <?php foreach ($tags as $tag): ?>
+                        <?php if (isset($tags) && is_array($tags) && !empty($tags)) : ?>
+                            <?php foreach ($tags as $tag) : ?>
                                 <div class="tag-item">
                                     <label>
                                         <input type="checkbox" name="tags[]" value="<?php echo $tag['id']; ?>" <?php echo isset($oldInput['tags']) && is_array($oldInput['tags']) && in_array($tag['id'], $oldInput['tags']) ? 'checked' : ''; ?>>
@@ -516,7 +516,7 @@ Session::remove('old_input');
                                     </label>
                                 </div>
                             <?php endforeach; ?>
-                        <?php else: ?>
+                        <?php else : ?>
                             <p>Δεν υπάρχουν διαθέσιμες ετικέτες.</p>
                         <?php endif; ?>
                     </div>

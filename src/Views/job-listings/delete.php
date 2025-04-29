@@ -1,6 +1,6 @@
-<?php 
+<?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 ?>
 
 <main>
@@ -22,12 +22,20 @@ include ROOT_DIR . '/src/Views/header.php';
                 <div class="listing-preview-item">
                     <strong>Τύπος Απασχόλησης:</strong> 
                     <span>
-                        <?php 
+                        <?php
                         switch ($listing['job_type']) {
-                            case 'full_time': echo 'Πλήρης Απασχόληση'; break;
-                            case 'part_time': echo 'Μερική Απασχόληση'; break;
-                            case 'contract': echo 'Σύμβαση Έργου'; break;
-                            case 'temporary': echo 'Προσωρινή Απασχόληση'; break;
+                            case 'full_time':
+                                echo 'Πλήρης Απασχόληση';
+                                break;
+                            case 'part_time':
+                                echo 'Μερική Απασχόληση';
+                                break;
+                            case 'contract':
+                                echo 'Σύμβαση Έργου';
+                                break;
+                            case 'temporary':
+                                echo 'Προσωρινή Απασχόληση';
+                                break;
                         }
                         ?>
                     </span>
@@ -88,7 +96,7 @@ include ROOT_DIR . '/src/Views/header.php';
     }
 </style>
 
-<?php 
+<?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php'; 
+include ROOT_DIR . '/src/Views/footer.php';
 ?>
