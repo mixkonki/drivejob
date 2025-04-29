@@ -1,0 +1,587 @@
+/* CSS για την ενσωμάτωση της αξιολόγησης στην καρτέλα προφίλ */
+
+/* Γενικό container αξιολόγησης */
+.driver-rating-container {
+    max-width: 100%;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.driver-rating-container h2 {
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Διάταξη κύριας περιοχής με αναλογία 3/4 και 1/4 */
+.rating-main-layout {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.rating-main-column {
+    flex: 3;
+}
+
+.rating-side-column {
+    flex: 1;
+    min-width: 220px;
+}
+
+/* Τμήμα επισκόπησης βαθμολογίας */
+.rating-overview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.rating-circle-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 180px;
+}
+
+.score-circle {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 15px;
+}
+
+.score-circle svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.score-circle circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+}
+
+.score-background {
+    stroke: #f0f0f0;
+}
+
+.score-progress {
+    stroke: #aa3636;
+    stroke-dasharray: 283.5;
+    transition: stroke-dashoffset 1s ease;
+}
+
+.score-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.score-value {
+    display: block;
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.score-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #777;
+}
+
+.rating-info {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #777;
+}
+
+/* Επιμέρους κατηγορίες */
+.rating-categories {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 280px;
+}
+
+.rating-category {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.rating-category h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #444;
+}
+
+.category-score-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.category-score {
+    min-width: 60px;
+    font-weight: 600;
+    color: #333;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background-color: #aa3636;
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+
+/* Κουμπιά ενεργειών */
+.rating-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    border-radius: 6px;
+    background-color: #f5f5f5;
+    text-decoration: none;
+    color: #333;
+    min-width: 110px;
+    text-align: center;
+    transition: all 0.2s ease;
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.btn-action:hover {
+    background-color: #aa3636;
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.action-icon {
+    display: block;
+    width: 32px;
+    height: 32px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    margin-bottom: 8px;
+}
+
+.rating-icon {
+    background-image: url('../img/rating_icon.png');
+}
+
+.history-icon {
+    background-image: url('../img/history_icon.png');
+}
+
+.report-icon {
+    background-image: url('../img/report_icon.png');
+}
+
+.assessment-icon {
+    background-image: url('../img/assessment_icon.png');
+}
+
+/* Πρόσφατα συμβάντα */
+.recent-incidents {
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.recent-incidents h3 {
+    font-size: 1.1rem;
+    color: #333;
+    margin: 0 0 15px 0;
+}
+
+.incidents-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.incident-item {
+    padding: 12px;
+    border-radius: 6px;
+    background-color: #fff;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.incident-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+}
+
+.incident-item.severity-1::before {
+    background-color: #28a745; /* Πράσινο - Ελάχιστη */
+}
+
+.incident-item.severity-2::before {
+    background-color: #81d742; /* Ανοιχτό πράσινο - Μικρή */
+}
+
+.incident-item.severity-3::before {
+    background-color: #ffc107; /* Κίτρινο - Μέτρια */
+}
+
+.incident-item.severity-4::before {
+    background-color: #fd7e14; /* Πορτοκαλί - Σημαντική */
+}
+
+.incident-item.severity-5::before {
+    background-color: #dc3545; /* Κόκκινο - Σοβαρή */
+}
+
+.incident-date {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 5px;
+}
+
+.incident-type {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.no-incidents {
+    padding: 12px;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    text-align: center;
+    color: #777;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Τομέας τηλεματικής */
+.telemetry-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 5px solid #17a2b8;
+}
+
+.telemetry-section h3 {
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.telemetry-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.telemetry-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.score-circle.small {
+    width: 80px;
+    height: 80px;
+}
+
+.score-circle.small .score-value {
+    font-size: 1.5rem;
+}
+
+.telemetry-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    flex: 1;
+}
+
+.metric-item {
+    background-color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    min-width: 120px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    flex: 1;
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 5px;
+}
+
+.metric-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Προώθηση εφαρμογής τηλεματικής */
+.telemetry-promotion {
+    text-align: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.telemetry-promotion h3 {
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.telemetry-promotion p {
+    color: #555;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.btn-app-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 15px;
+    background-color: #aa3636;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.btn-app-download:hover {
+    background-color: #993333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-app-download img {
+    width: 20px;
+    height: 20px;
+}
+
+/* Συμβουλές βελτίωσης */
+.improvement-tips {
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.improvement-tips h3 {
+    color: #333;
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+}
+
+.tip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tip-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 60%;
+    flex-shrink: 0;
+}
+
+.safety-icon {
+    background-image: url('../img/safety_icon.png');
+    background-color: #e5f6ff;
+}
+
+.professionalism-icon {
+    background-image: url('../img/professionalism_icon.png');
+    background-color: #fff9e5;
+}
+
+.tip-content h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.tip-content p {
+    margin: 0;
+    color: #555;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Προτάσεις εκπαίδευσης */
+.training-suggestions {
+    margin-top: 20px;
+}
+
+.training-suggestions h3 {
+    color: #333;
+    margin: 0 0 15px 0;
+    font-size: 1.2rem;
+}
+
+.training-courses {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.course-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    min-width: 250px;
+    max-width: 400px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.course-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.course-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #aa3636;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.course-icon img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+}
+
+.course-details {
+    flex: 1;
+}
+
+.course-details h4 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 1rem;
+}
+
+.course-details p {
+    margin: 0 0 10px 0;
+    color: #555;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.course-link {
+    display: inline-block;
+    color: #aa3636;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.course-link:hover {
+    text-decoration: underline;
+}
+
+/* Προσαρμογή για κινητά */
+@media (max-width: 992px) {
+    .rating-main-layout {
+        flex-direction: column;
+    }
+    
+    .rating-side-column {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .rating-overview {
+        flex-direction: column;
+    }
+    
+    .rating-circle-container {
+        margin: 0 auto;
+    }
+    
+    .rating-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .rating-side-column {
+        display: block;
+    }
+    
+    .training-courses {
+        flex-direction: column;
+    }
+    
+    .course-item {
+        width: 100%;
+    }
+}

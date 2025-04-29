@@ -1,0 +1,796 @@
+/* 
+ * CSS για τη φόρμα δημιουργίας αγγελιών 
+ * DriveJob Platform
+ */
+
+/* Γενικές ρυθμίσεις */
+.job-listing-form {
+    max-width: 100%;
+    margin: 0 auto 40px;
+}
+
+/* Διάταξη δύο στηλών */
+.form-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.form-column {
+    flex: 1;
+    min-width: 300px;
+}
+
+.form-section {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.form-section h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.form-section h3 {
+    color: #34495e;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+/* Ομάδες πεδίων */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+}
+
+.form-row .form-group {
+    flex: 1;
+    min-width: 200px;
+    padding: 0 10px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #444;
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Πεδία εισαγωγής */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Checkbox και Radio */
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"],
+.checkbox-group input[type="radio"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+}
+
+.checkbox-group.horizontal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.checkbox-group.horizontal label {
+    min-width: 200px;
+}
+
+/* Σφάλματα φόρμας */
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+    border-color: #e74c3c;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* Κουμπιά ενεργειών */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+.btn-secondary {
+    background-color: #ecf0f1;
+    color: #2c3e50;
+    border: 1px solid #ddd;
+    padding: 12px 25px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-secondary:hover {
+    background-color: #dfe6e9;
+}
+
+/* Προεπισκόπηση χάρτη */
+.map-preview-container {
+    width: 100%;
+    height: 300px;
+    margin: 15px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+/* Range slider για ακτίνα */
+.range-slider {
+    width: 100%;
+    margin: 10px 0;
+}
+
+input[type="range"] {
+    width: 100%;
+    margin: 10px 0;
+}
+
+#radius-value {
+    font-weight: bold;
+    color: #3498db;
+}
+
+/* Κατάσταση διαθεσιμότητας */
+.availability-status {
+    margin-bottom: 20px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+    margin-bottom: 10px;
+}
+
+.status-indicator.available {
+    background-color: #e8f5e9;
+}
+
+.status-indicator.unavailable {
+    background-color: #ffebee;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.available .status-dot {
+    background-color: #4caf50;
+}
+
+.unavailable .status-dot {
+    background-color: #f44336;
+}
+
+.status-text {
+    font-weight: 500;
+}
+
+.available .status-text {
+    color: #2e7d32;
+}
+
+.unavailable .status-text {
+    color: #c62828;
+}
+
+/* Επιλογέας ωραρίου */
+.schedule-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.schedule-option {
+    width: calc(33.333% - 10px);
+    min-width: 150px;
+}
+
+.schedule-card {
+    display: block;
+    position: relative;
+    cursor: pointer;
+}
+
+.schedule-card input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.schedule-card-content {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.schedule-card input:checked ~ .schedule-card-content {
+    border-color: #3498db;
+    background-color: #ebf5fb;
+}
+
+.schedule-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 10px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.morning-icon {
+    background-image: url('../img/morning_icon.png');
+}
+
+.afternoon-icon {
+    background-image: url('../img/afternoon_icon.png');
+}
+
+.night-icon {
+    background-image: url('../img/night_icon.png');
+}
+
+.shifts-icon {
+    background-image: url('../img/shifts_icon.png');
+}
+
+.weekend-icon {
+    background-image: url('../img/weekend_icon.png');
+}
+
+.flexible-icon {
+    background-image: url('../img/flexible_icon.png');
+}
+
+.schedule-name {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.schedule-hours {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Επιλογέας τύπων οχημάτων */
+.vehicle-type-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.vehicle-type-card {
+    width: calc(33.333% - 10px);
+    min-width: 150px;
+    display: block;
+    position: relative;
+    cursor: pointer;
+}
+
+.vehicle-type-card input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.vehicle-card-content {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s;
+    height: 100%;
+}
+
+.vehicle-type-card input:checked ~ .vehicle-card-content {
+    border-color: #3498db;
+    background-color: #ebf5fb;
+}
+
+.vehicle-icon {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 10px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.car-icon {
+    background-image: url('../img/car_icon.png');
+}
+
+.van-icon {
+    background-image: url('../img/van_icon.png');
+}
+
+.truck-icon {
+    background-image: url('../img/truck_icon.png');
+}
+
+.bus-icon {
+    background-image: url('../img/bus_icon.png');
+}
+
+.machinery-icon {
+    background-image: url('../img/machinery_icon.png');
+}
+
+.vehicle-name {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.vehicle-details {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Υποκατηγορίες οχημάτων */
+.vehicle-subcategories {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f0f7fc;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
+/* Άδειες οδήγησης */
+.driver-licenses-summary {
+    padding: 15px;
+    background-color: #f0f7fc;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.license-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.license-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.no-licenses {
+    padding: 15px;
+    background-color: #fff4e5;
+    border-radius: 6px;
+    color: #e67e22;
+    margin-bottom: 15px;
+}
+
+/* Πιστοποιήσεις */
+.certifications-preview {
+    margin-top: 10px;
+}
+
+.certification-item {
+    margin-bottom: 15px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.certification-item.available {
+    border: 1px solid #ddd;
+}
+
+.certification-item.not-available {
+    opacity: 0.7;
+}
+
+.certification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+.certification-name {
+    margin-left: 10px;
+    font-weight: 500;
+}
+
+.certification-missing {
+    font-size: 0.85rem;
+    color: #999;
+    font-style: italic;
+}
+
+.certification-details {
+    padding: 10px 15px;
+    background-color: #fff;
+}
+
+.certification-details p {
+    margin: 5px 0;
+}
+
+/* Τμήμα ετικετών */
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.tag-item {
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.tag-item label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
+.tag-item input {
+    margin-right: 8px;
+}
+
+/* Προεπισκόπηση αγγελίας */
+.preview-button-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.listing-preview {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 25px;
+    margin-top: 20px;
+    background-color: #fff;
+}
+
+.listing-preview h3 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.job-type-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.job-type-badge, .listing-type-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.job-type-badge {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.listing-type-badge {
+    background-color: #fce4ec;
+    color: #c2185b;
+}
+
+.listing-details {
+    margin-bottom: 20px;
+}
+
+.listing-detail {
+    margin-bottom: 8px;
+}
+
+.listing-description h4 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.driver-skills, .driver-certifications {
+    margin-top: 20px;
+}
+
+.driver-certifications ul {
+    padding-left: 20px;
+}
+
+.driver-certifications li {
+    margin-bottom: 8px;
+}
+
+.preview-note {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Slider για μέγιστη διάρκεια απουσίας */
+.absence-selector {
+    margin-top: 15px;
+}
+
+.absence-slider {
+    position: relative;
+    padding: 20px 0;
+}
+
+.absence-markers {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 0 10px;
+}
+
+.absence-marker {
+    position: relative;
+    font-size: 0.85rem;
+    color: #666;
+    text-align: center;
+}
+
+.absence-marker::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -15px;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 10px;
+    background-color: #ccc;
+}
+
+.absence-value {
+    text-align: center;
+    font-size: 1.1rem;
+    margin-top: 15px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+/* Προσαρμογές για απουσία εικονιδίων */
+.vehicle-icon, .schedule-icon {
+    background-color: #e0e0e0;
+    border-radius: 50%;
+}
+
+.car-icon::before {
+    content: '🚗';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.van-icon::before {
+    content: '🚐';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.truck-icon::before {
+    content: '🚚';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.bus-icon::before {
+    content: '🚌';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.machinery-icon::before {
+    content: '🚜';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.morning-icon::before {
+    content: '🌅';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.afternoon-icon::before {
+    content: '🌇';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.night-icon::before {
+    content: '🌃';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.shifts-icon::before {
+    content: '🔄';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.weekend-icon::before {
+    content: '📅';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.flexible-icon::before {
+    content: '⏱️';
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+/* Ανταποκριτικός σχεδιασμός */
+@media screen and (max-width: 768px) {
+    .form-columns {
+        flex-direction: column;
+    }
+    
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .schedule-option, .vehicle-type-card {
+        width: 100%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions button, 
+    .form-actions a {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

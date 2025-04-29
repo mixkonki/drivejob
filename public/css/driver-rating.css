@@ -1,0 +1,475 @@
+/* CSS για την αξιολόγηση οδηγού */
+
+.page-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.page-header h1 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 2em;
+}
+
+.page-header p {
+    margin: 0;
+    color: #666;
+    font-size: 1.1em;
+}
+
+/* Τμήματα αξιολόγησης */
+.assessment-section {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.assessment-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 1.5em;
+}
+
+/* Συνολική αξιολόγηση */
+.rating-summary {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.rating-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 200px;
+}
+
+.score-circle {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin-bottom: 20px;
+}
+
+.score-circle svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.score-circle circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+}
+
+.score-background {
+    stroke: #f0f0f0;
+}
+
+.score-progress {
+    stroke: #aa3636;
+    stroke-dasharray: 283.5;
+    transition: stroke-dashoffset 1s ease;
+}
+
+.score-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.score-value {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.score-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.rating-count {
+    text-align: center;
+}
+
+.count-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.count-label {
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.rating-description {
+    flex: 1;
+}
+
+.rating-description h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.rating-description p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+    color: #555;
+}
+
+.rating-description ul {
+    padding-left: 20px;
+    color: #555;
+}
+
+.rating-description ul li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+/* Ανάλυση αξιολόγησης ανά κατηγορία */
+.rating-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.rating-category {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+.rating-category:last-child {
+    border-bottom: none;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.category-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: #444;
+    font-weight: 500;
+}
+
+.category-value {
+    font-weight: bold;
+    color: #333;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background-color: #aa3636;
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+
+/* Γράφημα σύγκρισης */
+.comparison-chart {
+    margin-bottom: 25px;
+    max-height: 400px;
+}
+
+.comparison-info {
+    color: #666;
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+/* Κριτικές και σχόλια */
+.no-reviews {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    text-align: center;
+    color: #666;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.review-item {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.company-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.company-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+.company-details h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.review-date {
+    font-size: 0.85em;
+    color: #777;
+}
+
+.review-rating .rating-stars {
+    display: flex;
+    align-items: center;
+}
+
+.star {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-size: cover;
+    margin-right: 2px;
+}
+
+.star.full {
+    background-image: url('../img/star_full.png');
+}
+
+.star.half {
+    background-image: url('../img/star_half.png');
+}
+
+.star.empty {
+    background-image: url('../img/star_empty.png');
+}
+
+.rating-stars .rating-value {
+    margin-left: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.review-content {
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.review-job-info {
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+.job-label {
+    color: #777;
+}
+
+.job-title {
+    color: #aa3636;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.job-title:hover {
+    text-decoration: underline;
+}
+
+/* Συμβουλές βελτίωσης */
+.tips-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.tip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tip-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 60%;
+}
+
+.punctuality-icon {
+    background-image: url('../img/punctuality_icon.png');
+    background-color: #e5f7ff;
+}
+
+.communication-icon {
+    background-image: url('../img/communication_icon.png');
+    background-color: #fff1f1;
+}
+
+.professionalism-icon {
+    background-image: url('../img/professionalism_icon.png');
+    background-color: #fff9e5;
+}
+
+.vehicle-icon {
+    background-image: url('../img/vehicle_icon.png');
+    background-color: #e5f6ff;
+}
+
+.cargo-icon {
+    background-image: url('../img/cargo_icon.png');
+    background-color: #e5fff2;
+}
+
+.tip-content {
+    flex: 1;
+}
+
+.tip-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.tip-content p {
+    margin: 0;
+    color: #555;
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+/* Κουμπιά ενεργειών */
+.profile-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    margin-bottom: 40px;
+}
+
+.btn-primary,
+.btn-secondary {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-primary {
+    background-color: #aa3636;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #993333;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Ανταπόκριση για κινητά */
+@media (max-width: 768px) {
+    .rating-summary {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .rating-score {
+        margin: 0 auto;
+    }
+    
+    .tips-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .review-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .review-rating {
+        align-self: flex-start;
+    }
+    
+    .profile-actions {
+        flex-direction: column;
+    }
+    
+    .profile-actions a {
+        width: 100%;
+    }
+}.score-circle.small {
+    width: 120px;
+    height: 120px;
+}
+
+.score-circle.small .score-value {
+    font-size: 1.8rem;
+}
