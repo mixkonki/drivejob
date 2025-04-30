@@ -2,18 +2,20 @@
 
 namespace Drivejob\Services;
 
+use PDO;
 use Drivejob\Core\Logger;
-use Drivejob\Models\DriversModel;
+use Drivejob\Models\Driver\ProfileModel;
 
 class FileUploadService
 {
-    private $driversModel;
+    private $pdo;
+    private $profileModel;
 
-    public function __construct(DriversModel $driversModel)
+    public function __construct(PDO $pdo)
     {
-        $this->driversModel = $driversModel;
+        $this->pdo = $pdo;
+        $this->profileModel = new ProfileModel($pdo);
     }
-
     /**
      * Διαχειρίζεται τις μεταφορτώσεις αρχείων
      *

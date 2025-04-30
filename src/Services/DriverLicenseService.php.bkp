@@ -31,7 +31,7 @@ class DriverLicenseService
     {
         try {
             // Διαγραφή προηγούμενων αδειών
-            $this->licenseModel->deleteDriverLicenses($driverId);
+            $this->driversModel->deleteDriverLicenses($driverId);
 
             if (isset($formData['license_types']) && is_array($formData['license_types'])) {
                 $licenseNumber = $formData['license_number'] ?? null;
@@ -60,7 +60,7 @@ class DriverLicenseService
                     // Λήψη ημερομηνίας λήξης για τη συγκεκριμένη κατηγορία
                     $expiryDate = $formData['license_expiry'][$licenseType] ?? null;
 
-                    $this->licenseModel->addDriverLicense(
+                    $this->driversModel->addDriverLicense(
                         $driverId,
                         $licenseType,
                         $hasPei,
@@ -97,10 +97,10 @@ class DriverLicenseService
                     'expiry_date' => $formData['adr_certificate_expiry'] ?? null
                 ];
 
-                return $this->certificationModel->updateDriverADRCertificate($driverId, $adrData);
+                return $this->driversModel->updateDriverADRCertificate($driverId, $adrData);
             } else {
                 // Αν δεν έχει επιλεγεί το ADR, διαγράφουμε τα στοιχεία
-                return $this->certificationModel->deleteDriverADRCertificate($driverId);
+                return $this->driversModel->deleteDriverADRCertificate($driverId);
             }
         } catch (\Exception $e) {
             Logger::error('Error in handleADRCertificate: ' . $e->getMessage());
@@ -124,10 +124,10 @@ class DriverLicenseService
                     'expiry_date' => $formData['tachograph_card_expiry'] ?? null
                 ];
 
-                return $this->certificationModel->updateDriverTachographCard($driverId, $tachographData);
+                return $this->driversModel->updateDriverTachographCard($driverId, $tachographData);
             } else {
                 // Αν δεν έχει επιλεγεί η κάρτα ταχογράφου, διαγράφουμε τα στοιχεία
-                return $this->certificationModel->deleteDriverTachographCard($driverId);
+                return $this->driversModel->deleteDriverTachographCard($driverId);
             }
         } catch (\Exception $e) {
             Logger::error('Error in handleTachographCard: ' . $e->getMessage());
@@ -146,7 +146,7 @@ class DriverLicenseService
     {
         try {
             // Διαγραφή των υπαρχουσών ειδικών αδειών
-            $this->certificationModel->deleteDriverSpecialLicenses($driverId);
+            $this->driversModel->deleteDriverSpecialLicenses($driverId);
 
             // Αν έχουν υποβληθεί ειδικές άδειες, τις προσθέτουμε στη βάση
             if (isset($formData['special_license_type']) && is_array($formData['special_license_type'])) {
@@ -157,7 +157,7 @@ class DriverLicenseService
                         $expiryDate = $formData['special_license_expiry'][$index] ?? null;
                         $details = $formData['special_license_details'][$index] ?? '';
 
-                        $this->certificationModel->addDriverSpecialLicense($driverId, $type, $licenseNumber, $expiryDate, $details);
+                        $this->driversModel->addDriverSpecialLicense($driverId, $type, $licenseNumber, $expiryDate, $details);
                     }
                 }
             }
@@ -188,7 +188,7 @@ class DriverLicenseService
                 ];
 
                 // Ενημέρωση ή προσθήκη της άδειας χειριστή
-                $operatorLicenseId = $this->certificationModel->updateDriverOperatorLicense($driverId, $operatorData);
+                $operatorLicenseId = $this->driversModel->updateDriverOperatorLicense($driverId, $operatorData);
 
                 if ($operatorLicenseId) {
                     // Διαχείριση υποειδικοτήτων
@@ -199,7 +199,7 @@ class DriverLicenseService
                 return false;
             } else {
                 // Αν δεν έχει επιλεγεί η άδεια χειριστή, διαγράφουμε τα στοιχεία
-                return $this->certificationModel->deleteDriverOperatorLicense($driverId);
+                return $this->driversModel->deleteDriverOperatorLicense($driverId);
             }
         } catch (\Exception $e) {
             Logger::error('Error in handleOperatorLicense: ' . $e->getMessage(), "DriversController");
@@ -218,7 +218,7 @@ class DriverLicenseService
     {
         try {
             // Διαγραφή των υπαρχουσών υποειδικοτήτων
-            $this->certificationModel->deleteDriverOperatorSubSpecialities($operatorLicenseId);
+            $this->driversModel->deleteDriverOperatorSubSpecialities($operatorLicenseId);
 
             // Λήψη των επιλεγμένων υποειδικοτήτων και ομάδων από JSON
             $selectedSubSpecialities = [];
@@ -273,7 +273,7 @@ class DriverLicenseService
                     }
 
                     // Προσθήκη της υποειδικότητας με την ομάδα της
-                    $this->certificationModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType);
+                    $this->driversModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType);
                 }
             }
 

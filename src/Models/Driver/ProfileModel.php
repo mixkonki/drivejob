@@ -1,0 +1,420 @@
+<?php
+
+namespace Drivejob\Models\Driver;
+
+use PDO;
+use PDOException;
+use Drivejob\Core\Logger;
+use Drivejob\Models\BaseModel;
+
+/**
+ * Μοντέλο για τη διαχείριση των προφίλ των οδηγών
+ */
+class ProfileModel extends BaseModel
+{
+    /**
+     * Constructor
+     *
+     * @param PDO $pdo Η σύνδεση με τη βάση δεδομένων
+     */
+    public function __construct(PDO $pdo)
+    {
+        parent::__construct($pdo, 'drivers');
+    }
+
+    /**
+     * Δημιουργεί έναν νέο λογαριασμό οδηγού
+     * 
+     * @param array $data Δεδομένα νέου οδηγού
+     * @return int|false ID του νέου οδηγού ή false σε περίπτωση αποτυχίας
+     */
+    public function create(array $data)
+    {
+        // Επικύρωση των απαραίτητων πεδίων
+        $requiredFields = ['email', 'password', 'last_name', 'first_name', 'phone'];
+        foreach ($requiredFields as $field) {
+            if (empty($data[$field])) {
+                Logger::error("Missing required field for driver creation: $field");
+                return false;
+            }
+        }
+
+        // Προσθήκη προεπιλεγμένων τιμών
+        if (!isset($data['is_verified'])) {
+            $data['is_verified'] = 0;
+        }
+
+        return $this->insert($data);
+    }
+
+    /**
+     * Ενημερώνει τα βασικά στοιχεία ενός οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @param array $data Δεδομένα προς ενημέρωση
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function update($id, $data)
+    {
+        // Επικύρωση των απαραίτητων πεδίων
+        $requiredFields = ['email', 'last_name', 'first_name', 'phone'];
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field]) || $data[$field] === '') {
+                Logger::error("Missing required field for driver update: $field");
+                return false;
+            }
+        }
+
+        return $this->update($data, ['id' => $id]);
+    }
+
+    /**
+     * Ενημερώνει το προφίλ ενός οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param array $data Δεδομένα προφίλ
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateProfile($driverId, $data)
+    {
+        try {
+            return $this->update($data, ['id' => $driverId]);
+        } catch (PDOException $e) {
+            Logger::error('Error in updateProfile: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ενημερώνει την εικόνα προφίλ ενός οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @param string $imagePath Διαδρομή εικόνας
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateProfileImage($id, $imagePath)
+    {
+        return $this->update(['profile_image' => $imagePath], ['id' => $id]);
+    }
+
+    /**
+     * Ενημερώνει το αρχείο βιογραφικού ενός οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param string $resumeFile Διαδρομή του αρχείου βιογραφικού
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateResumeFile($driverId, $resumeFile)
+    {
+        try {
+            return $this->update(['resume_file' => $resumeFile], ['id' => $driverId]);
+        } catch (PDOException $e) {
+            Logger::error('Error updating resume file: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ενημερώνει την κατάσταση επαλήθευσης του οδηγού
+     * 
+     * @param string $email Email του οδηγού
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function verifyDriver($email)
+    {
+        return $this->update(['is_verified' => 1], ['email' => $email]);
+    }
+
+    /**
+     * Επιστρέφει τα στοιχεία ενός οδηγού με βάση το ID
+     * 
+     * @param int $id ID του οδηγού
+     * @return array|null Στοιχεία οδηγού ή null αν δεν βρέθηκε
+     */
+    public function getDriverById($id)
+    {
+        return $this->selectOne(['id' => $id]);
+    }
+
+    /**
+     * Επιστρέφει έναν οδηγό με βάση το email
+     * 
+     * @param string $email Email του οδηγού
+     * @return array|null Στοιχεία οδηγού ή null αν δεν βρέθηκε
+     */
+    public function getDriverByEmail($email)
+    {
+        return $this->selectOne(['email' => $email]);
+    }
+
+    /**
+     * Διαγράφει έναν οδηγό
+     * 
+     * @param int $id ID του οδηγού
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function delete($id)
+    {
+        return $this->delete(['id' => $id]);
+    }
+
+    /**
+     * Ενημερώνει τον κωδικό πρόσβασης ενός οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @param string $password Νέος κωδικός πρόσβασης (κρυπτογραφημένος)
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updatePassword($id, $password)
+    {
+        return $this->update(['password' => $password], ['id' => $id]);
+    }
+
+    /**
+     * Ενημερώνει την τελευταία σύνδεση του οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateLastLogin($id)
+    {
+        return $this->update(['last_login' => date('Y-m-d H:i:s')], ['id' => $id]);
+    }
+
+    /**
+     * Ενημερώνει την εικόνα ενός εγγράφου του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param string $documentType Τύπος εγγράφου
+     * @param string $imagePath Διαδρομή εικόνας
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateDriverDocumentImage($driverId, $documentType, $imagePath)
+    {
+        try {
+            // Βεβαιωνόμαστε ότι ο τύπος εγγράφου είναι ασφαλής για χρήση σε SQL
+            $validDocTypes = [
+                'license_front_image',
+                'license_back_image',
+                'adr_front_image',
+                'adr_back_image',
+                'operator_front_image',
+                'operator_back_image',
+                'tachograph_front_image',
+                'tachograph_back_image'
+            ];
+
+            if (!in_array($documentType, $validDocTypes)) {
+                Logger::error('Invalid document type for image update: ' . $documentType);
+                return false;
+            }
+
+            return $this->update([$documentType => $imagePath], ['id' => $driverId]);
+        } catch (PDOException $e) {
+            Logger::error('Error in updateDriverDocumentImage: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ελέγχει αν ένα email υπάρχει ήδη
+     * 
+     * @param string $email Email προς έλεγχο
+     * @return bool Αν υπάρχει ήδη
+     */
+    public function emailExists($email)
+    {
+        $result = $this->queryOne("SELECT COUNT(*) as count FROM {$this->table} WHERE email = ?", [$email]);
+        return $result && $result['count'] > 0;
+    }
+
+    /**
+     * Επιστρέφει όλους τους οδηγούς
+     * 
+     * @param int $limit Μέγιστος αριθμός αποτελεσμάτων
+     * @param int $offset Μετατόπιση αποτελεσμάτων
+     * @return array Λίστα οδηγών
+     */
+    public function getAllDrivers($limit = 100, $offset = 0)
+    {
+        $sql = "SELECT id, first_name, last_name, email, phone, city, country, 
+                       experience_years, profile_image, rating
+                FROM {$this->table} 
+                WHERE is_verified = 1 
+                ORDER BY last_name, first_name 
+                LIMIT :limit OFFSET :offset";
+
+        $params = [
+            ':limit' => $limit,
+            ':offset' => $offset
+        ];
+
+        return $this->query($sql, $params) ?: [];
+    }
+
+    /**
+     * Μετράει το συνολικό αριθμό οδηγών
+     * 
+     * @return int Αριθμός οδηγών
+     */
+    public function countDrivers()
+    {
+        $result = $this->queryOne("SELECT COUNT(*) as count FROM {$this->table} WHERE is_verified = 1");
+        return $result ? $result['count'] : 0;
+    }
+
+    /**
+     * Αναζητά οδηγούς με βάση κριτήρια
+     * 
+     * @param array $params Παράμετροι αναζήτησης
+     * @param int $page Αριθμός σελίδας
+     * @param int $limit Αριθμός αποτελεσμάτων ανά σελίδα
+     * @return array Αποτελέσματα αναζήτησης και πληροφορίες σελιδοποίησης
+     */
+    public function searchDrivers($params, $page = 1, $limit = 10)
+    {
+        $conditions = ["is_verified = 1", "available_for_work = 1"];
+        $parameters = [];
+
+        // Φίλτρο με βάση την εμπειρία
+        if (isset($params['min_experience']) && $params['min_experience'] > 0) {
+            $conditions[] = "experience_years >= :min_experience";
+            $parameters[':min_experience'] = $params['min_experience'];
+        }
+
+        // Φίλτρο με βάση την προτιμώμενη τοποθεσία
+        if (isset($params['location']) && $params['location']) {
+            $conditions[] = "(preferred_location LIKE :location OR city LIKE :location OR country LIKE :location)";
+            $parameters[':location'] = '%' . $params['location'] . '%';
+        }
+
+        // Φίλτρο με βάση την άδεια οδήγησης
+        if (isset($params['driving_license']) && $params['driving_license']) {
+            $conditions[] = "driving_license = 1";
+            // Χρειάζεται ειδικός έλεγχος για συγκεκριμένη κατηγορία
+            if ($params['driving_license'] !== 'any') {
+                $conditions[] = "EXISTS (SELECT 1 FROM driver_licenses dl WHERE dl.driver_id = drivers.id AND dl.license_type = :license_type)";
+                $parameters[':license_type'] = $params['driving_license'];
+            }
+        }
+
+        // Φίλτρο για ADR πιστοποίηση
+        if (isset($params['adr_certificate']) && $params['adr_certificate']) {
+            $conditions[] = "adr_certificate = 1";
+        }
+
+        // Φίλτρο για άδεια χειριστή
+        if (isset($params['operator_license']) && $params['operator_license']) {
+            $conditions[] = "operator_license = 1";
+        }
+
+        // Φίλτρο για σεμινάρια
+        if (isset($params['training_seminars']) && $params['training_seminars']) {
+            $conditions[] = "training_seminars = 1";
+        }
+
+        // Αναζήτηση βάσει ονόματος ή επωνύμου
+        if (isset($params['name']) && $params['name']) {
+            $conditions[] = "(first_name LIKE :name OR last_name LIKE :name)";
+            $parameters[':name'] = '%' . $params['name'] . '%';
+        }
+
+        // Σύνθεση του SQL ερωτήματος
+        $whereClause = implode(" AND ", $conditions);
+        $offset = ($page - 1) * $limit;
+
+        // Μέτρηση συνολικών αποτελεσμάτων
+        $countSql = "SELECT COUNT(*) as count FROM {$this->table} WHERE $whereClause";
+        $totalResult = $this->queryOne($countSql, $parameters);
+        $totalResults = $totalResult ? $totalResult['count'] : 0;
+
+        // Εκτέλεση του κύριου ερωτήματος
+        $sql = "SELECT id, first_name, last_name, city, country, experience_years, 
+                       driving_license, adr_certificate, operator_license, 
+                       training_seminars, preferred_job_type, preferred_location, 
+                       profile_image, rating 
+                FROM {$this->table} 
+                WHERE $whereClause 
+                ORDER BY last_login DESC 
+                LIMIT :limit OFFSET :offset";
+
+        $parameters[':limit'] = $limit;
+        $parameters[':offset'] = $offset;
+
+        $results = $this->query($sql, $parameters) ?: [];
+
+        return [
+            'results' => $results,
+            'pagination' => [
+                'total' => $totalResults,
+                'page' => $page,
+                'limit' => $limit,
+                'pages' => ceil($totalResults / $limit)
+            ]
+        ];
+    }
+
+    /**
+     * Επιστρέφει τους πιο πρόσφατους διαθέσιμους οδηγούς
+     * 
+     * @param int $limit Μέγιστος αριθμός αποτελεσμάτων
+     * @return array Λίστα οδηγών
+     */
+    public function getRecentAvailableDrivers($limit = 5)
+    {
+        $sql = "SELECT id, first_name, last_name, city, country, 
+                       experience_years, profile_image, rating
+                FROM {$this->table} 
+                WHERE is_verified = 1 AND available_for_work = 1 
+                ORDER BY last_login DESC 
+                LIMIT :limit";
+
+        return $this->query($sql, [':limit' => $limit]) ?: [];
+    }
+
+    /**
+     * Επιστρέφει τους κορυφαίους οδηγούς με βάση την αξιολόγηση
+     * 
+     * @param int $limit Μέγιστος αριθμός αποτελεσμάτων
+     * @return array Λίστα οδηγών
+     */
+    public function getTopRatedDrivers($limit = 5)
+    {
+        $sql = "SELECT id, first_name, last_name, city, country, 
+                       experience_years, profile_image, rating
+                FROM {$this->table} 
+                WHERE is_verified = 1 AND rating > 0 
+                ORDER BY rating DESC, rating_count DESC 
+                LIMIT :limit";
+
+        return $this->query($sql, [':limit' => $limit]) ?: [];
+    }
+
+    /**
+     * Ενημερώνει την αξιολόγηση ενός οδηγού
+     * 
+     * @param int $id ID του οδηγού
+     * @param float $rating Νέα αξιολόγηση
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateRating($id, $rating)
+    {
+        $sql = "UPDATE {$this->table} SET 
+                rating = ((rating * rating_count) + :rating) / (rating_count + 1),
+                rating_count = rating_count + 1
+                WHERE id = :id";
+
+        return $this->query($sql, [':id' => $id, ':rating' => $rating]);
+    }
+
+    /**
+     * Ανάκτηση όλων των πληροφοριών ενός οδηγού
+     * 
+     * @param int $driverId Το ID του οδηγού
+     * @return array|null Οι πληροφορίες του οδηγού ή null αν δεν βρέθηκε
+     */
+    public function getDriverWithDetails($driverId)
+    {
+        return $this->getDriverById($driverId);
+    }
+}

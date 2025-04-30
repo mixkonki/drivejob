@@ -2,29 +2,16 @@
 
 namespace Drivejob\Controllers;
 
+use Drivejob\Models\DriversModel;
+use Drivejob\Models\DriverAssessmentModel;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
 use Drivejob\Core\Logger;
-use Drivejob\Core\Session;
-
-// Παλιά μοντέλα (προς σταδιακή αντικατάσταση)
-use Drivejob\Models\DriversModel;
-use Drivejob\Models\DriverAssessmentModel;
 use Drivejob\Models\DriverLicenseModel;
 use Drivejob\Models\JobListingModel;
 use Drivejob\Models\MatchingModel;
-
-// Νέα μοντέλα
-use Drivejob\Models\Driver\ProfileModel;
-use Drivejob\Models\Driver\LicenseModel;
-use Drivejob\Models\Driver\CertificationModel;
-use Drivejob\Models\Driver\SkillModel;
-use Drivejob\Models\Driver\RatingModel;
-use Drivejob\Models\Driver\IncidentModel;
-
-// Υπηρεσίες
-use Drivejob\Services\DriverProfileService;
+use Drivejob\Core\Session;
 use Drivejob\Services\DriverLicenseService;
 use Drivejob\Services\FileUploadService;
 use Drivejob\Services\DriverRatingService;
@@ -32,25 +19,13 @@ use Drivejob\Services\DriverCertificationService;
 
 class DriversController
 {
-    // Παλιά μοντέλα (προς σταδιακή κατάργηση)
     private $driversModel;
     private $driverAssessmentModel;
-
-    // Νέα μοντέλα
-    private $profileModel;
-    private $licenseModel;
-    private $certificationModel;
-    private $skillModel;
-    private $ratingModel;
-    private $incidentModel;
-
-    // Υπηρεσίες
-    private $driverProfileService;
+    // Προσθήκη των νέων ιδιοτήτων
     private $licenseService;
     private $fileUploadService;
     private $ratingService;
     private $certificationService;
-
     private $pdo;
 
     public function __construct($pdo = null)
@@ -59,28 +34,27 @@ class DriversController
         if ($pdo === null && isset($GLOBALS['pdo'])) {
             $pdo = $GLOBALS['pdo'];
         }
-        $this->pdo = $pdo;
 
-        // Αρχικοποίηση των παλιών μοντέλων για συμβατότητα προς τα πίσω
+        $this->pdo = $pdo;
         $this->driversModel = new DriversModel($pdo);
         $this->driverAssessmentModel = new DriverAssessmentModel($pdo);
 
-        // Αρχικοποίηση των νέων μοντέλων
-        $this->profileModel = new ProfileModel($pdo);
-        $this->licenseModel = new LicenseModel($pdo);
-        $this->certificationModel = new CertificationModel($pdo);
-        $this->skillModel = new SkillModel($pdo);
-        $this->ratingModel = new RatingModel($pdo);
-        $this->incidentModel = new IncidentModel($pdo);
+        // Δοκίμασε να αρχικοποιήσεις τις υπηρεσίες αν υπάρχουν οι αντίστοιχες κλάσεις
+        if (class_exists('\Drivejob\Services\DriverLicenseService')) {
+            $this->licenseService = new \Drivejob\Services\DriverLicenseService($this->driversModel);
+        }
 
-        // Η κεντρική υπηρεσία που συνδυάζει όλα τα μοντέλα
-        $this->driverProfileService = new DriverProfileService($pdo);
+        if (class_exists('\Drivejob\Services\FileUploadService')) {
+            $this->fileUploadService = new \Drivejob\Services\FileUploadService($this->driversModel);
+        }
 
-        // Αρχικοποίηση των υπηρεσιών με τα νέα μοντέλα
-        $this->licenseService = new DriverLicenseService($pdo);
-        $this->fileUploadService = new FileUploadService($pdo);
-        $this->ratingService = new DriverRatingService($pdo);
-        $this->certificationService = new DriverCertificationService($pdo);
+        if (class_exists('\Drivejob\Services\DriverRatingService')) {
+            $this->ratingService = new \Drivejob\Services\DriverRatingService($pdo, $this->driversModel);
+        }
+
+        if (class_exists('\Drivejob\Services\DriverCertificationService')) {
+            $this->certificationService = new \Drivejob\Services\DriverCertificationService($this->driversModel);
+        }
     }
 
     // Προσθήκη της μεθόδου collectFormData για το sanitization
@@ -138,6 +112,7 @@ class DriversController
         if ($input === null) {
             return null;
         }
+
         // Επιτρέπουμε βασικά HTML tags
         $allowedTags = '<p><br><strong><em><ul><ol><li><h2><h3><h4>';
         return strip_tags(trim($input), $allowedTags);
@@ -148,10 +123,12 @@ class DriversController
         if ($date === null || empty($date)) {
             return null;
         }
+
         $dateObj = \DateTime::createFromFormat('Y-m-d', $date);
         if ($dateObj && $dateObj->format('Y-m-d') === $date) {
             return $date;
         }
+
         return null;
     }
 
@@ -160,10 +137,12 @@ class DriversController
         if (empty($url)) {
             return null;
         }
+
         $sanitizedUrl = filter_var($url, FILTER_SANITIZE_URL);
         if (filter_var($sanitizedUrl, FILTER_VALIDATE_URL)) {
             return $sanitizedUrl;
         }
+
         return null;
     }
 
@@ -217,6 +196,22 @@ class DriversController
     }
 
     /**
+     * Παλιά υλοποίηση της μεθόδου updateSkills για συμβατότητα
+     */
+    private function oldUpdateSkills($driverId)
+    {
+        try {
+            // Εδώ βάλε τον παλιό κώδικα της μεθόδου updateSkills
+            // ...
+
+            return true;
+        } catch (\Exception $e) {
+            Logger::error('Error in oldUpdateSkills: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Εναλλαγή διαθεσιμότητας οδηγού για εργασία
      */
     public function toggleAvailability()
@@ -233,7 +228,7 @@ class DriversController
         try {
             // Λήψη του τρέχοντος οδηγού
             $driverId = $_SESSION['user_id'];
-            $driver = $this->profileModel->getDriverById($driverId);
+            $driver = $this->driversModel->getDriverById($driverId);
 
             if (!$driver) {
                 echo json_encode(['success' => false, 'message' => 'Δεν βρέθηκε ο οδηγός.']);
@@ -247,7 +242,7 @@ class DriversController
             // Καταγραφή για εντοπισμό σφαλμάτων
             Logger::info("Εναλλαγή διαθεσιμότητας για οδηγό $driverId από $currentStatus σε $newStatus");
 
-            $success = $this->profileModel->updateProfile($driverId, ['available_for_work' => $newStatus]);
+            $success = $this->driversModel->updateProfile($driverId, ['available_for_work' => $newStatus]);
 
             if ($success) {
                 echo json_encode([
@@ -288,9 +283,7 @@ class DriversController
 
         // Λήψη των στοιχείων του οδηγού
         $driverId = $_SESSION['user_id'];
-
-        // Λήψη πλήρους προφίλ οδηγού με όλες τις πληροφορίες
-        $driver = $this->driverProfileService->getDriverProfile($driverId);
+        $driver = $this->driversModel->getDriverById($driverId);
 
         if (!$driver) {
             $_SESSION['error_message'] = 'Τα στοιχεία του οδηγού δεν βρέθηκαν.';
@@ -298,23 +291,23 @@ class DriversController
             exit();
         }
 
-        // Εξαγωγή των τύπων αδειών οδήγησης για ευκολότερη χρήση στο view
+        // Λήψη επιπλέον δεδομένων για το βιογραφικό
+        $driverLicenses = $this->driversModel->getDriverLicenses($driverId);
         $driverLicenseTypes = [];
-        if (!empty($driver['licenses'])) {
-            foreach ($driver['licenses'] as $license) {
+        if (!empty($driverLicenses)) {
+            foreach ($driverLicenses as $license) {
                 if (isset($license['license_type']) && !empty($license['license_type'])) {
                     $driverLicenseTypes[] = $license['license_type'];
                 }
             }
         }
 
-        // Αντιστοίχιση μεταβλητών για συμβατότητα με το view
-        $driverSkills = $driver['skills'] ?? [];
-        $driverSpecialLicenses = $driver['special_licenses'] ?? [];
-        $driverAdrCertificates = $driver['adr_certificates'][0] ?? null;
-        $driverOperatorLicenses = $driver['operator_licenses'][0] ?? null;
-        $driverTachographCard = $driver['tachograph_cards'][0] ?? null;
-        $averageRating = $driver['average_rating'] ?? 0;
+        $driverSkills = $this->driversModel->getDriverSkills($driverId);
+        $driverSpecialLicenses = $this->driversModel->getDriverSpecialLicenses($driverId);
+        $driverAdrCertificates = $this->driversModel->getDriverADRCertificate($driverId);
+        $driverOperatorLicenses = $this->driversModel->getDriverOperatorLicense($driverId);
+        $driverTachographCard = $this->driversModel->getDriverTachographCard($driverId);
+        $averageRating = $this->driversModel->getDriverRating($driverId);
 
         // Φόρτωση της προβολής επεξεργασίας βιογραφικού
         include ROOT_DIR . '/src/Views/drivers/edit-resume.php';
@@ -355,7 +348,7 @@ class DriversController
             $updateData['language_other_level'] = $this->sanitize($_POST['languages']['other_level'] ?? '');
         }
 
-        $success = $this->profileModel->updateProfile($driverId, $updateData);
+        $success = $this->driversModel->updateProfile($driverId, $updateData);
 
         if ($success) {
             $_SESSION['success_message'] = 'Οι αλλαγές στο βιογραφικό σας αποθηκεύτηκαν με επιτυχία.';
@@ -386,8 +379,8 @@ class DriversController
             exit;
         }
 
-        // Ανάκτηση των στοιχείων του οδηγού με τις νέες υπηρεσίες
-        $driver = $this->driverProfileService->getDriverProfile($id);
+        // Ανάκτηση των στοιχείων του οδηγού
+        $driver = $this->driversModel->getDriverById($id);
 
         if (!$driver) {
             $_SESSION['error_message'] = 'Ο οδηγός δεν βρέθηκε';
@@ -395,12 +388,12 @@ class DriversController
             exit;
         }
 
-        // Προετοιμασία δεδομένων για το view
-        $driverSkills = $driver['skills'] ?? [];
-        $driverLicenses = $driver['licenses'] ?? [];
+        // Ανάκτηση πρόσθετων πληροφοριών για τον οδηγό
+        $driverSkills = $this->driversModel->getDriverSkills($id);
+        $driverLicenses = $this->driversModel->getDriverLicenses($id);
         $driverLicenseTypes = array_column($driverLicenses, 'license_type');
-        $driverReviews = $driver['reviews'] ?? [];
-        $averageRating = $driver['average_rating'] ?? 0;
+        $driverReviews = $this->driversModel->getDriverReviews($id);
+        $averageRating = $this->driversModel->getDriverRating($id);
 
         // Ανάκτηση των αγγελιών του οδηγού
         $jobListingModel = new JobListingModel($this->pdo);
@@ -409,7 +402,6 @@ class DriversController
         // Απόδοση της σελίδας με τα δεδομένα
         include ROOT_DIR . '/src/Views/drivers/public-profile.php';
     }
-
     /**
      * Προβάλλει τη σελίδα προφίλ του οδηγού
      */
@@ -420,17 +412,19 @@ class DriversController
 
         // Λήψη των στοιχείων του οδηγού
         $driverId = $_SESSION['user_id'];
+        $driverData = $this->driversModel->getDriverById($driverId);
 
-        // Λήψη πλήρους προφίλ του οδηγού με τη νέα υπηρεσία
-        $driverProfile = $this->driverProfileService->getDriverProfile($driverId);
+        // Λήψη των αδειών οδήγησης του οδηγού
+        $driverLicenses = $this->driversModel->getDriverLicenses($driverId);
+        $driverLicenseTypes = !empty($driverLicenses) ? array_column($driverLicenses, 'license_type') : [];
 
-        // Αντιστοίχιση μεταβλητών για συμβατότητα με το view
-        $driverData = $driverProfile;
-        $driverLicenses = $driverProfile['licenses'] ?? [];
-        $driverLicenseTypes = array_column($driverLicenses, 'license_type');
-        $driverSkills = $driverProfile['skills'] ?? [];
-        $driverCertifications = $driverProfile['certifications'] ?? [];
-        $driverVehicleExperience = $driverProfile['vehicle_experience'] ?? [];
+        // Λήψη των δεξιοτήτων του οδηγού
+        $driverSkills = $this->driversModel->getDriverSkills($driverId);
+
+        // Λήψη των πιστοποιήσεων του οδηγού
+        $driverCertifications = $this->driversModel->getDriverCertifications($driverId);
+        // Λήψη της εμπειρίας σε οχήματα
+        $driverVehicleExperience = $this->driversModel->getDriverVehicleExperience($driverId);
 
         // Έλεγχος για ΠΕΙ
         $hasPeiC = false;
@@ -456,10 +450,11 @@ class DriversController
             }
         }
 
+        // Υπόλοιπος κώδικας...
+
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/drivers/profile.php';
     }
-
     /**
      * Προβάλλει τη φόρμα επεξεργασίας προφίλ
      */
@@ -470,34 +465,40 @@ class DriversController
 
         // Λήψη των στοιχείων του οδηγού
         $driverId = $_SESSION['user_id'];
+        $driverData = $this->driversModel->getDriverById($driverId);
 
-        // Λήψη πλήρους προφίλ του οδηγού με τη νέα υπηρεσία
-        $driverProfile = $this->driverProfileService->getDriverProfile($driverId);
-
-        // Αντιστοίχιση μεταβλητών για συμβατότητα με το view
-        $driverData = $driverProfile;
-        $driverLicenses = $driverProfile['licenses'] ?? [];
+        // Λήψη των αδειών οδήγησης του οδηγού
+        $driverLicenses = $this->driversModel->getDriverLicenses($driverId);
         $driverLicenseTypes = array_column($driverLicenses, 'license_type');
-
-        // Υπολογισμός των αδειών που έχουν ΠΕΙ
         $driverPEI = array_column(array_filter($driverLicenses, function ($license) {
-            return isset($license['has_pei']) && $license['has_pei'] == 1;
+            return $license['has_pei'] == 1;
         }), 'license_type');
 
-        // Αντιστοίχιση υπόλοιπων μεταβλητών
-        $driverADR = $driverProfile['adr_certificates'][0] ?? null;
-        $driverOperator = $driverProfile['operator_licenses'][0] ?? null;
+        // Λήψη του πιστοποιητικού ADR του οδηγού
+        $driverADR = $this->driversModel->getDriverADRCertificate($driverId);
+
+        // Λήψη της άδειας χειριστή μηχανημάτων του οδηγού
+        $driverOperator = $this->driversModel->getDriverOperatorLicense($driverId);
         $driverOperatorSubSpecialities = [];
 
         if ($driverOperator) {
-            $driverOperatorSubSpecialities = $driverOperator['sub_specialities'] ?? [];
+            $driverOperatorSubSpecialities = $this->driversModel->getDriverOperatorSubSpecialities($driverOperator['id']);
         }
 
-        $driverSpecialLicenses = $driverProfile['special_licenses'] ?? [];
-        $driverTachograph = $driverProfile['tachograph_cards'][0] ?? null;
-        $driverSkills = $driverProfile['skills'] ?? [];
-        $driverCertifications = $driverProfile['certifications'] ?? [];
-        $driverVehicleExperience = $driverProfile['vehicle_experience'] ?? [];
+        // Φόρτωση των ειδικών αδειών
+        $driverSpecialLicenses = $this->driversModel->getDriverSpecialLicenses($driverId);
+
+        // Φόρτωση δεδομένων ταχογράφου
+        $driverTachograph = $this->driversModel->getDriverTachographCard($driverId);
+
+        // Λήψη των δεξιοτήτων του οδηγού
+        $driverSkills = $this->driversModel->getDriverSkills($driverId);
+
+        // Λήψη των πιστοποιήσεων του οδηγού
+        $driverCertifications = $this->driversModel->getDriverCertifications($driverId);
+
+        // Λήψη της εμπειρίας σε οχήματα
+        $driverVehicleExperience = $this->driversModel->getDriverVehicleExperience($driverId);
 
         // Προετοιμασία δεδομένων ΠΕΙ
         $peiCExpiryDate = null;
@@ -516,7 +517,6 @@ class DriversController
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/drivers/edit_profile.php';
     }
-
     /**
      * Αποθηκεύει τις αλλαγές στο προφίλ
      */
@@ -552,33 +552,42 @@ class DriversController
         // Συλλογή των δεδομένων από τη φόρμα
         $data = $this->collectFormData();
 
-        // Ενημέρωση του προφίλ με τη νέα υπηρεσία
-        if ($this->profileModel->updateProfile($driverId, $data)) {
+        // Ενημέρωση του προφίλ
+        if ($this->driversModel->updateProfile($driverId, $data)) {
             // Διαχείριση αδειών οδήγησης
-            $this->licenseService->handleDrivingLicenses($driverId, $_POST);
-
-            // Διαχείριση μεταφόρτωσης εικόνων και αρχείων
-            $this->fileUploadService->handleFileUploads($driverId, $_FILES);
-
-            // Διαχείριση ειδικών αδειών
-            $this->licenseService->handleSpecialLicenses($driverId, $_POST);
-
-            // Διαχείριση κάρτας ταχογράφου
-            $this->licenseService->handleTachographCard($driverId, $_POST);
-
-            // Διαχείριση πιστοποιητικού ADR
-            $this->licenseService->handleADRCertificate($driverId, $_POST);
-
-            // Διαχείριση άδειας χειριστή μηχανημάτων
-            $this->licenseService->handleOperatorLicense($driverId, $_POST);
-
-            // Διαχείριση δεξιοτήτων και πιστοποιήσεων 
-            if (isset($_POST['skills']) || isset($_POST['languages']) || isset($_POST['certifications'])) {
-                $this->certificationService->updateSkills($driverId, $_POST);
+            if (isset($this->licenseService)) {
+                $this->licenseService->handleDrivingLicenses($driverId, $_POST);
             }
 
-            // Ενημέρωση βαθμολογίας
-            $this->ratingService->updateDriverRating($driverId);
+            // Διαχείριση μεταφόρτωσης εικόνων και αρχείων
+            if (isset($this->fileUploadService)) {
+                $this->fileUploadService->handleFileUploads($driverId, $_FILES);
+            }
+
+            // Διαχείριση ειδικών αδειών
+            if (isset($this->licenseService)) {
+                $this->licenseService->handleSpecialLicenses($driverId, $_POST);
+            }
+
+            // Διαχείριση κάρτας ταχογράφου
+            if (isset($this->licenseService)) {
+                $this->licenseService->handleTachographCard($driverId, $_POST);
+            }
+
+            // Διαχείριση πιστοποιητικού ADR
+            if (isset($this->licenseService)) {
+                $this->licenseService->handleADRCertificate($driverId, $_POST);
+            }
+
+            // Διαχείριση άδειας χειριστή μηχανημάτων
+            if (isset($this->licenseService)) {
+                $this->licenseService->handleOperatorLicense($driverId, $_POST);
+            }
+
+            // Διαχείριση δεξιοτήτων και πιστοποιήσεων 
+            if (isset($this->certificationService) && (isset($_POST['skills']) || isset($_POST['languages']) || isset($_POST['certifications']))) {
+                $this->certificationService->updateSkills($driverId, $_POST);
+            }
 
             $_SESSION['success_message'] = 'Το προφίλ σας ενημερώθηκε με επιτυχία.';
         } else {
@@ -588,7 +597,6 @@ class DriversController
         header('Location: ' . BASE_URL . 'drivers/profile');
         exit();
     }
-
     /**
      * Εμφανίζει τη σελίδα βαθμολογίας του οδηγού
      */
@@ -599,19 +607,19 @@ class DriversController
 
         // Λήψη των στοιχείων του οδηγού
         $driverId = $_SESSION['user_id'];
-        $driverData = $this->profileModel->getDriverById($driverId);
+        $driverData = $this->driversModel->getDriverById($driverId);
 
         // Λήψη της βαθμολογίας
-        $driverRating = $this->ratingModel->getDriverRatingDetails($driverId);
+        $driverRating = $this->driversModel->getDriverRatingDetails($driverId);
 
         // Αν δεν υπάρχει βαθμολογία, δημιουργούμε προεπιλεγμένη
         if (!$driverRating) {
-            // Υπολογισμός και αποθήκευση της βαθμολογίας
-            $this->ratingService->updateDriverRating($driverId);
-            $driverRating = $this->ratingModel->getDriverRatingDetails($driverId);
-
-            // Αν ακόμα δεν υπάρχει, δημιουργούμε προεπιλεγμένη
-            if (!$driverRating) {
+            // Αν έχουμε το service, χρησιμοποιούμε τη μέθοδο updateDriverRating
+            if (isset($this->ratingService)) {
+                $this->ratingService->updateDriverRating($driverId);
+                $driverRating = $this->driversModel->getDriverRatingDetails($driverId);
+            } else {
+                // Αν δεν έχουμε το service, δημιουργούμε μια προεπιλεγμένη βαθμολογία
                 $driverRating = [
                     'skills_score' => 0,
                     'safety_score' => 0,
@@ -624,7 +632,7 @@ class DriversController
         }
 
         // Λήψη δεδομένων τηλεματικής
-        $telemetryData = $this->skillModel->getDriverTelemetryData($driverId);
+        $telemetryData = $this->driversModel->getDriverTelemetryData($driverId);
 
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/drivers/driver-rating.php';
@@ -642,16 +650,19 @@ class DriversController
         $driverId = $_SESSION['user_id'];
 
         // Ενημέρωση της βαθμολογίας
-        if ($this->ratingService->updateDriverRating($driverId)) {
-            $_SESSION['success_message'] = 'Η βαθμολογία σας ενημερώθηκε με επιτυχία.';
+        if (isset($this->ratingService)) {
+            if ($this->ratingService->updateDriverRating($driverId)) {
+                $_SESSION['success_message'] = 'Η βαθμολογία σας ενημερώθηκε με επιτυχία.';
+            } else {
+                $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την ενημέρωση της βαθμολογίας.';
+            }
         } else {
-            $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την ενημέρωση της βαθμολογίας.';
+            $_SESSION['error_message'] = 'Η υπηρεσία βαθμολόγησης δεν είναι διαθέσιμη.';
         }
 
         header('Location: ' . BASE_URL . 'drivers/driver-rating');
         exit();
     }
-
     /**
      * Εμφανίζει το ιστορικό συμβάντων του οδηγού
      */
@@ -663,9 +674,7 @@ class DriversController
 
             // Λήψη των στοιχείων του οδηγού
             $driverId = $_SESSION['user_id'];
-
-            // Λήψη συμβάντων με το νέο μοντέλο
-            $incidents = $this->incidentModel->getDriverIncidents($driverId);
+            $incidents = $this->driversModel->getDriverIncidents($driverId);
 
             // Φόρτωση του view
             include ROOT_DIR . '/src/Views/drivers/incident-history.php';
@@ -727,12 +736,14 @@ class DriversController
             'description' => $this->sanitizeHtml($_POST['description'])
         ];
 
-        // Αποθήκευση του συμβάντος με το νέο μοντέλο
-        if ($this->incidentModel->saveDriverIncident($driverId, $incidentData)) {
+        // Αποθήκευση του συμβάντος
+        if ($this->driversModel->saveDriverIncident($driverId, $incidentData)) {
             $_SESSION['success_message'] = 'Το συμβάν καταχωρήθηκε με επιτυχία.';
 
             // Ενημέρωση της συνολικής βαθμολογίας
-            $this->ratingService->updateDriverRating($driverId);
+            if (isset($this->ratingService)) {
+                $this->ratingService->updateDriverRating($driverId);
+            }
 
             header('Location: ' . BASE_URL . 'drivers/incident-history');
             exit();
@@ -742,7 +753,6 @@ class DriversController
             exit();
         }
     }
-
     /**
      * Εμφανίζει τη φόρμα αυτοαξιολόγησης του οδηγού
      */
@@ -755,10 +765,10 @@ class DriversController
         $driverId = $_SESSION['user_id'];
 
         // Λήψη δεδομένων οδηγού
-        $driver = $this->profileModel->getDriverById($driverId);
+        $driver = $this->driversModel->getDriverById($driverId);
 
         // Λήψη δεδομένων αξιολόγησης (αν υπάρχουν)
-        $assessment = $this->skillModel->getDriverAssessment($driverId);
+        $assessment = $this->driversModel->getDriverAssessment($driverId);
 
         // Έλεγχος αν είναι αίτημα αποθήκευσης
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -777,17 +787,20 @@ class DriversController
                 'driving_conditions' => intval($_POST['driving_conditions'] ?? 0),
                 'eco_driving_rating' => intval($_POST['eco_driving_rating'] ?? 0),
                 'night_driving' => intval($_POST['night_driving'] ?? 0),
+
                 // Ασφάλεια & Συμμόρφωση
                 'accidents' => intval($_POST['accidents'] ?? 0),
                 'traffic_violations' => intval($_POST['traffic_violations'] ?? 0),
                 'tachograph_compliance' => intval($_POST['tachograph_compliance'] ?? 0),
                 'safety_check' => intval($_POST['safety_check'] ?? 0),
                 'load_securing' => intval($_POST['load_securing'] ?? 0),
+
                 // Επαγγελματισμός
                 'punctuality' => intval($_POST['punctuality'] ?? 0),
                 'customer_interaction' => intval($_POST['customer_interaction'] ?? 0),
                 'appearance' => intval($_POST['appearance'] ?? 0),
                 'documentation' => intval($_POST['documentation'] ?? 0),
+
                 // Τεχνικές Γνώσεις
                 'vehicle_maintenance' => intval($_POST['vehicle_maintenance'] ?? 0),
                 'troubleshooting' => intval($_POST['troubleshooting'] ?? 0),
@@ -796,9 +809,11 @@ class DriversController
             ];
 
             // Αποθήκευση δεδομένων αξιολόγησης
-            if ($this->skillModel->updateDriverAssessment($driverId, $assessmentData)) {
+            if ($this->driversModel->updateDriverAssessment($driverId, $assessmentData)) {
                 // Ενημέρωση βαθμολογίας
-                $this->ratingService->updateDriverRating($driverId);
+                if (isset($this->ratingService)) {
+                    $this->ratingService->updateDriverRating($driverId);
+                }
 
                 $_SESSION['success_message'] = 'Η αυτοαξιολόγησή σας αποθηκεύτηκε με επιτυχία.';
                 header('Location: ' . BASE_URL . 'drivers/driver-rating');
@@ -838,17 +853,20 @@ class DriversController
             'driving_conditions' => intval($_POST['driving_conditions'] ?? 0),
             'eco_driving_rating' => intval($_POST['eco_driving_rating'] ?? 0),
             'night_driving' => intval($_POST['night_driving'] ?? 0),
+
             // Ασφάλεια & Συμμόρφωση
             'accidents' => intval($_POST['accidents'] ?? 0),
             'traffic_violations' => intval($_POST['traffic_violations'] ?? 0),
             'tachograph_compliance' => intval($_POST['tachograph_compliance'] ?? 0),
             'safety_check' => intval($_POST['safety_check'] ?? 0),
             'load_securing' => intval($_POST['load_securing'] ?? 0),
+
             // Επαγγελματισμός
             'punctuality' => intval($_POST['punctuality'] ?? 0),
             'customer_interaction' => intval($_POST['customer_interaction'] ?? 0),
             'appearance' => intval($_POST['appearance'] ?? 0),
             'documentation' => intval($_POST['documentation'] ?? 0),
+
             // Τεχνικές Γνώσεις
             'vehicle_maintenance' => intval($_POST['vehicle_maintenance'] ?? 0),
             'troubleshooting' => intval($_POST['troubleshooting'] ?? 0),
@@ -857,9 +875,11 @@ class DriversController
         ];
 
         // Αποθήκευση δεδομένων αξιολόγησης
-        if ($this->skillModel->updateDriverAssessment($driverId, $assessmentData)) {
+        if ($this->driversModel->updateDriverAssessment($driverId, $assessmentData)) {
             // Ενημέρωση βαθμολογίας
-            $this->ratingService->updateDriverRating($driverId);
+            if (isset($this->ratingService)) {
+                $this->ratingService->updateDriverRating($driverId);
+            }
 
             $_SESSION['success_message'] = 'Η αυτοαξιολόγησή σας αποθηκεύτηκε με επιτυχία.';
         } else {

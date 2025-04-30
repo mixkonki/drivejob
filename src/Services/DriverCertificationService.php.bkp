@@ -75,7 +75,7 @@ class DriverCertificationService
                 }
 
                 // Αποθήκευση των δεξιοτήτων
-                $this->skillModel->updateDriverSkills($driverId, $skillsData);
+                $this->driversModel->updateDriverSkills($driverId, $skillsData);
             } else {
                 // Αν δεν επιλέχθηκαν δεξιότητες, μηδενίζουμε όλες τις δεξιότητες
                 $emptySkills = [];
@@ -107,7 +107,7 @@ class DriverCertificationService
                 }
 
                 // Αποθήκευση μηδενικών δεξιοτήτων
-                $this->skillModel->updateDriverSkills($driverId, $emptySkills);
+                $this->driversModel->updateDriverSkills($driverId, $emptySkills);
             }
 
             // 2. Ενημέρωση γλωσσικών ικανοτήτων
@@ -123,7 +123,7 @@ class DriverCertificationService
                 ];
 
                 // Ενημέρωση των γλωσσικών ικανοτήτων
-                $this->profileModel->updateProfile($driverId, $languageData);
+                $this->driversModel->updateProfile($driverId, $languageData);
             }
 
             // 3. Ενημέρωση σεμιναρίων και πρόσθετων δεξιοτήτων
@@ -134,19 +134,19 @@ class DriverCertificationService
             ];
 
             // Ενημέρωση των πρόσθετων δεδομένων
-            $this->profileModel->updateProfile($driverId, $additionalData);
+            $this->driversModel->updateProfile($driverId, $additionalData);
 
             // 4. Ενημέρωση πιστοποιήσεων
             if (isset($formData['certifications']) && is_array($formData['certifications'])) {
                 $this->updateCertifications($driverId, $formData['certifications']);
             } else {
                 // Αν δεν υπάρχουν πιστοποιήσεις, διαγράφουμε τις υπάρχουσες
-                $this->certificationModel->deleteDriverCertifications($driverId);
+                $this->driversModel->deleteDriverCertifications($driverId);
             }
 
             // 5. Ενημέρωση εμπειρίας οχημάτων
             if (isset($formData['vehicle_experience']) && is_array($formData['vehicle_experience'])) {
-                $this->skillModel->updateDriverVehicleExperience($driverId, $formData['vehicle_experience']);
+                $this->driversModel->updateDriverVehicleExperience($driverId, $formData['vehicle_experience']);
             }
 
             return true;
@@ -167,7 +167,7 @@ class DriverCertificationService
     {
         try {
             // Διαγραφή προηγούμενων πιστοποιήσεων
-            $this->certificationModel->deleteDriverCertifications($driverId);
+            $this->driversModel->deleteDriverCertifications($driverId);
 
             $processedCertifications = [];
 
@@ -184,7 +184,7 @@ class DriverCertificationService
             }
 
             if (!empty($processedCertifications)) {
-                $this->certificationModel->addDriverCertifications($driverId, $processedCertifications);
+                $this->driversModel->addDriverCertifications($driverId, $processedCertifications);
             }
 
             return true;
