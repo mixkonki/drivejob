@@ -59,13 +59,18 @@ $router->post('/drivers/add-rating/{id}', [DriversController::class, 'addRating'
 $router->get('/drivers/welcome', [DriversController::class, 'welcome']);
 $router->post('/drivers/complete-profile', [DriversController::class, 'completeProfile']);
 
+// Διαδρομές για την αυτοαξιολόγηση
+$router->get('/drivers/update-assessment', [DriversController::class, 'updateAssessment']);
+$router->post('/drivers/update-assessment', [DriversController::class, 'updateAssessment']);
+$router->post('/drivers/save-assessment', [DriversController::class, 'saveAssessment']);
+
 // Εναλλαγή διαθεσιμότητας οδηγού
 $router->post(
     '/drivers/toggle-availability',
     [\Drivejob\Controllers\DriversController::class, 'toggleAvailability'],
     [
         // Middleware #1: Χρήση ανώνυμης συνάρτησης (closure)
-        function() {
+        function () {
             // Καλεί τη στατική μέθοδο hasRole με την παράμετρο 'driver'
             \Drivejob\Core\AuthMiddleware::hasRole('driver');
             // Δεν επιστρέφει τίποτα (null) αν ο έλεγχος πετύχει
@@ -139,6 +144,6 @@ $router->post('/drivers/update-resume', [DriverResumeController::class, 'updateR
 
 
 // Διαδρομή για 404 Not Found
-$router->notFound(function() {
+$router->notFound(function () {
     require_once ROOT_DIR . '/src/Views/errors/404.php';
 });
