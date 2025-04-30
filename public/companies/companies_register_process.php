@@ -72,4 +72,3 @@ if (!empty($errorMessage)) {
 echo '</main>'; // Κλείσιμο του main
 
 include ROOT_DIR . '/src/Views/footer.php'; // Footer
-?>

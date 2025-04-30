@@ -1,4 +1,5 @@
 <?php
+
 namespace Drivejob\Services;
 
 use PDO;
@@ -9,143 +10,128 @@ use PDOException;
 /**
  * Υπηρεσία διαχείρισης όλων των ειδοποιήσεων στην εφαρμογή DriveJob
  */
-class NotificationServices {
+class NotificationServices
+{
     /**
      * @var PDO $pdo Σύνδεση με τη βάση δεδομένων
      */
     private $pdo;
-    
-    /**
+/**
      * @var EmailService $emailService Υπηρεσία αποστολής email
      */
     private $emailService;
-    
-    /**
+/**
      * @var SmsService $smsService Υπηρεσία αποστολής SMS
      */
     private $smsService;
-    
-    /**
+/**
      * @var array $config Ρυθμίσεις ειδοποιήσεων
      */
     private $config;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param PDO $pdo Σύνδεση με τη βάση δεδομένων
      * @param EmailService $emailService Υπηρεσία αποστολής email
      * @param SmsService $smsService Υπηρεσία αποστολής SMS
      * @param array $config Ρυθμίσεις ειδοποιήσεων
      */
-    public function __construct(PDO $pdo, EmailService $emailService, SmsService $smsService, array $config = []) {
+    public function __construct(PDO $pdo, EmailService $emailService, SmsService $smsService, array $config = [])
+    {
         $this->pdo = $pdo;
         $this->emailService = $emailService;
         $this->smsService = $smsService;
         $this->config = $config;
-        
-        // Μετάδοση της λειτουργίας debug από τις ρυθμίσεις στις υπηρεσίες
+// Μετάδοση της λειτουργίας debug από τις ρυθμίσεις στις υπηρεσίες
         if (isset($this->config['debug_mode'])) {
             $this->emailService->setDebugMode($this->config['debug_mode']);
         }
     }
-    
+
     /**
      * Έλεγχος και αποστολή ειδοποιήσεων για άδειες που λήγουν
-     * 
+     *
      * @return array Αποτελέσματα ειδοποιήσεων
      */
-    public function checkAndSendLicenseExpiryNotifications() {
+    public function checkAndSendLicenseExpiryNotifications()
+    {
         try {
             $this->log("Έναρξη ελέγχου για άδειες που λήγουν", 'INFO');
-            
 // Προσθήκη της διαδρομής προτύπων email αν έχει οριστεί
-if (!isset($this->config['templates_path'])) {
-    $this->config['templates_path'] = dirname(dirname(__DIR__)) . '/templates/emails/';
-}
-            
+            if (!isset($this->config['templates_path'])) {
+                $this->config['templates_path'] = dirname(dirname(__DIR__)) . '/templates/emails/';
+            }
+
             // Δημιουργία της υπηρεσίας ειδοποιήσεων λήξης αδειών
-            $expiryService = new LicenseExpiryNotificationService(
-                $this->pdo, 
-                $this->emailService, 
-                $this->smsService, 
-                $this->config
-            );
-            
-            // Εκτέλεση του ελέγχου και αποστολή των ειδοποιήσεων
+            $expiryService = new LicenseExpiryNotificationService($this->pdo, $this->emailService, $this->smsService, $this->config);
+// Εκτέλεση του ελέγχου και αποστολή των ειδοποιήσεων
             $results = $expiryService->checkAndSendExpiryNotifications();
-            
-            // Καταγραφή των συνολικών αποτελεσμάτων
+// Καταγραφή των συνολικών αποτελεσμάτων
             $totalNotifications = 0;
             foreach ($results as $category => $notifications) {
                 $totalNotifications += count($notifications);
                 $this->log("Κατηγορία {$category}: " . count($notifications) . " ειδοποιήσεις", 'INFO');
             }
-            
+
             $this->log("Συνολικές ειδοποιήσεις που στάλθηκαν: {$totalNotifications}", 'INFO');
-            
-            // Αποστολή συγκεντρωτικής αναφοράς στους διαχειριστές αν έχει ρυθμιστεί
+// Αποστολή συγκεντρωτικής αναφοράς στους διαχειριστές αν έχει ρυθμιστεί
             if (isset($this->config['daily_report_enabled']) && $this->config['daily_report_enabled'] && $totalNotifications > 0) {
                 $this->sendDailyReport($results);
             }
-            
+
             return $results;
         } catch (PDOException $e) {
-            $this->log("Σφάλμα βάσης δεδομένων κατά τον έλεγχο λήξης αδειών: " . $e->getMessage() . 
+            $this->log("Σφάλμα βάσης δεδομένων κατά τον έλεγχο λήξης αδειών: " . $e->getMessage() .
                       " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
-            
             if (isset($e->errorInfo)) {
-                $this->log("SQL State: " . $e->errorInfo[0] . 
+                $this->log("SQL State: " . $e->errorInfo[0] .
                           ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
             }
-            
+
             $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
-            throw $e; // Επανεκκίνηση της εξαίρεσης για να τη χειριστεί το κύριο script
+            throw $e;
+        // Επανεκκίνηση της εξαίρεσης για να τη χειριστεί το κύριο script
         } catch (Exception $e) {
-            $this->log("Γενικό σφάλμα κατά τον έλεγχο λήξης αδειών: " . $e->getMessage() . 
+            $this->log("Γενικό σφάλμα κατά τον έλεγχο λήξης αδειών: " . $e->getMessage() .
                       " (Τύπος: " . get_class($e) . ")", 'ERROR');
             $this->log("Ίχνος στοίβας: " . $e->getTraceAsString(), 'DEBUG');
             throw $e; // Επανεκκίνηση της εξαίρεσης για να τη χειριστεί το κύριο script
         }
     }
-    
+
     /**
      * Αποστολή καθημερινής αναφοράς στους διαχειριστές
-     * 
+     *
      * @param array $results Αποτελέσματα των ειδοποιήσεων που στάλθηκαν
      * @return bool Επιτυχία/αποτυχία
      */
-    private function sendDailyReport(array $results) {
+    private function sendDailyReport(array $results)
+    {
         try {
-            // Έλεγχος αν υπάρχουν διαχειριστές για αποστολή
+// Έλεγχος αν υπάρχουν διαχειριστές για αποστολή
             if (empty($this->config['admin_emails'])) {
                 $this->log("Δεν υπάρχουν διαχειριστές για αποστολή της καθημερινής αναφοράς", 'WARNING');
                 return false;
             }
-            
+
             // Υπολογισμός συνολικών ειδοποιήσεων
             $totalNotifications = 0;
             foreach ($results as $category => $notifications) {
                 $totalNotifications += count($notifications);
             }
-            
+
             // Δημιουργία περιεχομένου email
             $subject = "DriveJob - Καθημερινή Αναφορά Ειδοποιήσεων Λήξης Αδειών";
             $message = $this->generateDailyReportEmail($results, $totalNotifications);
-            
-            // Αποστολή email στους διαχειριστές
-            $sent = $this->emailService->send(
-                $this->config['admin_emails'],
-                $subject,
-                $message
-            );
-            
+// Αποστολή email στους διαχειριστές
+            $sent = $this->emailService->send($this->config['admin_emails'], $subject, $message);
             if ($sent) {
                 $this->log("Καθημερινή αναφορά εστάλη επιτυχώς στους διαχειριστές", 'INFO');
             } else {
                 $this->log("Αποτυχία αποστολής καθημερινής αναφοράς στους διαχειριστές", 'ERROR');
             }
-            
+
             return $sent;
         } catch (Exception $e) {
             $this->log("Σφάλμα κατά την αποστολή καθημερινής αναφοράς: " . $e->getMessage() . " (Τύπος: " . get_class($e) . ")", 'ERROR');
@@ -153,18 +139,18 @@ if (!isset($this->config['templates_path'])) {
             return false;
         }
     }
-    
+
     /**
      * Δημιουργία του περιεχομένου email για την καθημερινή αναφορά
-     * 
+     *
      * @param array $results Αποτελέσματα των ειδοποιήσεων που στάλθηκαν
      * @param int $totalNotifications Συνολικός αριθμός ειδοποιήσεων
      * @return string HTML περιεχόμενο του email
      */
-    private function generateDailyReportEmail(array $results, int $totalNotifications) {
+    private function generateDailyReportEmail(array $results, int $totalNotifications)
+    {
         $date = date('d/m/Y');
-        
-        // Μετάφραση των κατηγοριών σε ανθρώπινα αναγνώσιμη μορφή
+// Μετάφραση των κατηγοριών σε ανθρώπινα αναγνώσιμη μορφή
         $categoryNames = [
             'driving_licenses' => 'Άδειες Οδήγησης',
             'pei' => 'Πιστοποιητικά Επαγγελματικής Ικανότητας (ΠΕΙ)',
@@ -173,8 +159,7 @@ if (!isset($this->config['templates_path'])) {
             'operator_licenses' => 'Άδειες Χειριστή Μηχανημάτων',
             'special_licenses' => 'Ειδικές Άδειες'
         ];
-        
-        // Δημιουργία του HTML μηνύματος
+// Δημιουργία του HTML μηνύματος
         $html = "
         <!DOCTYPE html>
         <html>
@@ -205,24 +190,21 @@ if (!isset($this->config['templates_path'])) {
                 <div class='summary'>
                     <h2>Σύνοψη</h2>
                     <p>Συνολικές ειδοποιήσεις που στάλθηκαν: <strong>{$totalNotifications}</strong></p>";
-        
-        // Προσθήκη σύνοψης ανά κατηγορία
+// Προσθήκη σύνοψης ανά κατηγορία
         foreach ($results as $category => $notifications) {
             $categoryName = $categoryNames[$category] ?? $category;
             $count = count($notifications);
             $html .= "<p>{$categoryName}: <strong>{$count}</strong> ειδοποιήσεις</p>";
         }
-        
+
         $html .= "
                 </div>";
-        
-        // Προσθήκη αναλυτικών πληροφοριών ανά κατηγορία
+// Προσθήκη αναλυτικών πληροφοριών ανά κατηγορία
         foreach ($results as $category => $notifications) {
             $categoryName = $categoryNames[$category] ?? $category;
             $html .= "
                 <div class='category'>
                     <h3>{$categoryName}</h3>";
-            
             if (empty($notifications)) {
                 $html .= "<p class='no-data'>Δεν στάλθηκαν ειδοποιήσεις για αυτή την κατηγορία.</p>";
             } else {
@@ -238,22 +220,19 @@ if (!isset($this->config['templates_path'])) {
                             </tr>
                         </thead>
                         <tbody>";
-                
                 foreach ($notifications as $notification) {
                     $driverName = $notification['driver_name'] ?? 'Άγνωστος';
                     $licenseType = $notification['license_type'] ?? 'Άγνωστος τύπος';
                     $expiryDate = isset($notification['expiry_date']) ? date('d/m/Y', strtotime($notification['expiry_date'])) : 'Άγνωστη';
                     $daysBefore = $notification['days_before'] ?? '-';
-                    
                     $notificationTypes = [];
                     if (isset($notification['email_sent']) && $notification['email_sent']) {
-                        $notificationTypes[] = 'Email';
+                            $notificationTypes[] = 'Email';
                     }
                     if (isset($notification['sms_sent']) && $notification['sms_sent']) {
                         $notificationTypes[] = 'SMS';
                     }
                     $notificationsText = !empty($notificationTypes) ? implode(', ', $notificationTypes) : 'Καμία';
-                    
                     $html .= "
                             <tr>
                                 <td>{$driverName}</td>
@@ -263,16 +242,16 @@ if (!isset($this->config['templates_path'])) {
                                 <td>{$notificationsText}</td>
                             </tr>";
                 }
-                
+
                 $html .= "
                         </tbody>
                     </table>";
             }
-            
+
             $html .= "
                 </div>";
         }
-        
+
         $html .= "
             </div>
             <div class='footer'>
@@ -282,76 +261,66 @@ if (!isset($this->config['templates_path'])) {
         </body>
         </html>
         ";
-        
         return $html;
     }
-    
+
     /**
      * Αποστολή ειδοποίησης για λήξη συμβολαίου
-     * 
+     *
      * @param int $userId ID χρήστη
      * @param string $userType Τύπος χρήστη (driver, company)
      * @param string $contractType Τύπος συμβολαίου
      * @param string $expiryDate Ημερομηνία λήξης
      * @return bool Επιτυχία/αποτυχία
      */
-    public function sendContractExpiryNotification($userId, $userType, $contractType, $expiryDate) {
+    public function sendContractExpiryNotification($userId, $userType, $contractType, $expiryDate)
+    {
         try {
-            // Λήψη στοιχείων χρήστη
-            $userModel = $userType === 'driver' 
+// Λήψη στοιχείων χρήστη
+            $userModel = $userType === 'driver'
                 ? new \Drivejob\Models\DriversModel($this->pdo)
                 : new \Drivejob\Models\CompaniesModel($this->pdo);
-            
             $user = $userType === 'driver'
                 ? $userModel->getDriverById($userId)
                 : $userModel->getCompanyById($userId);
-            
             if (!$user) {
                 $this->log("Δεν βρέθηκε ο χρήστης με ID: {$userId} και τύπο: {$userType}", 'ERROR');
                 return false;
             }
-            
+
             // Προετοιμασία των δεδομένων
             $firstName = $user['first_name'] ?? $user['name'] ?? 'Συνεργάτη';
             $email = $user['email'] ?? null;
             $phone = $user['phone'] ?? null;
-            
             if (!$email && !$phone) {
                 $this->log("Δεν υπάρχουν στοιχεία επικοινωνίας για τον χρήστη με ID: {$userId}", 'ERROR');
                 return false;
             }
-            
+
             // Υπολογισμός ημερών μέχρι τη λήξη
             $expiryDateTime = new DateTime($expiryDate);
             $currentDateTime = new DateTime();
             $interval = $currentDateTime->diff($expiryDateTime);
             $daysUntilExpiry = $interval->days;
-            
-            // Αποστολή email
+// Αποστολή email
             $success = false;
             if ($email) {
                 $subject = "Ειδοποίηση λήξης συμβολαίου - {$contractType}";
-                $message = $this->generateContractExpiryEmailTemplate(
-                    $firstName,
-                    $contractType,
-                    $expiryDate,
-                    $daysUntilExpiry
-                );
-                
+                $message = $this->generateContractExpiryEmailTemplate($firstName, $contractType, $expiryDate, $daysUntilExpiry);
                 $success = $this->emailService->send($email, $subject, $message);
                 $this->log("Αποστολή email ειδοποίησης λήξης συμβολαίου στον χρήστη {$userId}: " . ($success ? "Επιτυχής" : "Αποτυχία"), 'INFO');
             }
-            
+
             // Αποστολή SMS αν είναι λιγότερο από 15 ημέρες πριν τη λήξη και υπάρχει αριθμός τηλεφώνου
             $smsSent = false;
             if ($phone && $daysUntilExpiry <= 15) {
-                $smsMessage = "DriveJob: Το συμβόλαιο {$contractType} λήγει σε {$daysUntilExpiry} " . 
+                $smsMessage = "DriveJob: Το συμβόλαιο {$contractType} λήγει σε {$daysUntilExpiry} " .
                             ($daysUntilExpiry == 1 ? "ημέρα" : "ημέρες") . ". Παρακαλούμε ανανεώστε το έγκαιρα.";
                 $smsSent = $this->smsService->sendSms($phone, $smsMessage);
                 $this->log("Αποστολή SMS ειδοποίησης λήξης συμβολαίου στον χρήστη {$userId}: " . ($smsSent ? "Επιτυχής" : "Αποτυχία"), 'INFO');
                 $success = $success || $smsSent;
             }
-            
+
             // Καταγραφή της ειδοποίησης
             if ($success) {
                 $this->recordNotification('contract_expiry', $userId, $userType, [
@@ -360,42 +329,40 @@ if (!isset($this->config['templates_path'])) {
                     'days_until_expiry' => $daysUntilExpiry
                 ], $smsSent ? ($success ? 'both' : 'sms') : 'email');
             }
-            
+
             return $success;
         } catch (PDOException $e) {
-            $this->log("Σφάλμα βάσης δεδομένων κατά την αποστολή ειδοποίησης λήξης συμβολαίου: " . $e->getMessage() . 
+            $this->log("Σφάλμα βάσης δεδομένων κατά την αποστολή ειδοποίησης λήξης συμβολαίου: " . $e->getMessage() .
                       " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
-            
             if (isset($e->errorInfo)) {
-                $this->log("SQL State: " . $e->errorInfo[0] . 
+                $this->log("SQL State: " . $e->errorInfo[0] .
                           ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
             }
-            
+
             return false;
         } catch (Exception $e) {
-            $this->log("Γενικό σφάλμα κατά την αποστολή ειδοποίησης λήξης συμβολαίου: " . $e->getMessage() . 
+            $this->log("Γενικό σφάλμα κατά την αποστολή ειδοποίησης λήξης συμβολαίου: " . $e->getMessage() .
                       " (Τύπος: " . get_class($e) . ")", 'ERROR');
             return false;
         }
     }
-    
+
     /**
      * Δημιουργία του προτύπου email για ειδοποίηση λήξης συμβολαίου
-     * 
+     *
      * @param string $firstName Όνομα παραλήπτη
      * @param string $contractType Τύπος συμβολαίου
      * @param string $expiryDate Ημερομηνία λήξης
      * @param int $daysUntilExpiry Ημέρες μέχρι τη λήξη
      * @return string HTML περιεχόμενο του email
      */
-    private function generateContractExpiryEmailTemplate($firstName, $contractType, $expiryDate, $daysUntilExpiry) {
+    private function generateContractExpiryEmailTemplate($firstName, $contractType, $expiryDate, $daysUntilExpiry)
+    {
         // Μετατροπή της ημερομηνίας σε αναγνώσιμη μορφή
         $expiryDateObj = new DateTime($expiryDate);
         $formattedDate = $expiryDateObj->format('d/m/Y');
-        
-        // Επιλογή του κατάλληλου κειμένου για τις ημέρες
+// Επιλογή του κατάλληλου κειμένου για τις ημέρες
         $daysText = ($daysUntilExpiry == 1) ? 'μία ημέρα' : $daysUntilExpiry . ' ημέρες';
-        
         $html = "
         <!DOCTYPE html>
         <html>
@@ -449,13 +416,12 @@ if (!isset($this->config['templates_path'])) {
         </body>
         </html>
         ";
-        
         return $html;
     }
-    
+
     /**
      * Καταγραφή της ειδοποίησης στη βάση δεδομένων
-     * 
+     *
      * @param string $type Τύπος ειδοποίησης (license_expiry, contract_expiry, etc.)
      * @param int $userId ID χρήστη
      * @param string $userType Τύπος χρήστη (driver, company)
@@ -463,56 +429,53 @@ if (!isset($this->config['templates_path'])) {
      * @param string $method Μέθοδος αποστολής (email, sms, both)
      * @return bool Επιτυχία/αποτυχία
      */
-    public function recordNotification($type, $userId, $userType, $data, $method) {
+    public function recordNotification($type, $userId, $userType, $data, $method)
+    {
         try {
-            // Έλεγχος για την ύπαρξη του πίνακα ειδοποιήσεων
+// Έλεγχος για την ύπαρξη του πίνακα ειδοποιήσεων
             $tableCheck = $this->pdo->query("SHOW TABLES LIKE 'notifications'");
-            
-            // Αν ο πίνακας δεν υπάρχει, τον δημιουργούμε
+// Αν ο πίνακας δεν υπάρχει, τον δημιουργούμε
             if ($tableCheck->rowCount() == 0) {
                 $this->createNotificationsTable();
             }
-            
+
             // Μετατροπή του πίνακα data σε JSON
             $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
-            
-            // Εισαγωγή της εγγραφής στη βάση
+// Εισαγωγή της εγγραφής στη βάση
             $sql = "INSERT INTO notifications (type, user_id, user_type, data, method, sent_at) 
                     VALUES (?, ?, ?, ?, ?, NOW())";
-            
             $stmt = $this->pdo->prepare($sql);
             $result = $stmt->execute([$type, $userId, $userType, $jsonData, $method]);
-            
             if ($result) {
                 $this->log("Επιτυχής καταγραφή ειδοποίησης τύπου {$type} για χρήστη {$userId}", 'INFO');
             } else {
                 $this->log("Αποτυχία καταγραφής ειδοποίησης τύπου {$type} για χρήστη {$userId}", 'ERROR');
             }
-            
+
             return $result;
         } catch (PDOException $e) {
-            $this->log("Σφάλμα βάσης δεδομένων κατά την καταγραφή ειδοποίησης: " . $e->getMessage() . 
+            $this->log("Σφάλμα βάσης δεδομένων κατά την καταγραφή ειδοποίησης: " . $e->getMessage() .
                       " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
-            
             if (isset($e->errorInfo)) {
-                $this->log("SQL State: " . $e->errorInfo[0] . 
+                $this->log("SQL State: " . $e->errorInfo[0] .
                           ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
             }
-            
+
             return false;
         } catch (Exception $e) {
-            $this->log("Γενικό σφάλμα κατά την καταγραφή ειδοποίησης: " . $e->getMessage() . 
+            $this->log("Γενικό σφάλμα κατά την καταγραφή ειδοποίησης: " . $e->getMessage() .
                       " (Τύπος: " . get_class($e) . ")", 'ERROR');
             return false;
         }
     }
-    
+
     /**
      * Δημιουργία του πίνακα ειδοποιήσεων αν δεν υπάρχει
-     * 
+     *
      * @return bool Επιτυχία/αποτυχία
      */
-    private function createNotificationsTable() {
+    private function createNotificationsTable()
+    {
         try {
             $sql = "
                 CREATE TABLE IF NOT EXISTS notifications (
@@ -530,7 +493,6 @@ if (!isset($this->config['templates_path'])) {
                     INDEX (sent_at)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             ";
-            
             $result = $this->pdo->exec($sql) !== false;
             if ($result) {
                 $this->log("Επιτυχής δημιουργία πίνακα notifications", 'INFO');
@@ -539,52 +501,54 @@ if (!isset($this->config['templates_path'])) {
             }
             return $result;
         } catch (PDOException $e) {
-            $this->log("Σφάλμα βάσης δεδομένων κατά τη δημιουργία του πίνακα ειδοποιήσεων: " . $e->getMessage() . 
+            $this->log("Σφάλμα βάσης δεδομένων κατά τη δημιουργία του πίνακα ειδοποιήσεων: " . $e->getMessage() .
                       " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
-            
             if (isset($e->errorInfo)) {
-                $this->log("SQL State: " . $e->errorInfo[0] . 
+                $this->log("SQL State: " . $e->errorInfo[0] .
                           ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
             }
-            
+
             return false;
         } catch (Exception $e) {
-            $this->log("Γενικό σφάλμα κατά τη δημιουργία του πίνακα ειδοποιήσεων: " . $e->getMessage() . 
+            $this->log("Γενικό σφάλμα κατά τη δημιουργία του πίνακα ειδοποιήσεων: " . $e->getMessage() .
                       " (Τύπος: " . get_class($e) . ")", 'ERROR');
             return false;
         }
     }
-    
+
     /**
      * Επιστρέφει τις ρυθμίσεις ειδοποιήσεων
-     * 
+     *
      * @return array Ρυθμίσεις ειδοποιήσεων
      */
-    public function getConfig() {
+    public function getConfig()
+    {
         return $this->config;
     }
-    
+
     /**
      * Ορίζει τις ρυθμίσεις ειδοποιήσεων
-     * 
+     *
      * @param array $config Νέες ρυθμίσεις
      * @return void
      */
-    public function setConfig(array $config) {
+    public function setConfig(array $config)
+    {
         $this->config = $config;
     }
-    
+
     /**
      * Ενημερώνει μια συγκεκριμένη ρύθμιση
-     * 
+     *
      * @param string $key Κλειδί ρύθμισης
      * @param mixed $value Τιμή ρύθμισης
      * @return void
      */
-    public function updateConfig($key, $value) {
+    public function updateConfig($key, $value)
+    {
         $this->config[$key] = $value;
     }
-    
+
     /**
      * Καταγραφή μηνύματος στο αρχείο καταγραφής
      *
@@ -592,19 +556,20 @@ if (!isset($this->config['templates_path'])) {
      * @param string $level Επίπεδο καταγραφής (INFO, WARNING, ERROR, DEBUG)
      * @return void
      */
-    private function log($message, $level = 'INFO') {
+    private function log($message, $level = 'INFO')
+    {
         // Έλεγχος αν υπάρχει η κλάση Logger
         if (class_exists('Drivejob\Core\Logger')) {
-            // Έλεγχος αν υπάρχει η μέθοδος log
+// Έλεγχος αν υπάρχει η μέθοδος log
             if (method_exists('Drivejob\Core\Logger', 'log')) {
-                // Χρήση της μεθόδου της κλάσης Logger
+// Χρήση της μεθόδου της κλάσης Logger
                 \Drivejob\Core\Logger::log($level, $message, 'NotificationServices');
             } else {
-                // Εναλλακτικά, χρήση της error_log
+            // Εναλλακτικά, χρήση της error_log
                 error_log("[" . date('Y-m-d H:i:s') . "] {$level} [NotificationServices]: {$message}");
             }
         } else {
-            // Χρήση της error_log αν δεν υπάρχει η κλάση Logger
+        // Χρήση της error_log αν δεν υπάρχει η κλάση Logger
             error_log("[" . date('Y-m-d H:i:s') . "] {$level} [NotificationServices]: {$message}");
         }
     }

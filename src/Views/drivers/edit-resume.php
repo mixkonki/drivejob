@@ -1,20 +1,20 @@
 <?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 ?>
 
 <main>
     <div class="container">
         <h1>Ενημέρωση Βιογραφικού</h1>
         
-        <?php if (isset($_SESSION['success_message'])): ?>
+        <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
                 <?php echo $_SESSION['success_message']; ?>
                 <?php unset($_SESSION['success_message']); ?>
             </div>
         <?php endif; ?>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -74,5 +74,5 @@ include ROOT_DIR . '/src/Views/header.php';
 
 <?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php'; 
+include ROOT_DIR . '/src/Views/footer.php';
 ?>

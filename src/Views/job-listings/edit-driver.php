@@ -1,6 +1,6 @@
-<?php 
+<?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
 use Drivejob\Core\Session;
@@ -15,7 +15,7 @@ $vehicleTypesArray = [];
 if (isset($listing['vehicle_types'])) {
     if (is_array($listing['vehicle_types'])) {
         $vehicleTypesArray = $listing['vehicle_types'];
-    } else if (is_string($listing['vehicle_types']) && !empty($listing['vehicle_types'])) {
+    } elseif (is_string($listing['vehicle_types']) && !empty($listing['vehicle_types'])) {
         $vehicleTypesArray = explode(',', $listing['vehicle_types']);
     }
 }
@@ -25,7 +25,7 @@ $preferredScheduleArray = [];
 if (isset($listing['preferred_schedule'])) {
     if (is_array($listing['preferred_schedule'])) {
         $preferredScheduleArray = $listing['preferred_schedule'];
-    } else if (is_string($listing['preferred_schedule']) && !empty($listing['preferred_schedule'])) {
+    } elseif (is_string($listing['preferred_schedule']) && !empty($listing['preferred_schedule'])) {
         $preferredScheduleArray = explode(',', $listing['preferred_schedule']);
     }
 }
@@ -38,7 +38,7 @@ if (isset($listing['preferred_schedule'])) {
     <div class="container">
         <h1>Επεξεργασία Αγγελίας Αναζήτησης Εργασίας</h1>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -62,7 +62,7 @@ if (isset($listing['preferred_schedule'])) {
                         <div class="form-group <?php echo isset($errors['title']) ? 'has-error' : ''; ?>">
                             <label for="title">Τίτλος Αγγελίας</label>
                             <input type="text" id="title" name="title" value="<?php echo isset($oldInput['title']) ? htmlspecialchars($oldInput['title']) : htmlspecialchars($listing['title']); ?>" required>
-                            <?php if (isset($errors['title'])): ?>
+                            <?php if (isset($errors['title'])) : ?>
                                 <div class="error-message"><?php echo $errors['title']; ?></div>
                             <?php endif; ?>
                             <p class="help-text">Γράψτε έναν σύντομο, περιγραφικό τίτλο που αναδεικνύει την ειδικότητά σας</p>
@@ -89,7 +89,7 @@ if (isset($listing['preferred_schedule'])) {
                         <div class="form-group <?php echo isset($errors['description']) ? 'has-error' : ''; ?>">
                             <label for="description">Περιγραφή Υπηρεσιών</label>
                             <textarea id="description" name="description" rows="6" required><?php echo isset($oldInput['description']) ? htmlspecialchars($oldInput['description']) : htmlspecialchars($listing['description']); ?></textarea>
-                            <?php if (isset($errors['description'])): ?>
+                            <?php if (isset($errors['description'])) : ?>
                                 <div class="error-message"><?php echo $errors['description']; ?></div>
                             <?php endif; ?>
                             <p class="help-text">Περιγράψτε την εμπειρία σας, τα προσόντα σας και τους τύπους εργασίας που αναζητάτε</p>
@@ -104,7 +104,7 @@ if (isset($listing['preferred_schedule'])) {
                             <label for="location">Τοποθεσία</label>
                             <input type="text" id="location" name="location" 
                                 value="<?php echo isset($oldInput['location']) ? htmlspecialchars($oldInput['location']) : htmlspecialchars($listing['location']); ?>" required>
-                            <?php if (isset($errors['location'])): ?>
+                            <?php if (isset($errors['location'])) : ?>
                                 <div class="error-message"><?php echo $errors['location']; ?></div>
                             <?php endif; ?>
                         </div>
@@ -297,7 +297,7 @@ if (isset($listing['preferred_schedule'])) {
         <div class="vehicle-type-grid">
             <label class="vehicle-type-card">
                 <input type="checkbox" name="vehicle_types[]" value="car" 
-                    <?php echo (isset($oldInput['vehicle_types']) && in_array('car', $oldInput['vehicle_types'])) || 
+                    <?php echo (isset($oldInput['vehicle_types']) && in_array('car', $oldInput['vehicle_types'])) ||
                               (isset($listing['vehicle_types']) && in_array('car', $listing['vehicle_types'])) ? 'checked' : ''; ?>>
                 <div class="vehicle-card-content">
                     <div class="vehicle-icon car-icon"></div>
@@ -307,7 +307,7 @@ if (isset($listing['preferred_schedule'])) {
             
             <label class="vehicle-type-card">
                 <input type="checkbox" name="vehicle_types[]" value="van" 
-                    <?php echo (isset($oldInput['vehicle_types']) && in_array('van', $oldInput['vehicle_types'])) || 
+                    <?php echo (isset($oldInput['vehicle_types']) && in_array('van', $oldInput['vehicle_types'])) ||
                               (isset($listing['vehicle_types']) && in_array('van', $listing['vehicle_types'])) ? 'checked' : ''; ?>>
                 <div class="vehicle-card-content">
                     <div class="vehicle-icon van-icon"></div>
@@ -317,7 +317,7 @@ if (isset($listing['preferred_schedule'])) {
             
             <label class="vehicle-type-card">
                 <input type="checkbox" name="vehicle_types[]" value="truck" 
-                    <?php echo (isset($oldInput['vehicle_types']) && in_array('truck', $oldInput['vehicle_types'])) || 
+                    <?php echo (isset($oldInput['vehicle_types']) && in_array('truck', $oldInput['vehicle_types'])) ||
                               (isset($listing['vehicle_types']) && in_array('truck', $listing['vehicle_types'])) ? 'checked' : ''; ?>>
                 <div class="vehicle-card-content">
                     <div class="vehicle-icon truck-icon"></div>
@@ -327,7 +327,7 @@ if (isset($listing['preferred_schedule'])) {
             
             <label class="vehicle-type-card">
                 <input type="checkbox" name="vehicle_types[]" value="bus" 
-                    <?php echo (isset($oldInput['vehicle_types']) && in_array('bus', $oldInput['vehicle_types'])) || 
+                    <?php echo (isset($oldInput['vehicle_types']) && in_array('bus', $oldInput['vehicle_types'])) ||
                               (isset($listing['vehicle_types']) && in_array('bus', $listing['vehicle_types'])) ? 'checked' : ''; ?>>
                 <div class="vehicle-card-content">
                     <div class="vehicle-icon bus-icon"></div>
@@ -337,7 +337,7 @@ if (isset($listing['preferred_schedule'])) {
             
             <label class="vehicle-type-card">
                 <input type="checkbox" name="vehicle_types[]" value="machinery" 
-                    <?php echo (isset($oldInput['vehicle_types']) && in_array('machinery', $oldInput['vehicle_types'])) || 
+                    <?php echo (isset($oldInput['vehicle_types']) && in_array('machinery', $oldInput['vehicle_types'])) ||
                               (isset($listing['vehicle_types']) && in_array('machinery', $listing['vehicle_types'])) ? 'checked' : ''; ?>>
                 <div class="vehicle-card-content">
                     <div class="vehicle-icon machinery-icon"></div>
@@ -347,7 +347,7 @@ if (isset($listing['preferred_schedule'])) {
         </div>
     </div>
     
-    <?php if (isset($errors['vehicle_types'])): ?>
+    <?php if (isset($errors['vehicle_types'])) : ?>
         <div class="error-message"><?php echo $errors['vehicle_types']; ?></div>
     <?php endif; ?>
 </div>
@@ -360,19 +360,19 @@ if (isset($listing['preferred_schedule'])) {
                         <!-- Άδειες Οδήγησης -->
                         <div class="form-group">
                             <h3>Άδειες Οδήγησης</h3>
-                            <?php if (isset($driverProfile) && !empty($driverLicenseTypes)): ?>
+                            <?php if (isset($driverProfile) && !empty($driverLicenseTypes)) : ?>
                                 <div class="driver-licenses-summary">
                                     <p>Οι παρακάτω άδειες από το προφίλ σας θα εμφανίζονται στην αγγελία:</p>
                                     <div class="license-badges">
-                                        <?php foreach ($driverLicenseTypes as $category): ?>
-                                            <?php if (!empty(trim($category))): ?>
+                                        <?php foreach ($driverLicenseTypes as $category) : ?>
+                                            <?php if (!empty(trim($category))) : ?>
                                                 <span class="license-badge"><?php echo htmlspecialchars(trim($category)); ?></span>
                                             <?php endif; ?>
                                         <?php endforeach; ?>
                                     </div>
                                     <p class="help-text">Οι άδειες εμφανίζονται αυτόματα από το προφίλ σας. <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Επεξεργασία προφίλ</a></p>
                                 </div>
-                            <?php else: ?>
+                            <?php else : ?>
                                 <p class="no-licenses">Δεν έχετε καταχωρήσει άδειες στο προφίλ σας. 
                                     <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Προσθέστε τώρα</a> για καλύτερη προβολή της αγγελίας σας.</p>
                             <?php endif; ?>
@@ -408,20 +408,20 @@ if (isset($listing['preferred_schedule'])) {
                         <?php echo (isset($listing['show_adr']) && $listing['show_adr']) || (isset($hasAdr) && $hasAdr) ? 'checked' : (isset($hasAdr) && !$hasAdr ? 'disabled' : ''); ?>>
                     <span class="certification-name">Πιστοποιητικό ADR</span>
                 </label>
-                <?php if (!(isset($hasAdr) && $hasAdr)): ?>
+                <?php if (!(isset($hasAdr) && $hasAdr)) : ?>
                     <span class="certification-missing">(Δεν έχετε δηλώσει)</span>
                 <?php endif; ?>
             </div>
-            <?php if (isset($hasAdr) && $hasAdr): ?>
+            <?php if (isset($hasAdr) && $hasAdr) : ?>
                 <div class="certification-details">
                     <p><strong>Κατηγορία:</strong> 
-                    <?php 
+                    <?php
                         echo isset($adrTypes) ? htmlspecialchars($adrTypes) : 'Δεν έχει καθοριστεί';
                     ?>
                     </p>
-                    <?php if (isset($driverAdrDetails['expiry_date']) && $driverAdrDetails['expiry_date']): ?>
+                    <?php if (isset($driverAdrDetails['expiry_date']) && $driverAdrDetails['expiry_date']) : ?>
                         <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverAdrDetails['expiry_date'])); ?></p>
-                    <?php elseif (isset($driverProfile['adr_certificate_expiry']) && $driverProfile['adr_certificate_expiry']): ?>
+                    <?php elseif (isset($driverProfile['adr_certificate_expiry']) && $driverProfile['adr_certificate_expiry']) : ?>
                         <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverProfile['adr_certificate_expiry'])); ?></p>
                     <?php endif; ?>
                 </div>
@@ -436,27 +436,27 @@ if (isset($listing['preferred_schedule'])) {
                         <?php echo (isset($listing['show_operator_license']) && $listing['show_operator_license']) || (isset($hasOperator) && $hasOperator) ? 'checked' : (isset($hasOperator) && !$hasOperator ? 'disabled' : ''); ?>>
                     <span class="certification-name">Άδεια Χειριστή Μηχανημάτων</span>
                 </label>
-                <?php if (!(isset($hasOperator) && $hasOperator)): ?>
+                <?php if (!(isset($hasOperator) && $hasOperator)) : ?>
                     <span class="certification-missing">(Δεν έχετε δηλώσει)</span>
                 <?php endif; ?>
             </div>
-            <?php if (isset($hasOperator) && $hasOperator): ?>
+            <?php if (isset($hasOperator) && $hasOperator) : ?>
                 <div class="certification-details">
-                    <?php if (isset($operatorSpecialities) && $operatorSpecialities): ?>
+                    <?php if (isset($operatorSpecialities) && $operatorSpecialities) : ?>
                         <p><strong>Ειδικότητες:</strong> <?php echo htmlspecialchars($operatorSpecialities); ?></p>
                     <?php endif; ?>
                     
-                    <?php if (isset($operatorSubSpecialities) && $operatorSubSpecialities): ?>
+                    <?php if (isset($operatorSubSpecialities) && $operatorSubSpecialities) : ?>
                         <p><strong>Υποειδικότητες:</strong> <?php echo htmlspecialchars($operatorSubSpecialities); ?></p>
                     <?php endif; ?>
                     
-                    <?php if (isset($operatorGroupedText) && $operatorGroupedText): ?>
+                    <?php if (isset($operatorGroupedText) && $operatorGroupedText) : ?>
                         <p><?php echo htmlspecialchars($operatorGroupedText); ?></p>
                     <?php endif; ?>
                     
-                    <?php if (isset($driverOperatorDetails['expiry_date']) && $driverOperatorDetails['expiry_date']): ?>
+                    <?php if (isset($driverOperatorDetails['expiry_date']) && $driverOperatorDetails['expiry_date']) : ?>
                         <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverOperatorDetails['expiry_date'])); ?></p>
-                    <?php elseif (isset($driverProfile['operator_license_expiry']) && $driverProfile['operator_license_expiry']): ?>
+                    <?php elseif (isset($driverProfile['operator_license_expiry']) && $driverProfile['operator_license_expiry']) : ?>
                         <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverProfile['operator_license_expiry'])); ?></p>
                     <?php endif; ?>
                 </div>
@@ -471,19 +471,19 @@ if (isset($listing['preferred_schedule'])) {
                         <?php echo (isset($listing['show_tachograph']) && $listing['show_tachograph']) || (isset($hasTachograph) && $hasTachograph) ? 'checked' : (isset($hasTachograph) && !$hasTachograph ? 'disabled' : ''); ?>>
                     <span class="certification-name">Κάρτα Ταχογράφου</span>
                 </label>
-                <?php if (!(isset($hasTachograph) && $hasTachograph)): ?>
+                <?php if (!(isset($hasTachograph) && $hasTachograph)) : ?>
                     <span class="certification-missing">(Δεν έχετε δηλώσει)</span>
                 <?php endif; ?>
             </div>
-            <?php if (isset($hasTachograph) && $hasTachograph): ?>
+            <?php if (isset($hasTachograph) && $hasTachograph) : ?>
                 <div class="certification-details">
-                    <?php if (isset($driverTachographDetails['card_number']) && $driverTachographDetails['card_number']): ?>
+                    <?php if (isset($driverTachographDetails['card_number']) && $driverTachographDetails['card_number']) : ?>
                         <p><strong>Αριθμός:</strong> <?php echo htmlspecialchars($driverTachographDetails['card_number']); ?></p>
                     <?php endif; ?>
                     
-                    <?php if (isset($driverTachographDetails['expiry_date']) && $driverTachographDetails['expiry_date']): ?>
+                    <?php if (isset($driverTachographDetails['expiry_date']) && $driverTachographDetails['expiry_date']) : ?>
                         <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverTachographDetails['expiry_date'])); ?></p>
-                    <?php elseif (isset($driverProfile['tachograph_card_expiry']) && $driverProfile['tachograph_card_expiry']): ?>
+                    <?php elseif (isset($driverProfile['tachograph_card_expiry']) && $driverProfile['tachograph_card_expiry']) : ?>
                         <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($driverProfile['tachograph_card_expiry'])); ?></p>
                     <?php endif; ?>
                 </div>
@@ -491,8 +491,8 @@ if (isset($listing['preferred_schedule'])) {
         </div>
         
         <!-- Ειδικές Άδειες -->
-        <?php if (isset($hasSpecialLicenses) && $hasSpecialLicenses && isset($driverSpecialLicensesDetails) && is_array($driverSpecialLicensesDetails)): ?>
-            <?php foreach ($driverSpecialLicensesDetails as $index => $specialLicense): ?>
+        <?php if (isset($hasSpecialLicenses) && $hasSpecialLicenses && isset($driverSpecialLicensesDetails) && is_array($driverSpecialLicensesDetails)) : ?>
+            <?php foreach ($driverSpecialLicensesDetails as $index => $specialLicense) : ?>
                 <div class="certification-item available">
                     <div class="certification-header">
                         <label>
@@ -502,15 +502,15 @@ if (isset($listing['preferred_schedule'])) {
                         </label>
                     </div>
                     <div class="certification-details">
-                        <?php if (isset($specialLicense['license_number']) && $specialLicense['license_number']): ?>
+                        <?php if (isset($specialLicense['license_number']) && $specialLicense['license_number']) : ?>
                             <p><strong>Αριθμός:</strong> <?php echo htmlspecialchars($specialLicense['license_number']); ?></p>
                         <?php endif; ?>
                         
-                        <?php if (isset($specialLicense['expiry_date']) && $specialLicense['expiry_date']): ?>
+                        <?php if (isset($specialLicense['expiry_date']) && $specialLicense['expiry_date']) : ?>
                             <p><strong>Λήξη:</strong> <?php echo date('d/m/Y', strtotime($specialLicense['expiry_date'])); ?></p>
                         <?php endif; ?>
                         
-                        <?php if (isset($specialLicense['details']) && $specialLicense['details']): ?>
+                        <?php if (isset($specialLicense['details']) && $specialLicense['details']) : ?>
                             <p><?php echo htmlspecialchars($specialLicense['details']); ?></p>
                         <?php endif; ?>
                     </div>
@@ -582,7 +582,7 @@ if (isset($listing['preferred_schedule'])) {
                         <div class="form-group">
                             <label for="expires_at">Ημερομηνία Λήξης Αγγελίας</label>
                             <input type="date" id="expires_at" name="expires_at" 
-                                   value="<?php echo isset($oldInput['expires_at']) ? htmlspecialchars($oldInput['expires_at']) : 
+                                   value="<?php echo isset($oldInput['expires_at']) ? htmlspecialchars($oldInput['expires_at']) :
                                        (isset($listing['expires_at']) ? date('Y-m-d', strtotime($listing['expires_at'])) : date('Y-m-d', strtotime('+30 days'))); ?>">
                         </div>
                         
@@ -603,8 +603,8 @@ if (isset($listing['preferred_schedule'])) {
                 
                 <div class="form-group">
                     <div class="tags-container">
-                        <?php if (isset($allTags) && is_array($allTags) && !empty($allTags)): ?>
-                            <?php foreach ($allTags as $tag): ?>
+                        <?php if (isset($allTags) && is_array($allTags) && !empty($allTags)) : ?>
+                            <?php foreach ($allTags as $tag) : ?>
                                 <div class="tag-item">
                                     <label>
                                         <input type="checkbox" name="tags[]" value="<?php echo $tag['id']; ?>" <?php echo isset($selectedTagIds) && in_array($tag['id'], $selectedTagIds) ? 'checked' : ''; ?>>
@@ -612,7 +612,7 @@ if (isset($listing['preferred_schedule'])) {
                                     </label>
                                 </div>
                             <?php endforeach; ?>
-                        <?php else: ?>
+                        <?php else : ?>
                             <p>Δεν υπάρχουν διαθέσιμες ετικέτες.</p>
                         <?php endif; ?>
                     </div>
@@ -974,7 +974,7 @@ if (isset($listing['preferred_schedule'])) {
         previewContainer.scrollIntoView({ behavior: 'smooth' });
     }
 </script>
-<?php 
+<?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php'; 
+include ROOT_DIR . '/src/Views/footer.php';
 ?>

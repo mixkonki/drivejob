@@ -333,20 +333,20 @@ input[type="radio"]:checked + .severity-label .severity-number {
         align-items: flex-start;
         gap: 15px;
     }
-    
+
     .form-row {
         grid-template-columns: 1fr;
     }
-    
+
     .severity-selector {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .form-actions {
         flex-direction: column;
     }
-    
+
     .form-actions button,
     .form-actions a {
         width: 100%;

@@ -1,18 +1,17 @@
 <?php
+
 /**
  * Απλοποιημένο cron job για τον έλεγχο αδειών που λήγουν
  */
 
 // Ορισμός του βασικού φακέλου
 $rootDir = dirname(dirname(__DIR__));
-
 // Ρύθμιση καταγραφής σφαλμάτων
 $logFile = $rootDir . '/logs/license_notifications_' . date('Y-m-d') . '.log';
 ini_set('error_log', $logFile);
 ini_set('log_errors', 1);
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-
 // Δημιουργία φακέλου logs αν δεν υπάρχει
 if (!is_dir(dirname($logFile))) {
     mkdir(dirname($logFile), 0755, true);
@@ -20,19 +19,16 @@ if (!is_dir(dirname($logFile))) {
 
 // Καταγραφή έναρξης
 error_log('--- Έναρξη απλοποιημένου ελέγχου αδειών: ' . date('Y-m-d H:i:s') . ' ---');
-
 try {
-    // Ρύθμιση ζώνης ώρας
+// Ρύθμιση ζώνης ώρας
     date_default_timezone_set('Europe/Athens');
-    
-    // Σύνδεση με τη βάση δεδομένων
+// Σύνδεση με τη βάση δεδομένων
     $pdo = null;
     try {
         $host = 'localhost';
         $db = 'drivejob';
         $user = 'root';
         $pass = '';
-        
         $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -43,7 +39,7 @@ try {
         error_log('Σφάλμα σύνδεσης με τη βάση δεδομένων: ' . $e->getMessage());
         throw $e;
     }
-    
+
     // Φόρτωση των απαραίτητων αρχείων για τις υπηρεσίες
     $requiredFiles = [
         '/src/Services/EmailService.php',
@@ -51,7 +47,6 @@ try {
         '/src/Services/LicenseExpiryNotificationService.php',
         '/src/Services/NotificationServices.php'
     ];
-    
     foreach ($requiredFiles as $file) {
         $filePath = $rootDir . $file;
         if (!file_exists($filePath)) {
@@ -60,17 +55,16 @@ try {
         }
         require_once $filePath;
     }
-    
+
     // Φόρτωση των ρυθμίσεων ειδοποιήσεων
     $notificationsConfigFile = $rootDir . '/config/notifications.php';
     $config = [];
-    
     if (file_exists($notificationsConfigFile)) {
         $config = include $notificationsConfigFile;
         error_log('Φόρτωση ρυθμίσεων ειδοποιήσεων από: ' . $notificationsConfigFile);
     } else {
         error_log('Το αρχείο ρυθμίσεων δεν βρέθηκε. Χρήση προεπιλεγμένων ρυθμίσεων.');
-        // Προεπιλεγμένες ρυθμίσεις αν δεν υπάρχει το αρχείο config
+    // Προεπιλεγμένες ρυθμίσεις αν δεν υπάρχει το αρχείο config
         $config = [
             'smtp_host' => 'localhost',
             'smtp_port' => 25,
@@ -95,14 +89,14 @@ try {
             'daily_report_enabled' => false
         ];
     }
-    
+
     // Δημιουργία του φακέλου templates/emails αν δεν υπάρχει
     $templatesPath = $rootDir . '/templates/emails/';
     if (!is_dir($templatesPath)) {
         mkdir($templatesPath, 0755, true);
         error_log("Δημιουργήθηκε ο φάκελος προτύπων: {$templatesPath}");
     }
-    
+
     // Δημιουργία ενός βασικού προτύπου email αν δεν υπάρχει
     $generalTemplateFile = $templatesPath . 'license_expiry_general.php';
     if (!file_exists($generalTemplateFile)) {
@@ -165,51 +159,31 @@ try {
     </div>
 </body>
 </html>';
-        
         file_put_contents($generalTemplateFile, $templateContent);
         error_log("Δημιουργήθηκε το βασικό πρότυπο email: {$generalTemplateFile}");
     }
-    
+
     // Αρχικοποίηση των υπηρεσιών
-    $emailService = new \Drivejob\Services\EmailService(
-        $config['smtp_host'],
-        $config['smtp_port'],
-        $config['smtp_username'],
-        $config['smtp_password'],
-        $config['sender_email'],
-        $config['sender_name'],
-        $config['debug_mode']
-    );
-    
-    $smsService = new \Drivejob\Services\SmsService(
-        $config['sms_api_key'],
-        $config['sms_api_url'],
-        $config['sms_sender'],
-        $config['debug_mode']
-    );
-    
-    // Αρχικοποίηση της κεντρικής υπηρεσίας ειδοποιήσεων
+    $emailService = new \Drivejob\Services\EmailService($config['smtp_host'], $config['smtp_port'], $config['smtp_username'], $config['smtp_password'], $config['sender_email'], $config['sender_name'], $config['debug_mode']);
+    $smsService = new \Drivejob\Services\SmsService($config['sms_api_key'], $config['sms_api_url'], $config['sms_sender'], $config['debug_mode']);
+// Αρχικοποίηση της κεντρικής υπηρεσίας ειδοποιήσεων
     $notificationService = new \Drivejob\Services\NotificationServices($pdo, $emailService, $smsService, $config);
-    
-    // Έλεγχος και αποστολή ειδοποιήσεων
+// Έλεγχος και αποστολή ειδοποιήσεων
     error_log('Εκτέλεση ελέγχου για άδειες που λήγουν...');
     $results = $notificationService->checkAndSendLicenseExpiryNotifications();
-    
-    // Καταγραφή των αποτελεσμάτων
+// Καταγραφή των αποτελεσμάτων
     error_log('Ολοκλήρωση ελέγχου.');
-    
     if (is_array($results)) {
         $totalNotifications = 0;
         foreach ($results as $category => $notifications) {
             $totalNotifications += count($notifications);
         }
-        
+
         error_log('Συνολικές ειδοποιήσεις που στάλθηκαν: ' . $totalNotifications);
-        
         foreach ($results as $category => $notifications) {
             error_log("Κατηγορία {$category}: " . count($notifications) . " ειδοποιήσεις");
         }
-        
+
         // Αποθήκευση των αποτελεσμάτων για διαγνωστικούς σκοπούς αν είναι ενεργοποιημένη η λειτουργία debug
         if ($config['debug_mode'] && $totalNotifications > 0) {
             $resultsFile = $rootDir . '/logs/notifications_results_' . date('Y-m-d_H-i-s') . '.json';
@@ -219,12 +193,12 @@ try {
     } else {
         error_log('Δεν επιστράφηκαν αποτελέσματα από την υπηρεσία ειδοποιήσεων');
     }
-    
+
     // Επιτυχής ολοκλήρωση
     error_log('--- Επιτυχής ολοκλήρωση απλοποιημένου ελέγχου: ' . date('Y-m-d H:i:s') . ' ---');
     exit(0);
 } catch (Exception $e) {
-    // Καταγραφή σφάλματος
+// Καταγραφή σφάλματος
     error_log('ΣΦΑΛΜΑ: ' . $e->getMessage());
     error_log('Stack Trace: ' . $e->getTraceAsString());
     error_log('--- Αποτυχία απλοποιημένου ελέγχου αδειών: ' . date('Y-m-d H:i:s') . ' ---');

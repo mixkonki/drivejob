@@ -11,11 +11,11 @@
             </div>
             <div class="section-content">
                 <div class="info-grid">
-                    <?php if (isset($driver['birth_date']) && $driver['birth_date']): ?>
+                    <?php if (isset($driver['birth_date']) && $driver['birth_date']) : ?>
                         <div class="info-item">
                             <span class="info-label">Ηλικία:</span>
                             <span class="info-value">
-                                <?php 
+                                <?php
                                 $birthDate = new DateTime($driver['birth_date']);
                                 $now = new DateTime();
                                 $age = $now->diff($birthDate)->y;
@@ -25,18 +25,27 @@
                         </div>
                     <?php endif; ?>
                     
-                    <?php if (isset($driver['marital_status']) && $driver['marital_status']): ?>
+                    <?php if (isset($driver['marital_status']) && $driver['marital_status']) : ?>
                         <div class="info-item">
                             <span class="info-label">Οικογενειακή Κατάσταση:</span>
                             <span class="info-value">
-                                <?php 
+                                <?php
                                 $maritalStatus = '';
                                 switch ($driver['marital_status']) {
-                                    case 'single': $maritalStatus = 'Άγαμος/η'; break;
-                                    case 'married': $maritalStatus = 'Έγγαμος/η'; break;
-                                    case 'divorced': $maritalStatus = 'Διαζευγμένος/η'; break;
-                                    case 'widowed': $maritalStatus = 'Χήρος/α'; break;
-                                    default: $maritalStatus = $driver['marital_status'];
+                                    case 'single':
+                                        $maritalStatus = 'Άγαμος/η';
+                                        break;
+                                    case 'married':
+                                        $maritalStatus = 'Έγγαμος/η';
+                                        break;
+                                    case 'divorced':
+                                        $maritalStatus = 'Διαζευγμένος/η';
+                                        break;
+                                    case 'widowed':
+                                        $maritalStatus = 'Χήρος/α';
+                                        break;
+                                    default:
+                                        $maritalStatus = $driver['marital_status'];
                                 }
                                 echo htmlspecialchars($maritalStatus);
                                 ?>
@@ -44,18 +53,27 @@
                         </div>
                     <?php endif; ?>
                     
-                    <?php if (isset($driver['military_service']) && $driver['military_service']): ?>
+                    <?php if (isset($driver['military_service']) && $driver['military_service']) : ?>
                         <div class="info-item">
                             <span class="info-label">Στρατιωτικές Υποχρεώσεις:</span>
                             <span class="info-value">
-                                <?php 
+                                <?php
                                 $militaryService = '';
                                 switch ($driver['military_service']) {
-                                    case 'completed': $militaryService = 'Εκπληρωμένες'; break;
-                                    case 'exempt': $militaryService = 'Απαλλαγή'; break;
-                                    case 'postponed': $militaryService = 'Αναβολή'; break;
-                                    case 'not_required': $militaryService = 'Δεν απαιτείται'; break;
-                                    default: $militaryService = $driver['military_service'];
+                                    case 'completed':
+                                        $militaryService = 'Εκπληρωμένες';
+                                        break;
+                                    case 'exempt':
+                                        $militaryService = 'Απαλλαγή';
+                                        break;
+                                    case 'postponed':
+                                        $militaryService = 'Αναβολή';
+                                        break;
+                                    case 'not_required':
+                                        $militaryService = 'Δεν απαιτείται';
+                                        break;
+                                    default:
+                                        $militaryService = $driver['military_service'];
                                 }
                                 echo htmlspecialchars($militaryService);
                                 ?>
@@ -63,21 +81,36 @@
                         </div>
                     <?php endif; ?>
                     
-                    <?php if (isset($driver['education_level']) && $driver['education_level']): ?>
+                    <?php if (isset($driver['education_level']) && $driver['education_level']) : ?>
                         <div class="info-item">
                             <span class="info-label">Επίπεδο Εκπαίδευσης:</span>
                             <span class="info-value">
-                                <?php 
+                                <?php
                                 $educationLevel = '';
                                 switch ($driver['education_level']) {
-                                    case 'primary': $educationLevel = 'Δημοτικό'; break;
-                                    case 'secondary': $educationLevel = 'Δευτεροβάθμια Εκπαίδευση'; break;
-                                    case 'highschool': $educationLevel = 'Λύκειο'; break;
-                                    case 'vocational': $educationLevel = 'Επαγγελματική Σχολή'; break;
-                                    case 'college': $educationLevel = 'ΙΕΚ/Κολλέγιο'; break;
-                                    case 'university': $educationLevel = 'Πανεπιστημιακή Εκπαίδευση'; break;
-                                    case 'postgraduate': $educationLevel = 'Μεταπτυχιακό'; break;
-                                    default: $educationLevel = $driver['education_level'];
+                                    case 'primary':
+                                        $educationLevel = 'Δημοτικό';
+                                        break;
+                                    case 'secondary':
+                                        $educationLevel = 'Δευτεροβάθμια Εκπαίδευση';
+                                        break;
+                                    case 'highschool':
+                                        $educationLevel = 'Λύκειο';
+                                        break;
+                                    case 'vocational':
+                                        $educationLevel = 'Επαγγελματική Σχολή';
+                                        break;
+                                    case 'college':
+                                        $educationLevel = 'ΙΕΚ/Κολλέγιο';
+                                        break;
+                                    case 'university':
+                                        $educationLevel = 'Πανεπιστημιακή Εκπαίδευση';
+                                        break;
+                                    case 'postgraduate':
+                                        $educationLevel = 'Μεταπτυχιακό';
+                                        break;
+                                    default:
+                                        $educationLevel = $driver['education_level'];
                                 }
                                 echo htmlspecialchars($educationLevel);
                                 ?>
@@ -85,7 +118,7 @@
                         </div>
                     <?php endif; ?>
                     
-                    <?php if (isset($driver['legal_status']) && $driver['legal_status']): ?>
+                    <?php if (isset($driver['legal_status']) && $driver['legal_status']) : ?>
                         <div class="info-item">
                             <span class="info-label">Νομική Κατάσταση:</span>
                             <span class="info-value">
@@ -104,18 +137,18 @@
                 <h3>Επαγγελματική Εμπειρία</h3>
             </div>
             <div class="section-content">
-                <?php if (isset($driver['experience_years']) && $driver['experience_years'] > 0): ?>
+                <?php if (isset($driver['experience_years']) && $driver['experience_years'] > 0) : ?>
                     <div class="experience-years">
                         <span class="years-number"><?php echo $driver['experience_years']; ?></span>
                         <span class="years-text">έτη εμπειρίας</span>
                     </div>
                 <?php endif; ?>
                 
-                <?php if (isset($driver['work_experience']) && !empty($driver['work_experience'])): ?>
+                <?php if (isset($driver['work_experience']) && !empty($driver['work_experience'])) : ?>
                     <div class="experience-details">
                         <?php echo nl2br(htmlspecialchars($driver['work_experience'])); ?>
                     </div>
-                <?php else: ?>
+                <?php else : ?>
                     <p class="no-details-message">Δεν έχει καταχωρηθεί αναλυτική εργασιακή εμπειρία.</p>
                 <?php endif; ?>
             </div>
@@ -136,7 +169,7 @@
                         'good' => ['Καλά', 3],
                         'basic' => ['Βασικά', 1]
                     ];
-                    
+
                     $languages = [
                         'language_greek' => 'Ελληνικά',
                         'language_english' => 'Αγγλικά',
@@ -144,43 +177,45 @@
                         'language_french' => 'Γαλλικά',
                         'language_italian' => 'Ιταλικά'
                     ];
-                    
+
                     foreach ($languages as $langKey => $langName) {
                         if (isset($driver[$langKey]) && !empty($driver[$langKey])) {
                             $level = $driver[$langKey];
                             $levelInfo = isset($languageLevels[$level]) ? $languageLevels[$level] : ['Άγνωστο', 0];
                             $dots = $levelInfo[1];
-                    ?>
+                            ?>
                         <div class="language-item">
                             <span class="language-name"><?php echo $langName; ?></span>
                             <div class="language-level">
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <?php for ($i = 1; $i <= 5; $i++) : ?>
                                     <span class="level-dot <?php echo $i <= $dots ? 'filled' : ''; ?>"></span>
                                 <?php endfor; ?>
                             </div>
                             <span class="level-text"><?php echo $levelInfo[0]; ?></span>
                         </div>
-                    <?php
+                            <?php
                         }
                     }
-                    
+
                     // Άλλη γλώσσα, αν υπάρχει
-                    if (isset($driver['language_other_name']) && !empty($driver['language_other_name']) && 
-                        isset($driver['language_other_level']) && !empty($driver['language_other_level'])) {
+                    if (
+                        isset($driver['language_other_name']) && !empty($driver['language_other_name']) &&
+                        isset($driver['language_other_level']) && !empty($driver['language_other_level'])
+                    ) {
                         $level = $driver['language_other_level'];
                         $levelInfo = isset($languageLevels[$level]) ? $languageLevels[$level] : ['Άγνωστο', 0];
                         $dots = $levelInfo[1];
-                    ?>
+                        ?>
                         <div class="language-item">
                             <span class="language-name"><?php echo htmlspecialchars($driver['language_other_name']); ?></span>
                             <div class="language-level">
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <?php for ($i = 1; $i <= 5; $i++) : ?>
                                     <span class="level-dot <?php echo $i <= $dots ? 'filled' : ''; ?>"></span>
                                 <?php endfor; ?>
                             </div>
                             <span class="level-text"><?php echo $levelInfo[0]; ?></span>
                         </div>
-                    <?php
+                        <?php
                     }
                     ?>
                 </div>
@@ -194,7 +229,7 @@
                 <h3>Δεξιότητες Οδηγού</h3>
             </div>
             <div class="section-content">
-                <?php if (isset($driverSkills) && !empty($driverSkills)): ?>
+                <?php if (isset($driverSkills) && !empty($driverSkills)) : ?>
                     <div class="skills-grid">
                         <?php
                         $skillLabels = [
@@ -219,29 +254,29 @@
                             'gps_systems' => 'Συστήματα GPS',
                             'logistics_software' => 'Λογισμικό Logistics'
                         ];
-                        
+
                         foreach ($skillLabels as $skillKey => $skillLabel) {
                             if (isset($driverSkills[$skillKey]) && $driverSkills[$skillKey] == 1) {
-                        ?>
+                                ?>
                             <div class="skill-item">
                                 <span class="skill-badge"><?php echo $skillLabel; ?></span>
                             </div>
-                        <?php
+                                <?php
                             }
                         }
-                        
+
                         // Επιπλέον δεξιότητες
                         if (isset($driver['additional_skills']) && !empty($driver['additional_skills'])) {
-                        ?>
+                            ?>
                             <div class="additional-skills">
                                 <h4>Επιπλέον Δεξιότητες</h4>
                                 <p><?php echo nl2br(htmlspecialchars($driver['additional_skills'])); ?></p>
                             </div>
-                        <?php
+                            <?php
                         }
                         ?>
                     </div>
-                <?php else: ?>
+                <?php else : ?>
                     <p class="no-details-message">Δεν έχουν καταχωρηθεί ειδικές δεξιότητες.</p>
                 <?php endif; ?>
             </div>

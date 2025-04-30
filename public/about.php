@@ -1,4 +1,4 @@
-<?php 
+<?php
 // Συμπερίληψη του config.php για να οριστούν οι σταθερές
 require_once __DIR__ . '/../config/config.php';
 // Αυτόματη φόρτωση μέσω Composer
@@ -6,7 +6,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // Συμπερίληψη του config.php για να οριστούν οι σταθερές
 
 // Συμπερίληψη του header
-include '../src/Views/header.php'; 
+include '../src/Views/header.php';
 ?>
 <main>
 <div class="container">
@@ -22,7 +22,7 @@ include '../src/Views/header.php';
     <p>Η ομάδα μας αποτελείται από ειδικούς στον τομέα της τεχνολογίας και των μεταφορών.</p>
 </div>
 </main>
-<?php 
+<?php
 // Συμπερίληψη του footer
-include '../src/Views/footer.php'; 
+include '../src/Views/footer.php';
 ?>

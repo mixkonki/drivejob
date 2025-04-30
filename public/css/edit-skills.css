@@ -203,21 +203,21 @@
     .skills-options {
         grid-template-columns: 1fr;
     }
-    
+
     .language-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .form-row {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .form-actions {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .form-actions button,
     .form-actions a {
         width: 100%;

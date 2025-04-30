@@ -13,14 +13,14 @@ include ROOT_DIR . '/src/Views/header.php';
             <p>Η συνολική αξιολόγησή σας με βάση τα προσόντα, την ασφάλεια, τον επαγγελματισμό και τις τεχνικές σας δεξιότητες.</p>
         </div>
         
-        <?php if (isset($_SESSION['success_message'])): ?>
+        <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
                 <?php echo $_SESSION['success_message']; ?>
                 <?php unset($_SESSION['success_message']); ?>
             </div>
         <?php endif; ?>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -107,7 +107,7 @@ include ROOT_DIR . '/src/Views/header.php';
             <div class="rating-improvement">
                 <h3>Συμβουλές Βελτίωσης</h3>
                 <ul class="improvement-tips">
-                    <?php if ($driverRating['skills_score'] < 20): ?>
+                    <?php if ($driverRating['skills_score'] < 20) : ?>
                         <li>
                             <i class="tip-icon skills-icon"></i>
                             <div class="tip-content">
@@ -117,7 +117,7 @@ include ROOT_DIR . '/src/Views/header.php';
                         </li>
                     <?php endif; ?>
                     
-                    <?php if ($driverRating['safety_score'] < 24): ?>
+                    <?php if ($driverRating['safety_score'] < 24) : ?>
                         <li>
                             <i class="tip-icon safety-icon"></i>
                             <div class="tip-content">
@@ -127,7 +127,7 @@ include ROOT_DIR . '/src/Views/header.php';
                         </li>
                     <?php endif; ?>
                     
-                    <?php if ($driverRating['professionalism_score'] < 20): ?>
+                    <?php if ($driverRating['professionalism_score'] < 20) : ?>
                         <li>
                             <i class="tip-icon professionalism-icon"></i>
                             <div class="tip-content">
@@ -137,7 +137,7 @@ include ROOT_DIR . '/src/Views/header.php';
                         </li>
                     <?php endif; ?>
                     
-                    <?php if ($driverRating['technical_score'] < 16): ?>
+                    <?php if ($driverRating['technical_score'] < 16) : ?>
                         <li>
                             <i class="tip-icon technical-icon"></i>
                             <div class="tip-content">
@@ -149,7 +149,7 @@ include ROOT_DIR . '/src/Views/header.php';
                 </ul>
             </div>
             
-            <?php if (isset($telemetryData)): ?>
+            <?php if (isset($telemetryData)) : ?>
             <div class="telemetry-section">
                 <h3>Δεδομένα Τηλεματικής</h3>
                 <div class="telemetry-summary">
@@ -197,7 +197,7 @@ include ROOT_DIR . '/src/Views/header.php';
                     <p>Τα δεδομένα τηλεματικής συλλέχθηκαν στις <?php echo date('d/m/Y', strtotime($telemetryData['date_collected'])); ?> για διάστημα οδήγησης <?php echo number_format($telemetryData['total_distance']); ?> χλμ.</p>
                 </div>
             </div>
-            <?php else: ?>
+            <?php else : ?>
             <div class="telemetry-promotion">
                 <h3>Βελτιώστε τη βαθμολογία σας με την εφαρμογή τηλεματικής</h3>
                 <p>Κατεβάστε την εφαρμογή DriveJob Telemetry για να παρακολουθείτε την οδηγική σας συμπεριφορά και να βελτιώσετε τη βαθμολογία ασφάλειάς σας.</p>

@@ -1,6 +1,6 @@
-<?php 
+<?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 ?>
 
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/job-listings.css">
@@ -19,14 +19,14 @@ include ROOT_DIR . '/src/Views/header.php';
             </div>
         </div>
         
-        <?php if (isset($_SESSION['success_message'])): ?>
+        <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
                 <?php echo $_SESSION['success_message']; ?>
                 <?php unset($_SESSION['success_message']); ?>
             </div>
         <?php endif; ?>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -37,49 +37,69 @@ include ROOT_DIR . '/src/Views/header.php';
         <div class="search-profile">
             <h3>Το Προφίλ Αναζήτησής σας</h3>
             <div class="search-profile-items">
-                <?php if (!empty($driverProfile['preferred_job_type'])): ?>
+                <?php if (!empty($driverProfile['preferred_job_type'])) : ?>
                     <div class="search-profile-item">
                         <img src="<?php echo BASE_URL; ?>img/job_type_icon.png" alt="Τύπος Εργασίας">
                         <span>
-                            <?php 
+                            <?php
                             switch ($driverProfile['preferred_job_type']) {
-                                case 'full_time': echo 'Πλήρης Απασχόληση'; break;
-                                case 'part_time': echo 'Μερική Απασχόληση'; break;
-                                case 'contract': echo 'Σύμβαση Έργου'; break;
-                                case 'temporary': echo 'Προσωρινή Απασχόληση'; break;
-                                default: echo htmlspecialchars($driverProfile['preferred_job_type']);
+                                case 'full_time':
+                                    echo 'Πλήρης Απασχόληση';
+                                    break;
+                                case 'part_time':
+                                    echo 'Μερική Απασχόληση';
+                                    break;
+                                case 'contract':
+                                    echo 'Σύμβαση Έργου';
+                                    break;
+                                case 'temporary':
+                                    echo 'Προσωρινή Απασχόληση';
+                                    break;
+                                default:
+                                    echo htmlspecialchars($driverProfile['preferred_job_type']);
                             }
                             ?>
                         </span>
                     </div>
                 <?php endif; ?>
                 
-                <?php if (!empty($driverProfile['preferred_vehicle_type'])): ?>
+                <?php if (!empty($driverProfile['preferred_vehicle_type'])) : ?>
                     <div class="search-profile-item">
                         <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Τύπος Οχήματος">
                         <span>
-                            <?php 
+                            <?php
                             switch ($driverProfile['preferred_vehicle_type']) {
-                                case 'car': echo 'Αυτοκίνητο'; break;
-                                case 'van': echo 'Βαν'; break;
-                                case 'truck': echo 'Φορτηγό'; break;
-                                case 'bus': echo 'Λεωφορείο'; break;
-                                case 'machinery': echo 'Μηχάνημα Έργου'; break;
-                                default: echo htmlspecialchars($driverProfile['preferred_vehicle_type']);
+                                case 'car':
+                                    echo 'Αυτοκίνητο';
+                                    break;
+                                case 'van':
+                                    echo 'Βαν';
+                                    break;
+                                case 'truck':
+                                    echo 'Φορτηγό';
+                                    break;
+                                case 'bus':
+                                    echo 'Λεωφορείο';
+                                    break;
+                                case 'machinery':
+                                    echo 'Μηχάνημα Έργου';
+                                    break;
+                                default:
+                                    echo htmlspecialchars($driverProfile['preferred_vehicle_type']);
                             }
                             ?>
                         </span>
                     </div>
                 <?php endif; ?>
                 
-                <?php if (!empty($driverProfile['preferred_location'])): ?>
+                <?php if (!empty($driverProfile['preferred_location'])) : ?>
                     <div class="search-profile-item">
                         <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
                         <span><?php echo htmlspecialchars($driverProfile['preferred_location']); ?></span>
                     </div>
                 <?php endif; ?>
                 
-                <?php if (!empty($driverProfile['preferred_radius'])): ?>
+                <?php if (!empty($driverProfile['preferred_radius'])) : ?>
                     <div class="search-profile-item">
                         <img src="<?php echo BASE_URL; ?>img/radius_icon.png" alt="Ακτίνα">
                         <span>Ακτίνα: <?php echo htmlspecialchars($driverProfile['preferred_radius']); ?> χλμ</span>
@@ -92,9 +112,9 @@ include ROOT_DIR . '/src/Views/header.php';
         </div>
         
         <!-- Λίστα Αγγελιών -->
-        <?php if (isset($matchedListings) && count($matchedListings) > 0): ?>
+        <?php if (isset($matchedListings) && count($matchedListings) > 0) : ?>
             <div class="job-listings">
-                <?php foreach ($matchedListings as $listing): ?>
+                <?php foreach ($matchedListings as $listing) : ?>
                     <div class="job-listing-card">
                         <!-- Ποσοστό ταιριάσματος -->
                         <div class="match-percentage-container">
@@ -107,12 +127,20 @@ include ROOT_DIR . '/src/Views/header.php';
                             <h3><a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>"><?php echo htmlspecialchars($listing['title']); ?></a></h3>
                             <div>
                                 <span class="job-type <?php echo $listing['job_type']; ?>">
-                                    <?php 
+                                    <?php
                                     switch ($listing['job_type']) {
-                                        case 'full_time': echo 'Πλήρης Απασχόληση'; break;
-                                        case 'part_time': echo 'Μερική Απασχόληση'; break;
-                                        case 'contract': echo 'Σύμβαση Έργου'; break;
-                                        case 'temporary': echo 'Προσωρινή Απασχόληση'; break;
+                                        case 'full_time':
+                                            echo 'Πλήρης Απασχόληση';
+                                            break;
+                                        case 'part_time':
+                                            echo 'Μερική Απασχόληση';
+                                            break;
+                                        case 'contract':
+                                            echo 'Σύμβαση Έργου';
+                                            break;
+                                        case 'temporary':
+                                            echo 'Προσωρινή Απασχόληση';
+                                            break;
                                     }
                                     ?>
                                 </span>
@@ -131,23 +159,33 @@ include ROOT_DIR . '/src/Views/header.php';
                             <div class="job-listing-detail">
                                 <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Όχημα">
                                 <span>
-                                    <?php 
+                                    <?php
                                     switch ($listing['vehicle_type']) {
-                                        case 'car': echo 'Αυτοκίνητο'; break;
-                                        case 'van': echo 'Βαν'; break;
-                                        case 'truck': echo 'Φορτηγό'; break;
-                                        case 'bus': echo 'Λεωφορείο'; break;
-                                        case 'machinery': echo 'Μηχάνημα Έργου'; break;
+                                        case 'car':
+                                            echo 'Αυτοκίνητο';
+                                            break;
+                                        case 'van':
+                                            echo 'Βαν';
+                                            break;
+                                        case 'truck':
+                                            echo 'Φορτηγό';
+                                            break;
+                                        case 'bus':
+                                            echo 'Λεωφορείο';
+                                            break;
+                                        case 'machinery':
+                                            echo 'Μηχάνημα Έργου';
+                                            break;
                                     }
                                     ?>
                                 </span>
                             </div>
                             
-                            <?php if ($listing['salary_min'] || $listing['salary_max']): ?>
+                            <?php if ($listing['salary_min'] || $listing['salary_max']) : ?>
                                 <div class="job-listing-detail">
                                     <img src="<?php echo BASE_URL; ?>img/salary_icon.png" alt="Αμοιβή">
                                     <span>
-                                        <?php 
+                                        <?php
                                         if ($listing['salary_min'] && $listing['salary_max']) {
                                             echo number_format($listing['salary_min']) . '€ - ' . number_format($listing['salary_max']) . '€';
                                         } elseif ($listing['salary_min']) {
@@ -155,14 +193,22 @@ include ROOT_DIR . '/src/Views/header.php';
                                         } elseif ($listing['salary_max']) {
                                             echo 'Έως ' . number_format($listing['salary_max']) . '€';
                                         }
-                                        
+
                                         if ($listing['salary_type']) {
                                             echo ' / ';
                                             switch ($listing['salary_type']) {
-                                                case 'hourly': echo 'ώρα'; break;
-                                                case 'daily': echo 'ημέρα'; break;
-                                                case 'monthly': echo 'μήνα'; break;
-                                                case 'yearly': echo 'έτος'; break;
+                                                case 'hourly':
+                                                    echo 'ώρα';
+                                                    break;
+                                                case 'daily':
+                                                    echo 'ημέρα';
+                                                    break;
+                                                case 'monthly':
+                                                    echo 'μήνα';
+                                                    break;
+                                                case 'yearly':
+                                                    echo 'έτος';
+                                                    break;
                                             }
                                         }
                                         ?>
@@ -172,21 +218,21 @@ include ROOT_DIR . '/src/Views/header.php';
                             
                             <!-- Ειδικές Απαιτήσεις -->
                             <div class="job-listing-requirements">
-                                <?php if ($listing['experience_years']): ?>
+                                <?php if ($listing['experience_years']) : ?>
                                     <span class="requirement" title="Έτη Εμπειρίας">
                                         <img src="<?php echo BASE_URL; ?>img/experience_icon.png" alt="Εμπειρία">
                                         <?php echo $listing['experience_years']; ?> έτη
                                     </span>
                                 <?php endif; ?>
                                 
-                                <?php if ($listing['adr_certificate']): ?>
+                                <?php if ($listing['adr_certificate']) : ?>
                                     <span class="requirement" title="Πιστοποιητικό ADR">
                                         <img src="<?php echo BASE_URL; ?>img/adr_icon.png" alt="ADR">
                                         ADR
                                     </span>
                                 <?php endif; ?>
                                 
-                                <?php if ($listing['operator_license']): ?>
+                                <?php if ($listing['operator_license']) : ?>
                                     <span class="requirement" title="Άδεια Χειριστή">
                                         <img src="<?php echo BASE_URL; ?>img/operator_icon.png" alt="Χειριστής">
                                         Άδεια Χειριστή
@@ -203,7 +249,7 @@ include ROOT_DIR . '/src/Views/header.php';
                             <span class="job-listing-date">Δημοσιεύτηκε: <?php echo date('d/m/Y', strtotime($listing['created_at'])); ?></span>
                             <div class="job-listing-actions">
                                 <a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>" class="btn-primary">Περισσότερα</a>
-                                <?php if ($listing['listing_type'] === 'job_offer'): ?>
+                                <?php if ($listing['listing_type'] === 'job_offer') : ?>
                                     <form action="<?php echo BASE_URL; ?>job-applications/apply/<?php echo $listing['id']; ?>" method="POST" class="inline-form">
                                         <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
                                         <button type="submit" class="btn-action">Υποβολή Αίτησης</button>
@@ -215,7 +261,7 @@ include ROOT_DIR . '/src/Views/header.php';
                 <?php endforeach; ?>
             </div>
             
-        <?php else: ?>
+        <?php else : ?>
             <div class="no-results">
                 <p>Δεν βρέθηκαν αγγελίες που να ταιριάζουν με το προφίλ σας.</p>
                 <p>Δοκιμάστε να ενημερώσετε τις προτιμήσεις σας ή να αναζητήσετε όλες τις διαθέσιμες αγγελίες.</p>
@@ -388,7 +434,7 @@ include ROOT_DIR . '/src/Views/header.php';
     }
 </style>
 
-<?php 
+<?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php'; 
+include ROOT_DIR . '/src/Views/footer.php';
 ?>

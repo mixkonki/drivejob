@@ -16,7 +16,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // $controller->index();
 
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 
 // Ορισμός των επιπλέον CSS αρχείων
 $css_files = ['css/job-listings.css'];
@@ -35,7 +35,7 @@ Session::remove('old_input');
     <div class="container">
         <h1>Αγγελίες Εργασίας</h1>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -106,26 +106,34 @@ Session::remove('old_input');
         <!-- Επικεφαλίδα αγγελιών -->
         <div class="job-listings-header">
             <h2>Αποτελέσματα Αναζήτησης</h2>
-            <?php if (isset($_SESSION['user_id'])): ?>
+            <?php if (isset($_SESSION['user_id'])) : ?>
                 <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα Αγγελία</a>
             <?php endif; ?>
         </div>
         
         <!-- Λίστα Αγγελιών -->
-        <?php if (isset($listings) && count($listings['results']) > 0): ?>
+        <?php if (isset($listings) && count($listings['results']) > 0) : ?>
             <div class="job-listings">
-                <?php foreach ($listings['results'] as $listing): ?>
+                <?php foreach ($listings['results'] as $listing) : ?>
                     <div class="job-listing-card">
                         <div class="job-listing-header">
                             <h3><a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>"><?php echo htmlspecialchars($listing['title']); ?></a></h3>
                             <div>
                                 <span class="job-type <?php echo $listing['job_type']; ?>">
-                                    <?php 
+                                    <?php
                                     switch ($listing['job_type']) {
-                                        case 'full_time': echo 'Πλήρης Απασχόληση'; break;
-                                        case 'part_time': echo 'Μερική Απασχόληση'; break;
-                                        case 'contract': echo 'Σύμβαση Έργου'; break;
-                                        case 'temporary': echo 'Προσωρινή Απασχόληση'; break;
+                                        case 'full_time':
+                                            echo 'Πλήρης Απασχόληση';
+                                            break;
+                                        case 'part_time':
+                                            echo 'Μερική Απασχόληση';
+                                            break;
+                                        case 'contract':
+                                            echo 'Σύμβαση Έργου';
+                                            break;
+                                        case 'temporary':
+                                            echo 'Προσωρινή Απασχόληση';
+                                            break;
                                     }
                                     ?>
                                 </span>
@@ -139,48 +147,57 @@ Session::remove('old_input');
                         <div class="job-listing-detail">
     <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Όχημα">
     <span>
-        <?php 
+                    <?php
         // Έλεγχος αν υπάρχει το παλιό πεδίο vehicle_type
-        if (isset($listing['vehicle_type']) && $listing['vehicle_type']) {
-            switch ($listing['vehicle_type']) {
-                case 'car': echo 'Αυτοκίνητο'; break;
-                case 'van': echo 'Βαν'; break;
-                case 'truck': echo 'Φορτηγό'; break;
-                case 'bus': echo 'Λεωφορείο'; break;
-                case 'machinery': echo 'Μηχάνημα Έργου'; break;
-            }
-        } 
+                    if (isset($listing['vehicle_type']) && $listing['vehicle_type']) {
+                        switch ($listing['vehicle_type']) {
+                            case 'car':
+                                echo 'Αυτοκίνητο';
+                                break;
+                            case 'van':
+                                echo 'Βαν';
+                                break;
+                            case 'truck':
+                                echo 'Φορτηγό';
+                                break;
+                            case 'bus':
+                                echo 'Λεωφορείο';
+                                break;
+                            case 'machinery':
+                                echo 'Μηχάνημα Έργου';
+                                break;
+                        }
+                    }
         // Έλεγχος αν υπάρχει το νέο πεδίο vehicle_types (πίνακας)
-        elseif (isset($listing['vehicle_types']) && !empty($listing['vehicle_types'])) {
-            $vehicleTypeLabels = [
-                'car' => 'Αυτοκίνητο',
-                'van' => 'Βαν',
-                'truck' => 'Φορτηγό',
-                'bus' => 'Λεωφορείο',
-                'machinery' => 'Μηχάνημα Έργου'
-            ];
-            
-            // Εμφάνιση του πρώτου τύπου οχήματος
-            $firstType = $listing['vehicle_types'][0];
-            echo isset($vehicleTypeLabels[$firstType]) ? $vehicleTypeLabels[$firstType] : $firstType;
-            
-            // Προαιρετικά: εμφάνιση περισσότερων τύπων αν υπάρχουν
-            if (count($listing['vehicle_types']) > 1) {
-                echo ' +' . (count($listing['vehicle_types']) - 1) . ' ακόμα';
-            }
-        }
-        else {
-            echo 'Δεν καθορίστηκε';
-        }
-        ?>
+                    elseif (isset($listing['vehicle_types']) && !empty($listing['vehicle_types'])) {
+                        $vehicleTypeLabels = [
+                            'car' => 'Αυτοκίνητο',
+                            'van' => 'Βαν',
+                            'truck' => 'Φορτηγό',
+                            'bus' => 'Λεωφορείο',
+                            'machinery' => 'Μηχάνημα Έργου'
+                        ];
+
+                        // Εμφάνιση του πρώτου τύπου οχήματος
+                        $firstType = $listing['vehicle_types'][0];
+                        echo isset($vehicleTypeLabels[$firstType]) ? $vehicleTypeLabels[$firstType] : $firstType;
+
+                        // Προαιρετικά: εμφάνιση περισσότερων τύπων αν υπάρχουν
+                        if (count($listing['vehicle_types']) > 1) {
+                            echo ' +' . (count($listing['vehicle_types']) - 1) . ' ακόμα';
+                        }
+                    } else {
+                        echo 'Δεν καθορίστηκε';
+                    }
+                    ?>
     </span>
 </div>
                             
-                            <?php if ($listing['salary_min'] || $listing['salary_max']): ?>
+                            <?php if ($listing['salary_min'] || $listing['salary_max']) : ?>
                                 <div class="job-listing-detail">
                                     <img src="<?php echo BASE_URL; ?>img/salary_icon.png" alt="Αμοιβή">
                                     <span>
-                                        <?php 
+                                        <?php
                                         if ($listing['salary_min'] && $listing['salary_max']) {
                                             echo number_format($listing['salary_min']) . '€ - ' . number_format($listing['salary_max']) . '€';
                                         } elseif ($listing['salary_min']) {
@@ -207,9 +224,9 @@ Session::remove('old_input');
             </div>
             
             <!-- Σελιδοποίηση -->
-            <?php if ($listings['pagination']['pages'] > 1): ?>
+            <?php if ($listings['pagination']['pages'] > 1) : ?>
                 <div class="pagination">
-                    <?php for ($i = 1; $i <= $listings['pagination']['pages']; $i++): ?>
+                    <?php for ($i = 1; $i <= $listings['pagination']['pages']; $i++) : ?>
                         <a href="?page=<?php echo $i; ?><?php echo isset($_GET['listing_type']) ? '&listing_type=' . htmlspecialchars($_GET['listing_type']) : ''; ?><?php echo isset($_GET['job_type']) ? '&job_type=' . htmlspecialchars($_GET['job_type']) : ''; ?><?php echo isset($_GET['vehicle_type']) ? '&vehicle_type=' . htmlspecialchars($_GET['vehicle_type']) : ''; ?>" class="pagination-btn <?php echo $i === $listings['pagination']['page'] ? 'active' : ''; ?>">
                             <?php echo $i; ?>
                         </a>
@@ -217,10 +234,10 @@ Session::remove('old_input');
                 </div>
             <?php endif; ?>
             
-        <?php else: ?>
+        <?php else : ?>
             <div class="no-results">
                 <p>Δεν βρέθηκαν αγγελίες που να ταιριάζουν με τα κριτήρια αναζήτησης.</p>
-                <?php if (isset($_SESSION['user_id'])): ?>
+                <?php if (isset($_SESSION['user_id'])) : ?>
                     <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Δημιουργήστε μια νέα αγγελία</a>
                 <?php endif; ?>
             </div>
@@ -244,7 +261,7 @@ Session::remove('old_input');
     document.addEventListener('DOMContentLoaded', initAutocomplete);
 </script>
 
-<?php 
+<?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php'; 
+include ROOT_DIR . '/src/Views/footer.php';
 ?>

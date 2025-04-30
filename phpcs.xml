@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<ruleset name="DriveJobs Custom Standard">
+    <description>Πρότυπα κωδικοποίησης για το DriveJobs.gr</description>
+    <!-- Για PHP 8.3 -->
+    <config name="php_version" value="80300"/>
+
+    <!-- Αναζήτηση σε αυτούς τους φακέλους -->
+    <file>src</file>
+    <file>public</file>
+    
+    <!-- Εξαίρεση των φακέλων vendor και node_modules -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/tests/*</exclude-pattern>
+
+    <!-- Χρήση PSR-12 ως βασικό πρότυπο -->
+    <rule ref="PSR12"/>
+    
+    <!-- Ρυθμίσεις για τα whitespace -->
+    <rule ref="Generic.WhiteSpace.ScopeIndent">
+        <properties>
+            <property name="indent" value="4"/>
+        </properties>
+    </rule>
+    
+    <!-- Μέγιστο μήκος γραμμής -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="120"/>
+        </properties>
+    </rule>
+</ruleset>

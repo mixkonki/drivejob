@@ -1,7 +1,7 @@
-window.onerror = function(message, source, lineno, colno, error) {
+window.onerror = function (message, source, lineno, colno, error) {
     // Καταγραφή σφάλματος στην κονσόλα
     console.error('JS ERROR:', message, 'at', source, 'line', lineno);
-    
+
     // Αποστολή του σφάλματος στον server για καταγραφή
     fetch('log-error.php', {
         method: 'POST',
@@ -16,6 +16,6 @@ window.onerror = function(message, source, lineno, colno, error) {
             stack: error ? error.stack : null
         })
     });
-    
+
     return false; // Επιτρέπει την κανονική διαχείριση σφαλμάτων του προγράμματος περιήγησης
 };

@@ -18,7 +18,7 @@ echo '<main>'; // Έναρξη του main
 <div class="login-form-container">
         <h1>Σύνδεση</h1>
         
-        <?php if (Session::has('login_error')): ?>
+        <?php if (Session::has('login_error')) : ?>
             <div class="error-message">
                 <?php echo Session::get('login_error'); ?>
                 <?php Session::remove('login_error'); ?>

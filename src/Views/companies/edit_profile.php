@@ -1,6 +1,6 @@
-<?php 
+<?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
 $errors = $_SESSION['errors'] ?? [];
@@ -17,14 +17,14 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
     <div class="container">
         <h1>Επεξεργασία Προφίλ Εταιρείας</h1>
         
-        <?php if (isset($_SESSION['success_message'])): ?>
+        <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
                 <?php echo $_SESSION['success_message']; ?>
                 <?php unset($_SESSION['success_message']); ?>
             </div>
         <?php endif; ?>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -51,14 +51,14 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         <div class="form-group <?php echo hasError('company_name') ? 'has-error' : ''; ?>">
                             <label for="company_name">Όνομα Εταιρείας</label>
                             <input type="text" id="company_name" name="company_name" value="<?php echo old('company_name', $companyData['company_name'] ?? ''); ?>" required>
-                            <?php if (hasError('company_name')): ?>
+                            <?php if (hasError('company_name')) : ?>
                                 <div class="error-message"><?php echo getError('company_name'); ?></div>
                             <?php endif; ?>
                         </div>
                         
                         <div class="form-group">
                             <label for="company_logo">Λογότυπο Εταιρείας</label>
-                            <?php if (isset($companyData['company_logo']) && $companyData['company_logo']): ?>
+                            <?php if (isset($companyData['company_logo']) && $companyData['company_logo']) : ?>
                                 <div class="current-logo">
                                     <img src="<?php echo BASE_URL . htmlspecialchars($companyData['company_logo']); ?>" alt="Τρέχον λογότυπο">
                                     <p>Τρέχον λογότυπο</p>
@@ -148,7 +148,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         <div class="form-group <?php echo hasError('phone') ? 'has-error' : ''; ?>">
                             <label for="phone">Τηλέφωνο</label>
                             <input type="tel" id="phone" name="phone" value="<?php echo old('phone', $companyData['phone'] ?? ''); ?>" required>
-                            <?php if (hasError('phone')): ?>
+                            <?php if (hasError('phone')) : ?>
                                 <div class="error-message"><?php echo getError('phone'); ?></div>
                             <?php endif; ?>
                         </div>
@@ -156,7 +156,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         <div class="form-group <?php echo hasError('website') ? 'has-error' : ''; ?>">
                             <label for="website">Ιστοσελίδα</label>
                             <input type="url" id="website" name="website" value="<?php echo old('website', $companyData['website'] ?? ''); ?>" placeholder="https://www.example.com">
-                            <?php if (hasError('website')): ?>
+                            <?php if (hasError('website')) : ?>
                                 <div class="error-message"><?php echo getError('website'); ?></div>
                             <?php endif; ?>
                         </div>
@@ -223,7 +223,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
     });
 </script>
 
-<?php 
+<?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php'; 
+include ROOT_DIR . '/src/Views/footer.php';
 ?>

@@ -423,7 +423,6 @@ class DriversController
 
         // Λήψη των πιστοποιήσεων του οδηγού
         $driverCertifications = $this->driversModel->getDriverCertifications($driverId);
-
         // Λήψη της εμπειρίας σε οχήματα
         $driverVehicleExperience = $this->driversModel->getDriverVehicleExperience($driverId);
 

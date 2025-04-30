@@ -1,9 +1,9 @@
 <?php
+
 use Drivejob\Core\Session;
 
 // Ξεκίνημα συνεδρίας
 Session::start();
-
 // Ορισμός των Content Security Policy headers με υποστήριξη για WebAssembly
 header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://maps.googleapis.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://maps.googleapis.com blob: data:; frame-src 'self' https://maps.google.com https://www.google.com; worker-src 'self' blob:;");
 header("X-Content-Type-Options: nosniff");
@@ -13,10 +13,12 @@ header("X-XSS-Protection: 1; mode=block");
 
 // Βοηθητική συνάρτηση για να ελέγχουμε την τρέχουσα σελίδα
 if (!function_exists('isCurrentPage')) {
-    function isCurrentPage($page) {
+    function isCurrentPage($page)
+    {
         $currentPage = basename($_SERVER['PHP_SELF']);
         return $currentPage === $page;
     }
+
 }
 
 // Έλεγχος για συνδεδεμένο χρήστη
@@ -85,7 +87,8 @@ $userRole = Session::has('role') ? Session::get('role') : '';
 
         <!-- Ενέργειες χρήστη -->
         <div class="user-actions">
-            <?php if ($isLoggedIn): ?>
+            <?php if ($isLoggedIn) :
+                ?>
                 <!-- Dropdown για τον συνδεδεμένο χρήστη -->
                 <div class="dropdown">
                     <button class="btn btn-dark dropdown-toggle">
@@ -98,24 +101,30 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                             <?php echo htmlspecialchars($userName ?: 'Χρήστης'); ?>
                         </div>
                         <!-- Επιλογές προφίλ, αποσύνδεσης -->
-                        <?php if ($userRole === 'company'): ?>
+                        <?php if ($userRole === 'company') :
+                            ?>
                         <a href="<?php echo BASE_URL; ?>companies/company_profile">
                             <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
                             Προφίλ
                         </a>
-                        <?php else: ?>
+                            <?php
+                        else :
+                            ?>
                         <a href="<?php echo BASE_URL; ?>drivers/driver_profile">
                             <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
                             Προφίλ
                         </a>
-                        <?php endif; ?>
+                            <?php
+                        endif; ?>
                         <a href="<?php echo BASE_URL; ?>logout.php">
                             <img src="<?php echo BASE_URL; ?>img/logout_icon.png" alt="Logout Icon" />
                             Αποσύνδεση
                         </a>
                     </div>
                 </div>
-            <?php else: ?>
+                <?php
+            else :
+                ?>
                 <!-- Σύνδεση για μη συνδεδεμένο χρήστη -->
                 <a href="<?php echo BASE_URL; ?>login.php" class="btn btn-dark">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -124,6 +133,7 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                     </svg>
                     Σύνδεση
                 </a>
-            <?php endif; ?>
+                <?php
+            endif; ?>
         </div>
     </header>

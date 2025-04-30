@@ -18,7 +18,7 @@ class DriverResumeController
 
     /**
      * Δημιουργεί και κατεβάζει το PDF βιογραφικό του οδηγού
-     * 
+     *
      * @param int $id Το ID του οδηγού
      */
     public function generateResume($id)
@@ -39,7 +39,6 @@ class DriverResumeController
 
         // Λήψη των δεδομένων του οδηγού
         $driver = $this->driversModel->getDriverById($id);
-
         if (!$driver) {
             $_SESSION['error_message'] = 'Ο οδηγός δεν βρέθηκε.';
             header('Location: ' . BASE_URL . 'job-listings');
@@ -49,7 +48,6 @@ class DriverResumeController
         // Λήψη επιπλέον δεδομένων για το βιογραφικό
         $driverLicenses = $this->driversModel->getDriverLicenses($id);
         $driverLicenseTypes = [];
-
         if (!empty($driverLicenses)) {
             foreach ($driverLicenses as $license) {
                 if (isset($license['license_type']) && !empty($license['license_type'])) {
@@ -64,8 +62,7 @@ class DriverResumeController
         $driverOperatorLicenses = $this->driversModel->getDriverOperatorLicenses($id);
         $driverTachographCard = $this->driversModel->getDriverTachographCard($id);
         $averageRating = $this->driversModel->getDriverRating($id);
-
-        // Δημιουργία του PDF
+// Δημιουργία του PDF
         $options = [
             'driverLicenses' => $driverLicenses,
             'driverLicenseTypes' => $driverLicenseTypes,
@@ -76,11 +73,9 @@ class DriverResumeController
             'driverTachographCard' => $driverTachographCard,
             'averageRating' => $averageRating
         ];
-
         $pdfGenerator = new DriverResumePDF($driver, $options);
         $pdfFile = $pdfGenerator->generate();
-
-        // Ενημέρωση του βιογραφικού του οδηγού στη βάση δεδομένων αν έγινε κλήση από τον ίδιο τον οδηγό
+// Ενημέρωση του βιογραφικού του οδηγού στη βάση δεδομένων αν έγινε κλήση από τον ίδιο τον οδηγό
         if ($_SESSION['user_id'] == $id && $_SESSION['role'] === 'driver') {
             $this->driversModel->updateResumeFile($id, $pdfFile);
         }
@@ -89,9 +84,9 @@ class DriverResumeController
         header('Location: ' . BASE_URL . $pdfFile);
         exit();
     }
-    /**
-     * Αποθήκευση των αλλαγών στο βιογραφικό
-     */
+/**
+ * Αποθήκευση των αλλαγών στο βιογραφικό
+ */
     public function updateResume()
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
@@ -116,29 +111,24 @@ class DriverResumeController
         }
 
         $id = $_SESSION['user_id'];
-
-        // Επικύρωση και καθαρισμός δεδομένων φόρμας
+// Επικύρωση και καθαρισμός δεδομένων φόρμας
         $about_me = $_POST['about_me'] ?? '';
         $experience_years = intval($_POST['experience_years'] ?? 0);
         $work_experience = $_POST['work_experience'] ?? '';
         $language_greek = $_POST['language_greek'] ?? '';
         $language_english = $_POST['language_english'] ?? '';
-
-        // Ενημέρωση δεδομένων βιογραφικού στη βάση
+// Ενημέρωση δεδομένων βιογραφικού στη βάση
         $updateData = [
-            'about_me' => $about_me,
-            'experience_years' => $experience_years,
-            'work_experience' => $work_experience,
-            'language_greek' => $language_greek,
-            'language_english' => $language_english
+        'about_me' => $about_me,
+        'experience_years' => $experience_years,
+        'work_experience' => $work_experience,
+        'language_greek' => $language_greek,
+        'language_english' => $language_english
         ];
-
         $success = $this->driversModel->updateProfile($id, $updateData);
-
         if ($success) {
             $_SESSION['success_message'] = 'Οι αλλαγές στο βιογραφικό σας αποθηκεύτηκαν με επιτυχία.';
-
-            // Δημιουργία νέου PDF βιογραφικού
+        // Δημιουργία νέου PDF βιογραφικού
             $this->generateResume($id);
         } else {
             $_SESSION['error_message'] = 'Υπήρξε ένα πρόβλημα κατά την αποθήκευση των αλλαγών.';
@@ -149,8 +139,8 @@ class DriverResumeController
         exit();
     }
     /**
-     * Φόρτωση της σελίδας επεξεργασίας βιογραφικού
-     */
+ * Φόρτωση της σελίδας επεξεργασίας βιογραφικού
+ */
     public function editResume()
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
@@ -168,10 +158,8 @@ class DriverResumeController
         }
 
         $id = $_SESSION['user_id'];
-
-        // Λήψη των δεδομένων του οδηγού
+// Λήψη των δεδομένων του οδηγού
         $driver = $this->driversModel->getDriverById($id);
-
         if (!$driver) {
             $_SESSION['error_message'] = 'Τα στοιχεία του οδηγού δεν βρέθηκαν.';
             header('Location: ' . BASE_URL . 'drivers/profile');
@@ -181,7 +169,6 @@ class DriverResumeController
         // Λήψη επιπλέον δεδομένων για το βιογραφικό
         $driverLicenses = $this->driversModel->getDriverLicenses($id);
         $driverLicenseTypes = [];
-
         if (!empty($driverLicenses)) {
             foreach ($driverLicenses as $license) {
                 if (isset($license['license_type']) && !empty($license['license_type'])) {
@@ -196,8 +183,7 @@ class DriverResumeController
         $driverOperatorLicenses = $this->driversModel->getDriverOperatorLicenses($id);
         $driverTachographCard = $this->driversModel->getDriverTachographCard($id);
         $averageRating = $this->driversModel->getDriverRating($id);
-
-        // Φόρτωση της προβολής επεξεργασίας βιογραφικού
+// Φόρτωση της προβολής επεξεργασίας βιογραφικού
         include ROOT_DIR . '/src/Views/drivers/edit-resume.php';
     }
     /**
@@ -214,7 +200,6 @@ class DriverResumeController
 
         // Έλεγχος αν ο οδηγός έχει ήδη ένα βιογραφικό
         $driver = $this->driversModel->getDriverById($id);
-
         if (!$driver) {
             $_SESSION['error_message'] = 'Ο οδηγός δεν βρέθηκε.';
             header('Location: ' . BASE_URL . 'job-listings');
@@ -223,17 +208,16 @@ class DriverResumeController
 
         // Αν υπάρχει ήδη βιογραφικό, προσφέρεται για κατέβασμα
         if (isset($driver['resume_file']) && !empty($driver['resume_file']) && file_exists(ROOT_DIR . '/public/' . $driver['resume_file'])) {
-            // Ορισμός του ονόματος του αρχείου
+// Ορισμός του ονόματος του αρχείου
             $filename = 'drivejob_' . $driver['first_name'] . '_' . $driver['last_name'] . '_resume.pdf';
-
-            // Προσφορά του αρχείου για κατέβασμα
+// Προσφορά του αρχείου για κατέβασμα
             header('Content-Type: application/pdf');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             header('Content-Length: ' . filesize(ROOT_DIR . '/public/' . $driver['resume_file']));
             readfile(ROOT_DIR . '/public/' . $driver['resume_file']);
             exit();
         } else {
-            // Αν δεν υπάρχει βιογραφικό, δημιουργία καινούργιου
+        // Αν δεν υπάρχει βιογραφικό, δημιουργία καινούργιου
             $this->generateResume($id);
         }
     }

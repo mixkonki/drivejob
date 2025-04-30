@@ -440,28 +440,28 @@
         flex-direction: column;
         gap: 30px;
     }
-    
+
     .rating-score {
         margin: 0 auto;
     }
-    
+
     .tips-list {
         grid-template-columns: 1fr;
     }
-    
+
     .review-header {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .review-rating {
         align-self: flex-start;
     }
-    
+
     .profile-actions {
         flex-direction: column;
     }
-    
+
     .profile-actions a {
         width: 100%;
     }

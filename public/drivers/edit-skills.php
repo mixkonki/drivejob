@@ -1,4 +1,4 @@
-<?php 
+<?php
 // Συμπερίληψη του header
 require_once __DIR__ . '/../../src/bootstrap.php';
 require_once ROOT_DIR . '/config/database.php';
@@ -34,7 +34,7 @@ $driverCertifications = $controller->getDriverCertifications($driverId);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Επεξεργασία της φόρμας και αποθήκευση των δεξιοτήτων
     $result = $controller->updateDriverSkills();
-    
+
     if ($result) {
         $_SESSION['success_message'] = 'Οι δεξιότητες και τα προσόντα σας ενημερώθηκαν με επιτυχία.';
         header('Location: ' . BASE_URL . 'drivers/driver_profile');
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php'; 
+include ROOT_DIR . '/src/Views/header.php';
 ?>
 
 <!-- Σύνδεση με το CSS αρχείο του προφίλ οδηγού και επεξεργασίας δεξιοτήτων -->
@@ -60,14 +60,14 @@ include ROOT_DIR . '/src/Views/header.php';
             <p>Διαχειριστείτε τις επαγγελματικές δεξιότητες, γλωσσικές ικανότητες, πιστοποιήσεις και σεμινάρια σας.</p>
         </div>
         
-        <?php if (isset($_SESSION['success_message'])): ?>
+        <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
                 <?php echo $_SESSION['success_message']; ?>
                 <?php unset($_SESSION['success_message']); ?>
             </div>
         <?php endif; ?>
         
-        <?php if (isset($_SESSION['error_message'])): ?>
+        <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
@@ -311,8 +311,8 @@ include ROOT_DIR . '/src/Views/header.php';
                     </div>
                     
                     <div class="certification-list" id="certification-list">
-                        <?php if (isset($driverCertifications) && !empty($driverCertifications)): ?>
-                            <?php foreach ($driverCertifications as $index => $certification): ?>
+                        <?php if (isset($driverCertifications) && !empty($driverCertifications)) : ?>
+                            <?php foreach ($driverCertifications as $index => $certification) : ?>
                                 <div class="certification-item">
                                     <div class="form-row">
                                         <div class="form-group">
@@ -341,7 +341,7 @@ include ROOT_DIR . '/src/Views/header.php';
                                     <button type="button" class="btn-remove-cert">Αφαίρεση</button>
                                 </div>
                             <?php endforeach; ?>
-                        <?php else: ?>
+                        <?php else : ?>
                             <div class="certification-item">
                                 <div class="form-row">
                                     <div class="form-group">
@@ -487,7 +487,7 @@ include ROOT_DIR . '/src/Views/header.php';
     </script>
 </main>
 
-<?php 
+<?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php'; 
+include ROOT_DIR . '/src/Views/footer.php';
 ?>
