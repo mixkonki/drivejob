@@ -18,11 +18,15 @@
     "mockery/mockery": "^1.6",
     "codeception/codeception": "^5.2"
   },
-  "autoload": {
+"autoload": {
     "psr-4": {
-      "Drivejob\\": "src/"
-    }
-  },
+        "Drivejob\\": "src/"
+    },
+    "files": [
+        "src/helpers.php"
+    ]
+}
+  ,
   "autoload-dev": {
     "psr-4": {
       "Tests\\": "tests/"

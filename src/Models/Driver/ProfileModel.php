@@ -144,7 +144,7 @@ class ProfileModel extends BaseModel
      */
     public function verifyDriver($email)
     {
-        return $this->update(['is_verified' => 1], ['email' => $email]);
+        return parent::update(['is_verified' => 1], ['email' => $email]);
     }
 
     /**
