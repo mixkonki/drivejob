@@ -125,7 +125,7 @@ include ROOT_DIR . '/src/Views/header.php';
                 <!-- Βαθμολογία και Αξιολογήσεις (αν υπάρχουν) -->
                 <?php
                 // Ανάκτηση των αναλυτικών βαθμολογιών του οδηγού
-                $driverRatings = isset($driversModel) ? $driversModel->getDriverRatingDetails($driver['id']) : null;
+                $driverRatings = isset($ratingModel) ? $ratingModel->getDriverRatingDetails($driver['id']) : null;
                 include ROOT_DIR . '/src/Views/components/driver-ratings-display.php';
                 ?>
                 

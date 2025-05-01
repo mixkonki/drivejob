@@ -8,7 +8,7 @@ class MatchingModel
 {
     private $pdo;
     private $jobListingModel;
-    private $driversModel;
+    private $profileModel;
 
     /**
      * Κατασκευαστής του μοντέλου
@@ -17,7 +17,7 @@ class MatchingModel
     {
         $this->pdo = $pdo;
         $this->jobListingModel = new JobListingModel($pdo);
-        $this->driversModel = new DriversModel($pdo);
+        $this->profileModel = new ProfileModel($pdo);
     }
 
     /**
@@ -33,7 +33,7 @@ class MatchingModel
     {
         try {
             // Λήψη του προφίλ του οδηγού
-            $driverProfile = $this->driversModel->getDriverById($driverId);
+            $driverProfile = $this->profileModel->getDriverById($driverId);
 
             if (!$driverProfile) {
                 return [
@@ -120,7 +120,7 @@ class MatchingModel
             $params = $this->getMatchingParamsForListing($listing);
 
             // Λήψη των οδηγών που ταιριάζουν με τα κριτήρια
-            $drivers = $this->driversModel->searchDrivers($params, $page, $limit);
+            $drivers = $this->profileModel->searchDrivers($params, $page, $limit);
 
             // Υπολογισμός ποσοστού ταιριάσματος για κάθε οδηγό
             $matchedDrivers = $this->calculateDriverMatchPercentage($drivers['results'], $listing);
@@ -214,7 +214,7 @@ class MatchingModel
             }
 
             // Αναζήτηση οδηγών με βάση τις συνδυασμένες παραμέτρους
-            $drivers = $this->driversModel->searchDrivers($combinedParams, $page, $limit);
+            $drivers = $this->profileModel->searchDrivers($combinedParams, $page, $limit);
 
             // Υπολογισμός ποσοστού ταιριάσματος για κάθε οδηγό
             $allMatchingScores = [];

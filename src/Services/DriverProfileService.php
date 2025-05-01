@@ -57,15 +57,15 @@ class DriverProfileService
 
             // Κρυπτογράφηση του κωδικού
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-            
+
             // Δημιουργία του λογαριασμού
             $driverId = $this->profileModel->create($data);
-            
+
             if ($driverId) {
                 // Ενημέρωση τελευταίας σύνδεσης
                 $this->profileModel->updateLastLogin($driverId);
             }
-            
+
             return $driverId;
         } catch (PDOException $e) {
             Logger::error('Error in registerDriver: ' . $e->getMessage());
@@ -84,46 +84,46 @@ class DriverProfileService
         try {
             // Ανάκτηση βασικών πληροφοριών
             $driver = $this->profileModel->getDriverById($driverId);
-            
+
             if (!$driver) {
                 return false;
             }
-            
+
             // Προσθήκη των αδειών οδήγησης
             $driver['licenses'] = $this->licenseModel->getDriverLicenses($driverId);
-            
+
             // Προσθήκη των πιστοποιητικών ADR
             $driver['adr_certificates'] = $this->certificationModel->getDriverAdrCertificates($driverId);
-            
+
             // Προσθήκη των αδειών χειριστή
             $driver['operator_licenses'] = $this->certificationModel->getDriverOperatorLicenses($driverId);
-            
+
             // Προσθήκη των καρτών ταχογράφου
             $driver['tachograph_cards'] = $this->certificationModel->getDriverTachographCards($driverId);
-            
+
             // Προσθήκη των ειδικών αδειών
             $driver['special_licenses'] = $this->certificationModel->getDriverSpecialLicenses($driverId);
-            
+
             // Προσθήκη των δεξιοτήτων
             $driver['skills'] = $this->skillModel->getDriverSkills($driverId);
-            
+
             // Προσθήκη της αυτοαξιολόγησης
             $driver['assessment'] = $this->skillModel->getDriverAssessment($driverId);
-            
+
             // Προσθήκη της εμπειρίας οχημάτων
             $driver['vehicle_experience'] = $this->skillModel->getDriverVehicleExperience($driverId);
-            
+
             // Προσθήκη των πιστοποιήσεων και σεμιναρίων
             $driver['certifications'] = $this->certificationModel->getDriverCertifications($driverId);
-            
+
             // Προσθήκη των συμβάντων
             $driver['incidents'] = $this->incidentModel->getDriverIncidents($driverId);
-            
+
             // Προσθήκη των βαθμολογιών
             $driver['rating_details'] = $this->ratingModel->getDriverRatingDetails($driverId);
             $driver['average_rating'] = $this->ratingModel->getDriverRating($driverId);
             $driver['reviews'] = $this->ratingModel->getDriverReviews($driverId);
-            
+
             return $driver;
         } catch (PDOException $e) {
             Logger::error('Error in getDriverProfile: ' . $e->getMessage());
@@ -178,14 +178,14 @@ class DriverProfileService
         try {
             // Ανάκτηση του οδηγού
             $driver = $this->profileModel->getDriverById($driverId);
-            
+
             if (!$driver || !password_verify($currentPassword, $driver['password'])) {
                 return false;
             }
-            
+
             // Κρυπτογράφηση του νέου κωδικού
             $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-            
+
             return $this->profileModel->updatePassword($driverId, $hashedPassword);
         } catch (PDOException $e) {
             Logger::error('Error in updatePassword: ' . $e->getMessage());
@@ -204,11 +204,11 @@ class DriverProfileService
         try {
             // Ανάκτηση βασικών πληροφοριών
             $driver = $this->profileModel->getDriverById($driverId);
-            
+
             if (!$driver) {
                 return [];
             }
-            
+
             // Δημιουργία συνοπτικών στοιχείων
             $summary = [
                 'id' => $driver['id'],
@@ -222,18 +222,18 @@ class DriverProfileService
                 'licenses' => [],
                 'skills' => []
             ];
-            
+
             // Προσθήκη των αδειών οδήγησης (μόνο τύποι)
             $licenses = $this->licenseModel->getDriverLicenses($driverId);
             foreach ($licenses as $license) {
                 $summary['licenses'][] = $license['license_type'];
             }
-            
+
             // Προσθήκη ύπαρξης ADR, χειριστή, ταχογράφου
             $summary['has_adr'] = !empty($this->certificationModel->getDriverAdrCertificates($driverId));
             $summary['has_operator'] = !empty($this->certificationModel->getDriverOperatorLicenses($driverId));
             $summary['has_tachograph'] = !empty($this->certificationModel->getDriverTachographCards($driverId));
-            
+
             // Προσθήκη top skills
             $skills = $this->skillModel->getDriverSkills($driverId);
             if (!empty($skills)) {
@@ -246,7 +246,7 @@ class DriverProfileService
                 }
                 $summary['skills'] = array_slice($topSkills, 0, 5); // Μόνο οι 5 πρώτες
             }
-            
+
             return $summary;
         } catch (PDOException $e) {
             Logger::error('Error in getDriverSummary: ' . $e->getMessage());
@@ -290,11 +290,11 @@ class DriverProfileService
     {
         try {
             $drivers = $this->profileModel->getRecentAvailableDrivers($limit);
-            
+
             // Εμπλουτισμός με επιπλέον πληροφορίες
             foreach ($drivers as &$driver) {
                 $driver['rating'] = $this->ratingModel->getDriverRating($driver['id']);
-                
+
                 // Προσθήκη των τύπων αδειών
                 $licenses = $this->licenseModel->getDriverLicenses($driver['id']);
                 $licenseTypes = [];
@@ -303,7 +303,7 @@ class DriverProfileService
                 }
                 $driver['license_types'] = $licenseTypes;
             }
-            
+
             return $drivers;
         } catch (PDOException $e) {
             Logger::error('Error in getRecentAvailableDrivers: ' . $e->getMessage());
@@ -321,7 +321,7 @@ class DriverProfileService
     {
         try {
             $drivers = $this->profileModel->getTopRatedDrivers($limit);
-            
+
             // Εμπλουτισμός με επιπλέον πληροφορίες
             foreach ($drivers as &$driver) {
                 // Προσθήκη των τύπων αδειών
@@ -332,7 +332,7 @@ class DriverProfileService
                 }
                 $driver['license_types'] = $licenseTypes;
             }
-            
+
             return $drivers;
         } catch (PDOException $e) {
             Logger::error('Error in getTopRatedDrivers: ' . $e->getMessage());
@@ -351,34 +351,34 @@ class DriverProfileService
         try {
             // Ανάκτηση βασικών πληροφοριών
             $driver = $this->profileModel->getDriverById($driverId);
-            
+
             if (!$driver) {
                 return [
                     'success' => false,
                     'message' => 'Ο οδηγός δεν βρέθηκε'
                 ];
             }
-            
+
             // Ανάκτηση των αδειών
             $licenses = $this->licenseModel->getDriverLicenses($driverId);
             $formattedLicenses = $this->licenseModel->formatDriverLicenses($licenses);
-            
+
             // Ανάκτηση των πιστοποιητικών ADR
             $adrCertificates = $this->certificationModel->getDriverAdrCertificates($driverId);
             $formattedADR = $this->certificationModel->formatAdrCertificates($adrCertificates);
-            
+
             // Ανάκτηση των αδειών χειριστή
             $operatorLicenses = $this->certificationModel->getDriverOperatorLicenses($driverId);
             $formattedOperator = $this->certificationModel->formatOperatorLicenses($operatorLicenses);
-            
+
             // Ανάκτηση των καρτών ταχογράφου
             $tachographCards = $this->certificationModel->getDriverTachographCards($driverId);
             $formattedTachograph = $this->certificationModel->formatTachographCards($tachographCards);
-            
+
             // Ανάκτηση των ειδικών αδειών
             $specialLicenses = $this->certificationModel->getDriverSpecialLicenses($driverId);
             $formattedSpecial = $this->certificationModel->formatSpecialLicenses($specialLicenses);
-            
+
             return [
                 'success' => true,
                 'driver' => $driver,
@@ -408,7 +408,7 @@ class DriverProfileService
         try {
             // Έναρξη συναλλαγής
             $this->pdo->beginTransaction();
-            
+
             // Διαγραφή όλων των σχετικών δεδομένων
             $this->licenseModel->deleteDriverLicenses($driverId);
             $this->certificationModel->deleteDriverADRCertificate($driverId);
@@ -417,10 +417,10 @@ class DriverProfileService
             $this->certificationModel->deleteDriverSpecialLicenses($driverId);
             $this->certificationModel->deleteDriverCertifications($driverId);
             $this->skillModel->deleteDriverVehicleExperience($driverId);
-            
+
             // Διαγραφή του λογαριασμού
             $result = $this->profileModel->delete($driverId);
-            
+
             if ($result) {
                 $this->pdo->commit();
                 return true;
@@ -446,7 +446,7 @@ class DriverProfileService
         try {
             // Υπολογισμός συνολικής βαθμολογίας
             $ratings = $this->ratingModel->calculateTotalRating($driverId);
-            
+
             // Ενημέρωση της βαθμολογίας στη βάση
             return $this->ratingModel->updateDriverRating($driverId, $ratings);
         } catch (PDOException $e) {
@@ -562,7 +562,7 @@ class DriverProfileService
                 'skills_stats' => [],
                 'assessment_summary' => []
             ];
-            
+
             // Στατιστικά συμβάντων
             $incidents = $this->incidentModel->getDriverIncidents($driverId);
             $stats['total_incidents'] = count($incidents);
@@ -570,11 +570,11 @@ class DriverProfileService
             $stats['average_severity'] = $this->incidentModel->getAverageSeverity($driverId);
             $stats['days_since_last_incident'] = $this->incidentModel->getDaysSinceLastIncident($driverId);
             $stats['incident_trends'] = $this->incidentModel->getIncidentTrendsByYear($driverId);
-            
+
             // Στατιστικά βαθμολογίας
             $stats['rating'] = $this->ratingModel->getDriverRating($driverId);
             $ratingDetails = $this->ratingModel->getDriverRatingDetails($driverId);
-            
+
             if ($ratingDetails) {
                 $stats['rating_breakdown'] = [
                     'skills' => $ratingDetails['skills_score'] ?? 0,
@@ -583,7 +583,7 @@ class DriverProfileService
                     'technical' => $ratingDetails['technical_score'] ?? 0
                 ];
             }
-            
+
             // Στατιστικά δεξιοτήτων
             $skills = $this->skillModel->getDriverSkills($driverId);
             if (!empty($skills)) {
@@ -603,7 +603,7 @@ class DriverProfileService
                     ]
                 ];
             }
-            
+
             // Σύνοψη αυτοαξιολόγησης
             $assessment = $this->skillModel->getDriverAssessment($driverId);
             if (!empty($assessment)) {
@@ -615,14 +615,14 @@ class DriverProfileService
                     'total_score' => $assessment['total_score'] ?? 0
                 ];
             }
-            
+
             return $stats;
         } catch (PDOException $e) {
             Logger::error('Error in getDriverStatistics: ' . $e->getMessage());
             return [];
         }
     }
-    
+
     /**
      * Υπολογίζει τον αριθμό δεξιοτήτων σε μια συγκεκριμένη κατηγορία
      * 
@@ -638,7 +638,7 @@ class DriverProfileService
             'customer' => ['customer_service', 'time_management', 'route_planning', 'conflict_resolution', 'multilingual'],
             'technical' => ['vehicle_maintenance', 'troubleshooting', 'digital_tachograph', 'gps_systems', 'logistics_software']
         ];
-        
+
         $count = 0;
         if (isset($categoryMap[$category])) {
             foreach ($categoryMap[$category] as $skill) {
@@ -647,7 +647,7 @@ class DriverProfileService
                 }
             }
         }
-        
+
         return $count;
     }
 
@@ -664,15 +664,15 @@ class DriverProfileService
                 'adr_certificates' => [],
                 'operator_licenses' => []
             ];
-            
+
             // Άδειες οδήγησης
             $result['driving_licenses'] = $this->licenseModel->getDriversWithExpiringLicenses();
-            
+
             // Πιστοποιητικά ADR και άδειες χειριστή
             $certifications = $this->certificationModel->getDriversWithExpiringCertifications();
             $result['adr_certificates'] = $certifications['adr_certificate'] ?? [];
             $result['operator_licenses'] = $certifications['operator_license'] ?? [];
-            
+
             return $result;
         } catch (PDOException $e) {
             Logger::error('Error in getExpiringLicenses: ' . $e->getMessage());
@@ -683,3 +683,4 @@ class DriverProfileService
             ];
         }
     }
+}

@@ -278,7 +278,7 @@ class NotificationServices
         try {
 // Λήψη στοιχείων χρήστη
             $userModel = $userType === 'driver'
-                ? new \Drivejob\Models\DriversModel($this->pdo)
+                ? new \Drivejob\Models\Driver\ProfileModel($this->pdo)
                 : new \Drivejob\Models\CompaniesModel($this->pdo);
             $user = $userType === 'driver'
                 ? $userModel->getDriverById($userId)

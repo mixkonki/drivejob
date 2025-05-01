@@ -5,26 +5,26 @@ namespace Tests\Controllers;
 use PHPUnit\Framework\TestCase;
 use Drivejob\Controllers\AuthController;
 use Drivejob\Core\Session;
-use Drivejob\Models\DriversModel;
+use Drivejob\Models\Driver\ProfileModel;
 use Drivejob\Models\CompaniesModel;
 
 class AuthControllerTest extends TestCase
 {
     private $controller;
-    private $driversModel;
+    private $profileModel;
     private $companiesModel;
 
     protected function setUp(): void
     {
         // Δημιουργία mock των μοντέλων
-        $this->driversModel = $this->createMock(DriversModel::class);
+        $this->profileModel = $this->createMock(ProfileModel::class);
         $this->companiesModel = $this->createMock(CompaniesModel::class);
 // Εισαγωγή των mock στον controller μέσω reflection
         $this->controller = new AuthController(new \PDO('sqlite::memory:'));
         $reflection = new \ReflectionClass($this->controller);
-        $driversProperty = $reflection->getProperty('driversModel');
+        $driversProperty = $reflection->getProperty('profileModel');
         $driversProperty->setAccessible(true);
-        $driversProperty->setValue($this->controller, $this->driversModel);
+        $driversProperty->setValue($this->controller, $this->profileModel);
         $companiesProperty = $reflection->getProperty('companiesModel');
         $companiesProperty->setAccessible(true);
         $companiesProperty->setValue($this->controller, $this->companiesModel);
@@ -54,11 +54,11 @@ class AuthControllerTest extends TestCase
             'password' => password_hash('password123', PASSWORD_BCRYPT),
             'is_verified' => 1
         ];
-        $this->driversModel->expects($this->once())
+        $this->profileModel->expects($this->once())
                          ->method('getDriverByEmail')
                          ->with('driver@example.com')
                          ->willReturn($driverData);
-        $this->driversModel->expects($this->once())
+        $this->profileModel->expects($this->once())
                           ->method('updateLastLogin')
                           ->with(1);
 // Εκτέλεση της δοκιμής μέσα σε ένα try-catch καθώς η μέθοδος θα προσπαθήσει να ανακατευθύνει
@@ -81,7 +81,7 @@ class AuthControllerTest extends TestCase
         $_POST['email'] = 'company@example.com';
         $_POST['password'] = 'password123';
 // Ρύθμιση της συμπεριφοράς των mock
-        $this->driversModel->expects($this->once())
+        $this->profileModel->expects($this->once())
                          ->method('getDriverByEmail')
                          ->with('company@example.com')
                          ->willReturn(false);
@@ -127,12 +127,12 @@ class AuthControllerTest extends TestCase
             'password' => password_hash('password123', PASSWORD_BCRYPT),
             'is_verified' => 1
         ];
-        $this->driversModel->expects($this->once())
+        $this->profileModel->expects($this->once())
                          ->method('getDriverByEmail')
                          ->with('driver@example.com')
                          ->willReturn($driverData);
 // Δεν αναμένουμε κλήση του updateLastLogin
-        $this->driversModel->expects($this->never())
+        $this->profileModel->expects($this->never())
                           ->method('updateLastLogin');
 // Εκτέλεση της δοκιμής
         try {

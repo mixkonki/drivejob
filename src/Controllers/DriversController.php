@@ -9,8 +9,8 @@ use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
 
 // Παλιά μοντέλα (προς σταδιακή αντικατάσταση)
-use Drivejob\Models\DriversModel;
-use Drivejob\Models\DriverAssessmentModel;
+
+
 use Drivejob\Models\DriverLicenseModel;
 use Drivejob\Models\JobListingModel;
 use Drivejob\Models\MatchingModel;
@@ -33,10 +33,7 @@ use Drivejob\Services\DriverCertificationService;
 class DriversController
 {
     // Παλιά μοντέλα (προς σταδιακή κατάργηση)
-    private $driversModel;
-    private $driverAssessmentModel;
-
-    // Νέα μοντέλα
+            // Νέα μοντέλα
     private $profileModel;
     private $licenseModel;
     private $certificationModel;
@@ -62,10 +59,7 @@ class DriversController
         $this->pdo = $pdo;
 
         // Αρχικοποίηση των παλιών μοντέλων για συμβατότητα προς τα πίσω
-        $this->driversModel = new DriversModel($pdo);
-        $this->driverAssessmentModel = new DriverAssessmentModel($pdo);
-
-        // Αρχικοποίηση των νέων μοντέλων
+                        // Αρχικοποίηση των νέων μοντέλων
         $this->profileModel = new ProfileModel($pdo);
         $this->licenseModel = new LicenseModel($pdo);
         $this->certificationModel = new CertificationModel($pdo);
@@ -87,6 +81,7 @@ class DriversController
     private function collectFormData()
     {
         return [
+            'email' => $this->sanitize($_POST['email']), // Προσθήκη του email
             'first_name' => $this->sanitize($_POST['first_name']),
             'last_name' => $this->sanitize($_POST['last_name']),
             'phone' => $this->sanitize($_POST['phone']),
@@ -527,6 +522,7 @@ class DriversController
 
         // Έλεγχος για CSRF token
         if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+            Logger::error('CSRF token validation failed in profile update');
             $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
             header('Location: ' . BASE_URL . 'drivers/edit-profile');
             exit();
@@ -540,6 +536,10 @@ class DriversController
             ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
 
         if (!$validator->isValid()) {
+            Logger::error('Validation failed in profile update', [
+                'errors' => $validator->getErrors(),
+                'post_data' => $_POST
+            ]);
             $_SESSION['errors'] = $validator->getErrors();
             $_SESSION['old_input'] = $_POST;
             header('Location: ' . BASE_URL . 'drivers/edit-profile');
@@ -548,41 +548,70 @@ class DriversController
 
         // Λήψη ID του συνδεδεμένου οδηγού
         $driverId = $_SESSION['user_id'];
+        Logger::info('Starting profile update for driver', ['driver_id' => $driverId]);
 
         // Συλλογή των δεδομένων από τη φόρμα
         $data = $this->collectFormData();
+        Logger::info('Collected form data for update', ['data_keys' => array_keys($data)]);
 
-        // Ενημέρωση του προφίλ με τη νέα υπηρεσία
-        if ($this->profileModel->updateProfile($driverId, $data)) {
-            // Διαχείριση αδειών οδήγησης
-            $this->licenseService->handleDrivingLicenses($driverId, $_POST);
+        try {
+            // Ενημέρωση του προφίλ με τη νέα υπηρεσία
+            $updateResult = $this->profileModel->updateProfile($driverId, $data);
 
-            // Διαχείριση μεταφόρτωσης εικόνων και αρχείων
-            $this->fileUploadService->handleFileUploads($driverId, $_FILES);
+            if ($updateResult) {
+                Logger::info('Profile update successful');
 
-            // Διαχείριση ειδικών αδειών
-            $this->licenseService->handleSpecialLicenses($driverId, $_POST);
+                // Διαχείριση αδειών οδήγησης
+                $licenseResult = $this->licenseService->handleDrivingLicenses($driverId, $_POST);
+                Logger::info('License service handled', ['result' => $licenseResult]);
 
-            // Διαχείριση κάρτας ταχογράφου
-            $this->licenseService->handleTachographCard($driverId, $_POST);
+                // Διαχείριση μεταφόρτωσης εικόνων και αρχείων
+                if (!empty($_FILES)) {
+                    $fileResult = $this->fileUploadService->handleFileUploads($driverId, $_FILES);
+                    Logger::info('File upload service handled', ['result' => $fileResult]);
+                }
 
-            // Διαχείριση πιστοποιητικού ADR
-            $this->licenseService->handleADRCertificate($driverId, $_POST);
+                // Διαχείριση ειδικών αδειών
+                $specialLicenseResult = $this->licenseService->handleSpecialLicenses($driverId, $_POST);
+                Logger::info('Special licenses handled', ['result' => $specialLicenseResult]);
 
-            // Διαχείριση άδειας χειριστή μηχανημάτων
-            $this->licenseService->handleOperatorLicense($driverId, $_POST);
+                // Διαχείριση κάρτας ταχογράφου
+                $tachographResult = $this->licenseService->handleTachographCard($driverId, $_POST);
+                Logger::info('Tachograph card handled', ['result' => $tachographResult]);
 
-            // Διαχείριση δεξιοτήτων και πιστοποιήσεων 
-            if (isset($_POST['skills']) || isset($_POST['languages']) || isset($_POST['certifications'])) {
-                $this->certificationService->updateSkills($driverId, $_POST);
+                // Διαχείριση πιστοποιητικού ADR
+                $adrResult = $this->licenseService->handleADRCertificate($driverId, $_POST);
+                Logger::info('ADR certificate handled', ['result' => $adrResult]);
+
+                // Διαχείριση άδειας χειριστή μηχανημάτων
+                $operatorResult = $this->licenseService->handleOperatorLicense($driverId, $_POST);
+                Logger::info('Operator license handled', ['result' => $operatorResult]);
+
+                // Διαχείριση δεξιοτήτων και πιστοποιήσεων 
+                if (isset($_POST['skills']) || isset($_POST['languages']) || isset($_POST['certifications'])) {
+                    $skillsResult = $this->certificationService->updateSkills($driverId, $_POST);
+                    Logger::info('Skills and certifications handled', ['result' => $skillsResult]);
+                }
+
+                // Ενημέρωση βαθμολογίας
+                $ratingResult = $this->ratingService->updateDriverRating($driverId);
+                Logger::info('Rating service updated', ['result' => $ratingResult]);
+
+                $_SESSION['success_message'] = 'Το προφίλ σας ενημερώθηκε με επιτυχία.';
+            } else {
+                Logger::error('Profile update failed', [
+                    'driver_id' => $driverId,
+                    'data' => $data
+                ]);
+                $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την ενημέρωση του προφίλ σας. Παρακαλώ δοκιμάστε ξανά.';
             }
-
-            // Ενημέρωση βαθμολογίας
-            $this->ratingService->updateDriverRating($driverId);
-
-            $_SESSION['success_message'] = 'Το προφίλ σας ενημερώθηκε με επιτυχία.';
-        } else {
-            $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά την ενημέρωση του προφίλ σας. Παρακαλώ δοκιμάστε ξανά.';
+        } catch (\Exception $e) {
+            Logger::error('Exception in profile update', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.';
         }
 
         header('Location: ' . BASE_URL . 'drivers/profile');

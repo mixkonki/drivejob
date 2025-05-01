@@ -132,7 +132,7 @@ class FileUploadService
         if (move_uploaded_file($file['tmp_name'], $targetPath)) {
             // Ενημέρωση του πεδίου στη βάση δεδομένων
             $relativePath = 'uploads/profile_images/' . $filename;
-            $this->driversModel->updateProfileImage($driverId, $relativePath);
+            $this->profileModel->updateProfileImage($driverId, $relativePath);
             return true;
         }
 
@@ -174,7 +174,7 @@ class FileUploadService
         if (move_uploaded_file($file['tmp_name'], $targetPath)) {
             // Ενημέρωση του πεδίου στη βάση δεδομένων
             $relativePath = 'uploads/resumes/' . $filename;
-            $this->driversModel->updateResumeFile($driverId, $relativePath);
+            $this->profileModel->updateResumeFile($driverId, $relativePath);
             return true;
         }
 
@@ -218,7 +218,7 @@ class FileUploadService
             $relativePath = $uploadPath . $filename;
 
             // Ενημέρωση του πεδίου στον πίνακα drivers
-            $this->driversModel->updateDriverDocumentImage($driverId, $documentType, $relativePath);
+            $this->profileModel->updateDriverDocumentImage($driverId, $documentType, $relativePath);
 
             return true;
         }

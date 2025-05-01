@@ -78,9 +78,31 @@ class ProfileModel extends BaseModel
     public function updateProfile($driverId, $data)
     {
         try {
-            return $this->update($data, ['id' => $driverId]);
+            Logger::info('Attempting to update profile in ProfileModel', [
+                'driver_id' => $driverId,
+                'data_keys' => array_keys($data)
+            ]);
+
+            // Χρησιμοποιούμε απευθείας την update() του BaseModel
+            $result = parent::update($data, ['id' => $driverId]);
+
+            if ($result) {
+                Logger::info('Profile updated successfully in ProfileModel', ['driver_id' => $driverId]);
+            } else {
+                Logger::error('Profile update failed in ProfileModel', [
+                    'driver_id' => $driverId,
+                    'data' => $data
+                ]);
+            }
+
+            return $result;
         } catch (PDOException $e) {
-            Logger::error('Error in updateProfile: ' . $e->getMessage());
+            Logger::error('Error in updateProfile: ' . $e->getMessage(), [
+                'driver_id' => $driverId,
+                'data' => $data,
+                'sql_error' => $e->getCode(),
+                'sql_message' => $e->getMessage()
+            ]);
             return false;
         }
     }

@@ -2,32 +2,45 @@
 
 namespace Drivejob\Controllers;
 
-use Drivejob\Core\Debug;
-use Drivejob\Models\JobListingModel;
-use Drivejob\Models\JobTagModel;
-use Drivejob\Models\DriversModel; // <-- Προσθήκη use statement
-use Drivejob\Core\Session;
 use Drivejob\Core\Validator;
-use PDO;
+use Drivejob\Core\Logger;
+use Drivejob\Core\AuthMiddleware;
+use Drivejob\Core\Session;
+use Drivejob\Core\Sanitizer;
+use Drivejob\Core\CSRF;
 
-// <-- Προσθήκη use statement αν χρειάζεται για το type hint
+use Drivejob\Models\Driver\LicenseModel;
+use Drivejob\Models\Driver\CertificationModel;
+use Drivejob\Models\Driver\SkillModel;
+use Drivejob\Models\Driver\RatingModel;
+use Drivejob\Models\JobListingModel;
+use Drivejob\Models\MatchingModel;
+use Drivejob\Services\DriverProfileService;
 
 class JobListingController
 {
     private $jobListingModel;
-    private $jobTagModel;
-    private $driversModel; // <-- 1. Δήλωση της ιδιότητας
+    private $matchingModel;
+    
+    private $licenseModel;
+    private $certificationModel;
+    private $skillModel;
+    private $ratingModel;
+    private $driverProfileService;
     private $pdo;
 
-    public function __construct(PDO $pdo)
+    public function __construct($pdo)
     {
- // <-- Προσθήκη PDO type hint (προαιρετικά αλλά καλή πρακτική)
         $this->pdo = $pdo;
         $this->jobListingModel = new JobListingModel($pdo);
-        $this->jobTagModel = new JobTagModel($pdo);
-        $this->driversModel = new DriversModel($pdo); // <-- 2. Αρχικοποίηση στον constructor
+        $this->matchingModel = new MatchingModel($pdo);
+        $this->profileModel = new ProfileModel($pdo);  // Αλλαγή
+        $this->licenseModel = new LicenseModel($pdo);
+        $this->certificationModel = new CertificationModel($pdo);
+        $this->skillModel = new SkillModel($pdo);
+        $this->ratingModel = new RatingModel($pdo);
+        $this->driverProfileService = new DriverProfileService($pdo);
     }
-
     /**
      * Κεντρική μέθοδος δημιουργίας αγγελίας που ανακατευθύνει στη σωστή φόρμα ανάλογα με το ρόλο
      */
@@ -47,16 +60,16 @@ class JobListingController
         }
     }
 
-/**
- * Εμφανίζει τη φόρμα δημιουργίας αγγελίας για οδηγούς
- */
+    /**
+     * Εμφανίζει τη φόρμα δημιουργίας αγγελίας για οδηγούς
+     */
     protected function createDriverListing()
     {
         // Λήψη όλων των διαθέσιμων tags
         $tags = $this->jobTagModel->getAllTags();
 
         // Λήψη πλήρων πληροφοριών πιστοποιήσεων
-        $certificationInfo = $this->driversModel->getFormattedDriverCertifications($_SESSION['user_id']);
+        $certificationInfo = $this->certificationModel->getFormattedDriverCertifications($_SESSION['user_id']);
 
         if ($certificationInfo['success']) {
             // Ανάθεση των πληροφοριών σε μεταβλητές για το template
@@ -91,10 +104,10 @@ class JobListingController
             $driverSpecialLicensesDetails = $driverSpecialLicenses['details'];
         } else {
             // Λήψη των στοιχείων του οδηγού
-            $driverProfile = $this->driversModel->getDriverById($_SESSION['user_id']);
+            $driverProfile = $this->profileModel->getDriverById($_SESSION['user_id']);
 
             // Λήψη των αδειών οδήγησης του οδηγού
-            $driverLicenses = $this->driversModel->getDriverLicenses($_SESSION['user_id']);
+            $driverLicenses = $this->licenseModel->getDriverLicenses($_SESSION['user_id']);
             $driverLicenseTypes = [];
 
             if (!empty($driverLicenses)) {
@@ -107,10 +120,10 @@ class JobListingController
         }
 
         // Λήψη των δεξιοτήτων του οδηγού
-        $driverSkills = $this->driversModel->getDriverSkills($_SESSION['user_id']);
+        $driverSkills = $this->skillModel->getDriverSkills($_SESSION['user_id']);
 
         // Λήψη της βαθμολογίας του οδηγού
-        $driverRating = $this->driversModel->getDriverRating($_SESSION['user_id']);
+        $driverRating = $this->ratingModel->getDriverRating($_SESSION['user_id']);
 
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/job-listings/create-driver.php';
@@ -206,12 +219,12 @@ class JobListingController
     /**
      * Επικύρωση για αγγελία οδηγού
      */
-/**
- * Επικύρωση για αγγελία οδηγού
- */
-/**
- * Επικύρωση για αγγελία οδηγού
- */
+    /**
+     * Επικύρωση για αγγελία οδηγού
+     */
+    /**
+     * Επικύρωση για αγγελία οδηγού
+     */
     private function validateDriverListing()
     {
         $validator = new Validator($_POST);
@@ -259,9 +272,9 @@ class JobListingController
         $validator = new Validator($_POST);
 
         $validator->required('title', 'Ο τίτλος είναι υποχρεωτικός.')
-                ->required('description', 'Η περιγραφή είναι υποχρεωτική.')
-                ->required('location', 'Η τοποθεσία είναι υποχρεωτική.')
-                ->required('required_license', 'Η απαιτούμενη άδεια είναι υποχρεωτική.');
+            ->required('description', 'Η περιγραφή είναι υποχρεωτική.')
+            ->required('location', 'Η τοποθεσία είναι υποχρεωτική.')
+            ->required('required_license', 'Η απαιτούμενη άδεια είναι υποχρεωτική.');
 
         // Επικύρωση τύπων οχημάτων (τουλάχιστον ένας πρέπει να επιλεγεί)
         if (!isset($_POST['vehicle_types']) || empty($_POST['vehicle_types'])) {
@@ -321,10 +334,10 @@ class JobListingController
         ];
     }
 
-/**
- * Συλλογή δεδομένων ειδικά για αγγελίες οδηγών
- * Διορθωμένη μέθοδος για να συμπεριλάβει όλα τα απαραίτητα πεδία
- */
+    /**
+     * Συλλογή δεδομένων ειδικά για αγγελίες οδηγών
+     * Διορθωμένη μέθοδος για να συμπεριλάβει όλα τα απαραίτητα πεδία
+     */
     private function collectDriverSpecificData($data)
     {
         // Ειδικά πεδία για αγγελίες οδηγών
@@ -363,11 +376,11 @@ class JobListingController
         // και μια νέα μέθοδο στο μοντέλο που θα αποθηκεύει αυτές τις δεξιότητες
     }
 
-/**
- * Εμφανίζει την σελίδα επεξεργασίας αγγελίας
- *
- * @param int $id Το ID της αγγελίας
- */
+    /**
+     * Εμφανίζει την σελίδα επεξεργασίας αγγελίας
+     *
+     * @param int $id Το ID της αγγελίας
+     */
     public function edit($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
@@ -406,7 +419,7 @@ class JobListingController
         // Ανακατεύθυνση στη σωστή φόρμα επεξεργασίας ανάλογα με τον τύπο της αγγελίας
         if ($_SESSION['role'] === 'driver') {
             // Λήψη όλων των πληροφοριών πιστοποιήσεων
-            $certificationInfo = $this->driversModel->getFormattedDriverCertifications($_SESSION['user_id']);
+            $certificationInfo = $this->certificationModel->getFormattedDriverCertifications($_SESSION['user_id']);
 
             if ($certificationInfo['success']) {
                 // Ανάθεση των πληροφοριών σε μεταβλητές για το template
@@ -441,8 +454,8 @@ class JobListingController
                 $driverSpecialLicensesDetails = $driverSpecialLicenses['details'];
             } else {
                 // Απλή ανάκτηση του προφίλ οδηγού
-                $driverProfile = $this->driversModel->getDriverById($_SESSION['user_id']);
-                $driverLicenses = $this->driversModel->getDriverLicenses($_SESSION['user_id']);
+                $driverProfile = $this->profileModel->getDriverById($_SESSION['user_id']);
+                $driverLicenses = $this->licenseModel->getDriverLicenses($_SESSION['user_id']);
                 $driverLicenseTypes = [];
 
                 if (!empty($driverLicenses)) {
@@ -455,7 +468,7 @@ class JobListingController
             }
 
             // Λήψη των δεξιοτήτων του οδηγού
-            $driverSkills = $this->driversModel->getDriverSkills($_SESSION['user_id']);
+            $driverSkills = $this->skillModel->getDriverSkills($_SESSION['user_id']);
 
             // Μετατροπή του πεδίου preferred_schedule σε πίνακα
             if (isset($listing['preferred_schedule']) && !empty($listing['preferred_schedule'])) {
@@ -478,11 +491,11 @@ class JobListingController
             include ROOT_DIR . '/src/Views/job-listings/edit.php'; // Προσωρινά χρησιμοποιούμε την υπάρχουσα φόρμα
         }
     }
-/**
- * Εμφανίζει μια αγγελία με πλήρεις πληροφορίες
- *
- * @param int $id Το ID της αγγελίας
- */
+    /**
+     * Εμφανίζει μια αγγελία με πλήρεις πληροφορίες
+     *
+     * @param int $id Το ID της αγγελίας
+     */
     public function show($id)
     {
         try {
@@ -527,7 +540,7 @@ class JobListingController
                 Debug::log("Φόρτωση προβολής αγγελίας οδηγού");
 
                 // Ανάκτηση πλήρων πληροφοριών οδηγού με πιστοποιήσεις
-                $certificationInfo = $this->driversModel->getFormattedDriverCertifications($listing['driver_id']);
+                $certificationInfo = $this->certificationModel->getFormattedDriverCertifications($listing['driver_id']);
 
                 if ($certificationInfo['success']) {
                     // Ανάθεση των πληροφοριών σε μεταβλητές για το template
@@ -558,12 +571,12 @@ class JobListingController
                     $hasSpecialLicenses = $driverSpecialLicenses['has_special_licenses'];
 
                     // Επιπλέον πληροφορίες από το μοντέλο
-                    $driverSkills = $this->driversModel->getDriverSkills($listing['driver_id']);
-                    $driverReviews = $this->driversModel->getDriverReviews($listing['driver_id']);
-                    $averageRating = $this->driversModel->getDriverRating($listing['driver_id']);
+                    $driverSkills = $this->skillModel->getDriverSkills($listing['driver_id']);
+                    $driverReviews = $this->ratingModel->getDriverReviews($listing['driver_id']);
+                    $averageRating = $this->ratingModel->getDriverRating($listing['driver_id']);
                 } else {
                     // Απλή ανάκτηση του οδηγού χωρίς τις λεπτομέρειες
-                    $driver = $this->driversModel->getDriverById($listing['driver_id']);
+                    $driver = $this->profileModel->getDriverById($listing['driver_id']);
                     $driverLicenseTypes = [];
                     $hasAdr = false;
                     $hasOperator = false;
@@ -615,16 +628,16 @@ class JobListingController
             }
         }
     }
-/**
- * Ενημερώνει μια υπάρχουσα αγγελία
- *
- * @param int $id Το ID της αγγελίας
- * @return void
- */
-/**
- * Διορθωμένη μέθοδος update για το JobListingController
- * για να χειρίζεται σωστά τους τύπους οχημάτων
- */
+    /**
+     * Ενημερώνει μια υπάρχουσα αγγελία
+     *
+     * @param int $id Το ID της αγγελίας
+     * @return void
+     */
+    /**
+     * Διορθωμένη μέθοδος update για το JobListingController
+     * για να χειρίζεται σωστά τους τύπους οχημάτων
+     */
     public function update($id)
     {
         Debug::log("JobListingController::update - Έναρξη με ID: $id");
@@ -747,9 +760,9 @@ class JobListingController
             throw $e;
         }
     }
-/**
- * Εμφανίζει τη λίστα των αγγελιών
- */
+    /**
+     * Εμφανίζει τη λίστα των αγγελιών
+     */
     public function index()
     {
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -785,14 +798,14 @@ class JobListingController
         // Φόρτωση της προβολής
         include ROOT_DIR . '/src/Views/job-listings/index.php';
     }
-// Προσθέστε την παρακάτω μέθοδο στο αρχείο src/Controllers/JobListingsController.php
-// μέσα στην κλάση JobListingsController
+    // Προσθέστε την παρακάτω μέθοδο στο αρχείο src/Controllers/JobListingsController.php
+    // μέσα στην κλάση JobListingsController
 
-/**
- * Εμφανίζει τις αγγελίες ενός συγκεκριμένου οδηγού
- *
- * @param int $id Το ID του οδηγού
- */
+    /**
+     * Εμφανίζει τις αγγελίες ενός συγκεκριμένου οδηγού
+     *
+     * @param int $id Το ID του οδηγού
+     */
     public function driverListings($id)
     {
         // Έλεγχος αν το ID είναι έγκυρο
@@ -802,8 +815,7 @@ class JobListingController
         }
 
         // Ανάκτηση πληροφοριών οδηγού
-        $driversModel = new \Drivejob\Models\DriversModel($this->pdo);
-        $driver = $driversModel->getById($id);
+        $profileModel = $this->profileModel;        $driver = $profileModel->getDriverById($id);
 
         // Αν δεν βρέθηκε ο οδηγός
         if (!$driver) {
@@ -822,19 +834,19 @@ class JobListingController
 
         // Απόδοση της σελίδας με τα δεδομένα
         $this->render('job-listings/driver-listings', [
-        'driver' => $driver,
-        'listings' => $listings
+            'driver' => $driver,
+            'listings' => $listings
         ]);
     }
-/**
- * Επιστρέφει παρόμοιες αγγελίες με βάση διάφορα κριτήρια
- *
- * @param int $currentListingId ID της τρέχουσας αγγελίας (για εξαίρεση)
- * @param int $ownerId ID οδηγού ή εταιρείας
- * @param string $ownerType Τύπος ιδιοκτήτη ('driver' ή 'company')
- * @param int $limit Αριθμός αγγελιών προς επιστροφή
- * @return array Οι παρόμοιες αγγελίες
- */
+    /**
+     * Επιστρέφει παρόμοιες αγγελίες με βάση διάφορα κριτήρια
+     *
+     * @param int $currentListingId ID της τρέχουσας αγγελίας (για εξαίρεση)
+     * @param int $ownerId ID οδηγού ή εταιρείας
+     * @param string $ownerType Τύπος ιδιοκτήτη ('driver' ή 'company')
+     * @param int $limit Αριθμός αγγελιών προς επιστροφή
+     * @return array Οι παρόμοιες αγγελίες
+     */
     private function getSimilarListings($currentListingId, $ownerId = null, $ownerType = null, $limit = 3)
     {
         // Ανάκτηση της τρέχουσας αγγελίας
@@ -845,8 +857,8 @@ class JobListingController
 
         // Βασικές συνθήκες για παρόμοιες αγγελίες
         $conditions = [
-        "id != :current_listing_id",
-        "is_active = 1"
+            "id != :current_listing_id",
+            "is_active = 1"
         ];
         $parameters = ['current_listing_id' => $currentListingId];
 
@@ -881,13 +893,13 @@ class JobListingController
         // Αλλιώς, αναζητούμε και με βάση την τοποθεσία ή άλλα κριτήρια
         // Απομακρύνουμε την προϋπόθεση του ίδιου ιδιοκτήτη
         $locationConditions = [
-        "id != :current_listing_id",
-        "is_active = 1",
-        "listing_type = :listing_type"
+            "id != :current_listing_id",
+            "is_active = 1",
+            "listing_type = :listing_type"
         ];
         $locationParameters = [
-        'current_listing_id' => $currentListingId,
-        'listing_type' => $currentListing['listing_type']
+            'current_listing_id' => $currentListingId,
+            'listing_type' => $currentListing['listing_type']
         ];
 
         // Προσθέτουμε μια συνθήκη για να μην συμπεριλάβουμε αγγελίες που έχουμε ήδη βρει
@@ -929,12 +941,12 @@ class JobListingController
         return array_merge($sameOwnerListings, $locationListings);
     }
 
-/**
- * Βοηθητική συνάρτηση για το JobListingModel
- * Ανάκτηση αγγελιών με βάση προσαρμοσμένες συνθήκες
- *
- * Να προστεθεί στο μοντέλο JobListingModel:
- */
+    /**
+     * Βοηθητική συνάρτηση για το JobListingModel
+     * Ανάκτηση αγγελιών με βάση προσαρμοσμένες συνθήκες
+     *
+     * Να προστεθεί στο μοντέλο JobListingModel:
+     */
     public function getListingsByCustomConditions($conditions, $parameters, $orderBy = 'created_at DESC', $limit = 10)
     {
         // Μετατροπή των συνθηκών σε SQL
@@ -966,27 +978,27 @@ class JobListingController
         $stmt->execute();
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
-/**
- * Προσθέτει έναν τύπο οχήματος σε μια αγγελία
- *
- * @param int $jobListingId ID της αγγελίας
- * @param string $vehicleType Τύπος οχήματος
- * @return bool Επιτυχία/αποτυχία
- */
+    /**
+     * Προσθέτει έναν τύπο οχήματος σε μια αγγελία
+     *
+     * @param int $jobListingId ID της αγγελίας
+     * @param string $vehicleType Τύπος οχήματος
+     * @return bool Επιτυχία/αποτυχία
+     */
     public function addVehicleType($jobListingId, $vehicleType)
     {
         $sql = "INSERT INTO job_listing_vehicle_types (job_listing_id, vehicle_type) VALUES (:job_listing_id, :vehicle_type)";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
-        'job_listing_id' => $jobListingId,
-        'vehicle_type' => $vehicleType
+            'job_listing_id' => $jobListingId,
+            'vehicle_type' => $vehicleType
         ]);
     }
-/**
- * Εμφανίζει την σελίδα επιβεβαίωσης διαγραφής αγγελίας
- *
- * @param int $id Το ID της αγγελίας προς διαγραφή
- */
+    /**
+     * Εμφανίζει την σελίδα επιβεβαίωσης διαγραφής αγγελίας
+     *
+     * @param int $id Το ID της αγγελίας προς διαγραφή
+     */
     public function delete($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
@@ -1018,12 +1030,12 @@ class JobListingController
         include ROOT_DIR . '/src/Views/job-listings/delete.php';
     }
 
-/**
- * Διαγράφει μια αγγελία (ενέργεια μετά την επιβεβαίωση)
- * Γενική μέθοδος που ελέγχει τον τύπο χρήστη και ανακατευθύνει στην κατάλληλη μέθοδο
- *
- * @param int $id Το ID της αγγελίας προς διαγραφή
- */
+    /**
+     * Διαγράφει μια αγγελία (ενέργεια μετά την επιβεβαίωση)
+     * Γενική μέθοδος που ελέγχει τον τύπο χρήστη και ανακατευθύνει στην κατάλληλη μέθοδο
+     *
+     * @param int $id Το ID της αγγελίας προς διαγραφή
+     */
     public function destroy($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
@@ -1057,11 +1069,11 @@ class JobListingController
         }
     }
 
-/**
- * Διαγράφει μια αγγελία οδηγού
- *
- * @param int $id Το ID της αγγελίας προς διαγραφή
- */
+    /**
+     * Διαγράφει μια αγγελία οδηγού
+     *
+     * @param int $id Το ID της αγγελίας προς διαγραφή
+     */
     protected function destroyDriverListing($id)
     {
         // Λήψη της αγγελίας
@@ -1102,11 +1114,11 @@ class JobListingController
         }
     }
 
-/**
- * Διαγράφει μια αγγελία εταιρείας
- *
- * @param int $id Το ID της αγγελίας προς διαγραφή
- */
+    /**
+     * Διαγράφει μια αγγελία εταιρείας
+     *
+     * @param int $id Το ID της αγγελίας προς διαγραφή
+     */
     protected function destroyCompanyListing($id)
     {
         // Λήψη της αγγελίας

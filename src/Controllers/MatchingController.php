@@ -2,33 +2,38 @@
 
 namespace Drivejob\Controllers;
 
+
+use Drivejob\Models\Driver\LicenseModel;
+use Drivejob\Models\Driver\SkillModel;
+use Drivejob\Models\Driver\RatingModel;
 use Drivejob\Models\JobListingModel;
-use Drivejob\Models\DriversModel;
-use Drivejob\Models\CompaniesModel;
 use Drivejob\Models\MatchingModel;
 use Drivejob\Core\AuthMiddleware;
-use Drivejob\Core\CSRF;
 use Drivejob\Core\Logger;
 
 class MatchingController
 {
     private $jobListingModel;
-    private $driversModel;
-    private $companiesModel;
     private $matchingModel;
+    
+    private $licenseModel;
+    private $skillModel;
+    private $ratingModel;
     private $pdo;
 
-    /**
-     * Κατασκευαστής του controller
-     */
-    public function __construct($pdo)
+    public function __construct($pdo = null)
     {
+        if ($pdo === null && isset($GLOBALS['pdo'])) {
+            $pdo = $GLOBALS['pdo'];
+        }
+
         $this->pdo = $pdo;
         $this->jobListingModel = new JobListingModel($pdo);
-        $this->driversModel = new DriversModel($pdo);
-        $this->companiesModel = new CompaniesModel($pdo);
-        // Η δημιουργία του MatchingModel θα γίνει όταν υλοποιηθεί το μοντέλο
-        // $this->matchingModel = new MatchingModel($pdo);
+        $this->matchingModel = new MatchingModel($pdo);
+        $this->profileModel = new ProfileModel($pdo);  // Αλλαγή
+        $this->licenseModel = new LicenseModel($pdo);
+        $this->skillModel = new SkillModel($pdo);
+        $this->ratingModel = new RatingModel($pdo);
     }
 
     /**
@@ -43,7 +48,7 @@ class MatchingController
         $driverId = $_SESSION['user_id'];
 
         // Λήψη του προφίλ του οδηγού
-        $driverProfile = $this->driversModel->getDriverById($driverId);
+        $driverProfile = $this->profileModel->getDriverById($driverId);
 
         // Παράμετροι για την αναζήτηση αγγελιών που ταιριάζουν με το προφίλ
         $params = $this->getMatchingParamsForDriver($driverProfile);
@@ -299,8 +304,8 @@ class MatchingController
         $dLon = deg2rad($lon2 - $lon1);
 
         $a = sin($dLat / 2) * sin($dLat / 2) +
-             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-             sin($dLon / 2) * sin($dLon / 2);
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLon / 2) * sin($dLon / 2);
 
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         $distance = $earthRadius * $c; // Distance in km
@@ -341,7 +346,7 @@ class MatchingController
         }
 
         // Αναζήτηση οδηγών με βάση τις συνδυασμένες παραμέτρους
-        return $this->driversModel->searchDrivers($combinedParams, $page, $limit);
+        return $this->profileModel->searchDrivers($combinedParams, $page, $limit);
     }
 
     /**
