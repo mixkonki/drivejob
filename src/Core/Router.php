@@ -9,9 +9,12 @@ class Router
     private $baseUrl;
     private $middlewares = [];
     private $routeMiddlewares = [];
-    public function __construct($baseUrl = '')
+    private $container;
+
+    public function __construct($baseUrl = '', $container = null)
     {
         $this->baseUrl = $baseUrl;
+        $this->container = $container ?? Container::getInstance();
     }
 
     /**
@@ -112,14 +115,14 @@ class Router
      */
     public function resolve()
     {
-        $method = $_SERVER['REQUEST_METHOD'];
-// Υποστήριξη για PUT και DELETE μέσω form με _method
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        // Υποστήριξη για PUT και DELETE μέσω form με _method
         if ($method === 'POST' && isset($_POST['_method'])) {
             $method = strtoupper($_POST['_method']);
         }
 
         $path = $this->getPath();
-// Εκτέλεση καθολικών middlewares
+        // Εκτέλεση καθολικών middlewares
         foreach ($this->middlewares as $middleware) {
             $response = call_user_func($middleware);
             if ($response !== null) {
@@ -130,7 +133,7 @@ class Router
         // Έλεγχος αν υπάρχει ακριβής διαδρομή
         if (isset($this->routes[$method][$path])) {
             $callback = $this->routes[$method][$path];
-// Εκτέλεση των middlewares της διαδρομής
+            // Εκτέλεση των middlewares της διαδρομής
             if (isset($this->routeMiddlewares[$method][$path])) {
                 foreach ($this->routeMiddlewares[$method][$path] as $middleware) {
                     $response = call_user_func($middleware);
@@ -147,9 +150,9 @@ class Router
         foreach ($this->routes[$method] ?? [] as $route => $callback) {
             $pattern = $this->convertRouteToRegex($route);
             if (preg_match($pattern, $path, $matches)) {
-            // Αφαίρεση του πρώτου στοιχείου (ολόκληρο το ταίριασμα)
+                // Αφαίρεση του πρώτου στοιχείου (ολόκληρο το ταίριασμα)
                 array_shift($matches);
-            // Εύρεση των ονομάτων παραμέτρων
+                // Εύρεση των ονομάτων παραμέτρων
                 $paramNames = [];
                 preg_match_all('/\{([a-zA-Z0-9_]+)\}/', $route, $paramMatches);
                 if (!empty($paramMatches[1])) {
@@ -171,7 +174,7 @@ class Router
                     foreach ($this->routeMiddlewares[$method][$route] as $middleware) {
                         $response = call_user_func($middleware, $params);
                         if ($response !== null) {
-                                        return $response;
+                            return $response;
                         }
                     }
                 }
@@ -198,6 +201,9 @@ class Router
     private function getPath()
     {
         $path = $_SERVER['REQUEST_URI'] ?? '/';
+        if (!isset($_SERVER['REQUEST_URI'])) {
+            return '/';
+        }
         $position = strpos($path, '?');
         if ($position !== false) {
             $path = substr($path, 0, $position);
@@ -225,7 +231,7 @@ class Router
     {
         // Αντικατάσταση παραμέτρων της μορφής {id} με ομάδες regex
         $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $route);
-// Προσθήκη ^ και $ για ακριβές ταίριασμα και προετοιμασία για preg_match
+        // Προσθήκη ^ και $ για ακριβές ταίριασμα και προετοιμασία για preg_match
         return "#^{$pattern}$#";
     }
 
@@ -246,21 +252,21 @@ class Router
         if (is_array($callback)) {
             [$controller, $method] = $callback;
             if (is_string($controller)) {
-            // Έλεγχος αν ο controller έχει ήδη namespace
+                // Έλεγχος αν ο controller έχει ήδη namespace
                 if (strpos($controller, '\\') === 0 || strpos($controller, 'Drivejob\\Controllers\\') === 0) {
-// Αν έχει ήδη πλήρες namespace, χρησιμοποιούμε το ως έχει
+                    // Αν έχει ήδη πλήρες namespace, χρησιμοποιούμε το ως έχει
                     $controllerClass = $controller;
                 } else {
-        // Αλλιώς προσθέτουμε το namespace
+                    // Αλλιώς προσθέτουμε το namespace
                     $controllerClass = "\\Drivejob\\Controllers\\$controller";
                 }
 
-                // Χρησιμοποιούμε $GLOBALS['pdo'] αν ο controller το χρειάζεται
+                // Χρησιμοποιούμε το PDO από το container αν ο controller το χρειάζεται
                 if (
                     method_exists($controllerClass, '__construct') &&
                     (new \ReflectionMethod($controllerClass, '__construct'))->getNumberOfParameters() > 0
                 ) {
-                    $controller = new $controllerClass($GLOBALS['pdo']);
+                    $controller = new $controllerClass($this->container->get('pdo'));
                 } else {
                     $controller = new $controllerClass();
                 }
@@ -272,17 +278,17 @@ class Router
         // Αν το callback είναι string "Controller@method"
         if (is_string($callback) && strpos($callback, '@') !== false) {
             [$controller, $method] = explode('@', $callback, 2);
-// Έλεγχος αν δόθηκε πλήρες namespace
+            // Έλεγχος αν δόθηκε πλήρες namespace
             if (strpos($controller, '\\') === false) {
                 $controller = "\\Drivejob\\Controllers\\$controller";
             }
 
-            // Χρησιμοποιούμε $GLOBALS['pdo'] αν ο controller το χρειάζεται
+            // Χρησιμοποιούμε το PDO από το container αν ο controller το χρειάζεται
             if (
                 method_exists($controller, '__construct') &&
                 (new \ReflectionMethod($controller, '__construct'))->getNumberOfParameters() > 0
             ) {
-                $controller = new $controller($GLOBALS['pdo']);
+                $controller = new $controller($this->container->get('pdo'));
             } else {
                 $controller = new $controller();
             }

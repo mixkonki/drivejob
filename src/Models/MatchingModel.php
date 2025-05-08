@@ -4,6 +4,9 @@ namespace Drivejob\Models;
 
 use Drivejob\Core\Logger;
 
+/**
+ * Μοντέλο για τη διαχείριση του ταιριάσματος μεταξύ οδηγών και αγγελιών
+ */
 class MatchingModel
 {
     private $pdo;
@@ -159,125 +162,6 @@ class MatchingModel
     }
 
     /**
-     * Βρίσκει οδηγούς που ταιριάζουν με τις αγγελίες μιας εταιρείας
-     *
-     * @param int $companyId ID της εταιρείας
-     * @param int $page Αριθμός σελίδας
-     * @param int $limit Αριθμός αποτελεσμάτων ανά σελίδα
-     * @param int $matchThreshold Ελάχιστο ποσοστό ταιριάσματος (0-100)
-     * @return array Οδηγοί που ταιριάζουν με τις αγγελίες της εταιρείας
-     */
-    public function findMatchingDriversForCompany($companyId, $page = 1, $limit = 10, $matchThreshold = 0)
-    {
-        try {
-            // Λήψη των ενεργών αγγελιών της εταιρείας
-            $companyListings = $this->jobListingModel->getCompanyListings($companyId, true, 1, 100);
-
-            if (empty($companyListings['results'])) {
-                return [
-                    'results' => [],
-                    'pagination' => [
-                        'total' => 0,
-                        'page' => $page,
-                        'limit' => $limit,
-                        'pages' => 0
-                    ]
-                ];
-            }
-
-            // Λήψη των παραμέτρων αναζήτησης για όλες τις αγγελίες της εταιρείας
-            $matchingParams = [];
-            foreach ($companyListings['results'] as $listing) {
-                $matchingParams[] = $this->getMatchingParamsForListing($listing);
-            }
-
-            // Συνδυασμός παραμέτρων από όλες τις αγγελίες
-            $combinedParams = [];
-
-            // Συνδυασμός παραμέτρων αναζήτησης
-            foreach ($matchingParams as $param) {
-                foreach ($param as $key => $value) {
-                    if ($key === 'job_type' || $key === 'vehicle_type') {
-                        if (!isset($combinedParams[$key])) {
-                            $combinedParams[$key] = [];
-                        }
-                        if (!in_array($value, $combinedParams[$key])) {
-                            $combinedParams[$key][] = $value;
-                        }
-                    } else {
-                        // Για τις υπόλοιπες παραμέτρους, παίρνουμε τη μέγιστη τιμή
-                        if (!isset($combinedParams[$key]) || $value > $combinedParams[$key]) {
-                            $combinedParams[$key] = $value;
-                        }
-                    }
-                }
-            }
-
-            // Αναζήτηση οδηγών με βάση τις συνδυασμένες παραμέτρους
-            $drivers = $this->profileModel->searchDrivers($combinedParams, $page, $limit);
-
-            // Υπολογισμός ποσοστού ταιριάσματος για κάθε οδηγό
-            $allMatchingScores = [];
-
-            foreach ($drivers['results'] as $driverIndex => $driver) {
-                $bestMatchPercentage = 0;
-                $bestMatchListingId = null;
-
-                foreach ($companyListings['results'] as $listing) {
-                    $matchPercentage = $this->calculateSingleDriverMatchPercentage($driver, $listing);
-
-                    if ($matchPercentage > $bestMatchPercentage) {
-                        $bestMatchPercentage = $matchPercentage;
-                        $bestMatchListingId = $listing['id'];
-                    }
-                }
-
-                $drivers['results'][$driverIndex]['match_percentage'] = $bestMatchPercentage;
-                $drivers['results'][$driverIndex]['best_matching_listing_id'] = $bestMatchListingId;
-
-                $allMatchingScores[] = [
-                    'driver_id' => $driver['id'],
-                    'match_percentage' => $bestMatchPercentage
-                ];
-            }
-
-            // Φιλτράρισμα οδηγών με βάση το ελάχιστο ποσοστό ταιριάσματος
-            if ($matchThreshold > 0) {
-                $drivers['results'] = array_filter($drivers['results'], function ($driver) use ($matchThreshold) {
-                    return $driver['match_percentage'] >= $matchThreshold;
-                });
-            }
-
-            // Ταξινόμηση των οδηγών με βάση το ποσοστό ταιριάσματος (φθίνουσα σειρά)
-            usort($drivers['results'], function ($a, $b) {
-                return $b['match_percentage'] <=> $a['match_percentage'];
-            });
-
-            // Ενημέρωση του πίνακα αποτελεσμάτων
-            $drivers['results'] = array_values($drivers['results']); // Reset array keys
-            $drivers['pagination']['total'] = count($drivers['results']);
-            $drivers['pagination']['pages'] = ceil(count($drivers['results']) / $limit);
-
-            // Αποθήκευση των σκορ ταιριάσματος στη βάση δεδομένων για μελλοντική αναφορά
-            $this->saveMatchingScores($allMatchingScores);
-
-            return $drivers;
-        } catch (\Exception $e) {
-            Logger::error('Error in findMatchingDriversForCompany: ' . $e->getMessage());
-
-            return [
-                'results' => [],
-                'pagination' => [
-                    'total' => 0,
-                    'page' => $page,
-                    'limit' => $limit,
-                    'pages' => 0
-                ]
-            ];
-        }
-    }
-
-    /**
      * Δημιουργεί παραμέτρους αναζήτησης με βάση το προφίλ του οδηγού
      *
      * @param array $driverProfile Το προφίλ του οδηγού
@@ -392,9 +276,9 @@ class MatchingModel
             }
 
             // Τύπος οχήματος (20 βαθμοί)
-            if (!empty($driverProfile['preferred_vehicle_type']) && !empty($listing['vehicle_type'])) {
+            if (!empty($driverProfile['preferred_vehicle_type']) && !empty($listing['vehicle_types'])) {
                 $maxScore += 20;
-                if ($driverProfile['preferred_vehicle_type'] === $listing['vehicle_type']) {
+                if (in_array($driverProfile['preferred_vehicle_type'], $listing['vehicle_types'])) {
                     $score += 20;
                 }
             }
@@ -499,9 +383,9 @@ class MatchingModel
         }
 
         // Τύπος οχήματος (20 βαθμοί)
-        if (!empty($driver['preferred_vehicle_type']) && !empty($listing['vehicle_type'])) {
+        if (!empty($driver['preferred_vehicle_type']) && !empty($listing['vehicle_types'])) {
             $maxScore += 20;
-            if ($driver['preferred_vehicle_type'] === $listing['vehicle_type']) {
+            if (in_array($driver['preferred_vehicle_type'], $listing['vehicle_types'])) {
                 $score += 20;
             }
         }
@@ -578,8 +462,8 @@ class MatchingModel
         $dLon = deg2rad($lon2 - $lon1);
 
         $a = sin($dLat / 2) * sin($dLat / 2) +
-             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-             sin($dLon / 2) * sin($dLon / 2);
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLon / 2) * sin($dLon / 2);
 
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         $distance = $earthRadius * $c; // Distance in km
@@ -593,7 +477,7 @@ class MatchingModel
      * @param array $matchingScores Πίνακας με τα σκορ ταιριάσματος
      * @return bool Επιτυχία/αποτυχία
      */
-    private function saveMatchingScores($matchingScores)
+    public function saveMatchingScores($matchingScores)
     {
         try {
             // Έλεγχος αν υπάρχει ο πίνακας στη βάση δεδομένων

@@ -1,14 +1,12 @@
 <?php
 
-// Αυτόματη φόρτωση μέσω Composer
-require_once __DIR__ . '/../../vendor/autoload.php';
-// Συμπερίληψη του config.php για να οριστούν οι σταθερές
-require_once __DIR__ . '/../../config/config.php';
-// Συμπερίληψη του database.php για σύνδεση με τη βάση δεδομένων
-require_once ROOT_DIR . '/config/database.php';
+// Αρχικοποίηση της εφαρμογής
+$container = require_once __DIR__ . '/../../src/bootstrap.php';
+
+// Λήψη του PDO από το container
+$pdo = $container->get('pdo');
+
 use Drivejob\Core\Session;
-// Ξεκίνημα συνεδρίας
-Session::start();
 // Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι εταιρεία
 if (!Session::has('user_id') || !Session::has('role') || Session::get('role') !== 'company') {
     header('Location: ' . BASE_URL . 'login.php');
@@ -54,15 +52,15 @@ $data = [
 $companyModel = new \Drivejob\Models\CompaniesModel($pdo);
 // Ενημέρωση των δεδομένων της εταιρείας
 if ($companyModel->updateProfile($companyId, $data)) {
-// Διαχείριση μεταφόρτωσης λογότυπου αν υπάρχει
+    // Διαχείριση μεταφόρτωσης λογότυπου αν υπάρχει
     if (isset($_FILES['company_logo']) && $_FILES['company_logo']['error'] === UPLOAD_ERR_OK) {
-// Επιτρεπόμενοι τύποι αρχείων
+        // Επιτρεπόμενοι τύποι αρχείων
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
         $maxSize = 2 * 1024 * 1024;
-// 2MB
+        // 2MB
 
         $file = $_FILES['company_logo'];
-// Έλεγχος τύπου αρχείου
+        // Έλεγχος τύπου αρχείου
         if (!in_array($file['type'], $allowedTypes)) {
             Session::set('error_message', 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.');
             header('Location: ' . BASE_URL . 'companies/edit_profile.php');
@@ -85,9 +83,9 @@ if ($companyModel->updateProfile($companyId, $data)) {
         // Δημιουργία μοναδικού ονόματος αρχείου
         $filename = $companyId . '_' . time() . '_' . basename($file['name']);
         $targetPath = $uploadDir . $filename;
-// Μεταφορά του αρχείου
+        // Μεταφορά του αρχείου
         if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-// Ενημέρωση του πεδίου στη βάση δεδομένων
+            // Ενημέρωση του πεδίου στη βάση δεδομένων
             $relativePath = 'uploads/company_logos/' . $filename;
             $companyModel->updateCompanyLogo($companyId, $relativePath);
         } else {

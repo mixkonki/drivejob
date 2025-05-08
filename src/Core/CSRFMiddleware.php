@@ -10,8 +10,8 @@ class CSRFMiddleware
     public static function handle()
     {
         Session::start();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Έλεγχος αν υπάρχει το CSRF token
+        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Έλεγχος αν υπάρχει το CSRF token
             if (!isset($_POST['csrf_token'])) {
                 header("HTTP/1.0 403 Forbidden");
                 die('Access Forbidden: Invalid CSRF token');

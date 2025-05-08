@@ -1,15 +1,15 @@
 <?php
 
 // Αρχικοποίηση της εφαρμογής
-require_once __DIR__ . '/../src/bootstrap.php';
-require_once __DIR__ . '/../../config/config.php'; // Πρώτα το config.php για να οριστούν οι σταθερές
-require_once ROOT_DIR . '/config/database.php'; // Σύνδεση με τη βάση δεδομένων
+$container = require_once __DIR__ . '/../../src/bootstrap.php';
+
+// Λήψη του PDO από το container
+$pdo = $container->get('pdo');
+
 require_once '../../src/helpers/email_helper.php'; // Εισαγωγή helper για το email
 require_once '../../templates/email_template.php'; // Εισαγωγή template για το email
 
 use Drivejob\Core\Session;
-
-Session::start();
 
 include ROOT_DIR . '/src/Views/header.php'; // Header
 

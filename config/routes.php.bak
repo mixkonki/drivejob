@@ -16,11 +16,6 @@ use Drivejob\Controllers\JobApplicationController;
 use Drivejob\Controllers\JobOfferController;
 use Drivejob\Controllers\DriverResumeController;
 
-// Νέοι controllers με Repository pattern
-use Drivejob\Controllers\NewDriversController;
-use Drivejob\Controllers\NewCompaniesController;
-use Drivejob\Controllers\NewJobListingController;
-
 // Αρχική σελίδα
 $router->get('/', [HomeController::class, 'renderHomePage']);
 
@@ -48,13 +43,14 @@ $router->get('/job-listings/company/{id}', [JobListingController::class, 'compan
 $router->get('/job-listings/driver/{id}', [JobListingController::class, 'driverListings']);
 $router->get('/job-listings//my-listings', [JobListingController::class, 'myListings']);
 
-// Διαδρομές για οδηγούς (χρησιμοποιώντας τον νέο controller)
+
+// Διαδρομές για οδηγούς
 $router->get('/drivers/register', [DriversController::class, 'showRegistrationForm']);
 $router->post('/drivers/register', [DriversController::class, 'register']);
-$router->get('/drivers/profile', [NewDriversController::class, 'profile']);
-$router->get('/drivers/profile/{id}', [NewDriversController::class, 'publicProfile']);
-$router->get('/drivers/edit-profile', [NewDriversController::class, 'edit']);
-$router->post('/drivers/update-profile', [NewDriversController::class, 'update']);
+$router->get('/drivers/profile', [DriversController::class, 'profile']);
+$router->get('/drivers/profile/{id}', [DriversController::class, 'publicProfile']);
+$router->get('/drivers/edit-profile', [DriversController::class, 'edit']);
+$router->post('/drivers/update-profile', [DriversController::class, 'update']);
 $router->post('/drivers/change-password', [DriversController::class, 'changePassword']);
 $router->get('/drivers/search', [DriversController::class, 'search']);
 $router->get('/drivers/top-rated', [DriversController::class, 'topRated']);
@@ -68,10 +64,10 @@ $router->get('/drivers/update-assessment', [DriversController::class, 'updateAss
 $router->post('/drivers/update-assessment', [DriversController::class, 'updateAssessment']);
 $router->post('/drivers/save-assessment', [DriversController::class, 'saveAssessment']);
 
-// Εναλλαγή διαθεσιμότητας οδηγού (χρησιμοποιώντας τον νέο controller)
+// Εναλλαγή διαθεσιμότητας οδηγού
 $router->post(
     '/drivers/toggle-availability',
-    [NewDriversController::class, 'toggleAvailability'],
+    [\Drivejob\Controllers\DriversController::class, 'toggleAvailability'],
     [
         // Middleware #1: Χρήση ανώνυμης συνάρτησης (closure)
         function () {
@@ -83,13 +79,13 @@ $router->post(
     ]
 );
 
-// Διαδρομές για εταιρείες (χρησιμοποιώντας τον νέο controller)
+// Διαδρομές για εταιρείες
 $router->get('/companies/register', [CompaniesController::class, 'showRegistrationForm']);
 $router->post('/companies/register', [CompaniesController::class, 'register']);
-$router->get('/companies/profile', [NewCompaniesController::class, 'profile']);
-$router->get('/companies/profile/{id}', [NewCompaniesController::class, 'publicProfile']);
-$router->get('/companies/edit-profile', [NewCompaniesController::class, 'edit']);
-$router->post('/companies/update-profile', [NewCompaniesController::class, 'update']);
+$router->get('/companies/profile', [CompaniesController::class, 'profile']);
+$router->get('/companies/profile/{id}', [CompaniesController::class, 'publicProfile']);
+$router->get('/companies/edit-profile', [CompaniesController::class, 'edit']);
+$router->post('/companies/update-profile', [CompaniesController::class, 'update']);
 $router->post('/companies/change-password', [CompaniesController::class, 'changePassword']);
 $router->get('/companies/search', [CompaniesController::class, 'search']);
 
@@ -127,23 +123,25 @@ $router->post('/job-offers/reject/{id}', [JobOfferController::class, 'reject']);
 
 $router->get('/drivers/debug-request', [DriversController::class, 'debugRequest']);
 
-// Νέες διαδρομές για τις ξεχωριστές φόρμες οδηγών και επιχειρήσεων (χρησιμοποιώντας τον νέο controller)
-$router->get('/job-listings/create-driver', [NewJobListingController::class, 'createDriverListing']);
-$router->get('/job-listings/create-company', [NewJobListingController::class, 'createCompanyListing']);
-$router->get('/job-listings/edit-driver/{id}', [NewJobListingController::class, 'editDriverListing']);
-$router->post('/job-listings/update/{id}', [NewJobListingController::class, 'update']);
+// Νέες διαδρομές για τις ξεχωριστές φόρμες οδηγών και επιχειρήσεων
+$router->get('/job-listings/create-driver', 'JobListingController@createDriverListing');
+$router->get('/job-listings/create-company', 'JobListingController@createCompanyListing');
+$router->get('/job-listings/edit-driver/{id}', 'JobListingController@editDriverListing');
+$router->post('/job-listings/update/{id}', 'JobListingController@update');
 
 // Διαδρομή για το δημόσιο προφίλ οδηγού
-$router->get('/drivers/profile/{id}', [NewDriversController::class, 'publicProfile']);
+$router->get('/drivers/profile/{id}', 'DriversController@publicProfile');
 // Διαδρομή για τις αγγελίες ενός συγκεκριμένου οδηγού
-$router->get('/job-listings/driver/{id}', [NewJobListingController::class, 'driverListings']);
-$router->get('/αγγελιες/οδηγος/{id}', [NewJobListingController::class, 'driverListings']);
+$router->get('/job-listings/driver/{id}', 'JobListingsController@driverListings');
+$router->get('/αγγελιες/οδηγος/{id}', 'JobListingsController@driverListings');
 
-$router->get('/job-listings/delete/{id}', [NewJobListingController::class, 'delete']);
-$router->post('/job-listings/destroy/{id}', [NewJobListingController::class, 'destroy']);
+$router->get('/job-listings/delete/{id}', [JobListingController::class, 'delete']);
+$router->post('/job-listings/destroy/{id}', [JobListingController::class, 'destroy']);
 
+$router->get('/drivers/edit-resume', 'DriverResumeController@editResume');
 $router->get('/drivers/edit-resume', [DriverResumeController::class, 'editResume']);
 $router->post('/drivers/update-resume', [DriverResumeController::class, 'updateResume']);
+
 
 // Διαδρομή για 404 Not Found
 $router->notFound(function () {

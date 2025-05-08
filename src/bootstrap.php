@@ -14,14 +14,13 @@ if (!defined('ROOT_DIR')) {
 
 // Αυτόματη φόρτωση μέσω Composer
 require_once __DIR__ . '/../vendor/autoload.php';
+
 // Συμπερίληψη του config.php για τον ορισμό σταθερών
 require_once __DIR__ . '/../config/config.php';
-// Σύνδεση με τη βάση δεδομένων
-require_once __DIR__ . '/../config/database.php';
-// Προσθέστε αυτή τη γραμμή στο bootstrap.php
-require_once __DIR__ . '/Helpers/form_helpers.php';
+
 // Ορισμός περιβάλλοντος
 defined('ENVIRONMENT') or define('ENVIRONMENT', 'development');
+
 // Ρυθμίσεις για το περιβάλλον
 if (ENVIRONMENT === 'development') {
     ini_set('display_errors', 1);
@@ -32,16 +31,37 @@ if (ENVIRONMENT === 'development') {
     error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 }
 
+// Αρχικοποίηση του ExceptionHandler
+\Drivejob\Core\ExceptionHandler::register();
+
+// Αρχικοποίηση του Container
+$container = \Drivejob\Core\Container::getInstance();
+
+// Καταχώρηση των βασικών υπηρεσιών
+$container->set('pdo', function () {
+    // Σύνδεση με τη βάση δεδομένων
+    require_once ROOT_DIR . '/config/database.php';
+    return $pdo;
+});
+
+// Αρχικοποίηση του Logger
+\Drivejob\Core\Logger::init();
+
+// Συμπερίληψη των βοηθητικών συναρτήσεων
+require_once __DIR__ . '/Helpers/form_helpers.php';
+
 // Αρχικοποίηση του Database Session Handler και έναρξη της συνεδρίας
 use Drivejob\Core\Session;
 use Drivejob\Core\DatabaseSessionHandler;
+
 // Έλεγχος αν πρέπει να χρησιμοποιηθεί ο Database Session Handler
 $useDbSessions = defined('USE_DB_SESSIONS') ? USE_DB_SESSIONS : false;
+
 // Ρύθμιση του session μόνο αν δεν είμαστε σε CLI περιβάλλον
 if (!IS_CLI) {
     if ($useDbSessions) {
-    // Ρύθμιση του Session Handler
-        $sessionHandler = new DatabaseSessionHandler($pdo, [
+        // Ρύθμιση του Session Handler
+        $sessionHandler = new DatabaseSessionHandler($container->get('pdo'), [
             'lifetime' => 86400, // 24 ώρες
             'table' => 'sessions'
         ]);
@@ -50,12 +70,13 @@ if (!IS_CLI) {
 
     // Εκκίνηση της συνεδρίας
     Session::start();
-// Έλεγχος για μη ενεργές συνεδρίες
-    if (Session::isExpired(1800)) {
-// 30 λεπτά
+
+    // Έλεγχος για μη ενεργές συνεδρίες
+    if (Session::isExpired(1800)) { // 30 λεπτά
         // Καταγραφή λήξης συνεδρίας
-        error_log("Session expired due to inactivity: " . Session::getId());
-// Καταστροφή της συνεδρίας και ανακατεύθυνση στη σελίδα σύνδεσης αν ο χρήστης είναι συνδεδεμένος
+        \Drivejob\Core\Logger::info("Session expired due to inactivity: " . Session::getId());
+
+        // Καταστροφή της συνεδρίας και ανακατεύθυνση στη σελίδα σύνδεσης αν ο χρήστης είναι συνδεδεμένος
         if (Session::has('user_id')) {
             Session::destroy();
             Session::start();
@@ -70,5 +91,5 @@ if (!IS_CLI) {
     }
 }
 
-// Λοιπή αρχικοποίηση
-// ...
+// Επιστροφή του Container
+return $container;

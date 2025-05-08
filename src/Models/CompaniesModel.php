@@ -2,271 +2,292 @@
 
 namespace Drivejob\Models;
 
+use Drivejob\Core\Logger;
+
+/**
+ * Μοντέλο για τη διαχείριση των εταιρειών
+ */
 class CompaniesModel
 {
     private $pdo;
 
+    /**
+     * Κατασκευαστής του μοντέλου
+     */
     public function __construct($pdo)
     {
-        $this->pdo = $pdo; // Αρχικοποιήστε την ιδιότητα
-    }
-
-    public function getCompanyById($id)
-    {
-        $stmt = $this->pdo->prepare("SELECT * FROM companies WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+        $this->pdo = $pdo;
     }
 
     /**
-     * Δημιουργεί ένα νέο λογαριασμό εταιρείας
+     * Επιστρέφει τα στοιχεία μιας εταιρείας με βάση το ID
+     *
+     * @param int $companyId ID της εταιρείας
+     * @return array|false Τα στοιχεία της εταιρείας ή false αν δεν βρέθηκε
      */
-    public function create($data)
+    public function getCompanyById($companyId)
     {
-        $sql = "INSERT INTO companies (email, password, company_name, phone, is_verified) 
-                VALUES (:email, :password, :company_name, :phone, :is_verified)";
+        try {
+            $query = "SELECT * FROM companies WHERE id = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$companyId]);
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'email' => $data['email'],
-            'password' => $data['password'],
-            'company_name' => $data['company_name'],
-            'phone' => $data['phone'],
-            'is_verified' => $data['is_verified'] ?? 0
-        ]);
-
-        return $this->pdo->lastInsertId();
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            Logger::error('Error in getCompanyById: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
-     * Ενημερώνει τα στοιχεία μιας εταιρείας
-     */
-    public function update($id, $data)
-    {
-        $sql = "UPDATE companies SET 
-                email = :email, 
-                company_name = :company_name, 
-                phone = :phone 
-                WHERE id = :id";
-
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([
-            'id' => $id,
-            'email' => $data['email'],
-            'company_name' => $data['company_name'],
-            'phone' => $data['phone']
-        ]);
-    }
-
-    /**
-     * Επιστρέφει μια εταιρεία με βάση το email
+     * Επιστρέφει τα στοιχεία μιας εταιρείας με βάση το email
+     *
+     * @param string $email Email της εταιρείας
+     * @return array|false Τα στοιχεία της εταιρείας ή false αν δεν βρέθηκε
      */
     public function getCompanyByEmail($email)
     {
-        $sql = "SELECT * FROM companies WHERE email = :email";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['email' => $email]);
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
-    }
+        try {
+            $query = "SELECT * FROM companies WHERE email = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$email]);
 
-    /**
-     * Διαγράφει μια εταιρεία
-     */
-    public function delete($id)
-    {
-        $sql = "DELETE FROM companies WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute(['id' => $id]);
-    }
-
-    /**
-     * Ενημερώνει την κατάσταση επαλήθευσης της εταιρείας
-     */
-    public function verifyCompany($email)
-    {
-        $sql = "UPDATE companies SET is_verified = 1 WHERE email = :email";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute(['email' => $email]);
-    }
-
-    /**
-     * Ενημερώνει τον κωδικό πρόσβασης μιας εταιρείας
-     */
-    public function updatePassword($id, $password)
-    {
-        $sql = "UPDATE companies SET password = :password WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([
-            'id' => $id,
-            'password' => $password
-        ]);
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            Logger::error('Error in getCompanyByEmail: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
      * Ενημερώνει το προφίλ μιας εταιρείας
+     *
+     * @param int $companyId ID της εταιρείας
+     * @param array $data Δεδομένα προφίλ
+     * @return bool Επιτυχία/αποτυχία
      */
-    public function updateProfile($id, $data)
+    public function updateProfile($companyId, $data)
     {
-        $sql = "UPDATE companies SET
-            company_name = :company_name,
-            phone = :phone,
-            description = :description,
-            website = :website,
-            address = :address,
-            city = :city,
-            country = :country,
-            postal_code = :postal_code,
-            contact_person = :contact_person,
-            position = :position,
-            vat_number = :vat_number,
-            company_size = :company_size,
-            foundation_year = :foundation_year,
-            industry = :industry,
-            social_linkedin = :social_linkedin,
-            social_facebook = :social_facebook,
-            social_twitter = :social_twitter
-        WHERE id = :id";
+        try {
+            // Δημιουργία του SQL ερωτήματος
+            $fields = [];
+            $values = [];
 
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([
-            'id' => $id,
-            'company_name' => $data['company_name'],
-            'phone' => $data['phone'],
-            'description' => $data['description'] ?: null,
-            'website' => $data['website'] ?: null,
-            'address' => $data['address'] ?: null,
-            'city' => $data['city'] ?: null,
-            'country' => $data['country'] ?: null,
-            'postal_code' => $data['postal_code'] ?: null,
-            'contact_person' => $data['contact_person'] ?: null,
-            'position' => $data['position'] ?: null,
-            'vat_number' => $data['vat_number'] ?: null,
-            'company_size' => $data['company_size'] ?: null,
-            'foundation_year' => $data['foundation_year'] ?: null,
-            'industry' => $data['industry'] ?: null,
-            'social_linkedin' => $data['social_linkedin'] ?: null,
-            'social_facebook' => $data['social_facebook'] ?: null,
-            'social_twitter' => $data['social_twitter'] ?: null
-        ]);
+            foreach ($data as $field => $value) {
+                $fields[] = "$field = ?";
+                $values[] = $value;
+            }
+
+            $values[] = $companyId;
+
+            $sql = "UPDATE companies SET " . implode(', ', $fields) . " WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+
+            return $stmt->execute($values);
+        } catch (\PDOException $e) {
+            Logger::error('Error in updateProfile: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
      * Ενημερώνει το λογότυπο μιας εταιρείας
+     *
+     * @param int $companyId ID της εταιρείας
+     * @param string $logoPath Διαδρομή του λογότυπου
+     * @return bool Επιτυχία/αποτυχία
      */
-    public function updateCompanyLogo($id, $logoPath)
+    public function updateCompanyLogo($companyId, $logoPath)
     {
-        $sql = "UPDATE companies SET company_logo = :company_logo WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([
-            'id' => $id,
-            'company_logo' => $logoPath
-        ]);
+        try {
+            $sql = "UPDATE companies SET logo = ? WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+
+            return $stmt->execute([$logoPath, $companyId]);
+        } catch (\PDOException $e) {
+            Logger::error('Error in updateCompanyLogo: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
-     * Ενημερώνει την τελευταία σύνδεση της εταιρείας
+     * Αναζητά εταιρείες με βάση διάφορα κριτήρια
+     *
+     * @param array $params Παράμετροι αναζήτησης
+     * @param int $page Αριθμός σελίδας
+     * @param int $limit Αριθμός αποτελεσμάτων ανά σελίδα
+     * @return array Αποτελέσματα αναζήτησης και πληροφορίες σελιδοποίησης
      */
-    public function updateLastLogin($id)
+    public function searchCompanies($params = [], $page = 1, $limit = 10)
     {
-        $sql = "UPDATE companies SET last_login = CURRENT_TIMESTAMP WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute(['id' => $id]);
+        try {
+            $query = "SELECT * FROM companies WHERE is_active = 1 AND is_verified = 1";
+            $queryParams = [];
+
+            // Προσθήκη συνθηκών αναζήτησης
+            if (!empty($params['company_name'])) {
+                $query .= " AND company_name LIKE ?";
+                $queryParams[] = '%' . $params['company_name'] . '%';
+            }
+
+            if (!empty($params['industry'])) {
+                $query .= " AND industry = ?";
+                $queryParams[] = $params['industry'];
+            }
+
+            if (!empty($params['location'])) {
+                $query .= " AND (city LIKE ? OR country LIKE ?)";
+                $queryParams[] = '%' . $params['location'] . '%';
+                $queryParams[] = '%' . $params['location'] . '%';
+            }
+
+            // Αναζήτηση με βάση την τοποθεσία
+            if (!empty($params['latitude']) && !empty($params['longitude']) && !empty($params['search_radius'])) {
+                $lat = $params['latitude'];
+                $lng = $params['longitude'];
+                $radius = $params['search_radius'];
+
+                // Υπολογισμός απόστασης με τον τύπο Haversine
+                $query .= " AND (
+                    6371 * acos(
+                        cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + 
+                        sin(radians(?)) * sin(radians(latitude))
+                    ) <= ?
+                )";
+
+                $queryParams[] = $lat;
+                $queryParams[] = $lng;
+                $queryParams[] = $lat;
+                $queryParams[] = $radius;
+            }
+
+            // Ταξινόμηση
+            $query .= " ORDER BY company_name ASC";
+
+            // Μέτρηση συνολικών αποτελεσμάτων
+            $countQuery = "SELECT COUNT(*) FROM ($query) as count_table";
+            $countStmt = $this->pdo->prepare($countQuery);
+            $countStmt->execute($queryParams);
+            $totalResults = $countStmt->fetchColumn();
+
+            // Προσθήκη σελιδοποίησης
+            $offset = ($page - 1) * $limit;
+            $query .= " LIMIT ?, ?";
+            $queryParams[] = $offset;
+            $queryParams[] = $limit;
+
+            // Εκτέλεση του ερωτήματος
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute($queryParams);
+            $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            return [
+                'results' => $results,
+                'pagination' => [
+                    'total' => $totalResults,
+                    'page' => $page,
+                    'limit' => $limit,
+                    'pages' => ceil($totalResults / $limit)
+                ]
+            ];
+        } catch (\PDOException $e) {
+            Logger::error('Error in searchCompanies: ' . $e->getMessage());
+
+            return [
+                'results' => [],
+                'pagination' => [
+                    'total' => 0,
+                    'page' => $page,
+                    'limit' => $limit,
+                    'pages' => 0
+                ]
+            ];
+        }
     }
 
     /**
-     * Ενημερώνει την αξιολόγηση μιας εταιρείας
+     * Δημιουργεί μια νέα εταιρεία
+     *
+     * @param array $data Δεδομένα εταιρείας
+     * @return int|false ID της νέας εταιρείας ή false σε περίπτωση αποτυχίας
      */
-    public function updateRating($id, $rating)
+    public function create($data)
     {
-        $sql = "UPDATE companies SET 
-                rating = ((rating * rating_count) + :rating) / (rating_count + 1),
-                rating_count = rating_count + 1
-                WHERE id = :id";
+        try {
+            // Δημιουργία του SQL ερωτήματος
+            $fields = array_keys($data);
+            $placeholders = array_fill(0, count($fields), '?');
 
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([
-            'id' => $id,
-            'rating' => $rating
-        ]);
+            $sql = "INSERT INTO companies (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")";
+            $stmt = $this->pdo->prepare($sql);
+
+            if ($stmt->execute(array_values($data))) {
+                return $this->pdo->lastInsertId();
+            }
+
+            return false;
+        } catch (\PDOException $e) {
+            Logger::error('Error in create: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
-     * Ελέγχει αν ένα email υπάρχει ήδη
+     * Ενημερώνει την κατάσταση επαλήθευσης μιας εταιρείας
+     *
+     * @param int $companyId ID της εταιρείας
+     * @param bool $verified Κατάσταση επαλήθευσης
+     * @return bool Επιτυχία/αποτυχία
      */
-    public function emailExists($email)
+    public function updateVerificationStatus($companyId, $verified)
     {
-        $sql = "SELECT COUNT(*) FROM companies WHERE email = :email";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['email' => $email]);
-        return $stmt->fetchColumn() > 0;
+        try {
+            $sql = "UPDATE companies SET is_verified = ? WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+
+            return $stmt->execute([$verified ? 1 : 0, $companyId]);
+        } catch (\PDOException $e) {
+            Logger::error('Error in updateVerificationStatus: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
-     * Αναζητά εταιρείες με βάση κριτήρια
+     * Ενημερώνει την κατάσταση ενεργοποίησης μιας εταιρείας
+     *
+     * @param int $companyId ID της εταιρείας
+     * @param bool $active Κατάσταση ενεργοποίησης
+     * @return bool Επιτυχία/αποτυχία
      */
-    public function searchCompanies($params, $page = 1, $limit = 10)
+    public function updateActiveStatus($companyId, $active)
     {
-        $conditions = ["is_verified = 1"];
-        $parameters = [];
+        try {
+            $sql = "UPDATE companies SET is_active = ? WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
 
-        // Αναζήτηση βάσει ονόματος
-        if (isset($params['company_name']) && $params['company_name']) {
-            $conditions[] = "company_name LIKE :company_name";
-            $parameters['company_name'] = '%' . $params['company_name'] . '%';
+            return $stmt->execute([$active ? 1 : 0, $companyId]);
+        } catch (\PDOException $e) {
+            Logger::error('Error in updateActiveStatus: ' . $e->getMessage());
+            return false;
         }
+    }
 
-        // Αναζήτηση βάσει τοποθεσίας
-        if (isset($params['location']) && $params['location']) {
-            $conditions[] = "(city LIKE :location OR country LIKE :location)";
-            $parameters['location'] = '%' . $params['location'] . '%';
+    /**
+     * Ενημερώνει την ημερομηνία τελευταίας σύνδεσης μιας εταιρείας
+     *
+     * @param int $companyId ID της εταιρείας
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateLastLogin($companyId)
+    {
+        try {
+            $sql = "UPDATE companies SET last_login = NOW() WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+
+            return $stmt->execute([$companyId]);
+        } catch (\PDOException $e) {
+            Logger::error('Error in updateLastLogin: ' . $e->getMessage());
+            return false;
         }
-
-        // Αναζήτηση βάσει κλάδου
-        if (isset($params['industry']) && $params['industry']) {
-            $conditions[] = "industry LIKE :industry";
-            $parameters['industry'] = '%' . $params['industry'] . '%';
-        }
-
-        // Σύνθεση του SQL ερωτήματος
-        $whereClause = implode(" AND ", $conditions);
-        $offset = ($page - 1) * $limit;
-
-        // Μέτρηση συνολικών αποτελεσμάτων
-        $countSql = "SELECT COUNT(*) FROM companies WHERE $whereClause";
-        $countStmt = $this->pdo->prepare($countSql);
-        $countStmt->execute($parameters);
-        $totalResults = $countStmt->fetchColumn();
-
-        // Εκτέλεση του κύριου ερωτήματος
-        $sql = "SELECT id, company_name, city, country, industry, 
-                       company_size, website, company_logo, rating 
-                FROM companies 
-                WHERE $whereClause 
-                ORDER BY company_name 
-                LIMIT :limit OFFSET :offset";
-
-        $stmt = $this->pdo->prepare($sql);
-
-        // Προσθήκη των παραμέτρων για το LIMIT και OFFSET
-        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
-
-        // Προσθήκη των υπόλοιπων παραμέτρων
-        foreach ($parameters as $key => $value) {
-            $stmt->bindValue(':' . $key, $value);
-        }
-
-        $stmt->execute();
-        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-        return [
-            'results' => $results,
-            'pagination' => [
-                'total' => $totalResults,
-                'page' => $page,
-                'limit' => $limit,
-                'pages' => ceil($totalResults / $limit)
-            ]
-        ];
     }
 }

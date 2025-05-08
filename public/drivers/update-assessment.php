@@ -1,12 +1,9 @@
 <?php
-// Συμπερίληψη του header
-require_once __DIR__ . '/../../src/bootstrap.php';
-require_once ROOT_DIR . '/config/database.php';
+// Αρχικοποίηση της εφαρμογής
+$container = require_once __DIR__ . '/../../src/bootstrap.php';
 
-// Ξεκίνημα ή συνέχιση session
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// Λήψη του PDO από το container
+$pdo = $container->get('pdo');
 
 // Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι οδηγός
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'driver') {
@@ -14,20 +11,21 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role
     exit();
 }
 
-// Δημιουργία των controllers
-$controller = new \Drivejob\Controllers\DriversController($pdo);
+// Δημιουργία των μοντέλων
+$profileModel = new \Drivejob\Models\ProfileModel($pdo);
+$assessmentModel = new \Drivejob\Models\DriversAssessmentModel($pdo);
 $driverId = $_SESSION['user_id'];
 
 // Λήψη των στοιχείων του οδηγού
-$driverData = $controller->getDriverById($driverId);
+$driverData = $profileModel->getDriverById($driverId);
 
 // Λήψη των δεδομένων αυτοαξιολόγησης του οδηγού
-$driverAssessment = $controller->getDriverAssessment($driverId);
+$driverAssessment = $assessmentModel->getDriverAssessment($driverId);
 
 // Έλεγχος αν υπάρχει υποβολή φόρμας
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Επεξεργασία της φόρμας και αποθήκευση της αυτοαξιολόγησης
-    $result = $controller->updateDriverAssessment();
+    $result = $assessmentModel->updateDriverAssessment($driverId, $_POST['assessment'] ?? []);
 
     if ($result) {
         $_SESSION['success_message'] = 'Η αυτοαξιολόγησή σας ενημερώθηκε με επιτυχία.';

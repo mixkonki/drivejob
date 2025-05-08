@@ -1,293 +1,293 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // -------------------- Καταγραφή σφαλμάτων --------------------
-    window.onerror = function (message, source, lineno, colno, error) {
-        console.error('ΣΦΑΛΜΑ:', message, 'στη γραμμή', lineno, 'της πηγής', source);
-        console.error('Λεπτομέρειες:', error);
-        return false; // Επιτρέπει την κανονική διαχείριση σφαλμάτων του προγράμματος περιήγησης
-    };
-
-    // -------------------- Ορισμός βοηθητικών συναρτήσεων OCR --------------------
-    window.preprocessImageForOCR = function (imageDataUrl) {
-        return Promise.resolve(imageDataUrl);
-    };
-
-    window.performOCR = function (imageData, languages) {
-        if (typeof Tesseract === 'undefined') {
-            return Promise.reject(new Error('Το Tesseract.js δεν είναι διαθέσιμο'));
+document.addEventListener('DOMContentLoaded', function() {
+    // Αρχικοποίηση των μεταβλητών
+    const btnAddVehicle = document.getElementById('btn-add-vehicle');
+    const vehicleExperienceContainer = document.getElementById('vehicle-experience-list');
+    const vehicleTypes = {
+        'lcv': {
+            'van': 'Βαν',
+            'pickup': 'Αγροτικό',
+            'small_truck': 'Μικρό φορτηγό'
+        },
+        'rigid_truck': {
+            'box_truck': 'Κλειστό φορτηγό',
+            'flatbed': 'Ανοιχτό φορτηγό',
+            'tipper': 'Ανατρεπόμενο',
+            'tanker': 'Βυτιοφόρο',
+            'refrigerated': 'Ψυγείο',
+            'garbage_truck': 'Απορριμματοφόρο'
+        },
+        'articulated': {
+            'tractor_unit': 'Τράκτορας',
+            'semi_trailer': 'Επικαθήμενο',
+            'road_train': 'Συρμός'
+        },
+        'taxi': {
+            'standard_taxi': 'Κλασικό ταξί',
+            'premium_taxi': 'Ταξί πολυτελείας',
+            'accessible_taxi': 'Ταξί για ΑΜΕΑ'
+        },
+        'minibus': {
+            'shuttle': 'Μεταφορά προσωπικού',
+            'school_bus': 'Σχολικό',
+            'tourist': 'Τουριστικό'
+        },
+        'bus': {
+            'city_bus': 'Αστικό λεωφορείο',
+            'intercity_bus': 'Υπεραστικό λεωφορείο',
+            'coach': 'Πούλμαν',
+            'double_decker': 'Διώροφο',
+            'articulated_bus': 'Αρθρωτό'
+        },
+        'utility': {
+            'street_sweeper': 'Σάρωθρο',
+            'snow_plow': 'Εκχιονιστικό',
+            'water_truck': 'Υδροφόρα',
+            'maintenance': 'Συντήρησης'
+        },
+        'construction': {
+            'dump_truck': 'Φορτηγό εργοταξίου',
+            'concrete_mixer': 'Μπετονιέρα',
+            'crane_truck': 'Γερανοφόρο'
+        },
+        'emergency': {
+            'ambulance': 'Ασθενοφόρο',
+            'fire_truck': 'Πυροσβεστικό',
+            'police': 'Αστυνομικό'
+        },
+        'specialized': {
+            'livestock': 'Μεταφοράς ζώων',
+            'car_transporter': 'Μεταφοράς οχημάτων',
+            'armored_vehicle': 'Θωρακισμένο όχημα χρηματαποστολών',
+            'airport_vehicle': 'Όχημα Εξυπηρέτησης Αεροδρομίων',
+            'other': 'Άλλο εξειδικευμένο όχημα'
         }
-        return Tesseract.recognize(
-            imageData,
-            languages || 'eng+ell'
-        ).then(result => {
-            return result.data.text;
-        });
     };
 
-    // -------------------- Αρχικοποίηση λειτουργίας καρτελών --------------------
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabPanes = document.querySelectorAll('.tab-pane');
+    // Συνάρτηση για την αρίθμηση των πεδίων
+    function renumberVehicleFields() {
+        const vehicleEntries = vehicleExperienceContainer.querySelectorAll('.vehicle-experience-entry');
+        vehicleEntries.forEach((entry, index) => {
+            // Ενημέρωση των ονομάτων των πεδίων
+            const inputs = entry.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                const name = input.getAttribute('name');
+                if (name && name.includes('vehicle_experience[')) {
+                    const newName = name.replace(/vehicle_experience\[\d+\]/, `vehicle_experience[${index}]`);
+                    input.setAttribute('name', newName);
+                }
+            });
 
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const targetTab = this.getAttribute('data-tab');
+            // Ενημέρωση των data-index για τα select
+            const selects = entry.querySelectorAll('select');
+            selects.forEach(select => {
+                if (select.classList.contains('vehicle-category-select')) {
+                    select.setAttribute('data-index', index);
+                    const newName = name.replace(/vehicle_experience\[\d+\]/, `vehicle_experience[${index}]`);
+                    select.setAttribute('name', newName);
+                }
+            });
 
-            // Αφαίρεση ενεργών κλάσεων
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabPanes.forEach(pane => pane.classList.remove('active'));
-
-            // Ενεργοποίηση της επιλεγμένης καρτέλας
-            this.classList.add('active');
-            document.getElementById(targetTab).classList.add('active');
-        });
-    });
-
-    // -------------------- Υπολογισμός ηλικίας --------------------
-    const birthDateInput = document.getElementById('birth_date');
-    const ageDisplay = document.getElementById('age_display');
-
-    if (birthDateInput && ageDisplay) {
-        function calculateAge()
-        {
-            const birthDate = new Date(birthDateInput.value);
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
+            // Ενημέρωση του ID του container υποκατηγορίας
+            const subcategoryContainer = entry.querySelector('.vehicle-subcategory-container');
+            if (subcategoryContainer) {
+                subcategoryContainer.id = `subcategory-container-${index}`;
             }
 
-            if (!isNaN(age) && birthDateInput.value) {
-                ageDisplay.textContent = `Ηλικία: ${age} ετών`;
+            // Ενημέρωση του data-index του κουμπιού αφαίρεσης
+            const removeButton = entry.querySelector('.btn-remove-vehicle');
+            if (removeButton) {
+                removeButton.setAttribute('data-index', index);
+            }
+        });
+    }
+
+    // Συνάρτηση για τη φόρτωση των υποκατηγοριών οχημάτων
+    function loadVehicleSubcategories(categorySelect) {
+        const selectedCategory = categorySelect.value;
+        const entryIndex = categorySelect.getAttribute('data-index');
+        const typeSelect = document.querySelector(`#subcategory-container-${entryIndex} .vehicle-type-select`);
+
+        // Καθαρισμός των υπαρχουσών επιλογών
+        typeSelect.innerHTML = '<option value="">Επιλέξτε τύπο...</option>';
+
+        // Προσθήκη των νέων επιλογών
+        if (selectedCategory && vehicleTypes[selectedCategory]) {
+            for (const [value, text] of Object.entries(vehicleTypes[selectedCategory])) {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = text;
+                typeSelect.appendChild(option);
+            }
+        }
+    }
+
+    // Χειριστής συμβάντος για την αφαίρεση οχήματος
+    function handleRemoveVehicle() {
+        const entryToRemove = this.closest('.vehicle-experience-entry');
+        if (entryToRemove) {
+            entryToRemove.remove();
+            // Επαναρίθμηση των πεδίων μετά την αφαίρεση
+            renumberVehicleFields();
+
+            // Έλεγχος αν υπάρχουν ακόμα οχήματα
+            const allEntries = vehicleExperienceContainer.querySelectorAll('.vehicle-experience-entry');
+            if (allEntries.length === 0) {
+                // Αν δεν υπάρχουν οχήματα, προσθέτουμε ένα κενό
+                addNewVehicleEntry();
+            }
+        }
+    }
+
+    // Συνάρτηση για την προσθήκη νέου οχήματος
+    function addNewVehicleEntry() {
+        // Δημιουργία νέου στοιχείου
+        const vehicleEntries = vehicleExperienceContainer.querySelectorAll('.vehicle-experience-entry');
+        const newIndex = vehicleEntries.length;
+
+        // Δημιουργία του HTML για το νέο στοιχείο
+        const newEntry = document.createElement('div');
+        newEntry.className = 'vehicle-experience-entry';
+        newEntry.innerHTML = `
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Κατηγορία Οχήματος:</label>
+                    <select name="vehicle_experience[${newIndex}][vehicle_category]" class="vehicle-category-select" data-index="${newIndex}">
+                        <option value="">Επιλέξτε κατηγορία...</option>
+                        <optgroup label="Μεταφορά Εμπορευμάτων">
+                            <option value="lcv">Ελαφρά Επαγγελματικά Οχήματα (έως 3.5 τόνους)</option>
+                            <option value="rigid_truck">Μεσαία & Βαρέα Φορτηγά</option>
+                            <option value="articulated">Αρθρωτά/Συρόμενα Οχήματα</option>
+                        </optgroup>
+                        <optgroup label="Μεταφορά Επιβατών">
+                            <option value="taxi">Ταξί</option>
+                            <option value="minibus">Μικρό Λεωφορείο (έως 16+1 θέσεις)</option>
+                            <option value="bus">Λεωφορεία & Πούλμαν</option>
+                        </optgroup>
+                        <optgroup label="Ειδικά Οχήματα">
+                            <option value="utility">Οχήματα Δημοτικά/Κοινής Ωφέλειας</option>
+                            <option value="construction">Οχήματα Έργων/Κατασκευών</option>
+                            <option value="emergency">Οχήματα Έκτακτης Ανάγκης</option>
+                            <option value="specialized">Άλλα Εξειδικευμένα Οχήματα</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row vehicle-subcategory-container" id="subcategory-container-${newIndex}">
+                <div class="form-group">
+                    <label>Τύπος Οχήματος:</label>
+                    <select name="vehicle_experience[${newIndex}][vehicle_type]" class="vehicle-type-select">
+                        <option value="">Επιλέξτε πρώτα κατηγορία...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Έτη Εμπειρίας:</label>
+                    <input type="number" name="vehicle_experience[${newIndex}][years]" min="0" max="50" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Περίοδος:</label>
+                    <div class="date-range">
+                        <input type="month" name="vehicle_experience[${newIndex}][start_date]" placeholder="Από">
+                        <span>έως</span>
+                        <input type="month" name="vehicle_experience[${newIndex}][end_date]" placeholder="Έως">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Περιγραφή Καθηκόντων:</label>
+                <textarea name="vehicle_experience[${newIndex}][description]" rows="2"></textarea>
+            </div>
+            <button type="button" class="btn-remove-vehicle" data-index="${newIndex}">Αφαίρεση</button>
+        `;
+
+        // Προσθήκη του νέου στοιχείου στο container
+        vehicleExperienceContainer.appendChild(newEntry);
+
+        // Προσθήκη των event listeners
+        const removeButton = newEntry.querySelector('.btn-remove-vehicle');
+        removeButton.addEventListener('click', handleRemoveVehicle);
+
+        const categorySelect = newEntry.querySelector('.vehicle-category-select');
+        categorySelect.addEventListener('change', function() {
+            loadVehicleSubcategories(this);
+        });
+    }
+
+    // Προσθήκη event listener στο κουμπί προσθήκης οχήματος
+    if (btnAddVehicle) {
+        btnAddVehicle.addEventListener('click', addNewVehicleEntry);
+    }
+
+    // Προσθήκη event listeners στα υπάρχοντα κουμπιά αφαίρεσης
+    const removeVehicleButtons = document.querySelectorAll('.btn-remove-vehicle');
+    removeVehicleButtons.forEach(button => {
+        button.addEventListener('click', handleRemoveVehicle);
+    });
+
+    // Προσθήκη event listeners στα υπάρχοντα select κατηγορίας
+    const categorySelects = document.querySelectorAll('.vehicle-category-select');
+    categorySelects.forEach(select => {
+        select.addEventListener('change', function() {
+            loadVehicleSubcategories(this);
+        });
+
+        // Φόρτωση των υποκατηγοριών για τα ήδη επιλεγμένα
+        if (select.value) {
+            loadVehicleSubcategories(select);
+        }
+    });
+
+    // Υπολογισμός συνολικής εμπειρίας από τα πεδία από-έως
+    function calculateTotalExperience() {
+        const vehicleEntries = vehicleExperienceContainer.querySelectorAll('.vehicle-experience-entry');
+        let totalMonths = 0;
+
+        vehicleEntries.forEach(entry => {
+            const startDateInput = entry.querySelector('input[name*="[start_date]"]');
+            const endDateInput = entry.querySelector('input[name*="[end_date]"]');
+            
+            if (startDateInput.value && endDateInput.value) {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+                
+                // Υπολογισμός διαφοράς σε μήνες
+                const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                               (endDate.getMonth() - startDate.getMonth());
+                
+                if (months > 0) {
+                    totalMonths += months;
+                }
+            }
+        });
+
+        // Μετατροπή σε έτη και μήνες
+        const years = Math.floor(totalMonths / 12);
+        const remainingMonths = totalMonths % 12;
+        
+        // Ενημέρωση του κουμπιού προσθήκης οχήματος
+        if (btnAddVehicle) {
+            let experienceText = '';
+            if (years > 0) {
+                experienceText += `${years} έτη`;
+                if (remainingMonths > 0) {
+                    experienceText += ` και ${remainingMonths} μήνες`;
+                }
+            } else if (remainingMonths > 0) {
+                experienceText += `${remainingMonths} μήνες`;
             } else {
-                ageDisplay.textContent = '';
+                experienceText = 'Καμία εμπειρία';
             }
-        }
-
-        birthDateInput.addEventListener('change', calculateAge);
-        birthDateInput.addEventListener('input', calculateAge);
-
-        // Υπολογισμός ηλικίας κατά τη φόρτωση της σελίδας
-        if (birthDateInput.value) {
-            calculateAge();
+            
+            // Ενημέρωση του κειμένου του κουμπιού
+            btnAddVehicle.innerHTML = `Προσθήκη Εμπειρίας <span class="total-experience">(Συνολική εμπειρία: ${experienceText})</span>`;
         }
     }
 
-    // -------------------- Εμφάνιση/απόκρυψη λεπτομερειών αδειών --------------------
-    const licenseSections = [
-        { checkboxId: 'driving_license', tabId: 'driving_license_tab' },
-        { checkboxId: 'adr_certificate', tabId: 'adr_certificate_tab' },
-        { checkboxId: 'operator_license', tabId: 'operator_license_tab' },
-        { checkboxId: 'tachograph_card', tabId: 'tachograph_card_tab' },
-        { checkboxId: 'training_seminars', tabId: 'training_seminars_tab' }
-    ];
-
-    licenseSections.forEach(section => {
-        const checkbox = document.getElementById(section.checkboxId);
-        const tab = document.getElementById(section.tabId);
-
-        if (checkbox && tab) {
-            // Αρχική κατάσταση
-            tab.classList.toggle('hidden', !checkbox.checked);
-
-            // Χειρισμός αλλαγών
-            checkbox.addEventListener('change', function () {
-                tab.classList.toggle('hidden', !this.checked);
-            });
-        }
-    });
-
-    // -------------------- Χειρισμός ΠΕΙ οδήγησης --------------------
-    // Διαχείριση των checkbox ΠΕΙ και των αντίστοιχων πεδίων ημερομηνίας
-    const peiCheckboxes = document.querySelectorAll('input[name^="has_pei_"]');
-
-    peiCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            // Εύρεση του κοντινότερου πεδίου ημερομηνίας ΠΕΙ
-            const peiField = this.closest('.pei-field');
-            if (peiField) {
-                const dateField = peiField.querySelector('input[type="date"]');
-                if (dateField) {
-                    dateField.disabled = !this.checked;
-
-                    // Αν ενεργοποιείται το ΠΕΙ και δεν έχει ημερομηνία, ορίζουμε μια μελλοντική
-                    if (this.checked && !dateField.value) {
-                        const today = new Date();
-                        const fiveYearsLater = new Date(today);
-                        fiveYearsLater.setFullYear(today.getFullYear() + 5);
-                        dateField.value = fiveYearsLater.toISOString().split('T')[0];
-                    }
-                }
-            }
-        });
-    });
-
-    // Συγχρονισμός ημερομηνιών ΠΕΙ για κατηγορίες
-    function syncExpiryDates(fieldNames)
-    {
-        const fields = document.querySelectorAll(fieldNames);
-        fields.forEach(field => {
-            field.addEventListener('change', function () {
-                if (this.disabled) {
-                    return;
-                }
-
-                const newDate = this.value;
-                fields.forEach(f => {
-                    if (f !== this && !f.disabled) {
-                        f.value = newDate;
-                    }
-                });
-            });
-        });
-    }
-
-    // Συγχρονισμός για ΠΕΙ φορτηγών (C) και λεωφορείων (D)
-    syncExpiryDates('input[name="pei_c_expiry"]');
-    syncExpiryDates('input[name="pei_d_expiry"]');
-
-    // Χειρισμός των checkbox κατηγοριών αδειών
-    const licenseTypeCheckboxes = document.querySelectorAll('input[name="license_types[]"]');
-    licenseTypeCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            // Εύρεση του πλησιέστερου πεδίου ημερομηνίας λήξης
-            const row = this.closest('tr');
-            if (!row) {
-                return;
-            }
-
-            const dateField = row.querySelector('input[type="date"][name^="license_expiry"]');
-            if (dateField) {
-                dateField.disabled = !this.checked;
-
-                // Αν ενεργοποιείται η άδεια και δεν έχει ημερομηνία, ορίζουμε μια μελλοντική
-                if (this.checked && !dateField.value) {
-                    const today = new Date();
-                    const fifteenYearsLater = new Date(today);
-                    fifteenYearsLater.setFullYear(today.getFullYear() + 15);
-                    dateField.value = fifteenYearsLater.toISOString().split('T')[0];
-                }
-            }
-
-            // Χειρισμός των πεδίων ΠΕΙ
-            const peiField = row.querySelector('.pei-field');
-            if (peiField) {
-                const peiCheckbox = peiField.querySelector('input[type="checkbox"]');
-                const peiDateField = peiField.querySelector('input[type="date"]');
-
-                if (peiCheckbox) {
-                    if (!this.checked) {
-                        // Αν η κατηγορία δεν είναι επιλεγμένη, απενεργοποιούμε το ΠΕΙ
-                        peiCheckbox.disabled = true;
-                        peiCheckbox.checked = false;
-                    } else {
-                        // Αν η κατηγορία είναι επιλεγμένη, ενεργοποιούμε το checkbox ΠΕΙ
-                        peiCheckbox.disabled = false;
-                    }
-                }
-
-                if (peiDateField) {
-                    // Το πεδίο ημερομηνίας ΠΕΙ ενεργοποιείται μόνο αν το checkbox ΠΕΙ είναι επιλεγμένο
-                    peiDateField.disabled = !this.checked || (peiCheckbox && !peiCheckbox.checked);
-                }
-            }
-        });
-
-        // Αρχικοποίηση με βάση την τρέχουσα κατάσταση του checkbox
-        const changeEvent = new Event('change');
-        checkbox.dispatchEvent(changeEvent);
-    });
-
-    // -------------------- Χειρισμός εικόνων --------------------
-    // Γενική συνάρτηση για το χειρισμό της μεταφόρτωσης εικόνων
-    function handleImageUpload(input)
-    {
-        if (!input.files || !input.files[0]) {
-            return;
-        }
-
-        // Έλεγχος μεγέθους αρχείου (max 2MB)
-        const fileSize = input.files[0].size / 1024 / 1024; // σε MB
-        if (fileSize > 2) {
-            alert('Το αρχείο είναι πολύ μεγάλο. Μέγιστο επιτρεπόμενο μέγεθος: 2MB');
-            input.value = ''; // Καθαρισμός της επιλογής
-            return;
-        }
-
-        // Έλεγχος τύπου αρχείου
-        const fileType = input.files[0].type;
-        if (!['image/jpeg', 'image/png', 'image/gif'].includes(fileType)) {
-            alert('Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.');
-            input.value = '';
-            return;
-        }
-
-        // Εμφάνιση προεπισκόπησης
-        const parent = input.parentElement;
-        let previewContainer = parent.querySelector('.preview-image') || parent.querySelector('.current-image');
-
-        if (!previewContainer) {
-            // Δημιουργία νέου container για προεπισκόπηση
-            previewContainer = document.createElement('div');
-            previewContainer.className = 'preview-image';
-
-            const previewImg = document.createElement('img');
-            const previewText = document.createElement('p');
-            previewText.textContent = 'Προεπισκόπηση εικόνας';
-
-            previewContainer.appendChild(previewImg);
-            previewContainer.appendChild(previewText);
-
-            // Προσθήκη πριν από το input
-            parent.insertBefore(previewContainer, input);
-        } else {
-            // Ενημέρωση του υπάρχοντος container
-            const previewImg = previewContainer.querySelector('img');
-            if (previewImg) {
-                const file = input.files[0];
-                const reader = new FileReader();
-
-                reader.onload = function (e) {
-                    previewImg.src = e.target.result;
-                    previewImg.alt = file.name;
-                };
-
-                reader.readAsDataURL(file);
-            }
-        }
-    }
-
-    // Εφαρμογή σε όλα τα πεδία εικόνων
-    const imageInputs = document.querySelectorAll('input[type="file"][accept*="image"]');
-    imageInputs.forEach(input => {
-        input.addEventListener('change', function () {
-            handleImageUpload(this);
-        });
-    });
-
-    // Χειρισμός για το αρχείο βιογραφικού
-    const resumeInput = document.getElementById('resume_file');
-    if (resumeInput) {
-        resumeInput.addEventListener('change', function () {
-            if (!this.files || !this.files[0]) {
-                return;
-            }
-
-            // Έλεγχος μεγέθους αρχείου (max 5MB)
-            const fileSize = this.files[0].size / 1024 / 1024; // σε MB
-            if (fileSize > 5) {
-                alert('Το αρχείο είναι πολύ μεγάλο. Μέγιστο επιτρεπόμενο μέγεθος: 5MB');
-                this.value = ''; // Καθαρισμός της επιλογής
-                return;
-            }
-
-            // Έλεγχος τύπου αρχείου
-            const fileName = this.files[0].name.toLowerCase();
-            if (!fileName.endsWith('.pdf') && !fileName.endsWith('.doc') && !fileName.endsWith('.docx')) {
-                alert('Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο PDF, DOC και DOCX.');
-                this.value = '';
-                return;
-            }
+    // Προσθήκη event listeners για τα πεδία ημερομηνίας
+    function addDateListeners() {
+        const dateInputs = document.querySelectorAll('input[type="month"]');
+        dateInputs.forEach(input => {
 
             // Εμφάνιση ονόματος αρχείου
             const parent = this.parentElement;

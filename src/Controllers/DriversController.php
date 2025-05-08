@@ -33,7 +33,7 @@ use Drivejob\Services\DriverCertificationService;
 class DriversController
 {
     // Παλιά μοντέλα (προς σταδιακή κατάργηση)
-            // Νέα μοντέλα
+    // Νέα μοντέλα
     private $profileModel;
     private $licenseModel;
     private $certificationModel;
@@ -59,7 +59,7 @@ class DriversController
         $this->pdo = $pdo;
 
         // Αρχικοποίηση των παλιών μοντέλων για συμβατότητα προς τα πίσω
-                        // Αρχικοποίηση των νέων μοντέλων
+        // Αρχικοποίηση των νέων μοντέλων
         $this->profileModel = new ProfileModel($pdo);
         $this->licenseModel = new LicenseModel($pdo);
         $this->certificationModel = new CertificationModel($pdo);
@@ -221,7 +221,7 @@ class DriversController
 
         // Έλεγχος για CSRF token
         if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-            echo json_encode(['success' => false, 'message' => 'Άκυρο αίτημα.']);
+            echo \json_encode(['success' => false, 'message' => 'Άκυρο αίτημα.']);
             exit();
         }
 
@@ -231,7 +231,7 @@ class DriversController
             $driver = $this->profileModel->getDriverById($driverId);
 
             if (!$driver) {
-                echo json_encode(['success' => false, 'message' => 'Δεν βρέθηκε ο οδηγός.']);
+                echo \json_encode(['success' => false, 'message' => 'Δεν βρέθηκε ο οδηγός.']);
                 exit();
             }
 
@@ -245,18 +245,18 @@ class DriversController
             $success = $this->profileModel->updateProfile($driverId, ['available_for_work' => $newStatus]);
 
             if ($success) {
-                echo json_encode([
+                echo \json_encode([
                     'success' => true,
                     'message' => 'Η διαθεσιμότητα ενημερώθηκε με επιτυχία',
                     'newStatus' => $newStatus,
                     'statusText' => $newStatus ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία'
                 ]);
             } else {
-                echo json_encode(['success' => false, 'message' => 'Αποτυχία ενημέρωσης διαθεσιμότητας']);
+                echo \json_encode(['success' => false, 'message' => 'Αποτυχία ενημέρωσης διαθεσιμότητας']);
             }
         } catch (\Exception $e) {
             Logger::error("Σφάλμα κατά την εναλλαγή διαθεσιμότητας: " . $e->getMessage());
-            echo json_encode(['success' => false, 'message' => 'Σφάλμα επεξεργασίας αιτήματος']);
+            echo \json_encode(['success' => false, 'message' => 'Σφάλμα επεξεργασίας αιτήματος']);
         }
 
         exit();
@@ -427,6 +427,37 @@ class DriversController
         $driverCertifications = $driverProfile['certifications'] ?? [];
         $driverVehicleExperience = $driverProfile['vehicle_experience'] ?? [];
 
+        // *** ΠΡΟΣΘΗΚΗ ΓΙΑ ΚΆΡΤΑ ΤΑΧΟΓΡΑΦΟΥ ***
+        // Λήψη δεδομένων κάρτας ταχογράφου από το certificationModel
+        $driverTachograph = $this->certificationModel->getDriverTachographCard($driverId);
+        $driverData['tachograph_card'] = !empty($driverTachograph);
+        $driverData['tachograph_card_number'] = $driverTachograph['card_number'] ?? null;
+        $driverData['tachograph_card_expiry'] = $driverTachograph['expiry_date'] ?? null;
+
+        // *** ΠΡΟΣΘΗΚΗ ΓΙΑ ΑΔΕΙΑ ΧΕΙΡΙΣΤΗ ***
+        // Λήψη δεδομένων άδειας χειριστή
+        $driverOperator = $this->certificationModel->getDriverOperatorLicense($driverId);
+
+        // Λήψη υποειδικοτήτων άδειας χειριστή
+        $operatorSubSpecialities = [];
+        if ($driverOperator) {
+            $operatorSubSpecialities = $this->certificationModel->getDriverOperatorSubSpecialities($driverOperator['id']);
+        }
+
+        // *** ΠΡΟΣΘΗΚΗ ΓΙΑ ΕΙΔΙΚΕΣ ΑΔΕΙΕΣ ***
+        // Λήψη ειδικών αδειών
+        $driverSpecialLicenses = $this->certificationModel->getDriverSpecialLicenses($driverId);
+
+        // *** ΠΡΟΣΘΗΚΗ ΓΙΑ ADR ***
+        // Λήψη δεδομένων πιστοποιητικού ADR
+        $driverADR = $this->certificationModel->getDriverADRCertificate($driverId);
+        if ($driverADR) {
+            $driverData['adr_certificate'] = true;
+            $driverData['adr_certificate_number'] = $driverADR['certificate_number'] ?? '';
+            $driverData['adr_certificate_expiry'] = $driverADR['expiry_date'] ?? null;
+            $driverData['adr_classes'] = $driverADR['adr_type'] ?? '';
+        }
+
         // Έλεγχος για ΠΕΙ
         $hasPeiC = false;
         $hasPeiD = false;
@@ -552,6 +583,11 @@ class DriversController
 
         // Συλλογή των δεδομένων από τη φόρμα
         $data = $this->collectFormData();
+
+        // Διαχείριση της διαθεσιμότητας για εργασία
+        // Αν το checkbox είναι τσεκαρισμένο, θέτουμε την τιμή σε 1, αλλιώς σε 0
+        $data['available_for_work'] = isset($_POST['available_for_work']) ? 1 : 0;
+
         Logger::info('Collected form data for update', ['data_keys' => array_keys($data)]);
 
         try {

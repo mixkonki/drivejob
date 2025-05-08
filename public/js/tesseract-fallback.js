@@ -20,7 +20,7 @@
                     return Tesseract.recognize(
                         imageData,
                         language || 'eng+ell',
-                        options ? .logger ? { logger : options.logger } : {}
+                        options && options.logger ? { logger: options.logger } : {}
                     );
                 } else {
                     return Promise.reject(new Error('Το Tesseract.js δεν έχει φορτωθεί'));
