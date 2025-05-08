@@ -82,8 +82,11 @@ document.addEventListener('DOMContentLoaded', function() {
             selects.forEach(select => {
                 if (select.classList.contains('vehicle-category-select')) {
                     select.setAttribute('data-index', index);
-                    const newName = name.replace(/vehicle_experience\[\d+\]/, `vehicle_experience[${index}]`);
-                    select.setAttribute('name', newName);
+                    const name = select.getAttribute('name');
+                    if (name) {
+                        const newName = name.replace(/vehicle_experience\[\d+\]/, `vehicle_experience[${index}]`);
+                        select.setAttribute('name', newName);
+                    }
                 }
             });
 
@@ -288,18 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function addDateListeners() {
         const dateInputs = document.querySelectorAll('input[type="month"]');
         dateInputs.forEach(input => {
-
-            // Εμφάνιση ονόματος αρχείου
-            const parent = this.parentElement;
-            let fileInfo = parent.querySelector('.file-info');
-
-            if (!fileInfo) {
-                fileInfo = document.createElement('div');
-                fileInfo.className = 'file-info';
-                parent.insertBefore(fileInfo, this.nextSibling);
-            }
-
-            fileInfo.textContent = `Επιλεγμένο αρχείο: ${this.files[0].name}`;
+            input.addEventListener('change', calculateTotalExperience);
         });
     }
 
@@ -417,8 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Έλεγχος ταιριάσματος κωδικών
         if (confirmPasswordInput) {
-            function checkPasswordMatch()
-            {
+            function checkPasswordMatch() {
                 if (newPasswordInput.value === confirmPasswordInput.value) {
                     confirmPasswordInput.setCustomValidity('');
                     confirmPasswordInput.classList.remove('input-error');
@@ -518,15 +509,16 @@ document.addEventListener('DOMContentLoaded', function() {
      * Φορτώνει τις υποειδικότητες μιας ειδικότητας
      * @param {string} specialityId - ID της ειδικότητας
      */
-    window.loadSubSpecialities = function (specialityId) {
-        const subSpecialityContainer = document.getElementById('subSpecialityContainer');
-        const tableBody = document.getElementById('subSpecialitiesTableBody');
-
-        if (!subSpecialityContainer || !tableBody) {
-            console.error('Δεν βρέθηκαν τα απαραίτητα στοιχεία DOM');
-            return;
-        }
-
+   window.loadSubSpecialities = function(specialityId) {
+    // Αναζήτηση των απαραίτητων στοιχείων HTML
+    const subSpecialityContainer = document.getElementById('subSpecialityContainer');
+    const tableBody = document.getElementById('subSpecialitiesTableBody');
+    
+    // Έλεγχος αν τα στοιχεία υπάρχουν
+    if (!subSpecialityContainer || !tableBody) {
+        console.error('Δεν βρέθηκαν τα απαραίτητα στοιχεία DOM: subSpecialityContainer ή subSpecialitiesTableBody');
+        return; // Τερματισμός της συνάρτησης εάν λείπουν τα στοιχεία
+    }
         // Αν δεν έχει επιλεγεί ειδικότητα, απόκρυψη του container
         if (!specialityId) {
             subSpecialityContainer.style.display = 'none';
@@ -539,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const subSpecId = checkbox.value;
             if (checkbox.checked) {
                 // Αποθήκευση της τρέχουσας επιλογής και της ομάδας
-                const groupRadios = document.querySelectorAll(`input[name = "group_${subSpecId}"]`);
+                const groupRadios = document.querySelectorAll(`input[name="group_${subSpecId}"]`);
                 let selectedGroup = 'A';
                 groupRadios.forEach(radio => {
                     if (radio.checked) {
@@ -605,29 +597,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 const row = document.createElement('tr');
 
                 row.innerHTML = `
-                    < td > ${subSpecId} < / td >
-                    < td > ${item.name} < / td >
-                    < td >
-                        < label class = "toggle-switch" >
-                            < input type = "checkbox" name = "operator_sub_specialities[]" value = "${subSpecId}" ${isChecked ? 'checked' : ''}
-                                onchange = "updateSubSpecialitySelection(this, '${subSpecId}')" >
-                            < span class = "toggle-slider" > < / span >
-                        <  / label >
-                    <  / td >
-                    < td >
-                        < div class = "radio-group" id = "group_container_${subSpecId}" ${isChecked ? '' : 'style="display:none;"'} >
-                            < label class = "radio-label" >
-                                < input type = "radio" name = "group_${subSpecId}" value = "A" ${groupValue === 'A' ? 'checked' : ''}
-                                    onchange = "updateSubSpecialityGroup('${subSpecId}', 'A')" >
-                                < span > A < / span >
-                            <  / label >
-                            < label class = "radio-label" >
-                                < input type = "radio" name = "group_${subSpecId}" value = "B" ${groupValue === 'B' ? 'checked' : ''}
-                                    onchange = "updateSubSpecialityGroup('${subSpecId}', 'B')" >
-                                < span > B < / span >
-                            <  / label >
-                        <  / div >
-                    <  / td >
+                    <td>${subSpecId}</td>
+                    <td>${item.name}</td>
+                    <td>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="operator_sub_specialities[]" value="${subSpecId}" ${isChecked ? 'checked' : ''}
+                                onchange="updateSubSpecialitySelection(this, '${subSpecId}')">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </td>
+                    <td>
+                        <div class="radio-group" id="group_container_${subSpecId}" ${isChecked ? '' : 'style="display:none;"'}>
+                            <label class="radio-label">
+                                <input type="radio" name="group_${subSpecId}" value="A" ${groupValue === 'A' ? 'checked' : ''}
+                                    onchange="updateSubSpecialityGroup('${subSpecId}', 'A')">
+                                <span>A</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="group_${subSpecId}" value="B" ${groupValue === 'B' ? 'checked' : ''}
+                                    onchange="updateSubSpecialityGroup('${subSpecId}', 'B')">
+                                <span>B</span>
+                            </label>
+                        </div>
+                    </td>
                 `;
 
                 tableBody.appendChild(row);
@@ -642,7 +634,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {HTMLElement} checkbox - Το checkbox που άλλαξε κατάσταση
      * @param {string} subSpecialityId - ID της υποειδικότητας
      */
-    window.updateSubSpecialitySelection = function (checkbox, subSpecialityId) {
+    window.updateSubSpecialitySelection = function(checkbox, subSpecialityId) {
         if (!window.allSelectedSubSpecialities) {
             window.allSelectedSubSpecialities = {};
         }
@@ -669,7 +661,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {string} subSpecialityId - ID της υποειδικότητας
      * @param {string} groupValue - Τιμή της ομάδας (A ή B)
      */
-    window.updateSubSpecialityGroup = function (subSpecialityId, groupValue) {
+    window.updateSubSpecialityGroup = function(subSpecialityId, groupValue) {
         if (!window.allSelectedSubSpecialities) {
             window.allSelectedSubSpecialities = {};
         }
@@ -688,12 +680,18 @@ document.addEventListener('DOMContentLoaded', function() {
     /**
      * Προετοιμάζει τα δεδομένα για αποστολή πριν την υποβολή της φόρμας
      */
-    window.prepareOperatorSpecialitiesForSubmission = function () {
-        const form = document.getElementById('driverProfileForm');
-        if (!form) {
-            console.error("Δεν βρέθηκε η φόρμα!");
-            return;
-        }
+    window.prepareOperatorSpecialitiesForSubmission = function() {
+    const form = document.getElementById('driverProfileForm');
+    if (!form) {
+        console.error("Δεν βρέθηκε η φόρμα!");
+        return; // Έξοδος αν η φόρμα δεν βρέθηκε
+    }
+    
+    // Έλεγχος αν υπάρχει το allSelectedSubSpecialities στο window
+    if (!window.allSelectedSubSpecialities) {
+        console.warn("Δεν υπάρχουν επιλεγμένες υποειδικότητες.");
+        return; // Έξοδος αν δεν υπάρχουν επιλεγμένες υποειδικότητες
+    }
 
         // Μετατροπή του αντικειμένου σε μορφή κατάλληλη για αποστολή
         const selectedSubSpecialitiesArray = [];
@@ -729,15 +727,18 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Προσθήκη του listener υποβολής στη φόρμα
+    // Προσθήκη του listener υποβολής στη φόρμα
     const form = document.getElementById('driverProfileForm');
     if (form) {
-        form.addEventListener('submit', function (e) {
-            window.prepareOperatorSpecialitiesForSubmission();
+        form.addEventListener('submit', function(e) {
+            if (typeof window.prepareOperatorSpecialitiesForSubmission === 'function') {
+                window.prepareOperatorSpecialitiesForSubmission();
+            }
         });
 
         // Αρχική φόρτωση των υποειδικοτήτων αν έχει επιλεγεί ειδικότητα
         const specialitySelect = document.getElementById('operator_speciality');
-        if (specialitySelect && specialitySelect.value) {
+        if (specialitySelect && specialitySelect.value && typeof window.loadSubSpecialities === 'function') {
             window.loadSubSpecialities(specialitySelect.value);
         }
     }
@@ -745,7 +746,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // -------------------- Διαχείριση OCR για σκανάρισμα εγγράφων --------------------
     const scanButtons = document.querySelectorAll('.btn-scan');
     scanButtons.forEach(button => {
-        button.addEventListener('click', function () {
+        button.addEventListener('click', function() {
             // Έλεγχος για το Tesseract
             if (typeof Tesseract === 'undefined') {
                 console.error('Το Tesseract δεν έχει φορτωθεί σωστά.');
@@ -772,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const file = fileInput.files[0];
             const reader = new FileReader();
 
-            reader.onload = function (e) {
+            reader.onload = function(e) {
                 const imageDataUrl = e.target.result;
 
                 // Χρήση του Tesseract για OCR
@@ -812,7 +813,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             };
 
-            reader.onerror = function (error) {
+            reader.onerror = function(error) {
                 console.error('Σφάλμα ανάγνωσης αρχείου:', error);
                 alert('Σφάλμα κατά την ανάγνωση του αρχείου. Παρακαλώ προσπαθήστε ξανά.');
                 loadingIndicator.remove();
@@ -824,19 +825,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Συναρτήσεις εξαγωγής πληροφοριών (ορίζονται ως συναρτήσεις κενού περιεχομένου στην περίπτωση που δεν υπάρχουν οι εξαγωγές πληροφοριών)
-    window.extractLicenseInfo = window.extractLicenseInfo || function (text) {
+    window.extractLicenseInfo = window.extractLicenseInfo || function(text) {
         console.log("Εξαγωγή πληροφοριών άδειας οδήγησης από:", text);
     };
 
-    window.extractADRInfo = window.extractADRInfo || function (text) {
+    window.extractADRInfo = window.extractADRInfo || function(text) {
         console.log("Εξαγωγή πληροφοριών ADR από:", text);
     };
 
-    window.extractTachographInfo = window.extractTachographInfo || function (text) {
+    window.extractTachographInfo = window.extractTachographInfo || function(text) {
         console.log("Εξαγωγή πληροφοριών ταχογράφου από:", text);
     };
 
-    window.extractOperatorInfo = window.extractOperatorInfo || function (text) {
+    window.extractOperatorInfo = window.extractOperatorInfo || function(text) {
         console.log("Εξαγωγή πληροφοριών άδειας χειριστή από:", text);
     };
 
@@ -849,17 +850,19 @@ document.addEventListener('DOMContentLoaded', function() {
         helpText.textContent = 'Επιλέξτε με Ctrl+κλικ για πολλαπλή επιλογή';
         select.parentNode.insertBefore(helpText, select.nextSibling);
     });
-});
-// Προσθέστε αυτό το script στο τέλος του αρχείου edit_profile.php ή σε ένα ξεχωριστό αρχείο JS
 
-document.addEventListener('DOMContentLoaded', function () {
+    // Προσθήκη των ακροατών για τα πεδία ημερομηνίας αν χρειάζεται
+    addDateListeners();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
     // Λειτουργία καρτελών
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabPanes = document.querySelectorAll('.tab-pane');
 
     if (tabButtons.length > 0) {
         tabButtons.forEach(button => {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function() {
                 const targetTab = this.getAttribute('data-tab');
 
                 // Αφαίρεση ενεργών κλάσεων
@@ -879,8 +882,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (btnAddCertification && certificationsContainer) {
         // Συνάρτηση ενημέρωσης των indexes των πιστοποιήσεων
-        function updateCertificationIndexes()
-        {
+        function updateCertificationIndexes() {
             const certEntries = certificationsContainer.querySelectorAll('.certification-entry');
 
             certEntries.forEach((entry, index) => {
@@ -897,15 +899,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Ενημέρωση του data-index του κουμπιού αφαίρεσης
                 const removeButton = entry.querySelector('.btn-remove-certification');
-            if (removeButton) {
-                removeButton.setAttribute('data-index', index);
-            }
+                if (removeButton) {
+                    removeButton.setAttribute('data-index', index);
+                }
             });
         }
 
         // Συνάρτηση αφαίρεσης πιστοποίησης
-        function removeCertification()
-        {
+        function removeCertification() {
             const entryToRemove = this.closest('.certification-entry');
             if (entryToRemove) {
                 // Αφαίρεση της πιστοποίησης
@@ -921,31 +922,31 @@ document.addEventListener('DOMContentLoaded', function () {
                     const newEntry = document.createElement('div');
                     newEntry.className = 'certification-entry';
                     newEntry.innerHTML = `
-                        < div class = "form-row" >
-                            < div class = "form-group" >
-                                < label > Τίτλος Πιστοποίησης: < / label >
-                                < input type = "text" name = "certifications[0][title]" >
-                            <  / div >
-                            < div class = "form-group" >
-                                < label > Πάροχος / Οργανισμός: < / label >
-                                < input type = "text" name = "certifications[0][provider]" >
-                            <  / div >
-                        <  / div >
-                        < div class = "form-row" >
-                            < div class = "form-group" >
-                                < label > Ημερομηνία Απόκτησης: < / label >
-                                < input type = "date" name = "certifications[0][date]" >
-                            <  / div >
-                            < div class = "form-group" >
-                                < label > Ημερομηνία Λήξης(αν υπάρχει): < / label >
-                                < input type = "date" name = "certifications[0][expiry]" >
-                            <  / div >
-                        <  / div >
-                        < div class = "form-group" >
-                            < label > Περιγραφή: < / label >
-                            < textarea name = "certifications[0][description]" rows = "2" > < / textarea >
-                        <  / div >
-                        < button type = "button" class = "btn-remove-certification" data - index = "0" > Αφαίρεση < / button >
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Τίτλος Πιστοποίησης:</label>
+                                <input type="text" name="certifications[0][title]">
+                            </div>
+                            <div class="form-group">
+                                <label>Πάροχος/Οργανισμός:</label>
+                                <input type="text" name="certifications[0][provider]">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ημερομηνία Απόκτησης:</label>
+                                <input type="date" name="certifications[0][date]">
+                            </div>
+                            <div class="form-group">
+                                <label>Ημερομηνία Λήξης (αν υπάρχει):</label>
+                                <input type="date" name="certifications[0][expiry]">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Περιγραφή:</label>
+                            <textarea name="certifications[0][description]" rows="2"></textarea>
+                        </div>
+                        <button type="button" class="btn-remove-certification" data-index="0">Αφαίρεση</button>
                     `;
 
                     certificationsContainer.appendChild(newEntry);
@@ -960,38 +961,38 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Listener για το κουμπί προσθήκης πιστοποίησης
-        btnAddCertification.addEventListener('click', function () {
+        btnAddCertification.addEventListener('click', function() {
             const certEntries = certificationsContainer.querySelectorAll('.certification-entry');
             const newIndex = certEntries.length;
 
             const newEntry = document.createElement('div');
             newEntry.className = 'certification-entry';
             newEntry.innerHTML = `
-                < div class = "form-row" >
-                    < div class = "form-group" >
-                        < label > Τίτλος Πιστοποίησης: < / label >
-                        < input type = "text" name = "certifications[${newIndex}][title]" >
-                    <  / div >
-                    < div class = "form-group" >
-                        < label > Πάροχος / Οργανισμός: < / label >
-                        < input type = "text" name = "certifications[${newIndex}][provider]" >
-                    <  / div >
-                <  / div >
-                < div class = "form-row" >
-                    < div class = "form-group" >
-                        < label > Ημερομηνία Απόκτησης: < / label >
-                        < input type = "date" name = "certifications[${newIndex}][date]" >
-                    <  / div >
-                    < div class = "form-group" >
-                        < label > Ημερομηνία Λήξης(αν υπάρχει): < / label >
-                        < input type = "date" name = "certifications[${newIndex}][expiry]" >
-                    <  / div >
-                <  / div >
-                < div class = "form-group" >
-                    < label > Περιγραφή: < / label >
-                    < textarea name = "certifications[${newIndex}][description]" rows = "2" > < / textarea >
-                <  / div >
-                < button type = "button" class = "btn-remove-certification" data - index = "${newIndex}" > Αφαίρεση < / button >
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Τίτλος Πιστοποίησης:</label>
+                        <input type="text" name="certifications[${newIndex}][title]">
+                    </div>
+                    <div class="form-group">
+                        <label>Πάροχος/Οργανισμός:</label>
+                        <input type="text" name="certifications[${newIndex}][provider]">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ημερομηνία Απόκτησης:</label>
+                        <input type="date" name="certifications[${newIndex}][date]">
+                    </div>
+                    <div class="form-group">
+                        <label>Ημερομηνία Λήξης (αν υπάρχει):</label>
+                        <input type="date" name="certifications[${newIndex}][expiry]">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Περιγραφή:</label>
+                    <textarea name="certifications[${newIndex}][description]" rows="2"></textarea>
+                </div>
+                <button type="button" class="btn-remove-certification" data-index="${newIndex}">Αφαίρεση</button>
             `;
 
             certificationsContainer.appendChild(newEntry);
@@ -1014,14 +1015,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const hash = window.location.hash;
     if (hash) {
         const tabId = hash.replace('#', '');
-        const tabButton = document.querySelector(`.tab - btn[data - tab = "${tabId}"]`);
+        const tabButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
         if (tabButton) {
             tabButton.click();
         }
     }
 });
+
 // Διαχείριση προσθήκης/αφαίρεσης εμπειρίας οχημάτων
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     const btnAddVehicle = document.getElementById('btn-add-vehicle');
     const vehicleExperienceContainer = document.getElementById('vehicle-experience-list');
 
@@ -1064,8 +1066,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'minibus': {
             'school_minibus': 'Σχολικό Minibus',
             'personnel_minibus': 'Minibus Μεταφοράς Προσωπικού',
-            'tourist_minibus': 'Τουριστικό Minibus'
-        },
+            'tourist_minibus': 'Τουριστικό Minibus'},
         'bus': {
             'city_bus': 'Αστικό Λεωφορείο',
             'intercity_bus': 'Υπεραστικό Λεωφορείο',
@@ -1100,8 +1101,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Συνάρτηση ενημέρωσης των δεικτών
-    function updateVehicleExperienceIndexes()
-    {
+    function updateVehicleExperienceIndexes() {
         const vehicleEntries = vehicleExperienceContainer.querySelectorAll('.vehicle-experience-entry');
 
         vehicleEntries.forEach((entry, index) => {
@@ -1132,24 +1132,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Ενημέρωση του ID του container υποκατηγοριών
             const subcategoryContainer = entry.querySelector('.vehicle-subcategory-container');
-        if (subcategoryContainer) {
-            subcategoryContainer.id = `subcategory - container - ${index}`;
-        }
+            if (subcategoryContainer) {
+                subcategoryContainer.id = `subcategory-container-${index}`;
+            }
 
             // Ενημέρωση του data-index του κουμπιού αφαίρεσης
             const removeButton = entry.querySelector('.btn-remove-vehicle');
-        if (removeButton) {
-            removeButton.setAttribute('data-index', index);
-        }
+            if (removeButton) {
+                removeButton.setAttribute('data-index', index);
+            }
         });
     }
 
     // Συνάρτηση για τη συμπλήρωση των τύπων οχημάτων με βάση την κατηγορία
-    function populateVehicleTypes(categorySelect)
-    {
+    function populateVehicleTypes(categorySelect) {
         const selectedCategory = categorySelect.value;
         const entryIndex = categorySelect.getAttribute('data-index');
-        const typeSelect = document.querySelector(`#subcategory - container - ${entryIndex} .vehicle - type - select`);
+        const typeSelect = document.querySelector(`#subcategory-container-${entryIndex} .vehicle-type-select`);
 
         // Καθαρισμός των υπαρχουσών επιλογών
         typeSelect.innerHTML = '<option value="">Επιλέξτε τύπο...</option>';
@@ -1168,8 +1167,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Συνάρτηση αφαίρεσης εμπειρίας οχήματος
-    function removeVehicleExperience()
-    {
+    function removeVehicleExperience() {
         const entryToRemove = this.closest('.vehicle-experience-entry');
         if (entryToRemove) {
             // Αφαίρεση της εμπειρίας
@@ -1187,70 +1185,69 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Συνάρτηση προσθήκης νέας εμπειρίας οχήματος
-    function addVehicleExperience()
-    {
+    function addVehicleExperience() {
         const vehicleEntries = vehicleExperienceContainer.querySelectorAll('.vehicle-experience-entry');
         const newIndex = vehicleEntries.length;
 
         const newEntry = document.createElement('div');
         newEntry.className = 'vehicle-experience-entry';
         newEntry.innerHTML = `
-            < div class = "form-row" >
-                < div class = "form-group" >
-                    < label > Κατηγορία Οχήματος: < / label >
-                    < select name = "vehicle_experience[${newIndex}][vehicle_category]" class = "vehicle-category-select" data - index = "${newIndex}" >
-                        < option value = "" > Επιλέξτε κατηγορία... < / option >
-                        < optgroup label = "Μεταφορά Εμπορευμάτων" >
-                            < option value = "lcv" > Ελαφρά Επαγγελματικά Οχήματα(έως 3.5 τόνους) < / option >
-                            < option value = "rigid_truck" > Μεσαία & Βαρέα Φορτηγά < / option >
-                            < option value = "articulated" > Αρθρωτά / Συρόμενα Οχήματα < / option >
-                        <  / optgroup >
-                        < optgroup label = "Μεταφορά Επιβατών" >
-                            < option value = "taxi" > Ταξί < / option >
-                            < option value = "minibus" > Μικρό Λεωφορείο(έως 16 + 1 θέσεις) < / option >
-                            < option value = "bus" > Λεωφορεία & Πούλμαν < / option >
-                        <  / optgroup >
-                        < optgroup label = "Ειδικά Οχήματα" >
-                            < option value = "utility" > Οχήματα Δημοτικά / Κοινής Ωφέλειας < / option >
-                            < option value = "construction" > Οχήματα Έργων / Κατασκευών < / option >
-                            < option value = "emergency" > Οχήματα Έκτακτης Ανάγκης < / option >
-                            < option value = "specialized" > Άλλα Εξειδικευμένα Οχήματα < / option >
-                        <  / optgroup >
-                    <  / select >
-                <  / div >
-            <  / div >
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Κατηγορία Οχήματος:</label>
+                    <select name="vehicle_experience[${newIndex}][vehicle_category]" class="vehicle-category-select" data-index="${newIndex}">
+                        <option value="">Επιλέξτε κατηγορία...</option>
+                        <optgroup label="Μεταφορά Εμπορευμάτων">
+                            <option value="lcv">Ελαφρά Επαγγελματικά Οχήματα (έως 3.5 τόνους)</option>
+                            <option value="rigid_truck">Μεσαία & Βαρέα Φορτηγά</option>
+                            <option value="articulated">Αρθρωτά/Συρόμενα Οχήματα</option>
+                        </optgroup>
+                        <optgroup label="Μεταφορά Επιβατών">
+                            <option value="taxi">Ταξί</option>
+                            <option value="minibus">Μικρό Λεωφορείο (έως 16+1 θέσεις)</option>
+                            <option value="bus">Λεωφορεία & Πούλμαν</option>
+                        </optgroup>
+                        <optgroup label="Ειδικά Οχήματα">
+                            <option value="utility">Οχήματα Δημοτικά/Κοινής Ωφέλειας</option>
+                            <option value="construction">Οχήματα Έργων/Κατασκευών</option>
+                            <option value="emergency">Οχήματα Έκτακτης Ανάγκης</option>
+                            <option value="specialized">Άλλα Εξειδικευμένα Οχήματα</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
 
-            < div class = "form-row vehicle-subcategory-container" id = "subcategory-container-${newIndex}" >
-                < div class = "form-group" >
-                    < label > Τύπος Οχήματος: < / label >
-                    < select name = "vehicle_experience[${newIndex}][vehicle_type]" class = "vehicle-type-select" >
-                        < option value = "" > Επιλέξτε πρώτα κατηγορία... < / option >
-                    <  / select >
-                <  / div >
-            <  / div >
+            <div class="form-row vehicle-subcategory-container" id="subcategory-container-${newIndex}">
+                <div class="form-group">
+                    <label>Τύπος Οχήματος:</label>
+                    <select name="vehicle_experience[${newIndex}][vehicle_type]" class="vehicle-type-select">
+                        <option value="">Επιλέξτε πρώτα κατηγορία...</option>
+                    </select>
+                </div>
+            </div>
 
-            < div class = "form-row" >
-                < div class = "form-group" >
-                    < label > Έτη Εμπειρίας: < / label >
-                    < input type = "number" name = "vehicle_experience[${newIndex}][years]" min = "0" max = "50" value = "0" >
-                <  / div >
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Έτη Εμπειρίας:</label>
+                    <input type="number" name="vehicle_experience[${newIndex}][years]" min="0" max="50" value="0">
+                </div>
 
-                < div class = "form-group" >
-                    < label > Περίοδος: < / label >
-                    < div class = "date-range" >
-                        < input type = "month" name = "vehicle_experience[${newIndex}][start_date]" placeholder = "Από" >
-                        < span > έως < / span >
-                        < input type = "month" name = "vehicle_experience[${newIndex}][end_date]" placeholder = "Έως" >
-                    <  / div >
-                <  / div >
-            <  / div >
+                <div class="form-group">
+                    <label>Περίοδος:</label>
+                    <div class="date-range">
+                        <input type="month" name="vehicle_experience[${newIndex}][start_date]" placeholder="Από">
+                        <span>έως</span>
+                        <input type="month" name="vehicle_experience[${newIndex}][end_date]" placeholder="Έως">
+                    </div>
+                </div>
+            </div>
 
-            < div class = "form-group" >
-                < label > Περιγραφή Καθηκόντων: < / label >
-                < textarea name = "vehicle_experience[${newIndex}][description]" rows = "2" > < / textarea >
-            <  / div >
+            <div class="form-group">
+                <label>Περιγραφή Καθηκόντων:</label>
+                <textarea name="vehicle_experience[${newIndex}][description]" rows="2"></textarea>
+            </div>
 
-            < button type = "button" class = "btn-remove-vehicle" data - index = "${newIndex}" > Αφαίρεση < / button >
+            <button type="button" class="btn-remove-vehicle" data-index="${newIndex}">Αφαίρεση</button>
         `;
 
         vehicleExperienceContainer.appendChild(newEntry);
@@ -1264,7 +1261,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Προσθήκη listener για την αλλαγή κατηγορίας
         const categorySelect = newEntry.querySelector('.vehicle-category-select');
         if (categorySelect) {
-            categorySelect.addEventListener('change', function () {
+            categorySelect.addEventListener('change', function() {
                 populateVehicleTypes(this);
             });
         }
@@ -1284,18 +1281,19 @@ document.addEventListener('DOMContentLoaded', function () {
     // Προσθήκη listeners για τις υπάρχουσες επιλογές κατηγορίας
     const categorySelects = document.querySelectorAll('.vehicle-category-select');
     categorySelects.forEach(select => {
-        select.addEventListener('change', function () {
+        select.addEventListener('change', function() {
             populateVehicleTypes(this);
         });
 
         // Αρχικοποίηση των τύπων οχημάτων εάν υπάρχει ήδη επιλεγμένη κατηγορία
-    if (select.value) {
-        populateVehicleTypes(select);
-    }
+        if (select.value) {
+            populateVehicleTypes(select);
+        }
     });
 });
+
 // Προσθήκη tooltip για τις υποειδικότητες
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     // Συλλογή όλων των κωδικών υποειδικοτήτων
     const subspecialityCodes = document.querySelectorAll('.subspeciality-code');
 

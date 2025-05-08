@@ -1,3 +1,4 @@
+```php
 <?php
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/header.php';
@@ -382,7 +383,6 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                             // Καθορισμός των κατηγοριών αδειών οδήγησης και ομαδοποίησή τους
                                             $licenseCategories = [
                                                 'Δίκυκλα' => [
-                                                    ['type' => 'AM', 'desc' => 'Μοτοποδήλατα', 'hasPei' => false],
                                                     ['type' => 'AM', 'desc' => 'Μοτοποδήλατα', 'hasPei' => false],
                                                     ['type' => 'A1', 'desc' => 'Μοτοσυκλέτες έως 125 cc', 'hasPei' => false],
                                                     ['type' => 'A2', 'desc' => 'Μοτοσυκλέτες έως 35 kW', 'hasPei' => false],
