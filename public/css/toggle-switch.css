@@ -1,0 +1,127 @@
+/* Στυλ για το toggle switch */
+.toggle-switch-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.toggle-label-text {
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.toggle-switch-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.toggle-switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+.toggle-switch-input:checked + .toggle-switch-slider {
+    background-color: #2196F3;
+}
+
+.toggle-switch-input:focus + .toggle-switch-slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+.toggle-switch-input:checked + .toggle-switch-slider:before {
+    transform: translateX(26px);
+}
+
+.toggle-switch-text {
+    margin-left: 10px;
+}
+
+/* Στυλ για το container του toggle */
+.toggle-container {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+/* Στυλ για το container του ποινικού μητρώου */
+.criminal-record-upload {
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.criminal-record-upload .file-upload-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.criminal-record-upload input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.criminal-record-upload .current-file {
+    margin-top: 10px;
+    padding: 5px;
+    background-color: #e9f7fe;
+    border-radius: 4px;
+}
+
+.criminal-record-upload .current-file a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.criminal-record-upload .current-file a:hover {
+    text-decoration: underline;
+}
+
+/* Προσαρμογή για μικρότερες οθόνες */
+@media (max-width: 768px) {
+    .toggle-switch-label {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .toggle-label-text {
+        margin-bottom: 10px;
+    }
+    
+    .toggle-switch-text {
+        margin-top: 10px;
+        margin-left: 0;
+    }
+}

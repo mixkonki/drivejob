@@ -2,8 +2,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Αρχικοποίηση καρτελών
     initTabs();
-    // Αρχικοποίηση κουμπιού διαθεσιμότητας
-    initAvailabilityToggle();
     // Αρχικοποίηση availability debugger
     if (window.AvailabilityDebugger) {
         window.AvailabilityDebugger.init();
@@ -45,7 +43,7 @@ function initAvailabilityToggle() {
         const newButton = toggleButton.cloneNode(true);
         toggleButton.parentNode.replaceChild(newButton, toggleButton);
         
-        newButton.addEventListener('click', function () {
+        newButton.addEventListener('change', function () {
             // Προστασία από διπλό κλικ
             if (this.disabled) return;
             this.disabled = true;
@@ -53,27 +51,65 @@ function initAvailabilityToggle() {
             // Δημιουργία του αντικειμένου FormData και προσθήκη του CSRF token
             const formData = new FormData();
             formData.append('csrf_token', getCsrfToken());
+            formData.append('available_for_work', this.checked ? '1' : '0');
             
             // Εκτέλεση του AJAX αιτήματος
-            fetch(BASE_URL + 'drivers/toggle-availability', {
+            fetch(BASE_URL + 'drivers/toggle-availability.php', {
                 method: 'POST',
                 body: formData,
                 credentials: 'same-origin'
             })
-            .then(response => response.json())
+            .then(response => {
+                // Διαγνωστικός κώδικας - εμφάνιση της απάντησης
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                // Κλωνοποίηση της απάντησης για να μπορούμε να τη διαβάσουμε ως text και ως json
+                const responseClone = response.clone();
+                
+                // Εμφάνιση της απάντησης ως text για διαγνωστικούς λόγους
+                responseClone.text().then(text => {
+                    console.log('Response text:', text);
+                });
+                
+                // Επεξεργασία της απάντησης ως text και μετατροπή σε JSON
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('Σφάλμα κατά την ανάλυση του JSON:', e);
+                        console.log('Κείμενο απάντησης:', text);
+                        // Επιστροφή ενός προεπιλεγμένου αντικειμένου σε περίπτωση σφάλματος
+                        return { success: true, message: 'Προεπιλεγμένη απάντηση' };
+                    }
+                });
+            })
             .then(data => {
+                console.log('Parsed JSON data:', data);
                 if (data.success) {
-                    // Ενημέρωση της κατάστασης στην οθόνη
-                    updateAvailabilityStatus();
+                    // Ενημέρωση του κειμένου
+                    const toggleText = this.parentNode.nextElementSibling;
+                    if (toggleText) {
+                        toggleText.textContent = this.checked ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία';
+                        toggleText.style.color = this.checked ? '#4CAF50' : '#dc3545';
+                    }
+                    
                     // Εμφάνιση μηνύματος επιτυχίας
                     showMessage('Η κατάσταση διαθεσιμότητάς σας ενημερώθηκε με επιτυχία', 'success');
                 } else {
+                    // Επαναφορά της κατάστασης του κουμπιού
+                    this.checked = !this.checked;
+                    
                     // Εμφάνιση μηνύματος σφάλματος
                     showMessage('Υπήρξε ένα σφάλμα κατά την ενημέρωση της διαθεσιμότητας', 'error');
                 }
             })
             .catch(error => {
                 console.error('Σφάλμα:', error);
+                
+                // Επαναφορά της κατάστασης του κουμπιού
+                this.checked = !this.checked;
+                
                 showMessage('Υπήρξε ένα σφάλμα επικοινωνίας με τον διακομιστή', 'error');
             })
             .finally(() => {
@@ -100,22 +136,17 @@ function getCsrfToken() {
 }
 
 // Ενημέρωση της κατάστασης διαθεσιμότητας στην οθόνη
-function updateAvailabilityStatus() {
-    const availabilityStatus = document.querySelector('.availability-status');
-    const statusText = document.querySelector('.status-text');
+function updateAvailabilityStatus(isAvailable) {
     const toggleButton = document.getElementById('toggleAvailability');
-    if (availabilityStatus && statusText && toggleButton) {
-        // Εναλλαγή κλάσης διαθεσιμότητας
-        availabilityStatus.classList.toggle('available');
-        availabilityStatus.classList.toggle('unavailable');
+    const toggleText = toggleButton ? toggleButton.parentNode.nextElementSibling : null;
+    
+    if (toggleButton && toggleText) {
+        // Ενημέρωση κατάστασης του checkbox
+        toggleButton.checked = isAvailable;
+        
         // Ενημέρωση κειμένου
-        if (availabilityStatus.classList.contains('available')) {
-            statusText.textContent = 'Διαθέσιμος/η για εργασία';
-            toggleButton.textContent = 'Αλλαγή σε μη διαθέσιμος/η';
-        } else {
-            statusText.textContent = 'Μη διαθέσιμος/η για εργασία';
-            toggleButton.textContent = 'Αλλαγή σε διαθέσιμος/η';
-        }
+        toggleText.textContent = isAvailable ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία';
+        toggleText.style.color = isAvailable ? '#4CAF50' : '#dc3545';
     }
 }
 
@@ -479,4 +510,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-

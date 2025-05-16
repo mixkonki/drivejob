@@ -7,6 +7,7 @@ include ROOT_DIR . '/src/Views/header.php';
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-skills-css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/expiring-licenses-css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-rating-profile.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/toggle-switch.css">
 
 
 <script>
@@ -339,26 +340,26 @@ include ROOT_DIR . '/src/Views/header.php';
                                                 <span>Πιστοποιητικό ADR</span>
                                             </td>
                                             <td>
-                                                <?php if (isset($driverData['adr_certificate']) && $driverData['adr_certificate']) : ?>
-                                                    <div><strong>Αριθμός:</strong> <?php echo htmlspecialchars($driverData['adr_certificate_number'] ?? 'Εγγεγραμμένο'); ?></div>
-                                                    <?php if (isset($driverData['adr_classes']) && $driverData['adr_classes']) : ?>
-                                                        <div><strong>Κατηγορία:</strong> <?php echo htmlspecialchars($driverData['adr_classes']); ?></div>
+                                                <?php if (isset($driverADR) && $driverADR): ?>
+                                                    <div><strong>Αριθμός:</strong> <?php echo htmlspecialchars($driverADR['certificate_number'] ?? 'Εγγεγραμμένο'); ?></div>
+                                                    <?php if (!empty($driverADR['adr_type'])): ?>
+                                                        <div><strong>Κατηγορία:</strong> <?php echo htmlspecialchars($driverADR['adr_type']); ?></div>
                                                     <?php endif; ?>
-                                                <?php else : ?>
+                                                <?php else: ?>
                                                     <span class="not-available">Δεν διαθέτει</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if (isset($driverData['adr_certificate_expiry']) && $driverData['adr_certificate_expiry']) : ?>
-                                                    <span class="expiry-date"><?php echo date('d/m/Y', strtotime($driverData['adr_certificate_expiry'])); ?></span>
+                                                <?php if (isset($driverADR['expiry_date']) && $driverADR['expiry_date']) : ?>
+                                                    <span class="expiry-date"><?php echo date('d/m/Y', strtotime($driverADR['expiry_date'])); ?></span>
                                                 <?php else : ?>
                                                     <span class="not-available">Δεν έχει οριστεί</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if (isset($driverData['adr_certificate_expiry']) && $driverData['adr_certificate_expiry']) :
-                                                    $isExpired = strtotime($driverData['adr_certificate_expiry']) < time();
-                                                    $expiresInThreeMonths = !$isExpired && (strtotime($driverData['adr_certificate_expiry']) - time()) < 60 * 60 * 24 * 90;
+                                                <?php if (isset($driverADR['expiry_date']) && $driverADR['expiry_date']) :
+                                                    $isExpired = strtotime($driverADR['expiry_date']) < time();
+                                                    $expiresInThreeMonths = !$isExpired && (strtotime($driverADR['expiry_date']) - time()) < 60 * 60 * 24 * 90;
                                                 ?>
                                                     <span class="status-indicator <?php echo $isExpired ? 'expired' : ($expiresInThreeMonths ? 'expiring-soon' : 'valid'); ?>">
                                                         <?php
@@ -384,24 +385,24 @@ include ROOT_DIR . '/src/Views/header.php';
                                                 <span>Κάρτα Ταχογράφου</span>
                                             </td>
                                             <td>
-                                                <?php if (isset($driverData['tachograph_card']) && $driverData['tachograph_card']) : ?>
-                                                    <div><strong>Αριθμός:</strong> <?php echo htmlspecialchars($driverData['tachograph_card_number'] ?? 'Εγγεγραμμένο'); ?></div>
+                                                <?php if (isset($driverTachograph) && $driverTachograph) : ?>
+                                                    <div><strong>Αριθμός:</strong> <?php echo htmlspecialchars($driverTachograph['card_number'] ?? 'Εγγεγραμμένο'); ?></div>
                                                     <div><strong>Κατηγορία:</strong> Ψηφιακή κάρτα ταχογράφου</div>
                                                 <?php else : ?>
                                                     <span class="not-available">Δεν διαθέτει</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if (isset($driverData['tachograph_card_expiry']) && $driverData['tachograph_card_expiry']) : ?>
-                                                    <span class="expiry-date"><?php echo date('d/m/Y', strtotime($driverData['tachograph_card_expiry'])); ?></span>
+                                                <?php if (isset($driverTachograph['expiry_date']) && $driverTachograph['expiry_date']) : ?>
+                                                    <span class="expiry-date"><?php echo date('d/m/Y', strtotime($driverTachograph['expiry_date'])); ?></span>
                                                 <?php else : ?>
                                                     <span class="not-available">Δεν έχει οριστεί</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if (isset($driverData['tachograph_card_expiry']) && $driverData['tachograph_card_expiry']) :
-                                                    $isExpired = strtotime($driverData['tachograph_card_expiry']) < time();
-                                                    $expiresInThreeMonths = !$isExpired && (strtotime($driverData['tachograph_card_expiry']) - time()) < 60 * 60 * 24 * 90;
+                                                <?php if (isset($driverTachograph['expiry_date']) && $driverTachograph['expiry_date']) :
+                                                    $isExpired = strtotime($driverTachograph['expiry_date']) < time();
+                                                    $expiresInThreeMonths = !$isExpired && (strtotime($driverTachograph['expiry_date']) - time()) < 60 * 60 * 24 * 90;
                                                 ?>
                                                     <span class="status-indicator <?php echo $isExpired ? 'expired' : ($expiresInThreeMonths ? 'expiring-soon' : 'valid'); ?>">
                                                         <?php
@@ -423,7 +424,6 @@ include ROOT_DIR . '/src/Views/header.php';
                                         <!-- Άδεια Χειριστή Μηχανημάτων Έργου -->
                                         <tr>
                                             <td class="qualification-type">
-
                                                 <span>Άδεια Χειριστή</span>
                                             </td>
                                             <td>
@@ -496,6 +496,35 @@ include ROOT_DIR . '/src/Views/header.php';
                                                             <?php endforeach; ?>
                                                         </div>
                                                     </div>
+                                                <?php else : ?>
+                                                    <span class="not-available">Δεν έχουν καταχωρηθεί υποειδικότητες</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if (isset($driverOperator) && isset($driverOperator['expiry_date']) && $driverOperator['expiry_date']) : ?>
+                                                    <span class="expiry-date"><?php echo date('d/m/Y', strtotime($driverOperator['expiry_date'])); ?></span>
+                                                <?php else : ?>
+                                                    <span class="not-available">Δεν έχει οριστεί</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if (isset($driverOperator) && isset($driverOperator['expiry_date']) && $driverOperator['expiry_date']) :
+                                                    $isExpired = strtotime($driverOperator['expiry_date']) < time();
+                                                    $expiresInThreeMonths = !$isExpired && (strtotime($driverOperator['expiry_date']) - time()) < 60 * 60 * 24 * 90;
+                                                ?>
+                                                    <span class="status-indicator <?php echo $isExpired ? 'expired' : ($expiresInThreeMonths ? 'expiring-soon' : 'valid'); ?>">
+                                                        <?php
+                                                        if ($isExpired) {
+                                                            echo "Μη έγκυρη";
+                                                        } elseif ($expiresInThreeMonths) {
+                                                            echo "Λήγει σύντομα";
+                                                        } else {
+                                                            echo "Έγκυρη";
+                                                        }
+                                                        ?>
+                                                    </span>
+                                                <?php else : ?>
+                                                    <span class="not-available">-</span>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
@@ -503,10 +532,9 @@ include ROOT_DIR . '/src/Views/header.php';
                                         <!-- Ειδικές Άδειες -->
                                         <tr>
                                             <td class="qualification-type">
-
                                                 <span>Ειδικές Άδειες</span>
                                             </td>
-                                            <td colspan="3">
+                                            <td>
                                                 <?php
                                                 // Ελέγχουμε αν υπάρχουν ειδικές άδειες
                                                 if (isset($driverSpecialLicenses) && !empty($driverSpecialLicenses)) :
@@ -518,9 +546,6 @@ include ROOT_DIR . '/src/Views/header.php';
                                                                     <strong><?php echo htmlspecialchars($specialLicense['license_type']); ?></strong>
                                                                     <?php if (!empty($specialLicense['license_number'])) : ?>
                                                                         - Αρ: <?php echo htmlspecialchars($specialLicense['license_number']); ?>
-                                                                    <?php endif; ?>
-                                                                    <?php if (!empty($specialLicense['expiry_date'])) : ?>
-                                                                        - Λήξη: <?php echo date('d/m/Y', strtotime($specialLicense['expiry_date'])); ?>
                                                                     <?php endif; ?>
                                                                     <?php if (!empty($specialLicense['details'])) : ?>
                                                                         <div class="special-license-details">
@@ -535,6 +560,38 @@ include ROOT_DIR . '/src/Views/header.php';
                                                     <span class="not-available">Δεν έχουν καταχωρηθεί ειδικές άδειες</span>
                                                 <?php endif; ?>
                                             </td>
+                                            <td>
+                                                <?php
+                                                // Εμφάνιση της ημερομηνίας λήξης της πρώτης ειδικής άδειας (αν υπάρχει)
+                                                if (isset($driverSpecialLicenses) && !empty($driverSpecialLicenses) && !empty($driverSpecialLicenses[0]['expiry_date'])) :
+                                                ?>
+                                                    <span class="expiry-date"><?php echo date('d/m/Y', strtotime($driverSpecialLicenses[0]['expiry_date'])); ?></span>
+                                                <?php else : ?>
+                                                    <span class="not-available">Δεν έχει οριστεί</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                // Έλεγχος εγκυρότητας της πρώτης ειδικής άδειας (αν υπάρχει)
+                                                if (isset($driverSpecialLicenses) && !empty($driverSpecialLicenses) && !empty($driverSpecialLicenses[0]['expiry_date'])) :
+                                                    $isExpired = strtotime($driverSpecialLicenses[0]['expiry_date']) < time();
+                                                    $expiresInThreeMonths = !$isExpired && (strtotime($driverSpecialLicenses[0]['expiry_date']) - time()) < 60 * 60 * 24 * 90;
+                                                ?>
+                                                    <span class="status-indicator <?php echo $isExpired ? 'expired' : ($expiresInThreeMonths ? 'expiring-soon' : 'valid'); ?>">
+                                                        <?php
+                                                        if ($isExpired) {
+                                                            echo "Μη έγκυρη";
+                                                        } elseif ($expiresInThreeMonths) {
+                                                            echo "Λήγει σύντομα";
+                                                        } else {
+                                                            echo "Έγκυρη";
+                                                        }
+                                                        ?>
+                                                    </span>
+                                                <?php else : ?>
+                                                    <span class="not-available">-</span>
+                                                <?php endif; ?>
+                                            </td>
                                         </tr>
 
 
@@ -547,52 +604,16 @@ include ROOT_DIR . '/src/Views/header.php';
                     </div>
 
                     <div class="profile-sidebar">
-                        <!-- Ενότητα Διαθεσιμότητας και Προτιμήσεων -->
+                        <!-- Ενότητα Διαθεσιμότητας -->
                         <section class="profile-section availability-section">
-                            <h2>Διαθεσιμότητα Εργασίας</h2>
-                            <div class="availability-indicator">
-                                <div class="availability-status <?php echo $driverData['available_for_work'] ? 'available' : 'unavailable'; ?>">
-                                    <span class="status-dot"></span>
-                                    <span class="status-text">
-                                        <?php echo $driverData['available_for_work'] ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία'; ?>
-                                    </span>
-                                </div>
+                            <h3>Κατάσταση Διαθεσιμότητας</h3>
+                            <div class="availability-status <?php echo $driverData['available_for_work'] ? 'available' : 'unavailable'; ?>">
+                                <span class="status-icon"></span>
+                                <span class="status-text">
+                                    <?php echo $driverData['available_for_work'] ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία'; ?>
+                                </span>
                             </div>
-
-                            <div class="availability-actions">
-                                <button id="toggleAvailability" class="btn-secondary"><?php echo $driverData['available_for_work'] ? 'Αλλαγή σε μη διαθέσιμος/η' : 'Αλλαγή σε διαθέσιμος/η'; ?></button>
-                            </div>
-                        </section>
-
-                        <!-- Ενότητα Προτιμήσεων Εργασίας -->
-                        <section class="profile-section">
-                            <h2>Προτιμήσεις Εργασίας</h2>
-                            <ul class="preferences-list">
-                                <?php if (isset($driverData['preferred_job_type']) && $driverData['preferred_job_type']) : ?>
-                                    <li>
-                                        <strong>Προτιμώμενος τύπος εργασίας:</strong>
-                                        <span><?php echo htmlspecialchars($driverData['preferred_job_type']); ?></span>
-                                    </li>
-                                <?php endif; ?>
-                                <?php if (isset($driverData['preferred_location']) && $driverData['preferred_location']) : ?>
-                                    <li>
-                                        <strong>Προτιμώμενη τοποθεσία:</strong>
-                                        <span><?php echo htmlspecialchars($driverData['preferred_location']); ?></span>
-                                    </li>
-                                <?php endif; ?>
-                                <?php if (isset($driverData['preferred_radius']) && $driverData['preferred_radius']) : ?>
-                                    <li>
-                                        <strong>Ακτίνα αναζήτησης:</strong>
-                                        <span><?php echo htmlspecialchars($driverData['preferred_radius']); ?> χλμ</span>
-                                    </li>
-                                <?php endif; ?>
-                                <?php if (isset($driverData['salary_expectations']) && $driverData['salary_expectations']) : ?>
-                                    <li>
-                                        <strong>Μισθολογικές προσδοκίες:</strong>
-                                        <span><?php echo htmlspecialchars($driverData['salary_expectations']); ?> €</span>
-                                    </li>
-                                <?php endif; ?>
-                            </ul>
+                            <p class="availability-note">Μπορείτε να αλλάξετε την κατάσταση διαθεσιμότητάς σας από την <a href="<?php echo BASE_URL; ?>drivers/edit-profile">επεξεργασία προφίλ</a>.</p>
                         </section>
                         <!-- Τμήμα Σχετικά με εμένα -->
                         <section class="profile-section">
@@ -664,87 +685,123 @@ include ROOT_DIR . '/src/Views/header.php';
                 <!-- Προσωπικά Στοιχεία -->
                 <div class="personal-details-section">
                     <h3>Προσωπικά Στοιχεία</h3>
-                    <div class="personal-details-list">
-                        <?php if (isset($driverData['birth_date']) && $driverData['birth_date']) : ?>
-                            <div class="personal-detail-item">
-                                <div class="personal-detail-label">Ηλικία:</div>
-                                <div class="personal-detail-value">
-                                    <?php
-                                    $birthDate = new DateTime($driverData['birth_date']);
-                                    $now = new DateTime();
-                                    $age = $birthDate->diff($now)->y;
-                                    echo $age . ' ετών';
-                                    ?>
+                    <div class="skills-categories">
+                        <!-- Ηλικία -->
+                        <div class="skills-category">
+                            <div class="category-header">
+                                <div class="category-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/user_icon.png" alt="Ηλικία">
                                 </div>
+                                <h3>Ηλικία</h3>
                             </div>
-                        <?php endif; ?>
+                            <?php if (isset($driverData['birth_date']) && $driverData['birth_date']) :
+                                $birthDate = new DateTime($driverData['birth_date']);
+                                $now = new DateTime();
+                                $age = $birthDate->diff($now)->y;
+                            ?>
+                                <div class="skill-tag"><?php echo $age; ?> ετών</div>
+                            <?php else : ?>
+                                <p class="no-skills">Δεν έχει καταχωρηθεί</p>
+                            <?php endif; ?>
+                        </div>
 
-                        <?php if (isset($driverData['marital_status']) && $driverData['marital_status']) : ?>
-                            <div class="personal-detail-item">
-                                <div class="personal-detail-label">Οικογενειακή Κατάσταση:</div>
-                                <div class="personal-detail-value">
-                                    <?php
-                                    $maritalStatus = [
-                                        'single' => 'Άγαμος/η',
-                                        'married' => 'Έγγαμος/η',
-                                        'divorced' => 'Διαζευγμένος/η',
-                                        'widowed' => 'Χήρος/α'
-                                    ];
-                                    echo isset($maritalStatus[$driverData['marital_status']]) ? $maritalStatus[$driverData['marital_status']] : $driverData['marital_status'];
-                                    ?>
+                        <!-- Οικογενειακή Κατάσταση -->
+                        <div class="skills-category">
+                            <div class="category-header">
+                                <div class="category-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Οικογενειακή Κατάσταση">
                                 </div>
+                                <h3>Οικογενειακή Κατάσταση</h3>
                             </div>
-                        <?php endif; ?>
+                            <?php if (isset($driverData['marital_status']) && $driverData['marital_status']) :
+                                $maritalStatus = [
+                                    'single' => 'Άγαμος/η',
+                                    'married' => 'Έγγαμος/η',
+                                    'divorced' => 'Διαζευγμένος/η',
+                                    'widowed' => 'Χήρος/α',
+                                    'civil_partnership' => 'Σύμφωνο συμβίωσης',
+                                    'no_answer' => 'Δεν απαντώ'
+                                ];
+                                $statusText = isset($maritalStatus[$driverData['marital_status']]) ?
+                                    $maritalStatus[$driverData['marital_status']] : $driverData['marital_status'];
+                            ?>
+                                <div class="skill-tag"><?php echo $statusText; ?></div>
+                            <?php else : ?>
+                                <p class="no-skills">Δεν έχει καταχωρηθεί</p>
+                            <?php endif; ?>
+                        </div>
 
-                        <?php if (isset($driverData['education_level']) && $driverData['education_level']) : ?>
-                            <div class="personal-detail-item">
-                                <div class="personal-detail-label">Επίπεδο Εκπαίδευσης:</div>
-                                <div class="personal-detail-value">
-                                    <?php
-                                    $educationLevels = [
-                                        'primary' => 'Υποχρεωτική εκπαίδευση (Δημοτικό)',
-                                        'secondary_low' => 'Υποχρεωτική εκπαίδευση (Γυμνάσιο)',
-                                        'secondary_high' => 'Λύκειο',
-                                        'vocational_low' => 'Επαγγελματική Εκπαίδευση (Γυμνάσιο)',
-                                        'vocational' => 'Επαγγελματική Εκπαίδευση (Λύκειο)',
-                                        'iek' => 'Ινστιτούτο Επαγγελματικής Κατάρισης (ΙΕΚ)',
-                                        'tei' => 'Ανώτατο Τεχνολογικό Εκπαιδευτικό Ίδρυμα (ΑΤΕΙ)',
-                                        'university' => 'Ανώτατο Εκπαιδευτικό Ίδρυμα (ΑΕΙ)',
-                                        'postgraduate' => 'Μεταπτυχιακό',
-                                        'doctorate' => 'Διδακτορικό',
-                                        'no_answer' => 'Δεν απαντώ',
-                                    ];
-                                    echo isset($educationLevels[$driverData['education_level']]) ? $educationLevels[$driverData['education_level']] : $driverData['education_level'];
-                                    ?>
+                        <!-- Επίπεδο Εκπαίδευσης -->
+                        <div class="skills-category">
+                            <div class="category-header">
+                                <div class="category-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/training_icon.png" alt="Επίπεδο Εκπαίδευσης">
                                 </div>
+                                <h3>Επίπεδο Εκπαίδευσης</h3>
                             </div>
-                        <?php endif; ?>
+                            <?php if (isset($driverData['education_level']) && $driverData['education_level']) :
+                                $educationLevels = [
+                                    'primary' => 'Υποχρεωτική εκπαίδευση (Δημοτικό)',
+                                    'secondary_low' => 'Υποχρεωτική εκπαίδευση (Γυμνάσιο)',
+                                    'secondary_high' => 'Λύκειο',
+                                    'vocational_low' => 'Επαγγελματική Εκπαίδευση (Γυμνάσιο)',
+                                    'vocational' => 'Επαγγελματική Εκπαίδευση (Λύκειο)',
+                                    'iek' => 'Ινστιτούτο Επαγγελματικής Κατάρισης (ΙΕΚ)',
+                                    'tei' => 'Ανώτατο Τεχνολογικό Εκπαιδευτικό Ίδρυμα (ΑΤΕΙ)',
+                                    'university' => 'Ανώτατο Εκπαιδευτικό Ίδρυμα (ΑΕΙ)',
+                                    'postgraduate' => 'Μεταπτυχιακό',
+                                    'doctorate' => 'Διδακτορικό',
+                                    'no_answer' => 'Δεν απαντώ',
+                                ];
+                                $educationText = isset($educationLevels[$driverData['education_level']]) ?
+                                    $educationLevels[$driverData['education_level']] : $driverData['education_level'];
+                            ?>
+                                <div class="skill-tag"><?php echo $educationText; ?></div>
+                            <?php else : ?>
+                                <p class="no-skills">Δεν έχει καταχωρηθεί</p>
+                            <?php endif; ?>
+                        </div>
 
-                        <?php if (isset($driverData['military_service']) && $driverData['military_service']) : ?>
-                            <div class="personal-detail-item">
-                                <div class="personal-detail-label">Στρατιωτικές Υποχρεώσεις:</div>
-                                <div class="personal-detail-value">
-                                    <?php
-                                    $militaryStatus = [
-                                        'completed' => 'Εκπληρωμένες',
-                                        'exempt' => 'Απαλλαγή',
-                                        'postponed' => 'Αναβολή',
-                                        'not_applicable' => 'Δεν Εφαρμόζεται'
-                                    ];
-                                    echo isset($militaryStatus[$driverData['military_service']]) ? $militaryStatus[$driverData['military_service']] : $driverData['military_service'];
-                                    ?>
+                        <!-- Στρατιωτικές Υποχρεώσεις -->
+                        <div class="skills-category">
+                            <div class="category-header">
+                                <div class="category-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/license_icon.png" alt="Στρατιωτικές Υποχρεώσεις">
                                 </div>
+                                <h3>Στρατιωτικές Υποχρεώσεις</h3>
                             </div>
-                        <?php endif; ?>
+                            <?php if (isset($driverData['military_service']) && $driverData['military_service']) :
+                                $militaryStatus = [
+                                    'completed' => 'Εκπληρωμένες',
+                                    'exempt' => 'Απαλλαγή',
+                                    'postponed' => 'Αναβολή',
+                                    'unfulfilled' => 'Μη εκπληρωμένες',
+                                    'not_applicable' => 'Δεν απαιτείται',
+                                    'no_answer' => 'Δεν απαντώ'
+                                ];
+                                $militaryText = isset($militaryStatus[$driverData['military_service']]) ?
+                                    $militaryStatus[$driverData['military_service']] : $driverData['military_service'];
+                            ?>
+                                <div class="skill-tag"><?php echo $militaryText; ?></div>
+                            <?php else : ?>
+                                <p class="no-skills">Δεν έχει καταχωρηθεί</p>
+                            <?php endif; ?>
+                        </div>
 
-                        <?php if (isset($driverData['legal_status']) && $driverData['legal_status']) : ?>
-                            <div class="personal-detail-item">
-                                <div class="personal-detail-label">Λευκό Ποινικό Μητρώο:</div>
-                                <div class="personal-detail-value">
-                                    <?php echo ($driverData['legal_status'] == 'yes') ? 'Ναι' : 'Όχι'; ?>
+                        <!-- Ποινικό Μητρώο -->
+                        <div class="skills-category">
+                            <div class="category-header">
+                                <div class="category-icon">
+                                    <img src="<?php echo BASE_URL; ?>img/safety_icon.png" alt="Ποινικό Μητρώο">
                                 </div>
+                                <h3>Ποινικό Μητρώο</h3>
                             </div>
-                        <?php endif; ?>
+                            <?php if (isset($driverData['legal_status']) && $driverData['legal_status']) : ?>
+                                <div class="skill-tag"><?php echo ($driverData['legal_status'] == 'yes') ? 'Διαθέσιμο Ποινικό Μητρώο' : 'Όχι'; ?></div>
+                            <?php else : ?>
+                                <p class="no-skills">Δεν είναι διαθέσιμο</p>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
 
@@ -767,7 +824,8 @@ include ROOT_DIR . '/src/Views/header.php';
                                     'eco_driving' => 'Οικολογική Οδήγηση',
                                     'night_driving' => 'Νυχτερινή Οδήγηση',
                                     'mountain_driving' => 'Οδήγηση σε Ορεινές Περιοχές',
-                                    'extreme_conditions' => 'Οδήγηση σε Ακραίες Συνθήκες'
+                                    'extreme_conditions' => 'Οδήγηση σε Ακραίες Συνθήκες',
+                                    'precision_handling' => 'Ακρίβεια Χειρισμών'
                                 ];
 
                                 $hasDrivingSkills = false;
@@ -807,7 +865,9 @@ include ROOT_DIR . '/src/Views/header.php';
                                     'emergency_response' => 'Αντιμετώπιση Έκτακτων Καταστάσεων',
                                     'first_aid' => 'Πρώτες Βοήθειες',
                                     'dangerous_goods' => 'Διαχείριση Επικίνδυνων Εμπορευμάτων',
-                                    'tacograph_compliance' => 'Συμμόρφωση με Ταχογράφο'
+                                    'tacograph_compliance' => 'Συμμόρφωση με Ταχογράφο',
+                                    'fire_safety' => 'Πυρασφάλεια',
+                                    'vehicle_inspection' => 'Έλεγχος Οχημάτων'
                                 ];
 
                                 $hasSafetySkills = false;
@@ -847,7 +907,10 @@ include ROOT_DIR . '/src/Views/header.php';
                                     'time_management' => 'Διαχείριση Χρόνου',
                                     'route_planning' => 'Σχεδιασμός Διαδρομής',
                                     'conflict_resolution' => 'Επίλυση Συγκρούσεων',
-                                    'multilingual' => 'Πολύγλωσσος'
+                                    'multilingual' => 'Πολύγλωσσος',
+                                    'report_writing' => 'Σύνταξη Αναφορών',
+                                    'inspection_behavior' => 'Συμπεριφορά σε Έλεγχο',
+                                    'border_crossing' => 'Διέλευση Συνόρων'
                                 ];
 
                                 $hasProfessionalSkills = false;
@@ -887,7 +950,10 @@ include ROOT_DIR . '/src/Views/header.php';
                                     'troubleshooting' => 'Αντιμετώπιση Βλαβών',
                                     'digital_tachograph' => 'Ψηφιακός Ταχογράφος',
                                     'gps_systems' => 'Συστήματα GPS',
-                                    'logistics_software' => 'Λογισμικό Logistics'
+                                    'logistics_software' => 'Λογισμικό Logistics',
+                                    'technical_terms' => 'Γνώση Τεχνικών Όρων',
+                                    'equipment_handling' => 'Γνώση Χειρισμού Εξοπλισμού',
+                                    'checklists_usage' => 'Χρήση Λιστών Ελέγχου'
                                 ];
 
                                 $hasTechnicalSkills = false;
@@ -1183,33 +1249,22 @@ include ROOT_DIR . '/src/Views/header.php';
                                 <!-- Κουμπιά ενεργειών κάτω από την αξιολόγηση -->
                                 <div class="rating-actions">
                                     <a href="<?php echo BASE_URL; ?>drivers/driver-rating" class="btn-action">
-                                        <i class="action-icon rating-icon"></i>
+                                        <img src="<?php echo BASE_URL; ?>img/rating_icon.png" alt="Αναλυτική Βαθμολογία" class="action-icon">
                                         <span>Αναλυτική Βαθμολογία</span>
                                     </a>
                                     <a href="<?php echo BASE_URL; ?>drivers/incident-history" class="btn-action">
-                                        <i class="action-icon history-icon"></i>
+                                        <img src="<?php echo BASE_URL; ?>img/history_icon.png" alt="Ιστορικό Συμβάντων" class="action-icon">
                                         <span>Ιστορικό Συμβάντων</span>
                                     </a>
                                     <a href="<?php echo BASE_URL; ?>drivers/report-incident" class="btn-action">
-                                        <i class="action-icon report-icon"></i>
+                                        <img src="<?php echo BASE_URL; ?>img/report_icon.png" alt="Αναφορά Συμβάντος" class="action-icon">
                                         <span>Αναφορά Συμβάντος</span>
                                     </a>
                                     <a href="<?php echo BASE_URL; ?>drivers/update-assessment" class="btn-action">
-                                        <i class="action-icon assessment-icon"></i>
+                                        <img src="<?php echo BASE_URL; ?>img/assessment_icon.png" alt="Συμπλήρωση Αυτοαξιολόγησης" class="action-icon">
                                         <span>Συμπλήρωση Αυτοαξιολόγησης</span>
                                     </a>
                                 </div>
-                                <!-- Προώθηση εφαρμογής τηλεματικής (μόνο αν δεν υπάρχουν δεδομένα τηλεματικής) -->
-                                <?php if (!isset($telemetryData) || empty($telemetryData)) : ?>
-                                    <div class="telemetry-promotion">
-                                        <h3>Βελτιώστε τη βαθμολογία σας</h3>
-                                        <p>Κατεβάστε την εφαρμογή DriveJob Telemetry για αυτόματη παρακολούθηση της οδηγικής συμπεριφοράς σας.</p>
-                                        <a href="#" class="btn-app-download">
-                                            <img src="<?php echo BASE_URL; ?>img/app_download.png" alt="Κατέβασμα Εφαρμογής">
-                                            <span>Κατέβασμα Εφαρμογής</span>
-                                        </a>
-                                    </div>
-                                <?php endif; ?>
                                 <!-- Τομέας τηλεματικής αν υπάρχει -->
                                 <?php if (isset($telemetryData) && !empty($telemetryData)) : ?>
                                     <div class="telemetry-section">
@@ -1250,6 +1305,16 @@ include ROOT_DIR . '/src/Views/header.php';
 
                             <!-- Δεξιό τμήμα (1/4) με πρόσφατα συμβάντα -->
                             <div class="rating-side-column">
+                                <!-- Προώθηση εφαρμογής τηλεματικής -->
+                                <div class="telemetry-promotion">
+                                    <h3>Βελτιώστε τη βαθμολογία σας</h3>
+                                    <p>Κατεβάστε την εφαρμογή DriveJob Telemetry για αυτόματη παρακολούθηση της οδηγικής συμπεριφοράς σας.</p>
+                                    <a href="#" class="btn-app-download">
+                                        <img src="<?php echo BASE_URL; ?>img/app_download.png" alt="Κατέβασμα Εφαρμογής">
+                                        <span>Κατέβασμα Εφαρμογής</span>
+                                    </a>
+                                </div>
+
                                 <!-- Πρόσφατα συμβάντα -->
                                 <div class="recent-incidents">
                                     <h3>Πρόσφατα Συμβάντα</h3>

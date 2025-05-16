@@ -65,7 +65,7 @@ class ProfileModel extends BaseModel
             }
         }
 
-        return $this->update($data, ['id' => $id]);
+        return parent::update($data, ['id' => $id]);
     }
 
     /**
@@ -177,7 +177,7 @@ class ProfileModel extends BaseModel
      */
     public function delete($id)
     {
-        return $this->delete(['id' => $id]);
+        return parent::delete(['id' => $id]);
     }
 
     /**
@@ -211,6 +211,14 @@ class ProfileModel extends BaseModel
      * @param string $imagePath Διαδρομή εικόνας
      * @return bool Επιτυχία/αποτυχία
      */
+    /**
+     * Ενημερώνει την εικόνα ενός εγγράφου του οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param string $documentType Τύπος εγγράφου
+     * @param string $imagePath Διαδρομή εικόνας
+     * @return bool Επιτυχία/αποτυχία
+     */
     public function updateDriverDocumentImage($driverId, $documentType, $imagePath)
     {
         try {
@@ -223,12 +231,21 @@ class ProfileModel extends BaseModel
                 'operator_front_image',
                 'operator_back_image',
                 'tachograph_front_image',
-                'tachograph_back_image'
+                'tachograph_back_image',
+                'criminal_record_file'
             ];
 
             if (!in_array($documentType, $validDocTypes)) {
                 Logger::error('Invalid document type for image update: ' . $documentType);
                 return false;
+            }
+
+            // Αν είναι ποινικό μητρώο, ενημερώνουμε και το πεδίο legal_status
+            if ($documentType === 'criminal_record_file') {
+                return $this->update([
+                    $documentType => $imagePath,
+                    'legal_status' => 'yes'
+                ], ['id' => $driverId]);
             }
 
             return $this->update([$documentType => $imagePath], ['id' => $driverId]);

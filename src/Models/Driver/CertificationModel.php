@@ -72,9 +72,13 @@ class CertificationModel extends BaseModel
                     'driver_id' => $driverId,
                     'title' => $cert['title'],
                     'provider' => $cert['provider'] ?? null,
+                    'category' => $cert['category'] ?? null,
+                    'transport_type' => $cert['transport_type'] ?? 'both',
                     'date' => $cert['date'] ?? null,
                     'expiry' => $cert['expiry'] ?? null,
-                    'description' => $cert['description'] ?? null
+                    'duration' => $cert['duration'] ?? null,
+                    'description' => $cert['description'] ?? null,
+                    'certificate_file' => $cert['certificate_file'] ?? null
                 ];
 
                 $result = $this->insert($data);

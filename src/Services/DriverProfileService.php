@@ -124,6 +124,10 @@ class DriverProfileService
             $driver['average_rating'] = $this->ratingModel->getDriverRating($driverId);
             $driver['reviews'] = $this->ratingModel->getDriverReviews($driverId);
 
+            // Προσθήκη των πεδίων legal_status και criminal_record_file
+            $driver['legal_status'] = $driver['legal_status'] ?? null;
+            $driver['criminal_record_file'] = $driver['criminal_record_file'] ?? null;
+
             return $driver;
         } catch (PDOException $e) {
             Logger::error('Error in getDriverProfile: ' . $e->getMessage());
@@ -521,6 +525,23 @@ class DriverProfileService
             return $this->skillModel->updateDriverAssessment($driverId, $assessmentData);
         } catch (PDOException $e) {
             Logger::error('Error in updateDriverAssessment: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ενημέρωση πιστοποιητικών εκπαίδευσης οδηγού
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param array $certifications Δεδομένα πιστοποιητικών
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateDriverCertifications($driverId, $certifications)
+    {
+        try {
+            return $this->certificationModel->addDriverCertifications($driverId, $certifications);
+        } catch (PDOException $e) {
+            Logger::error('Error in updateDriverCertifications: ' . $e->getMessage());
             return false;
         }
     }

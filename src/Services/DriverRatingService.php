@@ -267,15 +267,15 @@ class DriverRatingService
             $telemetry = $this->skillModel->getDriverTelemetryData($driverId);
 
             if ($telemetry) {
-                // Η βαθμολογία τηλεματικής συμμετέχει με ποσοστό 25%
+                // Η βαθμολογία τηλεματικής συμμετέχει με ποσοστό 60%
                 $telemetryScore = $telemetry['score'];
             }
 
             // 5. Υπολογισμός της τελικής βαθμολογίας ασφάλειας
             // Αν δεν υπάρχουν δεδομένα τηλεματικής, η βαθμολογία περιστατικών έχει βάρος 100%
-            // Αν υπάρχουν, η βαθμολογία περιστατικών έχει βάρος 75%
+            // Αν υπάρχουν, η βαθμολογία τηλεματικής έχει βάρος 60% και η βαθμολογία περιστατικών 40%
             if ($telemetry) {
-                $safetyScore = ($incidentScore * 0.75) + ($telemetryScore * 0.25);
+                $safetyScore = ($incidentScore * 0.40) + ($telemetryScore * 0.60);
             } else {
                 $safetyScore = $incidentScore;
             }

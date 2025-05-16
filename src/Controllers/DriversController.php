@@ -80,11 +80,15 @@ class DriversController
     // Προσθήκη της μεθόδου collectFormData για το sanitization
     private function collectFormData()
     {
-        return [
-            'email' => $this->sanitize($_POST['email']), // Προσθήκη του email
-            'first_name' => $this->sanitize($_POST['first_name']),
-            'last_name' => $this->sanitize($_POST['last_name']),
-            'phone' => $this->sanitize($_POST['phone']),
+        // Λήψη του τρέχοντος οδηγού για να διατηρήσουμε την κατάσταση διαθεσιμότητας
+        $driverId = $_SESSION['user_id'];
+        $driverProfile = $this->driverProfileService->getDriverProfile($driverId);
+
+        $data = [
+            'email' => $this->sanitize($_POST['email'] ?? ''), // Προσθήκη του email
+            'first_name' => $this->sanitize($_POST['first_name'] ?? ''),
+            'last_name' => $this->sanitize($_POST['last_name'] ?? ''),
+            'phone' => $this->sanitize($_POST['phone'] ?? ''),
             'landline' => $this->sanitize($_POST['landline'] ?? ''),
             'birth_date' => $this->sanitizeDate($_POST['birth_date'] ?? null),
             'address' => $this->sanitize($_POST['address'] ?? ''),
@@ -116,7 +120,63 @@ class DriversController
             'military_service' => $this->sanitize($_POST['military_service'] ?? ''),
             'languages' => isset($_POST['languages']) ? implode(',', array_map([$this, 'sanitize'], $_POST['languages'])) : null,
             'language_notes' => $this->sanitize($_POST['language_notes'] ?? ''),
+            'legal_status' => $this->sanitize($_POST['legal_status'] ?? null), // Προσθήκη του πεδίου legal_status
         ];
+
+        // Καταγραφή για εντοπισμό σφαλμάτων
+        Logger::info("Επεξεργασία προφίλ οδηγού - legal_status: " . ($data['legal_status'] ?? 'null'));
+
+        // Καταγραφή των δεδομένων πριν την επεξεργασία
+        Logger::info("Δεδομένα φόρμας πριν την επεξεργασία:", [
+            'legal_status' => $data['legal_status'] ?? 'null',
+            'has_file' => isset($_FILES['criminal_record_file']) && $_FILES['criminal_record_file']['error'] === UPLOAD_ERR_OK ? 'yes' : 'no'
+        ]);
+
+        // Επεξεργασία του αρχείου ποινικού μητρώου
+        if (isset($_FILES['criminal_record_file']) && $_FILES['criminal_record_file']['error'] === UPLOAD_ERR_OK) {
+            // Βεβαιωνόμαστε ότι το legal_status είναι 'yes' αν ανεβάζουμε αρχείο
+            $data['legal_status'] = 'yes';
+            Logger::info("Ορισμός legal_status σε 'yes' λόγω ανεβάσματος αρχείου");
+
+            // Ανέβασμα του αρχείου
+            $uploadDir = ROOT_DIR . '/public/uploads/criminal_records/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $extension = pathinfo($_FILES['criminal_record_file']['name'], PATHINFO_EXTENSION);
+            $filename = 'criminal_record_' . $driverId . '_' . uniqid() . '.' . $extension;
+            $destination = $uploadDir . $filename;
+
+            if (move_uploaded_file($_FILES['criminal_record_file']['tmp_name'], $destination)) {
+                $data['criminal_record_file'] = 'uploads/criminal_records/' . $filename;
+                Logger::info("Αρχείο ποινικού μητρώου ανέβηκε επιτυχώς: " . $data['criminal_record_file']);
+            } else {
+                Logger::error("Αποτυχία ανεβάσματος αρχείου ποινικού μητρώου");
+            }
+        } else if ($data['legal_status'] === 'yes') {
+            // Αν το legal_status είναι 'yes' αλλά δεν ανεβάσαμε νέο αρχείο, ελέγχουμε αν υπάρχει ήδη αρχείο
+            if (isset($driverProfile['criminal_record_file']) && $driverProfile['criminal_record_file']) {
+                // Διατηρούμε το υπάρχον αρχείο
+                $data['criminal_record_file'] = $driverProfile['criminal_record_file'];
+                Logger::info("Διατήρηση υπάρχοντος αρχείου ποινικού μητρώου: " . $driverProfile['criminal_record_file']);
+            } else {
+                // Δεν υπάρχει αρχείο, αλλά το legal_status είναι 'yes'
+                Logger::warning("Το legal_status είναι 'yes' αλλά δεν υπάρχει αρχείο ποινικού μητρώου");
+            }
+        } else if ($data['legal_status'] === 'no') {
+            // Αν το legal_status είναι 'no', καθαρίζουμε το πεδίο του αρχείου
+            $data['criminal_record_file'] = null;
+            Logger::info("legal_status είναι 'no', καθαρισμός του πεδίου αρχείου ποινικού μητρώου");
+        }
+
+        // Καταγραφή των δεδομένων μετά την επεξεργασία
+        Logger::info("Δεδομένα φόρμας μετά την επεξεργασία:", [
+            'legal_status' => $data['legal_status'] ?? 'null',
+            'criminal_record_file' => $data['criminal_record_file'] ?? 'null'
+        ]);
+
+        return $data;
     }
 
     // Μέθοδοι sanitization
@@ -482,6 +542,37 @@ class DriversController
             }
         }
 
+        // *** ΠΡΟΣΘΗΚΗ ΓΙΑ ΠΡΟΣΦΑΤΑ ΣΥΜΒΑΝΤΑ ***
+        // Λήψη πρόσφατων συμβάντων
+        $recentIncidents = $this->incidentModel->getRecentIncidents($driverId, 3);
+
+        // *** ΠΡΟΣΘΗΚΗ ΓΙΑ ΒΑΘΜΟΛΟΓΙΑ ΟΔΗΓΟΥ ***
+        // Λήψη βαθμολογίας οδηγού
+        $driverRating = $this->ratingModel->getDriverRatingDetails($driverId);
+
+        // Αν δεν υπάρχει βαθμολογία, δημιουργούμε προεπιλεγμένη
+        if (!$driverRating) {
+            // Υπολογισμός και αποθήκευση της βαθμολογίας
+            $this->ratingService->updateDriverRating($driverId);
+            $driverRating = $this->ratingModel->getDriverRatingDetails($driverId);
+
+            // Αν ακόμα δεν υπάρχει, δημιουργούμε προεπιλεγμένη
+            if (!$driverRating) {
+                $driverRating = [
+                    'skills_score' => 0,
+                    'safety_score' => 0,
+                    'professionalism_score' => 0,
+                    'technical_score' => 0,
+                    'total_score' => 0,
+                    'last_updated' => date('Y-m-d H:i:s')
+                ];
+            }
+        }
+
+        // *** ΠΡΟΣΘΗΚΗ ΓΙΑ ΔΕΔΟΜΕΝΑ ΤΗΛΕΜΑΤΙΚΗΣ ***
+        // Λήψη δεδομένων τηλεματικής
+        $telemetryData = $this->skillModel->getDriverTelemetryData($driverId);
+
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/drivers/profile.php';
     }
@@ -666,6 +757,13 @@ class DriversController
         $driverId = $_SESSION['user_id'];
         $driverData = $this->profileModel->getDriverById($driverId);
 
+        // Λήψη πλήρους προφίλ του οδηγού με τη νέα υπηρεσία
+        $driverProfile = $this->driverProfileService->getDriverProfile($driverId);
+
+        // Λήψη των αδειών οδήγησης
+        $driverLicenses = $driverProfile['licenses'] ?? [];
+        $driverLicenseTypes = array_column($driverLicenses, 'license_type');
+
         // Λήψη της βαθμολογίας
         $driverRating = $this->ratingModel->getDriverRatingDetails($driverId);
 
@@ -686,6 +784,45 @@ class DriversController
                     'last_updated' => date('Y-m-d H:i:s')
                 ];
             }
+        }
+
+        // Έλεγχος για ΠΕΙ
+        $hasPeiC = false;
+        $hasPeiD = false;
+        $peiCExpiryDate = null;
+        $peiDExpiryDate = null;
+
+        if (!empty($driverLicenses)) {
+            foreach ($driverLicenses as $license) {
+                if (!empty($license['has_pei']) && $license['has_pei'] == 1) {
+                    if (in_array($license['license_type'], ['C', 'CE', 'C1', 'C1E'])) {
+                        $hasPeiC = true;
+                        if (!empty($license['pei_expiry_c'])) {
+                            $peiCExpiryDate = $license['pei_expiry_c'];
+                        }
+                    } else if (in_array($license['license_type'], ['D', 'DE', 'D1', 'D1E'])) {
+                        $hasPeiD = true;
+                        if (!empty($license['pei_expiry_d'])) {
+                            $peiDExpiryDate = $license['pei_expiry_d'];
+                        }
+                    }
+                }
+            }
+        }
+
+        // Λήψη δεδομένων κάρτας ταχογράφου
+        $driverTachograph = $driverProfile['tachograph_cards'][0] ?? null;
+
+        // Λήψη δεδομένων πιστοποιητικού ADR
+        $driverADR = $driverProfile['adr_certificates'][0] ?? null;
+
+        // Λήψη δεδομένων άδειας χειριστή
+        $driverOperator = $driverProfile['operator_licenses'][0] ?? null;
+
+        // Λήψη υποειδικοτήτων άδειας χειριστή
+        $operatorSubSpecialities = [];
+        if ($driverOperator) {
+            $operatorSubSpecialities = $driverOperator['sub_specialities'] ?? [];
         }
 
         // Λήψη δεδομένων τηλεματικής

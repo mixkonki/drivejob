@@ -13,5 +13,5 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role
 }
 
 // Δημιουργία του controller και κλήση της μεθόδου profile
-$controller = new \Drivejob\Controllers\DriversController($pdo);
+$controller = new \Drivejob\Controllers\NewDriversController($pdo);
 $controller->profile();

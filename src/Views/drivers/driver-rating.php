@@ -5,210 +5,521 @@ include ROOT_DIR . '/src/Views/header.php';
 
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-rating.css">
+<script src="<?php echo BASE_URL; ?>js/driver-rating-fix.js"></script>
+<script src="<?php echo BASE_URL; ?>js/driver-rating-update.js"></script>
 
 <main>
     <div class="container">
         <div class="page-header">
-            <h1>Βαθμολογία Οδηγού</h1>
-            <p>Η συνολική αξιολόγησή σας με βάση τα προσόντα, την ασφάλεια, τον επαγγελματισμό και τις τεχνικές σας δεξιότητες.</p>
+            <h1>Αξιολόγηση Οδηγού</h1>
         </div>
-        
+
         <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
                 <?php echo $_SESSION['success_message']; ?>
                 <?php unset($_SESSION['success_message']); ?>
             </div>
         <?php endif; ?>
-        
+
         <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
             </div>
         <?php endif; ?>
-        
+
+        <?php
+        // Ορισμός των μεταβλητών που λείπουν
+        $driverSkills = $driverProfile['skills'] ?? [];
+
+        // Ομαδοποίηση δεξιοτήτων ανά κατηγορία
+        $skillCategories = [
+            'Οδηγικές Ικανότητες' => [
+                'defensive_driving' => 'Αμυντική Οδήγηση',
+                'eco_driving' => 'Οικολογική Οδήγηση',
+                'night_driving' => 'Νυχτερινή Οδήγηση',
+                'mountain_driving' => 'Οδήγηση σε Ορεινές Περιοχές',
+                'extreme_conditions' => 'Οδήγηση σε Ακραίες Συνθήκες',
+                'precision_handling' => 'Ακρίβεια χειρισμών'
+            ],
+            'Ασφάλεια & Συμμόρφωση' => [
+                'loading_securing' => 'Φόρτωση & Ασφάλιση Φορτίου',
+                'emergency_response' => 'Αντιμετώπιση Έκτακτων Καταστάσεων',
+                'first_aid' => 'Πρώτες Βοήθειες',
+                'dangerous_goods' => 'Διαχείριση Επικίνδυνων Εμπορευμάτων',
+                'tacograph_compliance' => 'Συμμόρφωση με Ταχογράφο',
+                'fire_safety' => 'Πυρασφάλεια',
+                'vehicle_inspection' => 'Έλεγχος οχημάτων'
+            ],
+            'Επαγγελματισμός' => [
+                'customer_service' => 'Εξυπηρέτηση Πελατών',
+                'time_management' => 'Διαχείριση Χρόνου',
+                'route_planning' => 'Σχεδιασμός Διαδρομής',
+                'conflict_resolution' => 'Επίλυση Συγκρούσεων',
+                'multilingual' => 'Πολύγλωσσος',
+                'report_writing' => 'Σύνταξη αναφορών',
+                'inspection_behavior' => 'Συμπεριφορά σε έλεγχο',
+                'border_crossing' => 'Διέλευση συνόρων'
+            ],
+            'Τεχνικές Γνώσεις' => [
+                'vehicle_maintenance' => 'Συντήρηση Οχήματος',
+                'troubleshooting' => 'Αντιμετώπιση Βλαβών',
+                'digital_tachograph' => 'Ψηφιακός Ταχογράφος',
+                'gps_systems' => 'Συστήματα GPS',
+                'logistics_software' => 'Λογισμικό Logistics',
+                'technical_terms' => 'Γνώση τεχνικών όρων',
+                'equipment_handling' => 'Γνώση χειρισμού εξοπλισμού',
+                'checklists_usage' => 'Χρήση λιστών ελέγχου'
+            ]
+        ];
+
+        // Ειδικές δεξιότητες μόνο για εμπορευματικές μεταφορές
+        $freightOnlySkills = [
+            'loading_securing',
+            'dangerous_goods'
+        ];
+        ?>
+
+        <!-- Το τμήμα αποσφαλμάτωσης έχει αφαιρεθεί -->
+
         <div class="rating-container">
-            <div class="overall-rating">
-            <div class="score-circle">
-    <svg viewBox="0 0 100 100">
-        <circle class="score-background" cx="50" cy="50" r="45" fill="none"></circle>
-        <circle class="score-progress" cx="50" cy="50" r="45" fill="none" style="stroke-dashoffset: calc(283.5 - (283.5 * <?php echo $driverRating['total_score']; ?>) / 100)"></circle>
-    </svg>
-    <div class="score-text">
-        <span class="score-value"><?php echo round($driverRating['total_score']); ?></span>
-        <span class="score-label">Συνολική Βαθμολογία</span>
-    </div>
-</div>
-                
-                <div class="rating-update">
-                    <p>Τελευταία ενημέρωση: <?php echo date('d/m/Y H:i', strtotime($driverRating['last_updated'])); ?></p>
-                    <a href="<?php echo BASE_URL; ?>drivers/refresh-rating" class="btn-refresh">Ανανέωση Βαθμολογίας</a>
+            <?php
+            // Υπολογισμός βαθμολογίας για άδεια οδήγησης C/CE
+            $drivingLicensePoints = 0;
+            $hasDrivingLicense = false;
+
+            // Νέο σύστημα βαθμολογίας για άδειες οδήγησης
+            if (in_array('CE', $driverLicenseTypes)) {
+                // Η άδεια CE υποκαθιστά την C και δίνει 100 βαθμούς
+                $drivingLicensePoints = 100;
+                $hasDrivingLicense = true;
+            } elseif (in_array('C', $driverLicenseTypes)) {
+                // Η άδεια C δίνει 50 βαθμούς
+                $drivingLicensePoints = 50;
+                $hasDrivingLicense = true;
+            }
+
+            // Υπολογισμός βαθμολογίας για ΠΕΙ εμπορευμάτων
+            $peiPoints = $hasPeiC ? 10 : 0;
+
+            // Υπολογισμός βαθμολογίας για κάρτα ταχογράφου
+            $tachographPoints = (isset($driverTachograph) && $driverTachograph) ? 10 : 0;
+
+            // Υπολογισμός βαθμολογίας για ADR
+            $adrPoints = 0;
+            $hasAdr = isset($driverADR) && $driverADR;
+            if ($hasAdr) {
+                $adrCategory = $driverADR['adr_type'] ?? 'Π1';
+                $adrCategories = [
+                    'Π1' => ['points' => 10],
+                    'Π2' => ['points' => 15],
+                    'Π3' => ['points' => 20],
+                    'Π4' => ['points' => 25],
+                    'Π5' => ['points' => 35],
+                    'Π6' => ['points' => 40],
+                    'Π7' => ['points' => 45],
+                    'Π8' => ['points' => 50]
+                ];
+
+                if (isset($adrCategories[$adrCategory])) {
+                    $adrPoints = $adrCategories[$adrCategory]['points'];
+                }
+            }
+
+            // Υπολογισμός βαθμολογίας για προϋπηρεσία
+            // Υπολογισμός ετών προϋπηρεσίας από τα δεδομένα vehicle_experience
+            $freightYears = 0;
+            $freightMonths = 0;
+            $freightDays = 0;
+            $passengerYears = 0;
+            $passengerMonths = 0;
+            $passengerDays = 0;
+
+            if (isset($driverVehicleExperience) && !empty($driverVehicleExperience)) {
+                foreach ($driverVehicleExperience as $exp) {
+                    if (isset($exp['transport_type']) && $exp['transport_type'] === 'freight') {
+                        $freightYears += isset($exp['years']) ? intval($exp['years']) : 0;
+                        $freightMonths += isset($exp['months']) ? intval($exp['months']) : 0;
+                        $freightDays += isset($exp['days']) ? intval($exp['days']) : 0;
+                    } else if (isset($exp['transport_type']) && $exp['transport_type'] === 'passenger') {
+                        $passengerYears += isset($exp['years']) ? intval($exp['years']) : 0;
+                        $passengerMonths += isset($exp['months']) ? intval($exp['months']) : 0;
+                        $passengerDays += isset($exp['days']) ? intval($exp['days']) : 0;
+                    }
+                }
+
+                // Κανονικοποίηση των μηνών και ημερών
+                $freightMonths += floor($freightDays / 30);
+                $freightDays = $freightDays % 30;
+                $freightYears += floor($freightMonths / 12);
+                $freightMonths = $freightMonths % 12;
+
+                $passengerMonths += floor($passengerDays / 30);
+                $passengerDays = $passengerDays % 30;
+                $passengerYears += floor($passengerMonths / 12);
+                $passengerMonths = $passengerMonths % 12;
+            }
+
+            // Στρογγυλοποίηση των ετών προϋπηρεσίας στον πλησιέστερο ακέραιο
+            // Υπολογισμός δεκαδικού μέρους για τα έτη εμπορευματικών μεταφορών
+            $freightDecimalYears = $freightYears + ($freightMonths / 12) + ($freightDays / 365);
+            $roundedFreightYears = round($freightDecimalYears);
+
+            // Υπολογισμός δεκαδικού μέρους για τα έτη επιβατικών μεταφορών
+            $passengerDecimalYears = $passengerYears + ($passengerMonths / 12) + ($passengerDays / 365);
+            $roundedPassengerYears = round($passengerDecimalYears);
+
+            // Εμφάνιση διαγνωστικών μηνυμάτων
+            echo "<!-- Διαγνωστικά: freightYears = $freightYears, freightMonths = $freightMonths, freightDays = $freightDays, freightDecimalYears = $freightDecimalYears, roundedFreightYears = $roundedFreightYears -->";
+            echo "<!-- Διαγνωστικά: passengerYears = $passengerYears, passengerMonths = $passengerMonths, passengerDays = $passengerDays, passengerDecimalYears = $passengerDecimalYears, roundedPassengerYears = $roundedPassengerYears -->";
+
+            // Υπολογισμός βαθμολογίας για προϋπηρεσία εμπορευματικών μεταφορών
+            $freightExperiencePoints = 0;
+            $freightExperienceRange = "";
+
+            if ($roundedFreightYears <= 1) {
+                $freightExperiencePoints = 0;
+                $freightExperienceRange = "0-1 έτος";
+            } elseif ($roundedFreightYears <= 3) {
+                $freightExperiencePoints = 10;
+                $freightExperienceRange = "2-3 έτη";
+            } elseif ($roundedFreightYears <= 5) {
+                $freightExperiencePoints = 20;
+                $freightExperienceRange = "4-5 έτη";
+            } elseif ($roundedFreightYears <= 8) {
+                $freightExperiencePoints = 30;
+                $freightExperienceRange = "6-8 έτη";
+            } else {
+                $freightExperiencePoints = 40;
+                $freightExperienceRange = "9+ έτη";
+            }
+
+            // Υπολογισμός βαθμολογίας για προϋπηρεσία επιβατικών μεταφορών
+            $passengerExperiencePoints = 0;
+            $passengerExperienceRange = "";
+
+            if ($roundedPassengerYears <= 1) {
+                $passengerExperiencePoints = 0;
+                $passengerExperienceRange = "0-1 έτος";
+            } elseif ($roundedPassengerYears <= 3) {
+                $passengerExperiencePoints = 10;
+                $passengerExperienceRange = "2-3 έτη";
+            } elseif ($roundedPassengerYears <= 5) {
+                $passengerExperiencePoints = 20;
+                $passengerExperienceRange = "4-5 έτη";
+            } elseif ($roundedPassengerYears <= 8) {
+                $passengerExperiencePoints = 30;
+                $passengerExperienceRange = "6-8 έτη";
+            } else {
+                $passengerExperiencePoints = 40;
+                $passengerExperienceRange = "9+ έτη";
+            }
+
+            // Για συμβατότητα με τον υπόλοιπο κώδικα
+            $experiencePoints = $freightExperiencePoints;
+            $experienceRange = $freightExperienceRange;
+
+            // Συνολική βαθμολογία τυπικών προσόντων
+            $licensePoints = $drivingLicensePoints + $peiPoints + $tachographPoints + $adrPoints;
+            $maxLicensePoints = 170; // Μέγιστη βαθμολογία τυπικών προσόντων (100 για άδεια + 10 για ΠΕΙ + 10 για ταχογράφο + 50 για ADR)
+
+            // Υπολογισμός βαθμολογίας για επιβατικές μεταφορές
+            $passengerDrivingLicensePoints = 0;
+
+            // Νέο σύστημα βαθμολογίας για άδειες οδήγησης επιβατικών μεταφορών
+            if (in_array('DE', $driverLicenseTypes)) {
+                // Η άδεια DE υποκαθιστά την D και δίνει 100 βαθμούς
+                $passengerDrivingLicensePoints = 100;
+            } elseif (in_array('D', $driverLicenseTypes)) {
+                // Η άδεια D δίνει 50 βαθμούς
+                $passengerDrivingLicensePoints = 50;
+            }
+
+            $passengerLicensePoints = $passengerDrivingLicensePoints;
+            if ($hasPeiD) $passengerLicensePoints += 10;
+            if (isset($driverTachograph) && $driverTachograph) $passengerLicensePoints += 10;
+
+            // Οι μεταβλητές $skillCategories και $freightOnlySkills έχουν ήδη οριστεί παραπάνω
+
+            // Μέγιστες βαθμολογίες ανά κατηγορία σύμφωνα με τις νέες οδηγίες
+            $categoryMaxScores = [
+                'Οδηγικές Ικανότητες' => 120,
+                'Ασφάλεια & Συμμόρφωση' => 140,
+                'Επαγγελματισμός' => 160,
+                'Τεχνικές Γνώσεις' => 100
+            ];
+
+            // Μέγιστες βαθμολογίες ανά κατηγορία για επιβατικές μεταφορές
+            $passengerCategoryMaxScores = [
+                'Οδηγικές Ικανότητες' => 120,
+                'Ασφάλεια & Συμμόρφωση' => 100, // Χωρίς τις δεξιότητες μόνο για εμπορευματικές μεταφορές
+                'Επαγγελματισμός' => 160,
+                'Τεχνικές Γνώσεις' => 100
+            ];
+
+            // Υπολογισμός βαθμολογίας ανά κατηγορία για εμπορευματικές μεταφορές
+            $freightCategoryScores = [];
+            $freightTotalSkillPoints = 0;
+            $freightMaxSkillPoints = 0;
+
+            foreach ($skillCategories as $categoryName => $skills) {
+                $categoryScore = 0;
+                $activeSkillsCount = 0;
+                $totalSkillsCount = count($skills);
+
+                foreach ($skills as $skillKey => $skillName) {
+                    // Έλεγχος αν η δεξιότητα είναι ενεργή
+                    // Οι δεξιότητες μπορεί να είναι αποθηκευμένες με διαφορετικούς τρόπους
+                    if (
+                        // Περίπτωση 1: Η δεξιότητα είναι αποθηκευμένη ως κλειδί με τιμή 1
+                        (isset($driverSkills[$skillKey]) && $driverSkills[$skillKey] == 1) ||
+                        // Περίπτωση 2: Η δεξιότητα είναι αποθηκευμένη ως πεδίο με το όνομα της δεξιότητας
+                        (isset($driverData[$skillKey]) && $driverData[$skillKey] == 1)
+                    ) {
+                        $activeSkillsCount++;
+                    }
+                }
+
+                // Κάθε δεξιότητα αξίζει 20 βαθμούς σύμφωνα με τις νέες οδηγίες
+                $categoryScore = $activeSkillsCount * 20;
+                $categoryMaxScore = $categoryMaxScores[$categoryName];
+
+                $freightCategoryScores[$categoryName] = [
+                    'score' => $categoryScore,
+                    'maxScore' => $categoryMaxScore,
+                    'activeCount' => $activeSkillsCount
+                ];
+
+                $freightTotalSkillPoints += $categoryScore;
+                $freightMaxSkillPoints += $categoryMaxScore;
+            }
+
+            // Υπολογισμός βαθμολογίας ανά κατηγορία για επιβατικές μεταφορές
+            $passengerCategoryScores = [];
+            $passengerTotalSkillPoints = 0;
+            $passengerMaxSkillPoints = 0;
+
+            foreach ($skillCategories as $categoryName => $skills) {
+                $categoryScore = 0;
+                $activeSkillsCount = 0;
+                $totalSkillsCount = 0;
+
+                foreach ($skills as $skillKey => $skillName) {
+                    // Παραλείπουμε τις δεξιότητες που είναι μόνο για εμπορευματικές μεταφορές
+                    if (in_array($skillKey, $freightOnlySkills)) {
+                        continue;
+                    }
+
+                    $totalSkillsCount++;
+
+                    // Έλεγχος αν η δεξιότητα είναι ενεργή
+                    // Οι δεξιότητες μπορεί να είναι αποθηκευμένες με διαφορετικούς τρόπους
+                    if (
+                        // Περίπτωση 1: Η δεξιότητα είναι αποθηκευμένη ως κλειδί με τιμή 1
+                        (isset($driverSkills[$skillKey]) && $driverSkills[$skillKey] == 1) ||
+                        // Περίπτωση 2: Η δεξιότητα είναι αποθηκευμένη ως πεδίο με το όνομα της δεξιότητας
+                        (isset($driverData[$skillKey]) && $driverData[$skillKey] == 1)
+                    ) {
+                        $activeSkillsCount++;
+                    }
+                }
+
+                // Κάθε δεξιότητα αξίζει 20 βαθμούς σύμφωνα με τις νέες οδηγίες
+                $categoryScore = $activeSkillsCount * 20;
+                $categoryMaxScore = $passengerCategoryMaxScores[$categoryName];
+
+                $passengerCategoryScores[$categoryName] = [
+                    'score' => $categoryScore,
+                    'maxScore' => $categoryMaxScore,
+                    'activeCount' => $activeSkillsCount
+                ];
+
+                $passengerTotalSkillPoints += $categoryScore;
+                $passengerMaxSkillPoints += $categoryMaxScore;
+            }
+
+            // Οι συνολικές βαθμολογίες δεξιοτήτων έχουν ήδη υπολογιστεί παραπάνω
+
+            // Συνολικές βαθμολογίες
+            $freightTotalScore = $licensePoints + $freightExperiencePoints + $freightTotalSkillPoints;
+            $freightMaxTotalScore = $maxLicensePoints + 40 + $freightMaxSkillPoints;
+
+            $passengerTotalScore = $passengerLicensePoints + $passengerExperiencePoints + $passengerTotalSkillPoints;
+            $passengerMaxTotalScore = 120 + 40 + $passengerMaxSkillPoints;
+            ?>
+
+            <!-- Νέα δομή με τρεις στήλες βαθμολογίας -->
+            <div class="driver-categories-columns">
+                <!-- Στήλη Οδηγού Εμπορευματικών Μεταφορών -->
+                <div class="rating-column">
+                    <h2 class="column-title">Οδηγός Εμπορευματικών Μεταφορών <span class="total-score-label">(<strong style="color: #aa3636;"><?php echo $freightTotalScore; ?>/<?php echo $freightMaxTotalScore; ?></strong>)</span></h2>
+                    <div class="rating-categories">
+                        <!-- Προσόντα - Άδειες Οδήγησης και Προϋπηρεσία -->
+                        <div class="rating-category">
+                            <div class="qualifications-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2"><strong>Τυπικά προσόντα</strong></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Άδεια οδήγησης: </td>
+                                            <td><?php echo $drivingLicensePoints; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td>ΠΕΙ εμπορευμάτων: </td>
+                                            <td><?php echo $peiPoints; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Κάρτα Ψηφιακού Ταχογράφου: </td>
+                                            <td><?php echo $tachographPoints; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Πιστοποιητικό ADR: </td>
+                                            <td><?php echo $adrPoints; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Έτη προϋπηρεσίας (<?php echo $freightExperienceRange; ?>): </td>
+                                            <td><?php echo $freightExperiencePoints; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Μερική βαθμολογία: </strong></td>
+                                            <td><strong><?php echo $licensePoints + $freightExperiencePoints; ?> / <?php echo $maxLicensePoints + 40; ?></strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Προσόντα - Δεξιότητες -->
+                        <div class="rating-category">
+                            <div class="qualifications-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2"><strong>Προσόντα & Δεξιότητες</strong></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        // Εμφάνιση βαθμολογίας ανά κατηγορία
+                                        foreach ($freightCategoryScores as $categoryName => $scoreData) {
+                                            echo "<tr>";
+                                            echo "<td>{$categoryName}: </td>";
+                                            echo "<td>{$scoreData['score']} / {$scoreData['maxScore']}</td>";
+                                            echo "</tr>";
+                                        }
+                                        ?>
+                                        <tr>
+                                            <td><strong>Μερική βαθμολογία: </strong></td>
+                                            <td><strong><?php echo $freightTotalSkillPoints; ?> / <?php echo $freightMaxSkillPoints; ?></strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Στήλη Οδηγού Επιβατικών Μεταφορών -->
+                <div class="rating-column">
+                    <h2 class="column-title">Οδηγός Επιβατικών Μεταφορών <span class="total-score-label">(<strong style="color: #aa3636;"><?php echo $passengerTotalScore; ?>/<?php echo $passengerMaxTotalScore; ?></strong>)</span></h2>
+                    <div class="rating-categories">
+                        <!-- Προσόντα - Άδειες Οδήγησης και Προϋπηρεσία -->
+                        <div class="rating-category">
+                            <div class="qualifications-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2"><strong>Τυπικά προσόντα</strong></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Άδεια οδήγησης: </td>
+                                            <td><?php echo $passengerDrivingLicensePoints; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td>ΠΕΙ επιβατών: </td>
+                                            <td>10</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Κάρτα Ψηφιακού Ταχογράφου: </td>
+                                            <td>10</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Έτη προϋπηρεσίας (<?php echo $passengerExperienceRange; ?>): </td>
+                                            <td><?php echo $passengerExperiencePoints; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Μερική βαθμολογία: </strong></td>
+                                            <td><strong><?php echo $passengerLicensePoints + $passengerExperiencePoints; ?> / <?php echo 120 + 40; ?></strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Προσόντα - Δεξιότητες -->
+                        <div class="rating-category">
+                            <div class="qualifications-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2"><strong>Προσόντα & Δεξιότητες</strong></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        // Εμφάνιση βαθμολογίας ανά κατηγορία
+                                        foreach ($passengerCategoryScores as $categoryName => $scoreData) {
+                                            echo "<tr>";
+                                            echo "<td>{$categoryName}: </td>";
+                                            echo "<td>{$scoreData['score']} / {$scoreData['maxScore']}</td>";
+                                            echo "</tr>";
+                                        }
+                                        ?>
+                                        <tr>
+                                            <td><strong>Μερική βαθμολογία: </strong></td>
+                                            <td><strong><?php echo $passengerTotalSkillPoints; ?> / <?php echo $passengerMaxSkillPoints; ?></strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Στήλη Χειριστή Μηχανημάτων Έργου -->
+                <div class="rating-column">
+                    <h2 class="column-title">Χειριστής Μηχανημάτων Έργου</h2>
+                    <div class="rating-categories">
+                        <!-- Άδεια Χειριστή Μηχανημάτων Έργου -->
+                        <div class="rating-category">
+                            <div class="qualifications-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2"><strong>Τυπικά προσόντα</strong></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="no-data">Δεν έχουν καταχωρηθεί άδειες χειριστή</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Μερική βαθμολογία: </strong></td>
+                                            <td><strong>0 από 100</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="rating-categories">
-                <div class="rating-category">
-                    <h3>Προσόντα</h3>
-                    <div class="category-score-container">
-                        <div class="category-score"><?php echo round($driverRating['skills_score'], 1); ?>/25</div>
-                        <div class="progress-bar">
-                            <div class="progress" style="width: <?php echo ($driverRating['skills_score'] / 25) * 100; ?>%"></div>
-                        </div>
-                    </div>
-                    <div class="category-details">
-                        <p>Βαθμολογία με βάση τις άδειες οδήγησης, τα πιστοποιητικά σας και την επαγγελματική σας εμπειρία.</p>
-                        <a href="<?php echo BASE_URL; ?>drivers/edit-profile" class="btn-action">Ενημέρωση Προσόντων</a>
-                    </div>
-                </div>
-                
-                <div class="rating-category">
-                    <h3>Ασφάλεια</h3>
-                    <div class="category-score-container">
-                        <div class="category-score"><?php echo round($driverRating['safety_score'], 1); ?>/30</div>
-                        <div class="progress-bar">
-                            <div class="progress" style="width: <?php echo ($driverRating['safety_score'] / 30) * 100; ?>%"></div>
-                        </div>
-                    </div>
-                    <div class="category-details">
-                        <p>Βαθμολογία με βάση το ιστορικό συμβάντων και τα δεδομένα τηλεματικής (αν υπάρχουν).</p>
-                        <a href="<?php echo BASE_URL; ?>drivers/incident-history" class="btn-action">Ιστορικό Συμβάντων</a>
-                    </div>
-                </div>
-                
-                <div class="rating-category">
-                    <h3>Επαγγελματισμός</h3>
-                    <div class="category-score-container">
-                        <div class="category-score"><?php echo round($driverRating['professionalism_score'], 1); ?>/25</div>
-                        <div class="progress-bar">
-                            <div class="progress" style="width: <?php echo ($driverRating['professionalism_score'] / 25) * 100; ?>%"></div>
-                        </div>
-                    </div>
-                    <div class="category-details">
-                        <p>Βαθμολογία με βάση τα στοιχεία της αυτοαξιολόγησής σας σχετικά με τον επαγγελματισμό σας.</p>
-                        <a href="<?php echo BASE_URL; ?>drivers/update-assessment" class="btn-action">Συμπλήρωση Αυτοαξιολόγησης</a>
-                    </div>
-                </div>
-                
-                <div class="rating-category">
-                    <h3>Τεχνικές Δεξιότητες</h3>
-                    <div class="category-score-container">
-                        <div class="category-score"><?php echo round($driverRating['technical_score'], 1); ?>/20</div>
-                        <div class="progress-bar">
-                            <div class="progress" style="width: <?php echo ($driverRating['technical_score'] / 20) * 100; ?>%"></div>
-                        </div>
-                    </div>
-                    <div class="category-details">
-                        <p>Βαθμολογία με βάση τα στοιχεία της αυτοαξιολόγησής σας σχετικά με τις τεχνικές σας δεξιότητες.</p>
-                        <a href="<?php echo BASE_URL; ?>drivers/update-assessment" class="btn-action">Συμπλήρωση Αυτοαξιολόγησης</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="rating-improvement">
-                <h3>Συμβουλές Βελτίωσης</h3>
-                <ul class="improvement-tips">
-                    <?php if ($driverRating['skills_score'] < 20) : ?>
-                        <li>
-                            <i class="tip-icon skills-icon"></i>
-                            <div class="tip-content">
-                                <h4>Βελτίωση Προσόντων</h4>
-                                <p>Προσθέστε επιπλέον πιστοποιήσεις και σεμινάρια στο προφίλ σας για να αυξήσετε τη βαθμολογία σας.</p>
-                            </div>
-                        </li>
-                    <?php endif; ?>
-                    
-                    <?php if ($driverRating['safety_score'] < 24) : ?>
-                        <li>
-                            <i class="tip-icon safety-icon"></i>
-                            <div class="tip-content">
-                                <h4>Βελτίωση Ασφάλειας</h4>
-                                <p>Ακολουθήστε τους κανόνες οδικής ασφάλειας και αποφύγετε παραβάσεις για να βελτιώσετε τη βαθμολογία ασφάλειας.</p>
-                            </div>
-                        </li>
-                    <?php endif; ?>
-                    
-                    <?php if ($driverRating['professionalism_score'] < 20) : ?>
-                        <li>
-                            <i class="tip-icon professionalism-icon"></i>
-                            <div class="tip-content">
-                                <h4>Βελτίωση Επαγγελματισμού</h4>
-                                <p>Συμπληρώστε την αυτοαξιολόγησή σας και εστιάστε στη βελτίωση της συνέπειας, της επικοινωνίας με πελάτες και της επαγγελματικής σας εμφάνισης.</p>
-                            </div>
-                        </li>
-                    <?php endif; ?>
-                    
-                    <?php if ($driverRating['technical_score'] < 16) : ?>
-                        <li>
-                            <i class="tip-icon technical-icon"></i>
-                            <div class="tip-content">
-                                <h4>Βελτίωση Τεχνικών Δεξιοτήτων</h4>
-                                <p>Ενισχύστε τις τεχνικές σας γνώσεις για τη συντήρηση οχημάτων, την αντιμετώπιση προβλημάτων και τη διαχείριση φορτίου.</p>
-                            </div>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-            
-            <?php if (isset($telemetryData)) : ?>
-            <div class="telemetry-section">
-                <h3>Δεδομένα Τηλεματικής</h3>
-                <div class="telemetry-summary">
-                    <div class="telemetry-score">
-                    <div class="score-circle small">
-    <svg viewBox="0 0 100 100">
-        <circle class="score-background" cx="50" cy="50" r="45" fill="none"></circle>
-        <circle class="score-progress" cx="50" cy="50" r="45" fill="none" style="stroke-dashoffset: calc(283.5 - (283.5 * <?php echo $telemetryData['score']; ?>) / 100)"></circle>
-    </svg>
-    <div class="score-text">
-        <span class="score-value"><?php echo $telemetryData['score']; ?></span>
-    </div>
-</div>
-                        <div class="score-label">Βαθμολογία Οδήγησης</div>
-                    </div>
-                    
-                    <div class="telemetry-metrics">
-                        <div class="metric-card">
-                            <div class="metric-icon speed-icon"></div>
-                            <div class="metric-details">
-                                <h4>Μέση Ταχύτητα</h4>
-                                <div class="metric-value"><?php echo number_format($telemetryData['avg_speed'], 1); ?> χλμ/ώρα</div>
-                            </div>
-                        </div>
-                        
-                        <div class="metric-card">
-                            <div class="metric-icon brake-icon"></div>
-                            <div class="metric-details">
-                                <h4>Απότομα Φρεναρίσματα</h4>
-                                <div class="metric-value"><?php echo $telemetryData['harsh_braking']; ?> περιστατικά</div>
-                            </div>
-                        </div>
-                        
-                        <div class="metric-card">
-                            <div class="metric-icon acceleration-icon"></div>
-                            <div class="metric-details">
-                                <h4>Απότομες Επιταχύνσεις</h4>
-                                <div class="metric-value"><?php echo $telemetryData['harsh_acceleration']; ?> περιστατικά</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="telemetry-info">
-                    <p>Τα δεδομένα τηλεματικής συλλέχθηκαν στις <?php echo date('d/m/Y', strtotime($telemetryData['date_collected'])); ?> για διάστημα οδήγησης <?php echo number_format($telemetryData['total_distance']); ?> χλμ.</p>
-                </div>
-            </div>
-            <?php else : ?>
-            <div class="telemetry-promotion">
-                <h3>Βελτιώστε τη βαθμολογία σας με την εφαρμογή τηλεματικής</h3>
-                <p>Κατεβάστε την εφαρμογή DriveJob Telemetry για να παρακολουθείτε την οδηγική σας συμπεριφορά και να βελτιώσετε τη βαθμολογία ασφάλειάς σας.</p>
-                <div class="app-download">
-                    <a href="#" class="btn-app-download">
-                        <img src="<?php echo BASE_URL; ?>img/app_download.png" alt="Κατέβασμα Εφαρμογής">
-                        <span>Κατέβασμα Εφαρμογής</span>
-                    </a>
-                </div>
-            </div>
-            <?php endif; ?>
         </div>
     </div>
 </main>

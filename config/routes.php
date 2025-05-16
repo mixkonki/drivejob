@@ -53,8 +53,8 @@ $router->get('/drivers/register', [DriversController::class, 'showRegistrationFo
 $router->post('/drivers/register', [DriversController::class, 'register']);
 $router->get('/drivers/profile', [NewDriversController::class, 'profile']);
 $router->get('/drivers/profile/{id}', [NewDriversController::class, 'publicProfile']);
-$router->get('/drivers/edit-profile', [NewDriversController::class, 'edit']);
-$router->post('/drivers/update-profile', [NewDriversController::class, 'update']);
+$router->get('/drivers/edit-profile', [DriversController::class, 'edit']);
+$router->post('/drivers/update-profile', [DriversController::class, 'update']);
 $router->post('/drivers/change-password', [DriversController::class, 'changePassword']);
 $router->get('/drivers/search', [DriversController::class, 'search']);
 $router->get('/drivers/top-rated', [DriversController::class, 'topRated']);

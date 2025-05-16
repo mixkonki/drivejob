@@ -40,26 +40,46 @@ class DriverCertificationService
             if (isset($formData['skills'])) {
                 $skillsData = [];
                 $allSkillFields = [
+                    // Οδηγικές Ικανότητες
                     'defensive_driving',
                     'eco_driving',
                     'night_driving',
                     'mountain_driving',
                     'extreme_conditions',
+                    'precision_handling',
+
+                    // Ασφάλεια & Συμμόρφωση
                     'loading_securing',
                     'emergency_response',
                     'first_aid',
                     'dangerous_goods',
                     'tacograph_compliance',
+                    'fire_safety',
+                    'vehicle_inspection',
+
+                    // Επαγγελματισμός
                     'customer_service',
                     'time_management',
                     'route_planning',
                     'conflict_resolution',
                     'multilingual',
+                    'report_writing',
+                    'inspection_behavior',
+                    'border_crossing',
+
+                    // Τεχνικές Γνώσεις
                     'vehicle_maintenance',
                     'troubleshooting',
                     'digital_tachograph',
                     'gps_systems',
-                    'logistics_software'
+                    'logistics_software',
+                    'technical_terms',
+                    'equipment_handling',
+                    'checklists_usage',
+
+                    // Επιλογές μόνο για εμπορευματικές μεταφορές
+                    'freight_only_loading',
+                    'freight_only_dangerous'
                 ];
 
                 // Αρχικοποίηση όλων των δεξιοτήτων σε 0
@@ -74,37 +94,81 @@ class DriverCertificationService
                     }
                 }
 
+                // Διαχείριση των επιλογών που είναι μόνο για εμπορευματικές μεταφορές
+                if (isset($formData['freight_only'])) {
+                    // Αντιστοίχιση των ονομάτων των checkboxes με τις στήλες της βάσης δεδομένων
+                    $freightOnlyMapping = [
+                        'loading_securing' => 'freight_only_loading',
+                        'dangerous_goods' => 'freight_only_dangerous'
+                    ];
+
+                    foreach ($formData['freight_only'] as $key => $value) {
+                        if (isset($freightOnlyMapping[$key])) {
+                            $skillsData[$freightOnlyMapping[$key]] = 1;
+                        }
+                    }
+                } else {
+                    // Προεπιλεγμένες τιμές αν δεν υπάρχουν επιλογές
+                    $skillsData['freight_only_loading'] = 1;
+                    $skillsData['freight_only_dangerous'] = 1;
+                }
+
                 // Αποθήκευση των δεξιοτήτων
                 $this->skillModel->updateDriverSkills($driverId, $skillsData);
             } else {
                 // Αν δεν επιλέχθηκαν δεξιότητες, μηδενίζουμε όλες τις δεξιότητες
                 $emptySkills = [];
                 $allSkillFields = [
+                    // Οδηγικές Ικανότητες
                     'defensive_driving',
                     'eco_driving',
                     'night_driving',
                     'mountain_driving',
                     'extreme_conditions',
+                    'precision_handling',
+
+                    // Ασφάλεια & Συμμόρφωση
                     'loading_securing',
                     'emergency_response',
                     'first_aid',
                     'dangerous_goods',
                     'tacograph_compliance',
+                    'fire_safety',
+                    'vehicle_inspection',
+
+                    // Επαγγελματισμός
                     'customer_service',
                     'time_management',
                     'route_planning',
                     'conflict_resolution',
                     'multilingual',
+                    'report_writing',
+                    'inspection_behavior',
+                    'border_crossing',
+
+                    // Τεχνικές Γνώσεις
                     'vehicle_maintenance',
                     'troubleshooting',
                     'digital_tachograph',
                     'gps_systems',
-                    'logistics_software'
+                    'logistics_software',
+                    'technical_terms',
+                    'equipment_handling',
+                    'checklists_usage',
+
+                    // Επιλογές μόνο για εμπορευματικές μεταφορές
+                    'freight_only_loading',
+                    'freight_only_dangerous'
                 ];
 
                 foreach ($allSkillFields as $field) {
                     $emptySkills[$field] = 0;
                 }
+
+                // Προεπιλεγμένες τιμές για τις επιλογές που είναι μόνο για εμπορευματικές μεταφορές
+                // Αντιστοίχιση των ονομάτων των checkboxes με τις στήλες της βάσης δεδομένων
+                $emptySkills['freight_only_loading'] = 1;
+                $emptySkills['freight_only_dangerous'] = 1;
 
                 // Αποθήκευση μηδενικών δεξιοτήτων
                 $this->skillModel->updateDriverSkills($driverId, $emptySkills);

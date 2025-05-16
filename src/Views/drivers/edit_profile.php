@@ -18,20 +18,33 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_edit_profile.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-skills.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/toggle-switch.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/vehicle-experience.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/form-buttons-fix.css">
 <script src="<?php echo BASE_URL; ?>js/vendor/tesseract-bundle.js"></script>
 <script src="<?php echo BASE_URL; ?>js/tesseract-fallback.js"></script>
 <script src="<?php echo BASE_URL; ?>js/driver_edit_profile.js"></script>
 <script src="<?php echo BASE_URL; ?>js/license-validation.js"></script>
+<script src="<?php echo BASE_URL; ?>js/country-phone-codes.js"></script>
+<script src="<?php echo BASE_URL; ?>js/criminal-record-toggle.js"></script>
+<script src="<?php echo BASE_URL; ?>js/vehicle-experience.js"></script>
+<script src="<?php echo BASE_URL; ?>js/update-profile-experience.js"></script>
 <script>
     // Αρχικοποίηση δεδομένων από τη βάση
-    window.driverOperatorSubSpecialities = <?php echo json_encode($driverOperatorSubSpecialities ?? []); ?>;
-    window.selectedSubSpecialities = <?php
-                                        echo json_encode(
-                                            !empty($driverOperatorSubSpecialities)
-                                                ? array_column($driverOperatorSubSpecialities, 'sub_speciality')
-                                                : []
-                                        );
-                                        ?>;
+    window.driverOperatorSubSpecialities = [];
+    window.selectedSubSpecialities = [];
+
+    <?php if (!empty($driverOperatorSubSpecialities)): ?>
+        <?php foreach ($driverOperatorSubSpecialities as $spec): ?>
+            window.driverOperatorSubSpecialities.push({
+                sub_speciality: "<?php echo $spec['sub_speciality']; ?>",
+                group_type: "<?php echo $spec['group_type'] ?? 'A'; ?>",
+                name: "<?php echo $spec['name'] ?? ''; ?>"
+            });
+            window.selectedSubSpecialities.push("<?php echo $spec['sub_speciality']; ?>");
+        <?php endforeach; ?>
+    <?php endif; ?>
 
     // Μετατροπή των δεδομένων από PHP σε JavaScript
     document.addEventListener('DOMContentLoaded', function() {
@@ -73,7 +86,6 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 
         <form action="<?php echo BASE_URL; ?>drivers/update-profile" method="POST" enctype="multipart/form-data" id="driverProfileForm" class="edit-profile-form">
             <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
-            <input type="hidden" name="available_for_work" value="<?php echo isset($driverData['available_for_work']) ? $driverData['available_for_work'] : '0'; ?>">
 
             <!-- Καρτέλες φόρμας -->
             <div class="form-tabs">
@@ -173,33 +185,86 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         </div>
 
                         <div class="form-group">
-                            <label for="experience_years">Έτη Επαγγελματικής Εμπειρίας</label>
-                            <input type="number" id="experience_years" name="experience_years" min="0" max="50" value="<?php echo old('experience_years', $driverData['experience_years'] ?? ''); ?>">
+                            <label>Έτη Επαγγελματικής Εμπειρίας</label>
+                            <div class="experience-display" style="display: flex; justify-content: space-between; margin-top: 10px; background-color: #f9f9f9; padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
+                                <div class="experience-column" style="flex: 1; text-align: center; padding: 0 10px;">
+                                    <div style="font-weight: bold; margin-bottom: 5px;">Συνολική Προϋπηρεσία</div>
+                                    <div style="font-size: 24px; color: #007bff;"><?php echo $driverData['experience_years'] ?? '0'; ?> έτη</div>
+                                </div>
+                                <div class="experience-column" style="flex: 1; text-align: center; padding: 0 10px; border-left: 1px solid #ddd; border-right: 1px solid #ddd;">
+                                    <div style="font-weight: bold; margin-bottom: 5px;">Εμπορευματικές Μεταφορές</div>
+                                    <div style="font-size: 24px; color: #28a745;"><?php echo $roundedFreightYears ?? '0'; ?> έτη</div>
+                                </div>
+                                <div class="experience-column" style="flex: 1; text-align: center; padding: 0 10px;">
+                                    <div style="font-weight: bold; margin-bottom: 5px;">Επιβατικές Μεταφορές</div>
+                                    <div style="font-size: 24px; color: #dc3545;"><?php echo $roundedPassengerYears ?? '0'; ?> έτη</div>
+                                </div>
+                            </div>
+                            <!-- Κρυφό πεδίο για να διατηρήσουμε την τιμή -->
+                            <input type="hidden" id="experience_years" name="experience_years" value="<?php echo old('experience_years', $driverData['experience_years'] ?? ''); ?>">
+                            <p class="form-hint" style="margin-top: 5px;">
+                                Η προϋπηρεσία υπολογίζεται αυτόματα από τα στοιχεία που έχετε καταχωρήσει στην ενότητα "Προϋπηρεσία σε Οχήματα".
+                                <a href="<?php echo BASE_URL; ?>drivers/debug_experience.php" target="_blank" style="margin-left: 10px; color: #007bff;">Αναλυτικά διαγνωστικά</a>
+                            </p>
                         </div>
 
 
 
-                        <div class="form-group">
-                            <label for="profile_image">Φωτογραφία Προφίλ</label>
-                            <?php if (isset($driverData['profile_image']) && $driverData['profile_image']) : ?>
-                                <div class="current-image">
-                                    <img src="<?php echo BASE_URL . htmlspecialchars($driverData['profile_image']); ?>" alt="Τρέχουσα φωτογραφία">
-                                    <p>Τρέχουσα φωτογραφία</p>
+                        <!-- Τρεις στήλες για τα έγγραφα -->
+                        <div class="documents-row" style="display: flex; flex-wrap: nowrap; margin-right: -15px; margin-left: -15px; margin-top: 20px;">
+                            <div class="document-column" style="flex: 1; max-width: 33.33%; padding-right: 15px; padding-left: 15px; position: relative;">
+                                <div class="form-group">
+                                    <label for="profile_image">Φωτογραφία Προφίλ</label>
+                                    <?php if (isset($driverData['profile_image']) && $driverData['profile_image']) : ?>
+                                        <div class="current-image">
+                                            <img src="<?php echo BASE_URL . htmlspecialchars($driverData['profile_image']); ?>" alt="Τρέχουσα φωτογραφία">
+                                            <p>Τρέχουσα φωτογραφία</p>
+                                        </div>
+                                    <?php endif; ?>
+                                    <input type="file" id="profile_image" name="profile_image" accept="image/jpeg, image/png, image/gif">
+                                    <p class="form-hint">Μέγιστο μέγεθος: 2MB. Επιτρεπόμενοι τύποι: JPEG, PNG, GIF</p>
                                 </div>
-                            <?php endif; ?>
-                            <input type="file" id="profile_image" name="profile_image" accept="image/jpeg, image/png, image/gif">
-                            <p class="form-hint">Μέγιστο μέγεθος: 2MB. Επιτρεπόμενοι τύποι: JPEG, PNG, GIF</p>
-                        </div>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="resume_file">Βιογραφικό</label>
-                            <?php if (isset($driverData['resume_file']) && $driverData['resume_file']) : ?>
-                                <div class="current-file">
-                                    <a href="<?php echo BASE_URL . htmlspecialchars($driverData['resume_file']); ?>" target="_blank">Προβολή τρέχοντος βιογραφικού</a>
+                            <div class="document-column" style="flex: 1; max-width: 33.33%; padding-right: 15px; padding-left: 15px; position: relative;">
+                                <div class="form-group">
+                                    <label for="resume_file">Βιογραφικό</label>
+                                    <?php if (isset($driverData['resume_file']) && $driverData['resume_file']) : ?>
+                                        <div class="current-file">
+                                            <a href="<?php echo BASE_URL . htmlspecialchars($driverData['resume_file']); ?>" target="_blank">Προβολή τρέχοντος βιογραφικού</a>
+                                        </div>
+                                    <?php endif; ?>
+                                    <input type="file" id="resume_file" name="resume_file" accept=".pdf,.doc,.docx">
+                                    <p class="form-hint">Μέγιστο μέγεθος: 5MB. Επιτρεπόμενοι τύποι: PDF, DOC, DOCX</p>
                                 </div>
-                            <?php endif; ?>
-                            <input type="file" id="resume_file" name="resume_file" accept=".pdf,.doc,.docx">
-                            <p class="form-hint">Μέγιστο μέγεθος: 5MB. Επιτρεπόμενοι τύποι: PDF, DOC, DOCX</p>
+                            </div>
+
+                            <div class="document-column" style="flex: 1; max-width: 33.33%; padding-right: 15px; padding-left: 15px; position: relative;">
+                                <div class="form-group">
+                                    <label>Ποινικό Μητρώο</label>
+                                    <div class="radio-group">
+                                        <!-- Τα radio buttons παραμένουν για συμβατότητα αλλά θα κρύβονται με CSS -->
+                                        <label class="radio-inline" style="display: none;">
+                                            <input type="radio" name="legal_status" value="yes" <?php echo (isset($driverData['legal_status']) && $driverData['legal_status'] == 'yes') ? 'checked' : ''; ?>> Ναι
+                                        </label>
+                                        <label class="radio-inline" style="display: none;">
+                                            <input type="radio" name="legal_status" value="no" <?php echo (isset($driverData['legal_status']) && $driverData['legal_status'] == 'no') ? 'checked' : ''; ?>> Όχι
+                                        </label>
+
+                                        <!-- Το div για το ανέβασμα αρχείου -->
+                                        <div id="criminal_record_upload" class="criminal-record-upload" style="<?php echo (isset($driverData['legal_status']) && $driverData['legal_status'] == 'yes') ? 'display:inline-block;' : 'display:none;'; ?> margin-left: 20px;">
+                                            <label for="criminal_record_file" class="file-upload-label">Ανέβασμα αρχείου:</label>
+                                            <input type="file" id="criminal_record_file" name="criminal_record_file" accept=".pdf,.jpg,.jpeg,.png">
+                                            <?php if (isset($driverData['criminal_record_file']) && $driverData['criminal_record_file']) : ?>
+                                                <div class="current-file">
+                                                    <a href="<?php echo BASE_URL . htmlspecialchars($driverData['criminal_record_file']); ?>" target="_blank">Προβολή τρέχοντος αρχείου</a>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <p class="form-hint">Επιλέξτε "Ναι" για να ανεβάστε το αρχείο. Μέγιστο μέγεθος: 5MB. Επιτρεπόμενοι τύποι: PDF, JPG, JPEG, PNG</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -251,7 +316,44 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 
                             <div class="form-group">
                                 <label for="country">Χώρα</label>
-                                <input type="text" id="country" name="country" value="<?php echo old('country', $driverData['country'] ?? ''); ?>">
+                                <select id="country" name="country" class="country-select">
+                                    <option value="">Επιλέξτε χώρα</option>
+                                    <option value="GR" <?php echo (old('country', $driverData['country'] ?? '') == 'GR') ? 'selected' : ''; ?>>Ελλάδα</option>
+                                    <option value="CY" <?php echo (old('country', $driverData['country'] ?? '') == 'CY') ? 'selected' : ''; ?>>Κύπρος</option>
+                                    <option value="DE" <?php echo (old('country', $driverData['country'] ?? '') == 'DE') ? 'selected' : ''; ?>>Γερμανία</option>
+                                    <option value="FR" <?php echo (old('country', $driverData['country'] ?? '') == 'FR') ? 'selected' : ''; ?>>Γαλλία</option>
+                                    <option value="IT" <?php echo (old('country', $driverData['country'] ?? '') == 'IT') ? 'selected' : ''; ?>>Ιταλία</option>
+                                    <option value="ES" <?php echo (old('country', $driverData['country'] ?? '') == 'ES') ? 'selected' : ''; ?>>Ισπανία</option>
+                                    <option value="GB" <?php echo (old('country', $driverData['country'] ?? '') == 'GB') ? 'selected' : ''; ?>>Ηνωμένο Βασίλειο</option>
+                                    <option value="US" <?php echo (old('country', $driverData['country'] ?? '') == 'US') ? 'selected' : ''; ?>>Ηνωμένες Πολιτείες</option>
+                                    <option value="CA" <?php echo (old('country', $driverData['country'] ?? '') == 'CA') ? 'selected' : ''; ?>>Καναδάς</option>
+                                    <option value="AU" <?php echo (old('country', $driverData['country'] ?? '') == 'AU') ? 'selected' : ''; ?>>Αυστραλία</option>
+                                    <option value="AT" <?php echo (old('country', $driverData['country'] ?? '') == 'AT') ? 'selected' : ''; ?>>Αυστρία</option>
+                                    <option value="BE" <?php echo (old('country', $driverData['country'] ?? '') == 'BE') ? 'selected' : ''; ?>>Βέλγιο</option>
+                                    <option value="BG" <?php echo (old('country', $driverData['country'] ?? '') == 'BG') ? 'selected' : ''; ?>>Βουλγαρία</option>
+                                    <option value="HR" <?php echo (old('country', $driverData['country'] ?? '') == 'HR') ? 'selected' : ''; ?>>Κροατία</option>
+                                    <option value="CZ" <?php echo (old('country', $driverData['country'] ?? '') == 'CZ') ? 'selected' : ''; ?>>Τσεχία</option>
+                                    <option value="DK" <?php echo (old('country', $driverData['country'] ?? '') == 'DK') ? 'selected' : ''; ?>>Δανία</option>
+                                    <option value="EE" <?php echo (old('country', $driverData['country'] ?? '') == 'EE') ? 'selected' : ''; ?>>Εσθονία</option>
+                                    <option value="FI" <?php echo (old('country', $driverData['country'] ?? '') == 'FI') ? 'selected' : ''; ?>>Φινλανδία</option>
+                                    <option value="HU" <?php echo (old('country', $driverData['country'] ?? '') == 'HU') ? 'selected' : ''; ?>>Ουγγαρία</option>
+                                    <option value="IE" <?php echo (old('country', $driverData['country'] ?? '') == 'IE') ? 'selected' : ''; ?>>Ιρλανδία</option>
+                                    <option value="LV" <?php echo (old('country', $driverData['country'] ?? '') == 'LV') ? 'selected' : ''; ?>>Λετονία</option>
+                                    <option value="LT" <?php echo (old('country', $driverData['country'] ?? '') == 'LT') ? 'selected' : ''; ?>>Λιθουανία</option>
+                                    <option value="LU" <?php echo (old('country', $driverData['country'] ?? '') == 'LU') ? 'selected' : ''; ?>>Λουξεμβούργο</option>
+                                    <option value="MT" <?php echo (old('country', $driverData['country'] ?? '') == 'MT') ? 'selected' : ''; ?>>Μάλτα</option>
+                                    <option value="NL" <?php echo (old('country', $driverData['country'] ?? '') == 'NL') ? 'selected' : ''; ?>>Ολλανδία</option>
+                                    <option value="PL" <?php echo (old('country', $driverData['country'] ?? '') == 'PL') ? 'selected' : ''; ?>>Πολωνία</option>
+                                    <option value="PT" <?php echo (old('country', $driverData['country'] ?? '') == 'PT') ? 'selected' : ''; ?>>Πορτογαλία</option>
+                                    <option value="RO" <?php echo (old('country', $driverData['country'] ?? '') == 'RO') ? 'selected' : ''; ?>>Ρουμανία</option>
+                                    <option value="SK" <?php echo (old('country', $driverData['country'] ?? '') == 'SK') ? 'selected' : ''; ?>>Σλοβακία</option>
+                                    <option value="SI" <?php echo (old('country', $driverData['country'] ?? '') == 'SI') ? 'selected' : ''; ?>>Σλοβενία</option>
+                                    <option value="SE" <?php echo (old('country', $driverData['country'] ?? '') == 'SE') ? 'selected' : ''; ?>>Σουηδία</option>
+                                    <option value="CH" <?php echo (old('country', $driverData['country'] ?? '') == 'CH') ? 'selected' : ''; ?>>Ελβετία</option>
+                                    <option value="NO" <?php echo (old('country', $driverData['country'] ?? '') == 'NO') ? 'selected' : ''; ?>>Νορβηγία</option>
+                                    <option value="RS" <?php echo (old('country', $driverData['country'] ?? '') == 'RS') ? 'selected' : ''; ?>>Σερβία</option>
+                                    <option value="TR" <?php echo (old('country', $driverData['country'] ?? '') == 'TR') ? 'selected' : ''; ?>>Τουρκία</option>
+                                </select>
                             </div>
                         </div>
 
@@ -886,251 +988,221 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                     <h3>Επαγγελματικές Δεξιότητες</h3>
                     <p class="form-info">Επιλέξτε τις δεξιότητες που διαθέτετε:</p>
 
-                    <div class="skills-categories">
-                        <!-- Οδηγικές Ικανότητες -->
-                        <div class="skills-category">
-                            <h4>Οδηγικές Ικανότητες</h4>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="defensive_driving" name="skills[defensive_driving]" value="1" <?php echo isset($driverSkills['defensive_driving']) && $driverSkills['defensive_driving'] ? 'checked' : ''; ?>>
-                                <label for="defensive_driving">Αμυντική Οδήγηση (Defensive Driving)</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="eco_driving" name="skills[eco_driving]" value="1" <?php echo isset($driverSkills['eco_driving']) && $driverSkills['eco_driving'] ? 'checked' : ''; ?>>
-                                <label for="eco_driving">Οικολογική Οδήγηση (Eco-Driving)</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="night_driving" name="skills[night_driving]" value="1" <?php echo isset($driverSkills['night_driving']) && $driverSkills['night_driving'] ? 'checked' : ''; ?>>
-                                <label for="night_driving">Νυχτερινή Οδήγηση</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="mountain_driving" name="skills[mountain_driving]" value="1" <?php echo isset($driverSkills['mountain_driving']) && $driverSkills['mountain_driving'] ? 'checked' : ''; ?>>
-                                <label for="mountain_driving">Οδήγηση σε Ορεινές Περιοχές</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="extreme_conditions" name="skills[extreme_conditions]" value="1" <?php echo isset($driverSkills['extreme_conditions']) && $driverSkills['extreme_conditions'] ? 'checked' : ''; ?>>
-                                <label for="extreme_conditions">Οδήγηση σε Ακραίες Συνθήκες</label>
-                            </div>
-                        </div>
+                    <div class="skills-container">
+                        <div class="skills-row">
+                            <!-- Οδηγικές Ικανότητες -->
+                            <div class="skills-column">
+                                <div class="skills-category">
+                                    <h4>Οδηγικές Ικανότητες</h4>
 
-                        <!-- Ασφάλεια & Συμμόρφωση -->
-                        <div class="skills-category">
-                            <h4>Ασφάλεια & Συμμόρφωση</h4>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="loading_securing" name="skills[loading_securing]" value="1" <?php echo isset($driverSkills['loading_securing']) && $driverSkills['loading_securing'] ? 'checked' : ''; ?>>
-                                <label for="loading_securing">Φόρτωση & Ασφάλιση Φορτίου</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="emergency_response" name="skills[emergency_response]" value="1" <?php echo isset($driverSkills['emergency_response']) && $driverSkills['emergency_response'] ? 'checked' : ''; ?>>
-                                <label for="emergency_response">Αντιμετώπιση Έκτακτων Καταστάσεων</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="first_aid" name="skills[first_aid]" value="1" <?php echo isset($driverSkills['first_aid']) && $driverSkills['first_aid'] ? 'checked' : ''; ?>>
-                                <label for="first_aid">Πρώτες Βοήθειες</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="dangerous_goods" name="skills[dangerous_goods]" value="1" <?php echo isset($driverSkills['dangerous_goods']) && $driverSkills['dangerous_goods'] ? 'checked' : ''; ?>>
-                                <label for="dangerous_goods">Διαχείριση Επικίνδυνων Εμπορευμάτων</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="tacograph_compliance" name="skills[tacograph_compliance]" value="1" <?php echo isset($driverSkills['tacograph_compliance']) && $driverSkills['tacograph_compliance'] ? 'checked' : ''; ?>>
-                                <label for="tacograph_compliance">Συμμόρφωση με Ταχογράφο</label>
-                            </div>
-                        </div>
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="defensive_driving">
+                                            Αμυντική Οδήγηση (Defensive Driving)
+                                        </label>
+                                        <input type="checkbox" id="defensive_driving" name="skills[defensive_driving]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['defensive_driving']) && $driverSkills['defensive_driving'] ? 'checked' : ''; ?>>
+                                    </div>
 
-                        <!-- Επαγγελματισμός -->
-                        <div class="skills-category">
-                            <h4>Επαγγελματισμός</h4>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="customer_service" name="skills[customer_service]" value="1" <?php echo isset($driverSkills['customer_service']) && $driverSkills['customer_service'] ? 'checked' : ''; ?>>
-                                <label for="customer_service">Εξυπηρέτηση Πελατών</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="time_management" name="skills[time_management]" value="1" <?php echo isset($driverSkills['time_management']) && $driverSkills['time_management'] ? 'checked' : ''; ?>>
-                                <label for="time_management">Διαχείριση Χρόνου</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="route_planning" name="skills[route_planning]" value="1" <?php echo isset($driverSkills['route_planning']) && $driverSkills['route_planning'] ? 'checked' : ''; ?>>
-                                <label for="route_planning">Σχεδιασμός Διαδρομής</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="conflict_resolution" name="skills[conflict_resolution]" value="1" <?php echo isset($driverSkills['conflict_resolution']) && $driverSkills['conflict_resolution'] ? 'checked' : ''; ?>>
-                                <label for="conflict_resolution">Επίλυση Συγκρούσεων</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="multilingual" name="skills[multilingual]" value="1" <?php echo isset($driverSkills['multilingual']) && $driverSkills['multilingual'] ? 'checked' : ''; ?>>
-                                <label for="multilingual">Πολύγλωσσος</label>
-                            </div>
-                        </div>
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="eco_driving">
+                                            Οικολογική Οδήγηση (Eco-Driving)
+                                        </label>
+                                        <input type="checkbox" id="eco_driving" name="skills[eco_driving]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['eco_driving']) && $driverSkills['eco_driving'] ? 'checked' : ''; ?>>
+                                    </div>
 
-                        <!-- Τεχνικές Γνώσεις -->
-                        <div class="skills-category">
-                            <h4>Τεχνικές Γνώσεις</h4>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="vehicle_maintenance" name="skills[vehicle_maintenance]" value="1" <?php echo isset($driverSkills['vehicle_maintenance']) && $driverSkills['vehicle_maintenance'] ? 'checked' : ''; ?>>
-                                <label for="vehicle_maintenance">Συντήρηση Οχήματος</label>
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="night_driving">
+                                            Νυχτερινή Οδήγηση
+                                        </label>
+                                        <input type="checkbox" id="night_driving" name="skills[night_driving]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['night_driving']) && $driverSkills['night_driving'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="mountain_driving">
+                                            Οδήγηση σε Ορεινές Περιοχές
+                                        </label>
+                                        <input type="checkbox" id="mountain_driving" name="skills[mountain_driving]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['mountain_driving']) && $driverSkills['mountain_driving'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="extreme_conditions">
+                                            Οδήγηση σε Ακραίες Συνθήκες
+                                        </label>
+                                        <input type="checkbox" id="extreme_conditions" name="skills[extreme_conditions]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['extreme_conditions']) && $driverSkills['extreme_conditions'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="precision_handling">
+                                            Ακρίβεια χειρισμών
+                                        </label>
+                                        <input type="checkbox" id="precision_handling" name="skills[precision_handling]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['precision_handling']) && $driverSkills['precision_handling'] ? 'checked' : ''; ?>>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="troubleshooting" name="skills[troubleshooting]" value="1" <?php echo isset($driverSkills['troubleshooting']) && $driverSkills['troubleshooting'] ? 'checked' : ''; ?>>
-                                <label for="troubleshooting">Αντιμετώπιση Βλαβών</label>
+
+                            <!-- Ασφάλεια & Συμμόρφωση -->
+                            <div class="skills-column">
+                                <div class="skills-category">
+                                    <h4>Ασφάλεια & Συμμόρφωση</h4>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="loading_securing">
+                                            Φόρτωση & Ασφάλιση Φορτίου
+                                            <span class="freight-only-tag">Εμπορευματικές</span>
+                                        </label>
+                                        <div class="freight-only">
+                                            <input type="checkbox" id="freight_only_loading" name="freight_only[loading_securing]" value="1" checked>
+                                        </div>
+                                        <input type="checkbox" id="loading_securing" name="skills[loading_securing]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['loading_securing']) && $driverSkills['loading_securing'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="dangerous_goods">
+                                            Διαχείριση Επικίνδυνων Εμπορευμάτων
+                                            <span class="freight-only-tag">Εμπορευματικές</span>
+                                        </label>
+                                        <div class="freight-only">
+                                            <input type="checkbox" id="freight_only_dangerous" name="freight_only[dangerous_goods]" value="1" checked>
+                                        </div>
+                                        <input type="checkbox" id="dangerous_goods" name="skills[dangerous_goods]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['dangerous_goods']) && $driverSkills['dangerous_goods'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="emergency_response">
+                                            Αντιμετώπιση Έκτακτων Καταστάσεων
+                                        </label>
+                                        <input type="checkbox" id="emergency_response" name="skills[emergency_response]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['emergency_response']) && $driverSkills['emergency_response'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="first_aid">
+                                            Πρώτες Βοήθειες
+                                        </label>
+                                        <input type="checkbox" id="first_aid" name="skills[first_aid]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['first_aid']) && $driverSkills['first_aid'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="fire_safety">
+                                            Πυρασφάλεια
+                                        </label>
+                                        <input type="checkbox" id="fire_safety" name="skills[fire_safety]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['fire_safety']) && $driverSkills['fire_safety'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="vehicle_inspection">
+                                            Έλεγχος οχημάτων
+                                        </label>
+                                        <input type="checkbox" id="vehicle_inspection" name="skills[vehicle_inspection]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['vehicle_inspection']) && $driverSkills['vehicle_inspection'] ? 'checked' : ''; ?>>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="digital_tachograph" name="skills[digital_tachograph]" value="1" <?php echo isset($driverSkills['digital_tachograph']) && $driverSkills['digital_tachograph'] ? 'checked' : ''; ?>>
-                                <label for="digital_tachograph">Ψηφιακός Ταχογράφος</label>
+
+                            <!-- Επαγγελματισμός -->
+                            <div class="skills-column">
+                                <div class="skills-category">
+                                    <h4>Επαγγελματισμός</h4>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="customer_service">
+                                            Εξυπηρέτηση Πελατών
+                                        </label>
+                                        <input type="checkbox" id="customer_service" name="skills[customer_service]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['customer_service']) && $driverSkills['customer_service'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="time_management">
+                                            Διαχείριση Χρόνου
+                                        </label>
+                                        <input type="checkbox" id="time_management" name="skills[time_management]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['time_management']) && $driverSkills['time_management'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="route_planning">
+                                            Σχεδιασμός Διαδρομής
+                                        </label>
+                                        <input type="checkbox" id="route_planning" name="skills[route_planning]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['route_planning']) && $driverSkills['route_planning'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="conflict_resolution">
+                                            Επίλυση Συγκρούσεων
+                                        </label>
+                                        <input type="checkbox" id="conflict_resolution" name="skills[conflict_resolution]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['conflict_resolution']) && $driverSkills['conflict_resolution'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="report_writing">
+                                            Σύνταξη αναφορών
+                                        </label>
+                                        <input type="checkbox" id="report_writing" name="skills[report_writing]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['report_writing']) && $driverSkills['report_writing'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="multilingual">
+                                            Πολύγλωσσος
+                                        </label>
+                                        <input type="checkbox" id="multilingual" name="skills[multilingual]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['multilingual']) && $driverSkills['multilingual'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="inspection_behavior">
+                                            Συμπεριφορά σε έλεγχο
+                                        </label>
+                                        <input type="checkbox" id="inspection_behavior" name="skills[inspection_behavior]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['inspection_behavior']) && $driverSkills['inspection_behavior'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="border_crossing">
+                                            Διέλευση συνόρων
+                                        </label>
+                                        <input type="checkbox" id="border_crossing" name="skills[border_crossing]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['border_crossing']) && $driverSkills['border_crossing'] ? 'checked' : ''; ?>>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="gps_systems" name="skills[gps_systems]" value="1" <?php echo isset($driverSkills['gps_systems']) && $driverSkills['gps_systems'] ? 'checked' : ''; ?>>
-                                <label for="gps_systems">Συστήματα GPS</label>
-                            </div>
-                            <div class="form-group form-checkbox">
-                                <input type="checkbox" id="logistics_software" name="skills[logistics_software]" value="1" <?php echo isset($driverSkills['logistics_software']) && $driverSkills['logistics_software'] ? 'checked' : ''; ?>>
-                                <label for="logistics_software">Λογισμικό Logistics</label>
+
+                            <!-- Τεχνικές Γνώσεις -->
+                            <div class="skills-column">
+                                <div class="skills-category">
+                                    <h4>Τεχνικές Γνώσεις</h4>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="vehicle_maintenance">
+                                            Συντήρηση Οχήματος
+                                        </label>
+                                        <input type="checkbox" id="vehicle_maintenance" name="skills[vehicle_maintenance]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['vehicle_maintenance']) && $driverSkills['vehicle_maintenance'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="troubleshooting">
+                                            Αντιμετώπιση Βλαβών
+                                        </label>
+                                        <input type="checkbox" id="troubleshooting" name="skills[troubleshooting]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['troubleshooting']) && $driverSkills['troubleshooting'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="technical_terms">
+                                            Γνώση τεχνικών όρων
+                                        </label>
+                                        <input type="checkbox" id="technical_terms" name="skills[technical_terms]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['technical_terms']) && $driverSkills['technical_terms'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="equipment_handling">
+                                            Γνώση χειρισμού εξοπλισμού
+                                        </label>
+                                        <input type="checkbox" id="equipment_handling" name="skills[equipment_handling]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['equipment_handling']) && $driverSkills['equipment_handling'] ? 'checked' : ''; ?>>
+                                    </div>
+
+                                    <div class="skill-item">
+                                        <label class="skill-label" for="checklists_usage">
+                                            Χρήση λιστών ελέγχου
+                                        </label>
+                                        <input type="checkbox" id="checklists_usage" name="skills[checklists_usage]" value="1" class="skill-checkbox" <?php echo isset($driverSkills['checklists_usage']) && $driverSkills['checklists_usage'] ? 'checked' : ''; ?>>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Προϋπηρεσία σε Οχήματα -->
-                <div class="form-section">
-                    <h3>Προϋπηρεσία σε Οχήματα</h3>
-                    <p class="form-info">Συμπληρώστε τα οχήματα στα οποία έχετε επαγγελματική εμπειρία:</p>
-
-                    <div id="vehicle-experience-list">
-                        <?php
-                        if (isset($driverVehicleExperience) && !empty($driverVehicleExperience)) :
-                            foreach ($driverVehicleExperience as $index => $exp) :
-                        ?>
-                                <div class="vehicle-experience-entry">
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label>Κατηγορία Οχήματος:</label>
-                                            <select name="vehicle_experience[<?php echo $index; ?>][vehicle_category]" required>
-                                                <option value="">Επιλέξτε κατηγορία...</option>
-                                                <optgroup label="Μεταφορά Εμπορευμάτων">
-                                                    <option value="lcv" <?php echo ($exp['vehicle_category'] == 'lcv') ? 'selected' : ''; ?>>Ελαφρά Επαγγελματικά Οχήματα (έως 3.5 τόνους)</option>
-                                                    <option value="rigid_truck" <?php echo ($exp['vehicle_category'] == 'rigid_truck') ? 'selected' : ''; ?>>Μεσαία & Βαρέα Φορτηγά</option>
-                                                    <option value="articulated" <?php echo ($exp['vehicle_category'] == 'articulated') ? 'selected' : ''; ?>>Αρθρωτά/Συρόμενα Οχήματα</option>
-                                                </optgroup>
-                                                <optgroup label="Μεταφορά Επιβατών">
-                                                    <option value="taxi" <?php echo ($exp['vehicle_category'] == 'taxi') ? 'selected' : ''; ?>>Ταξί</option>
-                                                    <option value="minibus" <?php echo ($exp['vehicle_category'] == 'minibus') ? 'selected' : ''; ?>>Μικρό Λεωφορείο (έως 16+1 θέσεις)</option>
-                                                    <option value="bus" <?php echo ($exp['vehicle_category'] == 'bus') ? 'selected' : ''; ?>>Λεωφορεία & Πούλμαν</option>
-                                                </optgroup>
-                                                <optgroup label="Ειδικά Οχήματα">
-                                                    <option value="utility" <?php echo ($exp['vehicle_category'] == 'utility') ? 'selected' : ''; ?>>Οχήματα Δημοτικά/Κοινής Ωφέλειας</option>
-                                                    <option value="construction" <?php echo ($exp['vehicle_category'] == 'construction') ? 'selected' : ''; ?>>Οχήματα Έργων/Κατασκευών</option>
-                                                    <option value="emergency" <?php echo ($exp['vehicle_category'] == 'emergency') ? 'selected' : ''; ?>>Οχήματα Έκτακτης Ανάγκης</option>
-                                                    <option value="specialized" <?php echo ($exp['vehicle_category'] == 'specialized') ? 'selected' : ''; ?>>Άλλα Εξειδικευμένα Οχήματα</option>
-                                                </optgroup>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-row vehicle-subcategory-container" id="subcategory-container-<?php echo $index; ?>">
-                                        <div class="form-group">
-                                            <label>Τύπος Οχήματος:</label>
-                                            <select name="vehicle_experience[<?php echo $index; ?>][vehicle_type]" class="vehicle-type-select">
-                                                <option value="">Επιλέξτε τύπο...</option>
-                                                <?php if ($exp['vehicle_category']) : ?>
-                                                    <!-- Οι επιλογές θα συμπληρωθούν με JavaScript ανάλογα με την κατηγορία -->
-                                                    <!-- Προς το παρόν, απλά εμφανίζουμε την αποθηκευμένη τιμή -->
-                                                    <option value="<?php echo htmlspecialchars($exp['vehicle_type']); ?>" selected><?php echo htmlspecialchars($exp['vehicle_type_name'] ?? $exp['vehicle_type']); ?></option>
-                                                <?php endif; ?>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label>Έτη Εμπειρίας:</label>
-                                            <input type="number" name="vehicle_experience[<?php echo $index; ?>][years]" min="0" max="50" value="<?php echo $exp['years']; ?>">
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Περίοδος:</label>
-                                            <div class="date-range">
-                                                <input type="month" name="vehicle_experience[<?php echo $index; ?>][start_date]" value="<?php echo $exp['start_date']; ?>" placeholder="Από">
-                                                <span>έως</span>
-                                                <input type="month" name="vehicle_experience[<?php echo $index; ?>][end_date]" value="<?php echo $exp['end_date']; ?>" placeholder="Έως">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label>Περιγραφή Καθηκόντων:</label>
-                                        <textarea name="vehicle_experience[<?php echo $index; ?>][description]" rows="2"><?php echo htmlspecialchars($exp['description'] ?? ''); ?></textarea>
-                                    </div>
-
-                                    <button type="button" class="btn-remove-vehicle" data-index="<?php echo $index; ?>">Αφαίρεση</button>
-                                </div>
-                            <?php
-                            endforeach;
-                        else :
-                            ?>
-                            <div class="vehicle-experience-entry">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Κατηγορία Οχήματος:</label>
-                                        <select name="vehicle_experience[0][vehicle_category]" class="vehicle-category-select" data-index="0">
-                                            <option value="">Επιλέξτε κατηγορία...</option>
-                                            <optgroup label="Μεταφορά Εμπορευμάτων">
-                                                <option value="lcv">Ελαφρά Επαγγελματικά Οχήματα (έως 3.5 τόνους)</option>
-                                                <option value="rigid_truck">Μεσαία & Βαρέα Φορτηγά</option>
-                                                <option value="articulated">Αρθρωτά/Συρόμενα Οχήματα</option>
-                                            </optgroup>
-                                            <optgroup label="Μεταφορά Επιβατών">
-                                                <option value="taxi">Ταξί</option>
-                                                <option value="minibus">Μικρό Λεωφορείο (έως 16+1 θέσεις)</option>
-                                                <option value="bus">Λεωφορεία & Πούλμαν</option>
-                                            </optgroup>
-                                            <optgroup label="Ειδικά Οχήματα">
-                                                <option value="utility">Οχήματα Δημοτικά/Κοινής Ωφέλειας</option>
-                                                <option value="construction">Οχήματα Έργων/Κατασκευών</option>
-                                                <option value="emergency">Οχήματα Έκτακτης Ανάγκης</option>
-                                                <option value="specialized">Άλλα Εξειδικευμένα Οχήματα</option>
-                                            </optgroup>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-row vehicle-subcategory-container" id="subcategory-container-0">
-                                    <div class="form-group">
-                                        <label>Τύπος Οχήματος:</label>
-                                        <select name="vehicle_experience[0][vehicle_type]" class="vehicle-type-select">
-                                            <option value="">Επιλέξτε πρώτα κατηγορία...</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Έτη Εμπειρίας:</label>
-                                        <input type="number" name="vehicle_experience[0][years]" min="0" max="50" value="0">
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label>Περίοδος:</label>
-                                        <div class="date-range">
-                                            <input type="month" name="vehicle_experience[0][start_date]" placeholder="Από">
-                                            <span>έως</span>
-                                            <input type="month" name="vehicle_experience[0][end_date]" placeholder="Έως">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Περιγραφή Καθηκόντων:</label>
-                                    <textarea name="vehicle_experience[0][description]" rows="2"></textarea>
-                                </div>
-
-                                <button type="button" class="btn-remove-vehicle" data-index="0">Αφαίρεση</button>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-
-                    <button type="button" id="btn-add-vehicle" class="btn-secondary">Προσθήκη Οχήματος</button>
-                </div>
-
-
-
 
                 <!-- Γλωσσικές Ικανότητες -->
                 <div class="form-section">
@@ -1204,111 +1276,207 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                     </div>
                 </div>
 
-                <!-- Πιστοποιήσεις και Σεμινάρια -->
-                <div class="form-section">
-                    <h3>Πιστοποιήσεις & Σεμινάρια</h3>
-                    <div class="form-group form-checkbox">
-                        <input type="checkbox" id="training_seminars" name="training_seminars" value="1" <?php echo isset($driverData['training_seminars']) && $driverData['training_seminars'] ? 'checked' : ''; ?>>
-                        <label for="training_seminars">Έχω παρακολουθήσει εκπαιδευτικά σεμινάρια</label>
+                <!-- Αντικαταστήστε το μέρος του κώδικα για τις πιστοποιήσεις στο edit_profile.php -->
+                <div class="certifications-container">
+                    <h4>Πιστοποιήσεις</h4>
+
+                    <!-- Σύνδεσμος προς τη σελίδα διαχείρισης πιστοποιητικών -->
+                    <div class="certifications-link" style="margin-bottom: 20px;">
+                        <a href="<?php echo BASE_URL; ?>drivers/certifications" class="btn-primary">Διαχείριση Πιστοποιητικών Εκπαίδευσης</a>
                     </div>
 
-                    <div class="form-group">
-                        <label for="training_details">Λεπτομέρειες Σεμιναρίων & Εκπαιδεύσεων:</label>
-                        <textarea name="training_details" id="training_details" rows="4" class="form-control"><?php echo isset($driverData['training_details']) ? htmlspecialchars($driverData['training_details']) : ''; ?></textarea>
-                        <small class="form-text">Περιγράψτε τα σεμινάρια και τις εκπαιδεύσεις που έχετε παρακολουθήσει, αναφέροντας θέμα, πάροχο και ημερομηνία.</small>
-                    </div>
+                    <!-- Σύνοψη πιστοποιητικών -->
+                    <div class="certifications-summary">
+                        <?php if (isset($driverCertifications) && !empty($driverCertifications)) : ?>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;">#</th>
+                                        <th style="width: 30%;">Τίτλος</th>
+                                        <th>Θεματολογία</th>
+                                        <th>Τύπος</th>
+                                        <th>Ημ/νία Απόκτησης</th>
+                                        <th>Ημ/νία Λήξης</th>
+                                        <th>Διάρκεια (ώρες)</th>
+                                        <th>Πιστοποιητικό</th>
+                                        <th>Περιγραφή</th>
+                                        <th>Βαθμοί</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    // Αντιστοίχιση κατηγοριών με ονόματα
+                                    $categoryNames = [
+                                        'road_safety' => 'Οδική ασφάλεια',
+                                        'tachograph' => 'Ταχογράφος',
+                                        'loading_securing' => 'Φόρτωση - Πρόσδεση',
+                                        'technical' => 'Τεχνική επιμόρφωση',
+                                        'commercial' => 'Εμπορική επιμόρφωση',
+                                        'procedures' => 'Διαδικασίες',
+                                        'inspections' => 'Έλεγχοι',
+                                        'other' => 'Άλλο'
+                                    ];
 
-                    <!-- Αντικαταστήστε το μέρος του κώδικα για τις πιστοποιήσεις στο edit_profile.php -->
-                    <div class="certifications-container">
-                        <h4>Πιστοποιήσεις</h4>
-                        <div id="certifications-list">
-                            <?php
-                            if (isset($driverCertifications) && !empty($driverCertifications)) :
-                                foreach ($driverCertifications as $index => $cert) :
-                            ?>
-                                    <div class="certification-entry">
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label>Τίτλος Πιστοποίησης:</label>
-                                                <input type="text" name="certifications[<?php echo $index; ?>][title]" value="<?php echo htmlspecialchars($cert['title']); ?>">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Πάροχος/Οργανισμός:</label>
-                                                <input type="text" name="certifications[<?php echo $index; ?>][provider]" value="<?php echo htmlspecialchars($cert['provider'] ?? ''); ?>">
-                                            </div>
-                                        </div>
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label>Ημερομηνία Απόκτησης:</label>
-                                                <input type="date" name="certifications[<?php echo $index; ?>][date]" value="<?php echo $cert['date'] ?? ''; ?>">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Ημερομηνία Λήξης (αν υπάρχει):</label>
-                                                <input type="date" name="certifications[<?php echo $index; ?>][expiry]" value="<?php echo $cert['expiry'] ?? ''; ?>">
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Περιγραφή:</label>
-                                            <textarea name="certifications[<?php echo $index; ?>][description]" rows="2"><?php echo htmlspecialchars($cert['description'] ?? ''); ?></textarea>
-                                        </div>
-                                        <button type="button" class="btn-remove-certification" data-index="<?php echo $index; ?>">Αφαίρεση</button>
-                                    </div>
-                                <?php
-                                endforeach;
-                            else :
-                                ?>
-                                <div class="certification-entry">
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label>Τίτλος Πιστοποίησης:</label>
-                                            <input type="text" name="certifications[0][title]">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Πάροχος/Οργανισμός:</label>
-                                            <input type="text" name="certifications[0][provider]">
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label>Ημερομηνία Απόκτησης:</label>
-                                            <input type="date" name="certifications[0][date]">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Ημερομηνία Λήξης (αν υπάρχει):</label>
-                                            <input type="date" name="certifications[0][expiry]">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Περιγραφή:</label>
-                                        <textarea name="certifications[0][description]" rows="2"></textarea>
-                                    </div>
-                                    <button type="button" class="btn-remove-certification" data-index="0">Αφαίρεση</button>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        <button type="button" id="btn-add-certification" class="btn-secondary">Προσθήκη Πιστοποίησης</button>
+                                    // Αντιστοίχιση κατηγοριών με βαθμούς
+                                    $categoryPoints = [
+                                        'road_safety' => 50,
+                                        'tachograph' => 20,
+                                        'loading_securing' => 50,
+                                        'technical' => 20,
+                                        'commercial' => 20,
+                                        'procedures' => 20,
+                                        'inspections' => 20,
+                                        'other' => 20
+                                    ];
+
+                                    // Αντιστοίχιση τύπων μεταφοράς με ονόματα
+                                    $transportTypeNames = [
+                                        'freight' => 'Εμπορευματικές',
+                                        'passenger' => 'Επιβατικές',
+                                        'both' => 'Εμπορευματικές & Επιβατικές'
+                                    ];
+
+                                    foreach ($driverCertifications as $index => $cert) :
+                                        // Εύρεση του ονόματος της κατηγορίας
+                                        $categoryName = $categoryNames[$cert['category'] ?? ''] ?? $cert['category'] ?? 'Μη καθορισμένο';
+
+                                        // Εύρεση του ονόματος του τύπου μεταφοράς
+                                        $transportTypeName = $transportTypeNames[$cert['transport_type'] ?? 'both'] ?? 'Εμπορευματικές & Επιβατικές';
+
+                                        // Υπολογισμός των βαθμών
+                                        $points = $categoryPoints[$cert['category'] ?? ''] ?? 0;
+
+                                        // Προσθήκη στοιχείου προεπισκόπησης αρχείου αν υπάρχει
+                                        $filePreview = '-';
+                                        if (!empty($cert['certificate_file'])) {
+                                            $fileExt = pathinfo($cert['certificate_file'], PATHINFO_EXTENSION);
+                                            if (in_array(strtolower($fileExt), ['jpg', 'jpeg', 'png'])) {
+                                                $filePreview = '<a href="' . BASE_URL . 'uploads/certificates/' . htmlspecialchars($cert['certificate_file']) . '" target="_blank" class="file-preview">
+                                                        <img src="' . BASE_URL . 'uploads/certificates/' . htmlspecialchars($cert['certificate_file']) . '" alt="Προεπισκόπηση" width="30" height="30">
+                                                        <span>Προβολή</span>
+                                                    </a>';
+                                            } else if (strtolower($fileExt) === 'pdf') {
+                                                $filePreview = '<a href="' . BASE_URL . 'uploads/certificates/' . htmlspecialchars($cert['certificate_file']) . '" target="_blank" class="file-preview">
+                                                        <i class="fas fa-file-pdf" style="font-size: 24px; color: #dc3545;"></i>
+                                                        <span>Προβολή PDF</span>
+                                                    </a>';
+                                            } else {
+                                                $filePreview = '<a href="' . BASE_URL . 'uploads/certificates/' . htmlspecialchars($cert['certificate_file']) . '" target="_blank" class="file-preview">
+                                                        <i class="fas fa-file" style="font-size: 24px;"></i>
+                                                        <span>Προβολή αρχείου</span>
+                                                    </a>';
+                                            }
+                                        }
+                                    ?>
+                                        <tr>
+                                            <td><?php echo $index + 1; ?></td>
+                                            <td><?php echo htmlspecialchars($cert['title']); ?></td>
+                                            <td><?php echo $categoryName; ?></td>
+                                            <td><?php echo $transportTypeName; ?></td>
+                                            <td><?php echo isset($cert['date']) && $cert['date'] ? date('d/m/Y', strtotime($cert['date'])) : '-'; ?></td>
+                                            <td><?php echo isset($cert['expiry']) && $cert['expiry'] ? date('d/m/Y', strtotime($cert['expiry'])) : '-'; ?></td>
+                                            <td><?php echo isset($cert['duration']) && $cert['duration'] ? $cert['duration'] : '-'; ?></td>
+                                            <td><?php echo $filePreview; ?></td>
+                                            <td title="<?php echo htmlspecialchars($cert['description'] ?? ''); ?>"><?php
+                                                                                                                    echo isset($cert['description']) && $cert['description']
+                                                                                                                        ? (strlen($cert['description']) > 50
+                                                                                                                            ? htmlspecialchars(substr($cert['description'], 0, 50)) . '...'
+                                                                                                                            : htmlspecialchars($cert['description']))
+                                                                                                                        : '-';
+                                                                                                                    ?></td>
+                                            <td><?php echo $points; ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                                <tfoot>
+                                    <?php
+                                    // Υπολογισμός συνολικών βαθμών
+                                    $freightTotal = 0;
+                                    $passengerTotal = 0;
+                                    $grandTotal = 0;
+
+                                    foreach ($driverCertifications as $cert) {
+                                        $points = $categoryPoints[$cert['category'] ?? ''] ?? 0;
+
+                                        if (($cert['transport_type'] ?? 'both') === 'freight' || ($cert['transport_type'] ?? 'both') === 'both') {
+                                            $freightTotal += $points;
+                                        }
+
+                                        if (($cert['transport_type'] ?? 'both') === 'passenger' || ($cert['transport_type'] ?? 'both') === 'both') {
+                                            $passengerTotal += $points;
+                                        }
+
+                                        // Για το συνολικό άθροισμα, μετράμε κάθε πιστοποιητικό μόνο μία φορά
+                                        $grandTotal += $points;
+                                    }
+                                    ?>
+                                    <tr class="total-row freight-total">
+                                        <td colspan="9" class="text-right"><strong>Σύνολο για εμπορευματικές μεταφορές:</strong></td>
+                                        <td><?php echo $freightTotal; ?></td>
+                                    </tr>
+                                    <tr class="total-row passenger-total">
+                                        <td colspan="9" class="text-right"><strong>Σύνολο για επιβατικές μεταφορές:</strong></td>
+                                        <td><?php echo $passengerTotal; ?></td>
+                                    </tr>
+                                    <tr class="total-row grand-total">
+                                        <td colspan="9" class="text-right"><strong>Συνολικοί βαθμοί:</strong></td>
+                                        <td><?php echo $grandTotal; ?></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        <?php else : ?>
+                            <p>Δεν έχουν καταχωρηθεί πιστοποιητικά εκπαίδευσης.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
-
-                <!-- Επιπλέον Δεξιότητες -->
-                <div class="form-section">
-                    <h3>Επιπλέον Δεξιότητες</h3>
-                    <div class="form-group">
-                        <label for="additional_skills">Άλλες δεξιότητες που θέλετε να αναφέρετε:</label>
-                        <textarea name="additional_skills" id="additional_skills" rows="4" class="form-control"><?php echo isset($driverData['additional_skills']) ? htmlspecialchars($driverData['additional_skills']) : ''; ?></textarea>
-                        <small class="form-text">Προσθέστε οποιεσδήποτε άλλες σχετικές δεξιότητες ή προσόντα που δεν καλύπτονται παραπάνω.</small>
-                    </div>
-                </div>
-
             </div>
+
+            <!-- Επιπλέον Δεξιότητες -->
+            <div class="form-section">
+                <h3>Επιπλέον Δεξιότητες</h3>
+                <div class="form-group">
+                    <label for="additional_skills">Άλλες δεξιότητες που θέλετε να αναφέρετε:</label>
+                    <textarea name="additional_skills" id="additional_skills" rows="4" class="form-control"><?php echo isset($driverData['additional_skills']) ? htmlspecialchars($driverData['additional_skills']) : ''; ?></textarea>
+                    <small class="form-text">Προσθέστε οποιεσδήποτε άλλες σχετικές δεξιότητες ή προσόντα που δεν καλύπτονται παραπάνω.</small>
+                </div>
+            </div>
+
+            <!-- Προϋπηρεσία σε Οχήματα -->
+            <div class="form-section">
+                <h3>Προϋπηρεσία σε Οχήματα</h3>
+
+                <!-- Εμφάνιση του πίνακα προϋπηρεσίας -->
+                <?php include ROOT_DIR . '/src/Views/drivers/vehicle_experience_summary.php'; ?>
+
+                <div class="vehicle-experience-link" style="margin-top: 15px;">
+                    <a href="<?php echo BASE_URL; ?>drivers/vehicle_experience" class="btn-primary">Διαχείριση Προϋπηρεσίας σε Οχήματα</a>
+                </div>
+            </div>
+
+    </div>
     </div>
 
+    <!-- Κουμπιά αποθήκευσης και ακύρωσης -->
     <div class="form-actions">
-        <button type="submit" class="btn-primary btn-save">Αποθήκευση Αλλαγών</button>
-        <a href="<?php echo BASE_URL; ?>drivers/driver_profile" class="btn-secondary">Ακύρωση</a>
+        <div class="availability-toggle-container">
+            <label class="toggle-switch-label">
+                <span class="toggle-label-text">Διαθεσιμότητα για εργασία:</span>
+                <span class="toggle-switch">
+                    <input type="checkbox" name="available_for_work" id="available_for_work" class="toggle-switch-input" value="1" <?php echo $driverData['available_for_work'] ? 'checked' : ''; ?>>
+                    <span class="toggle-switch-slider"></span>
+                </span>
+                <span class="toggle-switch-text">
+                    <?php echo $driverData['available_for_work'] ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία'; ?>
+                </span>
+            </label>
+        </div>
+
+        <div class="form-buttons">
+            <button type="submit" class="btn-primary btn-save">Αποθήκευση Αλλαγών</button>
+            <a href="<?php echo BASE_URL; ?>drivers/driver_profile" class="btn-secondary">Ακύρωση</a>
+        </div>
     </div>
     </form>
-    </div>
 </main>
 
 <?php
