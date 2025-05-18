@@ -69,8 +69,8 @@ class CreateUserRolesTable
         // Μεταφορά των ρόλων από τον πίνακα drivers
         $sql2 = "
             INSERT INTO user_roles (user_id, role_id)
-            SELECT user_id, role_id FROM drivers
-            WHERE role_id IS NOT NULL AND user_id IS NOT NULL
+            SELECT id, role_id FROM drivers
+            WHERE role_id IS NOT NULL
             ON DUPLICATE KEY UPDATE user_id = VALUES(user_id)
         ";
         $this->executeSafely($pdo, $sql2);
@@ -78,8 +78,8 @@ class CreateUserRolesTable
         // Μεταφορά των ρόλων από τον πίνακα companies
         $sql3 = "
             INSERT INTO user_roles (user_id, role_id)
-            SELECT user_id, role_id FROM companies
-            WHERE role_id IS NOT NULL AND user_id IS NOT NULL
+            SELECT id, role_id FROM companies
+            WHERE role_id IS NOT NULL
             ON DUPLICATE KEY UPDATE user_id = VALUES(user_id)
         ";
         $this->executeSafely($pdo, $sql3);

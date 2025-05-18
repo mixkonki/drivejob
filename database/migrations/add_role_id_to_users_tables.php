@@ -134,7 +134,7 @@ class AddRoleIdToUsersTables
 
         // Ενημέρωση των χρηστών
         if (isset($roleIds['admin'])) {
-            $sql = "UPDATE users SET role_id = :role_id WHERE is_admin = 1";
+            $sql = "UPDATE users SET role_id = :role_id WHERE role = 'admin'";
             $stmt = $pdo->prepare($sql);
             $stmt->execute(['role_id' => $roleIds['admin']]);
         }
