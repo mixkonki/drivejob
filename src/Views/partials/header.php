@@ -151,7 +151,7 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                         <!-- Επιλογές προφίλ, αποσύνδεσης -->
                         <?php if ($userRole === 'company') :
                         ?>
-                            <a href="<?php echo BASE_URL; ?>companies/company_profile">
+                            <a href="<?php echo BASE_URL; ?>companies/profile">
                                 <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
                                 Προφίλ
                             </a>
