@@ -6,398 +6,376 @@ use Drivejob\Core\Exceptions\BaseException;
 use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
+use Drivejob\Core\Exceptions\NotFoundException;
+use Drivejob\Core\Exceptions\ForbiddenException;
+use Drivejob\Core\Exceptions\BadRequestException;
+use Drivejob\Core\Exceptions\ServerErrorException;
+use Drivejob\Helpers\JsonHelper;
 
 /**
- * Κεντρικός χειριστής εξαιρέσεων
+ * Κεντρικός χειριστής εξαιρέσεων της εφαρμογής
+ * 
+ * Διαχειρίζεται όλες τις εξαιρέσεις της εφαρμογής και τις μετατρέπει
+ * σε κατάλληλες απαντήσεις HTTP.
  */
 class ExceptionHandler
 {
     /**
-     * @var ExceptionHandler Η μοναδική περίσταση του ExceptionHandler (Singleton pattern)
-     */
-    private static $instance = null;
-
-    /**
-     * @var bool Αν έχει καταχωρηθεί ο χειριστής εξαιρέσεων
-     */
-    private static $registered = false;
-
-    /**
-     * @var callable[] Οι καταχωρημένοι χειριστές εξαιρέσεων
-     */
-    private $handlers = [];
-
-    /**
      * @var bool Αν είμαστε σε περιβάλλον ανάπτυξης
      */
-    private $debug = false;
+    protected $debug;
 
     /**
-     * Ιδιωτικός constructor για αποτροπή δημιουργίας πολλαπλών περιστάσεων
+     * @var array Οι προεπιλεγμένες ρυθμίσεις
      */
-    private function __construct()
-    {
-        // Ορισμός του debug mode με βάση το περιβάλλον
-        $this->debug = defined('ENVIRONMENT') && ENVIRONMENT === 'development';
+    protected $defaultSettings = [
+        'debug' => false,
+        'log_exceptions' => true,
+        'display_errors' => false,
+        'error_view' => 'error',
+        'error_layout' => 'layout',
+        'error_views_path' => '/src/Views/errors/',
+        'default_error_message' => 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά αργότερα.'
+    ];
 
-        // Καταχώρηση των προεπιλεγμένων χειριστών εξαιρέσεων
-        $this->registerDefaultHandlers();
+    /**
+     * @var array Οι ρυθμίσεις του χειριστή
+     */
+    protected $settings;
+
+    /**
+     * Constructor
+     *
+     * @param array $settings Οι ρυθμίσεις του χειριστή
+     */
+    public function __construct(array $settings = [])
+    {
+        $this->settings = array_merge($this->defaultSettings, $settings);
+        $this->debug = $this->settings['debug'];
     }
 
     /**
-     * Επιστρέφει τη μοναδική περίσταση του ExceptionHandler
+     * Καταγράφει μια εξαίρεση
      *
-     * @return ExceptionHandler
-     */
-    public static function getInstance()
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
-    }
-
-    /**
-     * Καταχωρεί τον χειριστή εξαιρέσεων στο PHP
-     *
+     * @param \Throwable $exception Η εξαίρεση
      * @return void
      */
-    public static function register()
+    public function logException(\Throwable $exception)
     {
-        if (self::$registered) {
+        if (!$this->settings['log_exceptions']) {
             return;
         }
 
-        $handler = self::getInstance();
+        if ($exception instanceof BaseException) {
+            $exception->log();
+        } else {
+            Logger::error($exception->getMessage(), [
+                'code' => $exception->getCode(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+                'trace' => $exception->getTraceAsString()
+            ]);
+        }
+    }
 
+    /**
+     * Διαχειρίζεται μια εξαίρεση
+     *
+     * @param \Throwable $exception Η εξαίρεση
+     * @return void
+     */
+    public function handle(\Throwable $exception)
+    {
+        // Καταγραφή της εξαίρεσης
+        $this->logException($exception);
+
+        // Έλεγχος αν είναι AJAX αίτημα
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+        // Διαχείριση ανάλογα με τον τύπο της εξαίρεσης
+        if ($exception instanceof ValidationException) {
+            $this->handleValidationException($exception, $isAjax);
+        } elseif ($exception instanceof AuthException) {
+            $this->handleAuthException($exception, $isAjax);
+        } elseif ($exception instanceof DatabaseException) {
+            $this->handleDatabaseException($exception, $isAjax);
+        } elseif ($exception instanceof NotFoundException) {
+            $this->handleNotFoundException($exception, $isAjax);
+        } elseif ($exception instanceof ForbiddenException) {
+            $this->handleForbiddenException($exception, $isAjax);
+        } elseif ($exception instanceof BadRequestException) {
+            $this->handleBadRequestException($exception, $isAjax);
+        } elseif ($exception instanceof ServerErrorException) {
+            $this->handleServerErrorException($exception, $isAjax);
+        } else {
+            $this->handleGenericException($exception, $isAjax);
+        }
+    }
+
+    /**
+     * Διαχειρίζεται μια εξαίρεση επικύρωσης
+     *
+     * @param ValidationException $exception Η εξαίρεση
+     * @param bool $isAjax Αν είναι AJAX αίτημα
+     * @return void
+     */
+    protected function handleValidationException(ValidationException $exception, $isAjax)
+    {
+        // Αποθήκευση των σφαλμάτων στο session
+        $exception->storeErrorsInSession();
+
+        if ($isAjax) {
+            // Επιστροφή JSON απάντησης
+            JsonHelper::error($exception->getMessage(), [
+                'errors' => $exception->getErrors()
+            ], 422);
+        } else {
+            // Ανακατεύθυνση πίσω με τα σφάλματα
+            $referer = $_SERVER['HTTP_REFERER'] ?? BASE_URL;
+            header('Location: ' . $referer);
+            exit;
+        }
+    }
+
+    /**
+     * Διαχειρίζεται μια εξαίρεση αυθεντικοποίησης
+     *
+     * @param AuthException $exception Η εξαίρεση
+     * @param bool $isAjax Αν είναι AJAX αίτημα
+     * @return void
+     */
+    protected function handleAuthException(AuthException $exception, $isAjax)
+    {
+        // Αποθήκευση του μηνύματος σφάλματος στο session
+        Session::set('error_message', $exception->getMessage());
+
+        if ($isAjax) {
+            // Επιστροφή JSON απάντησης
+            JsonHelper::error($exception->getMessage(), [
+                'code' => $exception->getCode()
+            ], 401);
+        } else {
+            // Ανακατεύθυνση στη σελίδα σύνδεσης
+            header('Location: ' . BASE_URL . 'login');
+            exit;
+        }
+    }
+
+    /**
+     * Διαχειρίζεται μια εξαίρεση βάσης δεδομένων
+     *
+     * @param DatabaseException $exception Η εξαίρεση
+     * @param bool $isAjax Αν είναι AJAX αίτημα
+     * @return void
+     */
+    protected function handleDatabaseException(DatabaseException $exception, $isAjax)
+    {
+        // Δημιουργία μηνύματος σφάλματος
+        $message = $this->debug ? $exception->getMessage() : $this->settings['default_error_message'];
+
+        if ($isAjax) {
+            // Επιστροφή JSON απάντησης
+            JsonHelper::error($message, [], 500);
+        } else {
+            // Αποθήκευση του μηνύματος σφάλματος στο session
+            Session::set('error_message', $message);
+
+            // Ανακατεύθυνση στην αρχική σελίδα
+            header('Location: ' . BASE_URL . 'home');
+            exit;
+        }
+    }
+
+    /**
+     * Διαχειρίζεται μια εξαίρεση μη εύρεσης πόρου
+     *
+     * @param NotFoundException $exception Η εξαίρεση
+     * @param bool $isAjax Αν είναι AJAX αίτημα
+     * @return void
+     */
+    protected function handleNotFoundException(NotFoundException $exception, $isAjax)
+    {
+        if ($isAjax) {
+            // Επιστροφή JSON απάντησης
+            JsonHelper::error($exception->getMessage(), [], 404);
+        } else {
+            // Εμφάνιση της σελίδας 404
+            http_response_code(404);
+            $this->renderErrorView('404', [
+                'message' => $exception->getMessage(),
+                'exception' => $exception
+            ]);
+            exit;
+        }
+    }
+
+    /**
+     * Διαχειρίζεται μια εξαίρεση απαγορευμένης πρόσβασης
+     *
+     * @param ForbiddenException $exception Η εξαίρεση
+     * @param bool $isAjax Αν είναι AJAX αίτημα
+     * @return void
+     */
+    protected function handleForbiddenException(ForbiddenException $exception, $isAjax)
+    {
+        if ($isAjax) {
+            // Επιστροφή JSON απάντησης
+            JsonHelper::error($exception->getMessage(), [], 403);
+        } else {
+            // Εμφάνιση της σελίδας 403
+            http_response_code(403);
+            $this->renderErrorView('403', [
+                'message' => $exception->getMessage(),
+                'exception' => $exception
+            ]);
+            exit;
+        }
+    }
+
+    /**
+     * Διαχειρίζεται μια εξαίρεση μη έγκυρου αιτήματος
+     *
+     * @param BadRequestException $exception Η εξαίρεση
+     * @param bool $isAjax Αν είναι AJAX αίτημα
+     * @return void
+     */
+    protected function handleBadRequestException(BadRequestException $exception, $isAjax)
+    {
+        if ($isAjax) {
+            // Επιστροφή JSON απάντησης
+            JsonHelper::error($exception->getMessage(), [], 400);
+        } else {
+            // Αποθήκευση του μηνύματος σφάλματος στο session
+            Session::set('error_message', $exception->getMessage());
+
+            // Ανακατεύθυνση στην αρχική σελίδα
+            header('Location: ' . BASE_URL . 'home');
+            exit;
+        }
+    }
+
+    /**
+     * Διαχειρίζεται μια εξαίρεση σφάλματος διακομιστή
+     *
+     * @param ServerErrorException $exception Η εξαίρεση
+     * @param bool $isAjax Αν είναι AJAX αίτημα
+     * @return void
+     */
+    protected function handleServerErrorException(ServerErrorException $exception, $isAjax)
+    {
+        // Δημιουργία μηνύματος σφάλματος
+        $message = $this->debug ? $exception->getMessage() : $this->settings['default_error_message'];
+
+        if ($isAjax) {
+            // Επιστροφή JSON απάντησης
+            JsonHelper::error($message, [], 500);
+        } else {
+            // Εμφάνιση της σελίδας 500
+            http_response_code(500);
+            $this->renderErrorView('500', [
+                'message' => $message,
+                'exception' => $exception
+            ]);
+            exit;
+        }
+    }
+
+    /**
+     * Διαχειρίζεται μια γενική εξαίρεση
+     *
+     * @param \Throwable $exception Η εξαίρεση
+     * @param bool $isAjax Αν είναι AJAX αίτημα
+     * @return void
+     */
+    protected function handleGenericException(\Throwable $exception, $isAjax)
+    {
+        // Δημιουργία μηνύματος σφάλματος
+        $message = $this->debug ? $exception->getMessage() : $this->settings['default_error_message'];
+
+        if ($isAjax) {
+            // Επιστροφή JSON απάντησης
+            JsonHelper::error($message, [], 500);
+        } else {
+            // Εμφάνιση της σελίδας 500
+            http_response_code(500);
+            $this->renderErrorView('500', [
+                'message' => $message,
+                'exception' => $exception
+            ]);
+            exit;
+        }
+    }
+
+    /**
+     * Εμφανίζει ένα view σφάλματος
+     *
+     * @param string $view Το όνομα του view
+     * @param array $data Τα δεδομένα για το view
+     * @return void
+     */
+    protected function renderErrorView($view, array $data = [])
+    {
+        // Έλεγχος αν υπάρχει το view
+        $viewPath = ROOT_DIR . $this->settings['error_views_path'] . $view . '.php';
+        if (!file_exists($viewPath)) {
+            $viewPath = ROOT_DIR . $this->settings['error_views_path'] . 'error.php';
+        }
+
+        // Εξαγωγή των δεδομένων
+        extract($data);
+
+        // Έναρξη του output buffering
+        ob_start();
+
+        // Συμπερίληψη του view
+        include $viewPath;
+
+        // Λήψη του περιεχομένου του view
+        $content = ob_get_clean();
+
+        // Έλεγχος αν υπάρχει layout
+        $layoutPath = ROOT_DIR . '/src/Views/' . $this->settings['error_layout'] . '.php';
+        if (file_exists($layoutPath)) {
+            // Συμπερίληψη του layout
+            include $layoutPath;
+        } else {
+            // Εμφάνιση του περιεχομένου του view
+            echo $content;
+        }
+    }
+
+    /**
+     * Καταχωρεί τον χειριστή εξαιρέσεων
+     *
+     * @return void
+     */
+    public function register()
+    {
         // Καταχώρηση του χειριστή εξαιρέσεων
-        set_exception_handler([$handler, 'handleException']);
+        set_exception_handler([$this, 'handle']);
 
         // Καταχώρηση του χειριστή σφαλμάτων
-        set_error_handler([$handler, 'handleError']);
+        set_error_handler(function ($severity, $message, $file, $line) {
+            if (!(error_reporting() & $severity)) {
+                // Αυτό το σφάλμα δεν καταγράφεται στο error_reporting
+                return;
+            }
+
+            throw new \ErrorException($message, 0, $severity, $file, $line);
+        });
 
         // Καταχώρηση του χειριστή για τα σφάλματα που δεν έχουν αντιμετωπιστεί
-        register_shutdown_function([$handler, 'handleShutdown']);
-
-        self::$registered = true;
-    }
-
-    /**
-     * Καταχωρεί τους προεπιλεγμένους χειριστές εξαιρέσεων
-     *
-     * @return void
-     */
-    private function registerDefaultHandlers()
-    {
-        // Χειριστής για ValidationException
-        $this->handlers[ValidationException::class] = function (ValidationException $e) {
-            // Αποθήκευση των σφαλμάτων επικύρωσης στο session
-            $e->storeErrorsInSession();
-
-            // Καταγραφή του σφάλματος
-            $e->log();
-
-            // Ανακατεύθυνση πίσω με τα σφάλματα
-            $this->redirectBack();
-        };
-
-        // Χειριστής για DatabaseException
-        $this->handlers[DatabaseException::class] = function (DatabaseException $e) {
-            // Καταγραφή του σφάλματος
-            $e->log();
-
-            // Εμφάνιση σελίδας σφάλματος
-            $this->renderErrorPage(500, 'Σφάλμα Βάσης Δεδομένων', $e);
-        };
-
-        // Χειριστής για AuthException
-        $this->handlers[AuthException::class] = function (AuthException $e) {
-            // Καταγραφή του σφάλματος
-            $e->log();
-
-            // Ανάλογα με τον κωδικό σφάλματος, διαφορετική αντιμετώπιση
-            switch ($e->getCode()) {
-                case AuthException::ERROR_SESSION_EXPIRED:
-                    // Καταστροφή της συνεδρίας
-                    if (class_exists('\\Drivejob\\Core\\Session')) {
-                        Session::destroy();
-                    }
-
-                    // Ανακατεύθυνση στη σελίδα σύνδεσης με μήνυμα
-                    $this->redirectTo('/login.php', ['expired' => 1]);
-                    break;
-
-                case AuthException::ERROR_INSUFFICIENT_PERMISSIONS:
-                    // Ανακατεύθυνση στη σελίδα άρνησης πρόσβασης
-                    $this->redirectTo('/access-denied.php');
-                    break;
-
-                case AuthException::ERROR_ACCOUNT_NOT_VERIFIED:
-                    // Ανακατεύθυνση στη σελίδα επαλήθευσης
-                    $this->redirectTo('/verification-required.php');
-                    break;
-
-                default:
-                    // Ανακατεύθυνση στη σελίδα σύνδεσης με μήνυμα σφάλματος
-                    if (class_exists('\\Drivejob\\Core\\Session')) {
-                        Session::set('login_error', $e->getMessage());
-                    }
-
-                    $this->redirectTo('/login.php');
-                    break;
+        register_shutdown_function(function () {
+            $error = error_get_last();
+            if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+                $this->handle(new \ErrorException(
+                    $error['message'],
+                    0,
+                    $error['type'],
+                    $error['file'],
+                    $error['line']
+                ));
             }
-        };
-
-        // Γενικός χειριστής για BaseException
-        $this->handlers[BaseException::class] = function (BaseException $e) {
-            // Καταγραφή του σφάλματος
-            $e->log();
-
-            // Εμφάνιση σελίδας σφάλματος
-            $this->renderErrorPage(500, 'Σφάλμα Εφαρμογής', $e);
-        };
-
-        // Γενικός χειριστής για όλες τις εξαιρέσεις
-        $this->handlers[\Throwable::class] = function (\Throwable $e) {
-            // Καταγραφή του σφάλματος
-            if (class_exists('\\Drivejob\\Core\\Logger')) {
-                Logger::error($e->getMessage(), [
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-            } else {
-                error_log($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
-            }
-
-            // Εμφάνιση σελίδας σφάλματος
-            $this->renderErrorPage(500, 'Σφάλμα Συστήματος', $e);
-        };
-    }
-
-    /**
-     * Καταχωρεί έναν χειριστή εξαιρέσεων
-     *
-     * @param string $exceptionClass Η κλάση της εξαίρεσης
-     * @param callable $handler Ο χειριστής
-     * @return $this
-     */
-    public function registerHandler($exceptionClass, callable $handler)
-    {
-        $this->handlers[$exceptionClass] = $handler;
-        return $this;
-    }
-
-    /**
-     * Χειρίζεται μια εξαίρεση
-     *
-     * @param \Throwable $e Η εξαίρεση
-     * @return void
-     */
-    public function handleException(\Throwable $e)
-    {
-        // Εύρεση του κατάλληλου χειριστή
-        $handler = $this->findHandler($e);
-
-        // Εκτέλεση του χειριστή
-        call_user_func($handler, $e);
-    }
-
-    /**
-     * Χειρίζεται ένα σφάλμα PHP
-     *
-     * @param int $level Το επίπεδο του σφάλματος
-     * @param string $message Το μήνυμα του σφάλματος
-     * @param string $file Το αρχείο που προκάλεσε το σφάλμα
-     * @param int $line Η γραμμή που προκάλεσε το σφάλμα
-     * @return bool Αν το σφάλμα έχει αντιμετωπιστεί
-     */
-    public function handleError($level, $message, $file, $line)
-    {
-        // Έλεγχος αν το σφάλμα πρέπει να αντιμετωπιστεί
-        if (!(error_reporting() & $level)) {
-            return false;
-        }
-
-        // Μετατροπή του σφάλματος σε εξαίρεση
-        $e = new \ErrorException($message, 0, $level, $file, $line);
-
-        // Χειρισμός της εξαίρεσης
-        $this->handleException($e);
-
-        return true;
-    }
-
-    /**
-     * Χειρίζεται τα σφάλματα που δεν έχουν αντιμετωπιστεί
-     *
-     * @return void
-     */
-    public function handleShutdown()
-    {
-        // Λήψη του τελευταίου σφάλματος
-        $error = error_get_last();
-
-        // Έλεγχος αν υπάρχει σφάλμα
-        if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-            // Μετατροπή του σφάλματος σε εξαίρεση
-            $e = new \ErrorException(
-                $error['message'],
-                0,
-                $error['type'],
-                $error['file'],
-                $error['line']
-            );
-
-            // Χειρισμός της εξαίρεσης
-            $this->handleException($e);
-        }
-    }
-
-    /**
-     * Βρίσκει τον κατάλληλο χειριστή για μια εξαίρεση
-     *
-     * @param \Throwable $e Η εξαίρεση
-     * @return callable Ο χειριστής
-     */
-    private function findHandler(\Throwable $e)
-    {
-        // Έλεγχος για ακριβή ταίριασμα
-        $class = get_class($e);
-        if (isset($this->handlers[$class])) {
-            return $this->handlers[$class];
-        }
-
-        // Έλεγχος για ταίριασμα με βάση την ιεραρχία κλάσεων
-        foreach ($this->handlers as $exceptionClass => $handler) {
-            if ($e instanceof $exceptionClass) {
-                return $handler;
-            }
-        }
-
-        // Επιστροφή του προεπιλεγμένου χειριστή
-        return $this->handlers[\Throwable::class];
-    }
-
-    /**
-     * Ανακατευθύνει πίσω στην προηγούμενη σελίδα
-     *
-     * @return void
-     */
-    private function redirectBack()
-    {
-        // Έλεγχος αν υπάρχει HTTP_REFERER
-        $referer = $_SERVER['HTTP_REFERER'] ?? null;
-
-        if ($referer !== null) {
-            header('Location: ' . $referer);
-        } else {
-            header('Location: ' . BASE_URL);
-        }
-
-        exit();
-    }
-
-    /**
-     * Ανακατευθύνει σε μια συγκεκριμένη διεύθυνση
-     *
-     * @param string $url Η διεύθυνση
-     * @param array $params Οι παράμετροι
-     * @return void
-     */
-    private function redirectTo($url, array $params = [])
-    {
-        // Προσθήκη των παραμέτρων στη διεύθυνση
-        if (!empty($params)) {
-            $url .= (strpos($url, '?') === false ? '?' : '&') . http_build_query($params);
-        }
-
-        // Ανακατεύθυνση
-        header('Location: ' . BASE_URL . ltrim($url, '/'));
-        exit();
-    }
-
-    /**
-     * Εμφανίζει μια σελίδα σφάλματος
-     *
-     * @param int $code Ο κωδικός HTTP
-     * @param string $title Ο τίτλος της σελίδας
-     * @param \Throwable $e Η εξαίρεση
-     * @return void
-     */
-    private function renderErrorPage($code, $title, \Throwable $e)
-    {
-        // Ορισμός του κωδικού HTTP
-        http_response_code($code);
-
-        // Έλεγχος αν το αίτημα είναι AJAX
-        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-            // Επιστροφή JSON απάντησης
-            header('Content-Type: application/json');
-            echo \json_encode([
-                'error' => true,
-                'code' => $code,
-                'message' => $e->getMessage(),
-                'details' => $this->debug ? [
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => \explode("\n", $e->getTraceAsString())
-                ] : null
-            ]);
-            exit();
-        }
-
-        // Έλεγχος αν υπάρχει προσαρμοσμένη σελίδα σφάλματος
-        $errorPage = ROOT_DIR . '/src/Views/errors/' . $code . '.php';
-        if (file_exists($errorPage)) {
-            // Ορισμός των μεταβλητών για τη σελίδα σφάλματος
-            $pageTitle = $title;
-            $errorMessage = $e->getMessage();
-            $errorDetails = $this->debug ? [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ] : null;
-
-            // Συμπερίληψη της σελίδας σφάλματος
-            include $errorPage;
-            exit();
-        }
-
-        // Εμφάνιση προεπιλεγμένης σελίδας σφάλματος
-        echo '<!DOCTYPE html>';
-        echo '<html lang="el">';
-        echo '<head>';
-        echo '<meta charset="UTF-8">';
-        echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
-        echo '<title>' . htmlspecialchars($title) . '</title>';
-        echo '<style>';
-        echo 'body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; }';
-        echo '.error-container { max-width: 800px; margin: 0 auto; background-color: #f8f8f8; border: 1px solid #ddd; border-radius: 5px; padding: 20px; }';
-        echo '.error-title { color: #d9534f; }';
-        echo '.error-message { margin-bottom: 20px; }';
-        echo '.error-details { background-color: #f5f5f5; border: 1px solid #ddd; border-radius: 3px; padding: 10px; font-family: monospace; white-space: pre-wrap; }';
-        echo '</style>';
-        echo '</head>';
-        echo '<body>';
-        echo '<div class="error-container">';
-        echo '<h1 class="error-title">' . htmlspecialchars($title) . '</h1>';
-        echo '<div class="error-message">' . htmlspecialchars($e->getMessage()) . '</div>';
-
-        if ($this->debug) {
-            echo '<h2>Λεπτομέρειες Σφάλματος</h2>';
-            echo '<div class="error-details">';
-            echo 'Αρχείο: ' . htmlspecialchars($e->getFile()) . "\n";
-            echo 'Γραμμή: ' . htmlspecialchars($e->getLine()) . "\n\n";
-            echo 'Ίχνος Στοίβας:' . "\n";
-            echo htmlspecialchars($e->getTraceAsString());
-            echo '</div>';
-        }
-
-        echo '</div>';
-        echo '</body>';
-        echo '</html>';
-        exit();
+        });
     }
 }
