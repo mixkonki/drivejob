@@ -6,16 +6,20 @@ namespace Drivejob\Controllers;
 use Drivejob\Models\Driver\LicenseModel;
 use Drivejob\Models\Driver\SkillModel;
 use Drivejob\Models\Driver\RatingModel;
-use Drivejob\Models\JobListingModel;
+use Drivejob\Models\Driver\ProfileModel;
+use Drivejob\Models\Company\CompaniesModel;
+use Drivejob\Models\Company\JobListingModel;
 use Drivejob\Models\MatchingModel;
 use Drivejob\Core\AuthMiddleware;
 use Drivejob\Core\Logger;
+use Drivejob\Core\CSRF;
 
 class MatchingController
 {
     private $jobListingModel;
     private $matchingModel;
-    
+    private $profileModel;
+    private $companiesModel;
     private $licenseModel;
     private $skillModel;
     private $ratingModel;
@@ -30,7 +34,8 @@ class MatchingController
         $this->pdo = $pdo;
         $this->jobListingModel = new JobListingModel($pdo);
         $this->matchingModel = new MatchingModel($pdo);
-        $this->profileModel = new ProfileModel($pdo);  // Αλλαγή
+        $this->profileModel = new ProfileModel($pdo);
+        $this->companiesModel = new CompaniesModel($pdo);
         $this->licenseModel = new LicenseModel($pdo);
         $this->skillModel = new SkillModel($pdo);
         $this->ratingModel = new RatingModel($pdo);
