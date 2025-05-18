@@ -2,12 +2,12 @@
 
 namespace Drivejob\Controllers\Driver;
 
+use Drivejob\Controllers\BaseController;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
 use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
-use Drivejob\Core\Container;
 use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Repositories\JobListingRepository;
@@ -16,7 +16,7 @@ use Drivejob\Repositories\DriversRepository;
 /**
  * Controller για τις αγγελίες εργασίας από οδηγούς
  */
-class JobListingController
+class JobListingController extends BaseController
 {
     /**
      * @var JobListingRepository Το repository για τις αγγελίες εργασίας
@@ -29,22 +29,16 @@ class JobListingController
     private $driversRepository;
 
     /**
-     * @var Container Το container για τις εξαρτήσεις
-     */
-    private $container;
-
-    /**
      * Constructor
      */
     public function __construct()
     {
-        // Λήψη του container
-        $this->container = Container::getInstance();
-        $pdo = $this->container->get('pdo');
+        // Κλήση του constructor της γονικής κλάσης
+        parent::__construct();
 
         // Αρχικοποίηση των repositories
-        $this->jobListingRepository = new JobListingRepository($pdo);
-        $this->driversRepository = new DriversRepository($pdo);
+        $this->jobListingRepository = new JobListingRepository($this->pdo);
+        $this->driversRepository = new DriversRepository($this->pdo);
     }
 
     /**
@@ -393,26 +387,15 @@ class JobListingController
     private function collectFormData()
     {
         $data = [
-            'title' => $this->sanitize($_POST['title'] ?? ''),
-            'description' => $this->sanitize($_POST['description'] ?? ''),
-            'location' => $this->sanitize($_POST['location'] ?? ''),
-            'job_type' => $this->sanitize($_POST['job_type'] ?? ''),
-            'salary_range' => $this->sanitize($_POST['salary_range'] ?? ''),
-            'availability' => $this->sanitize($_POST['availability'] ?? ''),
-            'additional_info' => $this->sanitize($_POST['additional_info'] ?? '')
+            'title' => parent::sanitize($_POST['title'] ?? ''),
+            'description' => parent::sanitize($_POST['description'] ?? ''),
+            'location' => parent::sanitize($_POST['location'] ?? ''),
+            'job_type' => parent::sanitize($_POST['job_type'] ?? ''),
+            'salary_range' => parent::sanitize($_POST['salary_range'] ?? ''),
+            'availability' => parent::sanitize($_POST['availability'] ?? ''),
+            'additional_info' => parent::sanitize($_POST['additional_info'] ?? '')
         ];
 
         return $data;
-    }
-
-    /**
-     * Καθαρίζει μια τιμή εισόδου
-     * 
-     * @param string $input Η τιμή εισόδου
-     * @return string Η καθαρισμένη τιμή
-     */
-    private function sanitize($input)
-    {
-        return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
     }
 }
