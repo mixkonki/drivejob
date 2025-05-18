@@ -9,17 +9,32 @@ use Drivejob\Core\Exceptions\DatabaseException;
 /**
  * Repository για τις αιτήσεις εργασίας
  */
-class JobApplicationRepository
+class JobApplicationRepository extends BaseRepository implements JobApplicationRepositoryInterface
 {
-    /**
-     * @var PDO Η σύνδεση με τη βάση δεδομένων
-     */
-    private $pdo;
-
     /**
      * @var string Το όνομα του πίνακα
      */
-    private $table = 'job_applications';
+    protected $table = 'job_applications';
+
+    /**
+     * @var array Τα πεδία που μπορούν να ενημερωθούν
+     */
+    protected $fillable = [
+        'job_listing_id',
+        'driver_id',
+        'company_id',
+        'message',
+        'status',
+        'created_at',
+        'updated_at'
+    ];
+
+    /**
+     * @var array Τα πεδία που δεν μπορούν να ενημερωθούν
+     */
+    protected $guarded = [
+        'id'
+    ];
 
     /**
      * Constructor
@@ -28,146 +43,9 @@ class JobApplicationRepository
      */
     public function __construct(PDO $pdo)
     {
-        $this->pdo = $pdo;
+        parent::__construct($pdo);
     }
 
-    /**
-     * Δημιουργεί μια νέα αίτηση εργασίας
-     * 
-     * @param array $data Τα δεδομένα της αίτησης
-     * @return int|false Το ID της νέας αίτησης ή false σε περίπτωση αποτυχίας
-     */
-    public function create(array $data)
-    {
-        try {
-            // Δημιουργία του SQL ερωτήματος
-            $columns = implode(', ', array_keys($data));
-            $placeholders = implode(', ', array_fill(0, count($data), '?'));
-            $sql = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $result = $stmt->execute(array_values($data));
-
-            if ($result) {
-                return $this->pdo->lastInsertId();
-            } else {
-                Logger::error('Failed to create job application', [
-                    'data' => $data,
-                    'error' => $stmt->errorInfo()
-                ]);
-                return false;
-            }
-        } catch (\PDOException $e) {
-            Logger::error('PDO exception in create job application', [
-                'message' => $e->getMessage(),
-                'data' => $data
-            ]);
-            throw new DatabaseException('Failed to create job application', (int)$e->getCode(), $e, $data);
-        }
-    }
-
-    /**
-     * Ενημερώνει μια αίτηση εργασίας
-     * 
-     * @param int $id Το ID της αίτησης
-     * @param array $data Τα δεδομένα προς ενημέρωση
-     * @return bool Επιτυχία/αποτυχία
-     */
-    public function update($id, array $data)
-    {
-        try {
-            // Δημιουργία του SQL ερωτήματος
-            $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
-            $sql = "UPDATE {$this->table} SET $setClause WHERE id = ?";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $values = array_values($data);
-            $values[] = $id;
-            $result = $stmt->execute($values);
-
-            if (!$result) {
-                Logger::error('Failed to update job application', [
-                    'id' => $id,
-                    'data' => $data,
-                    'error' => $stmt->errorInfo()
-                ]);
-            }
-
-            return $result;
-        } catch (\PDOException $e) {
-            Logger::error('PDO exception in update job application', [
-                'message' => $e->getMessage(),
-                'id' => $id,
-                'data' => $data
-            ]);
-            throw new DatabaseException('Failed to update job application', (int)$e->getCode(), $e, [
-                'id' => $id,
-                'data' => $data
-            ]);
-        }
-    }
-
-    /**
-     * Διαγράφει μια αίτηση εργασίας
-     * 
-     * @param int $id Το ID της αίτησης
-     * @return bool Επιτυχία/αποτυχία
-     */
-    public function delete($id)
-    {
-        try {
-            // Δημιουργία του SQL ερωτήματος
-            $sql = "DELETE FROM {$this->table} WHERE id = ?";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $result = $stmt->execute([$id]);
-
-            if (!$result) {
-                Logger::error('Failed to delete job application', [
-                    'id' => $id,
-                    'error' => $stmt->errorInfo()
-                ]);
-            }
-
-            return $result;
-        } catch (\PDOException $e) {
-            Logger::error('PDO exception in delete job application', [
-                'message' => $e->getMessage(),
-                'id' => $id
-            ]);
-            throw new DatabaseException('Failed to delete job application', (int)$e->getCode(), $e, ['id' => $id]);
-        }
-    }
-
-    /**
-     * Βρίσκει μια αίτηση εργασίας με βάση το ID
-     * 
-     * @param int $id Το ID της αίτησης
-     * @return array|null Τα δεδομένα της αίτησης ή null αν δεν βρέθηκε
-     */
-    public function find($id)
-    {
-        try {
-            // Δημιουργία του SQL ερωτήματος
-            $sql = "SELECT * FROM {$this->table} WHERE id = ?";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$id]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            return $result ?: null;
-        } catch (\PDOException $e) {
-            Logger::error('PDO exception in find job application', [
-                'message' => $e->getMessage(),
-                'id' => $id
-            ]);
-            throw new DatabaseException('Failed to find job application', (int)$e->getCode(), $e, ['id' => $id]);
-        }
-    }
 
     /**
      * Βρίσκει μια αίτηση εργασίας με βάση τον οδηγό και την αγγελία
