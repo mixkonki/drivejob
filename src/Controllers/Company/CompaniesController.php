@@ -77,7 +77,7 @@ class CompaniesController extends BaseUserController
         $listings = $jobListingRepository->searchListings(['company_id' => $companyId], 1, 5);
 
         // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/companies/company_profile.php';
+        include ROOT_DIR . '/src/Views/companies/company-profile.php';
     }
 
     /**
