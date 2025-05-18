@@ -2,177 +2,192 @@
 
 namespace Drivejob\Core;
 
+use Drivejob\Helpers\JsonHelper;
+
 /**
- * Κλάση Logger για καταγραφή συμβάντων και αποσφαλμάτωση
+ * Κλάση για την καταγραφή μηνυμάτων
  */
 class Logger
 {
     /**
-     * @var string $logFile Διαδρομή αρχείου καταγραφής
+     * Επίπεδα καταγραφής
+     */
+    const DEBUG = 'debug';
+    const INFO = 'info';
+    const WARNING = 'warning';
+    const ERROR = 'error';
+    const CRITICAL = 'critical';
+
+    /**
+     * Το ελάχιστο επίπεδο καταγραφής
+     *
+     * @var string
+     */
+    private static $minLevel = self::DEBUG;
+
+    /**
+     * Το αρχείο καταγραφής
+     *
+     * @var string
      */
     private static $logFile = null;
 
     /**
-     * @var bool $initialized Αν έχει αρχικοποιηθεί ο logger
-     */
-    private static $initialized = false;
-
-    /**
-     * @var string $defaultLogLevel Προεπιλεγμένο επίπεδο καταγραφής
-     */
-    private static $defaultLogLevel = 'info';
-
-    /**
-     * @var array $logLevels Επίπεδα καταγραφής
-     */
-    private static $logLevels = [
-        'debug' => 0,
-        'info' => 1,
-        'warning' => 2,
-        'error' => 3,
-        'critical' => 4
-    ];
-
-    /**
      * Αρχικοποίηση του logger
      *
-     * @param string $logFile Διαδρομή αρχείου καταγραφής
-     * @param string $defaultLevel Προεπιλεγμένο επίπεδο καταγραφής
+     * @param string $logFile Το αρχείο καταγραφής
+     * @param string $minLevel Το ελάχιστο επίπεδο καταγραφής
      * @return void
      */
-    public static function init($logFile = null, $defaultLevel = 'info')
+    public static function init($logFile = null, $minLevel = self::DEBUG)
     {
-        if (self::$initialized) {
-            return;
+        self::$logFile = $logFile ?: ROOT_DIR . '/logs/app.log';
+        self::$minLevel = $minLevel;
+
+        // Δημιουργία του καταλόγου logs αν δεν υπάρχει
+        $logsDir = dirname(self::$logFile);
+        if (!is_dir($logsDir)) {
+            mkdir($logsDir, 0755, true);
         }
+    }
 
-        // Αν δεν καθοριστεί αρχείο καταγραφής, χρήση προεπιλεγμένου
-        if ($logFile === null) {
-            $baseDir = dirname(dirname(dirname(__FILE__)));
-            $logDir = $baseDir . '/logs';
+    /**
+     * Καταγραφή μηνύματος debug
+     *
+     * @param string $message Το μήνυμα
+     * @param array $context Επιπλέον context
+     * @return void
+     */
+    public static function debug($message, array $context = [])
+    {
+        self::log(self::DEBUG, $message, $context);
+    }
 
-            // Δημιουργία καταλόγου logs αν δεν υπάρχει
-            if (!is_dir($logDir)) {
-                mkdir($logDir, 0755, true);
-            }
+    /**
+     * Καταγραφή μηνύματος info
+     *
+     * @param string $message Το μήνυμα
+     * @param array $context Επιπλέον context
+     * @return void
+     */
+    public static function info($message, array $context = [])
+    {
+        self::log(self::INFO, $message, $context);
+    }
 
-            self::$logFile = $logDir . '/application_' . date('Y-m-d') . '.log';
-        } else {
-            self::$logFile = $logFile;
-        }
+    /**
+     * Καταγραφή μηνύματος warning
+     *
+     * @param string $message Το μήνυμα
+     * @param array $context Επιπλέον context
+     * @return void
+     */
+    public static function warning($message, array $context = [])
+    {
+        self::log(self::WARNING, $message, $context);
+    }
 
-        // Έλεγχος εγκυρότητας επιπέδου καταγραφής
-        if (isset(self::$logLevels[$defaultLevel])) {
-            self::$defaultLogLevel = $defaultLevel;
-        }
+    /**
+     * Καταγραφή μηνύματος error
+     *
+     * @param string $message Το μήνυμα
+     * @param array $context Επιπλέον context
+     * @return void
+     */
+    public static function error($message, array $context = [])
+    {
+        self::log(self::ERROR, $message, $context);
+    }
 
-        self::$initialized = true;
+    /**
+     * Καταγραφή μηνύματος critical
+     *
+     * @param string $message Το μήνυμα
+     * @param array $context Επιπλέον context
+     * @return void
+     */
+    public static function critical($message, array $context = [])
+    {
+        self::log(self::CRITICAL, $message, $context);
     }
 
     /**
      * Καταγραφή μηνύματος
      *
-     * @param string $message Μήνυμα για καταγραφή
-     * @param string $level Επίπεδο καταγραφής
-     * @param string|array $context Πλαίσιο καταγραφής
+     * @param string $level Το επίπεδο καταγραφής
+     * @param string $message Το μήνυμα
+     * @param array $context Επιπλέον context
      * @return void
      */
-    public static function log($message, $level = null, $context = '')
+    private static function log($level, $message, array $context = [])
     {
-        if (!self::$initialized) {
+        // Έλεγχος αν το επίπεδο είναι μεγαλύτερο ή ίσο με το ελάχιστο
+        if (!self::shouldLog($level)) {
+            return;
+        }
+
+        // Αρχικοποίηση του logger αν δεν έχει αρχικοποιηθεί
+        if (self::$logFile === null) {
             self::init();
         }
 
-        // Αν δεν καθοριστεί επίπεδο, χρήση προεπιλεγμένου
-        if ($level === null || !isset(self::$logLevels[$level])) {
-            $level = self::$defaultLogLevel;
-        }
+        // Μορφοποίηση του μηνύματος
+        $logMessage = self::formatMessage($level, $message, $context);
 
-        // Μορφοποίηση του μηνύματος με τα πλήρη στοιχεία
-        $timestamp = date('Y-m-d H:i:s');
-
-        // Διαχείριση του context αν είναι array
-        if (is_array($context)) {
-            $formattedContext = json_encode($context, JSON_UNESCAPED_UNICODE);
-        } else {
-            $formattedContext = $context ? "[$context]" : '';
-        }
-
-        $formattedLevel = strtoupper($level);
-
-        // Αν το μήνυμα είναι αντικείμενο ή πίνακας, μορφοποίηση σε JSON
-        if (is_array($message) || is_object($message)) {
-            $message = json_encode($message, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        }
-
-        // Διαφορετική μορφοποίηση ανάλογα με το αν υπάρχει context
-        if ($formattedContext) {
-            $logLine = "[$timestamp] $formattedLevel $formattedContext: $message" . PHP_EOL;
-        } else {
-            $logLine = "[$timestamp] $formattedLevel: $message" . PHP_EOL;
-        }
-
-        // Καταγραφή στο αρχείο
-        file_put_contents(self::$logFile, $logLine, FILE_APPEND);
-
-        // Αν είναι σε περιβάλλον ανάπτυξης, καταγραφή και στο error_log
-        if (defined('ENVIRONMENT') && ENVIRONMENT === 'development') {
-            error_log($logLine);
-        }
+        // Καταγραφή του μηνύματος
+        self::writeLog($logMessage);
     }
 
     /**
-     * Καταγραφή μηνύματος επιπέδου Debug
+     * Έλεγχος αν το επίπεδο είναι μεγαλύτερο ή ίσο με το ελάχιστο
      *
-     * @param string $message Μήνυμα
-     * @param string|array $context Πλαίσιο
+     * @param string $level Το επίπεδο καταγραφής
+     * @return bool Αν το επίπεδο είναι μεγαλύτερο ή ίσο με το ελάχιστο
      */
-    public static function debug($message, $context = '')
+    private static function shouldLog($level)
     {
-        self::log($message, 'debug', $context);
+        $levels = [
+            self::DEBUG => 0,
+            self::INFO => 1,
+            self::WARNING => 2,
+            self::ERROR => 3,
+            self::CRITICAL => 4
+        ];
+
+        return $levels[$level] >= $levels[self::$minLevel];
     }
 
     /**
-     * Καταγραφή μηνύματος επιπέδου Info
+     * Μορφοποίηση του μηνύματος
      *
-     * @param string $message Μήνυμα
-     * @param string|array $context Πλαίσιο
+     * @param string $level Το επίπεδο καταγραφής
+     * @param string $message Το μήνυμα
+     * @param array $context Επιπλέον context
+     * @return string Το μορφοποιημένο μήνυμα
      */
-    public static function info($message, $context = '')
+    private static function formatMessage($level, $message, array $context = [])
     {
-        self::log($message, 'info', $context);
+        // Μορφοποίηση του μηνύματος
+        $date = date('Y-m-d H:i:s');
+        $logMessage = "[$date] [$level] $message";
+
+        // Προσθήκη του context
+        if (!empty($context)) {
+            $logMessage .= ' ' . JsonHelper::encode($context);
+        }
+
+        return $logMessage;
     }
 
     /**
-     * Καταγραφή μηνύματος επιπέδου Warning
+     * Καταγραφή του μηνύματος στο αρχείο
      *
-     * @param string $message Μήνυμα
-     * @param string|array $context Πλαίσιο
+     * @param string $message Το μήνυμα
+     * @return void
      */
-    public static function warning($message, $context = '')
+    private static function writeLog($message)
     {
-        self::log($message, 'warning', $context);
-    }
-
-    /**
-     * Καταγραφή μηνύματος επιπέδου Error
-     *
-     * @param string $message Μήνυμα
-     * @param string|array $context Πλαίσιο
-     */
-    public static function error($message, $context = '')
-    {
-        self::log($message, 'error', $context);
-    }
-
-    /**
-     * Καταγραφή μηνύματος επιπέδου Critical
-     *
-     * @param string $message Μήνυμα
-     * @param string|array $context Πλαίσιο
-     */
-    public static function critical($message, $context = '')
-    {
-        self::log($message, 'critical', $context);
+        // Προσθήκη του μηνύματος στο αρχείο
+        file_put_contents(self::$logFile, $message . PHP_EOL, FILE_APPEND);
     }
 }
