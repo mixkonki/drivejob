@@ -2,7 +2,7 @@
 
 namespace Drivejob\Controllers\Driver;
 
-use Drivejob\Controllers\BaseController;
+use Drivejob\Controllers\BaseJobListingController;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
@@ -10,24 +10,14 @@ use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
 use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
-use Drivejob\Repositories\JobListingRepository;
-use Drivejob\Repositories\DriversRepository;
 
 /**
  * Controller για τις αγγελίες εργασίας από οδηγούς
+ * 
+ * Επεκτείνει τον BaseJobListingController για κοινές λειτουργίες
  */
-class JobListingController extends BaseController
+class JobListingController extends BaseJobListingController
 {
-    /**
-     * @var JobListingRepository Το repository για τις αγγελίες εργασίας
-     */
-    private $jobListingRepository;
-
-    /**
-     * @var DriversRepository Το repository για τους οδηγούς
-     */
-    private $driversRepository;
-
     /**
      * Constructor
      */
@@ -35,10 +25,6 @@ class JobListingController extends BaseController
     {
         // Κλήση του constructor της γονικής κλάσης
         parent::__construct();
-
-        // Αρχικοποίηση των repositories
-        $this->jobListingRepository = new JobListingRepository($this->pdo);
-        $this->driversRepository = new DriversRepository($this->pdo);
     }
 
     /**
@@ -384,7 +370,7 @@ class JobListingController extends BaseController
      * 
      * @return array Τα δεδομένα της φόρμας
      */
-    private function collectFormData()
+    protected function collectFormData()
     {
         $data = [
             'title' => parent::sanitize($_POST['title'] ?? ''),

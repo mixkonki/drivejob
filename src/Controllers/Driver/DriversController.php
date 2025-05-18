@@ -2,6 +2,7 @@
 
 namespace Drivejob\Controllers\Driver;
 
+use Drivejob\Controllers\BaseUserController;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
@@ -19,8 +20,9 @@ use function json_encode;
  * Controller για τους οδηγούς
  * 
  * Νέα έκδοση που χρησιμοποιεί το Repository pattern
+ * και επεκτείνει τον BaseUserController για κοινές λειτουργίες
  */
-class DriversController
+class DriversController extends BaseUserController
 {
     /**
      * @var DriversRepository Το repository για τους οδηγούς
@@ -35,7 +37,7 @@ class DriversController
     /**
      * @var Container Το container για τις εξαρτήσεις
      */
-    private $container;
+    protected $container;
 
     /**
      * Constructor
@@ -44,6 +46,9 @@ class DriversController
      */
     public function __construct($pdo = null)
     {
+        // Κλήση του constructor της γονικής κλάσης
+        parent::__construct();
+
         // Λήψη του container
         $this->container = Container::getInstance();
 
@@ -469,37 +474,6 @@ class DriversController
         return $data;
     }
 
-    /**
-     * Καθαρίζει μια τιμή εισόδου
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return string|null Η καθαρισμένη τιμή
-     */
-    private function sanitize($input)
-    {
-        if ($input === null) {
-            return null;
-        }
-        return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
-    }
-
-    /**
-     * Καθαρίζει μια ημερομηνία
-     * 
-     * @param string|null $date Η ημερομηνία
-     * @return string|null Η καθαρισμένη ημερομηνία
-     */
-    private function sanitizeDate($date)
-    {
-        if ($date === null || empty($date)) {
-            return null;
-        }
-        $dateObj = \DateTime::createFromFormat('Y-m-d', $date);
-        if ($dateObj && $dateObj->format('Y-m-d') === $date) {
-            return $date;
-        }
-        return null;
-    }
 
     /**
      * Ανεβάζει ένα αρχείο

@@ -2,6 +2,7 @@
 
 namespace Drivejob\Controllers\Company;
 
+use Drivejob\Controllers\BaseUserController;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
@@ -17,8 +18,9 @@ use Drivejob\Repositories\CompaniesRepository;
  * Controller για τις εταιρείες
  * 
  * Νέα έκδοση που χρησιμοποιεί το Repository pattern
+ * και επεκτείνει τον BaseUserController για κοινές λειτουργίες
  */
-class CompaniesController
+class CompaniesController extends BaseUserController
 {
     /**
      * @var CompaniesRepository Το repository για τις εταιρείες
@@ -28,7 +30,7 @@ class CompaniesController
     /**
      * @var Container Το container για τις εξαρτήσεις
      */
-    private $container;
+    protected $container;
 
     /**
      * Constructor
@@ -37,6 +39,9 @@ class CompaniesController
      */
     public function __construct($pdo = null)
     {
+        // Κλήση του constructor της γονικής κλάσης
+        parent::__construct();
+
         // Λήψη του container
         $this->container = Container::getInstance();
 
@@ -59,13 +64,17 @@ class CompaniesController
 
         // Λήψη των στοιχείων της εταιρείας
         $companyId = Session::get('user_id');
-        $company = $this->companiesRepository->find($companyId);
+        $companyData = $this->companiesRepository->find($companyId);
 
-        if (!$company) {
+        if (!$companyData) {
             Session::set('error_message', 'Τα στοιχεία της εταιρείας δεν βρέθηκαν.');
             header('Location: ' . BASE_URL);
             exit();
         }
+
+        // Λήψη των αγγελιών της εταιρείας
+        $jobListingRepository = new \Drivejob\Repositories\JobListingRepository($this->container->get('pdo'));
+        $listings = $jobListingRepository->searchListings(['company_id' => $companyId], 1, 5);
 
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/companies/profile.php';
@@ -81,9 +90,9 @@ class CompaniesController
 
         // Λήψη των στοιχείων της εταιρείας
         $companyId = Session::get('user_id');
-        $company = $this->companiesRepository->find($companyId);
+        $companyData = $this->companiesRepository->find($companyId);
 
-        if (!$company) {
+        if (!$companyData) {
             Session::set('error_message', 'Τα στοιχεία της εταιρείας δεν βρέθηκαν.');
             header('Location: ' . BASE_URL);
             exit();
@@ -184,13 +193,17 @@ class CompaniesController
         }
 
         // Ανάκτηση των στοιχείων της εταιρείας
-        $company = $this->companiesRepository->find($id);
+        $companyData = $this->companiesRepository->find($id);
 
-        if (!$company) {
+        if (!$companyData) {
             Session::set('error_message', 'Η εταιρεία δεν βρέθηκε');
             header('Location: ' . BASE_URL . 'home');
             exit;
         }
+
+        // Λήψη των αγγελιών της εταιρείας
+        $jobListingRepository = new \Drivejob\Repositories\JobListingRepository($this->container->get('pdo'));
+        $listings = $jobListingRepository->searchListings(['company_id' => $id], 1, 5);
 
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/companies/public-profile.php';
@@ -336,53 +349,5 @@ class CompaniesController
             'founded_year' => $this->sanitize($_POST['founded_year'] ?? null),
             'updated_at' => date('Y-m-d H:i:s')
         ];
-    }
-
-    /**
-     * Καθαρίζει μια τιμή εισόδου
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return string|null Η καθαρισμένη τιμή
-     */
-    private function sanitize($input)
-    {
-        if ($input === null) {
-            return null;
-        }
-        return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
-    }
-
-    /**
-     * Καθαρίζει HTML
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return string|null Η καθαρισμένη τιμή
-     */
-    private function sanitizeHtml($input)
-    {
-        if ($input === null) {
-            return null;
-        }
-        // Επιτρέπουμε βασικά HTML tags
-        $allowedTags = '<p><br><strong><em><ul><ol><li><h2><h3><h4>';
-        return strip_tags(trim($input), $allowedTags);
-    }
-
-    /**
-     * Καθαρίζει ένα URL
-     * 
-     * @param string|null $url Το URL
-     * @return string|null Το καθαρισμένο URL
-     */
-    private function sanitizeUrl($url)
-    {
-        if (empty($url)) {
-            return null;
-        }
-        $sanitizedUrl = filter_var($url, FILTER_SANITIZE_URL);
-        if (filter_var($sanitizedUrl, FILTER_VALIDATE_URL)) {
-            return $sanitizedUrl;
-        }
-        return null;
     }
 }

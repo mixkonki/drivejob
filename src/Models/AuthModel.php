@@ -4,6 +4,8 @@ namespace Drivejob\Models;
 
 use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
+use Drivejob\Models\Driver\ProfileModel;
+use Drivejob\Models\Company\CompaniesModel;
 
 /**
  * Μοντέλο για τη διαχείριση της αυθεντικοποίησης και εξουσιοδότησης

@@ -1,8 +1,7 @@
 <?php
 
-namespace Drivejob\Controllers\Company;
+namespace Drivejob\Controllers;
 
-use Drivejob\Controllers\BaseJobListingController;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
@@ -11,15 +10,33 @@ use Drivejob\Core\Session;
 use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
+use Drivejob\Repositories\JobListingRepository;
+use Drivejob\Repositories\CompaniesRepository;
+use Drivejob\Repositories\DriversRepository;
 use Drivejob\Helpers\JsonHelper;
 
 /**
- * Controller για τις αγγελίες εργασίας
+ * Βασικός Controller για τις αγγελίες εργασίας
  * 
- * Επεκτείνει τον BaseJobListingController για κοινές λειτουργίες
+ * Περιέχει κοινές λειτουργίες για τις αγγελίες εργασίας από οδηγούς και εταιρείες
  */
-class JobListingController extends BaseJobListingController
+class BaseJobListingController extends BaseController
 {
+    /**
+     * @var JobListingRepository Το repository για τις αγγελίες εργασίας
+     */
+    protected $jobListingRepository;
+
+    /**
+     * @var CompaniesRepository Το repository για τις εταιρείες
+     */
+    protected $companiesRepository;
+
+    /**
+     * @var DriversRepository Το repository για τους οδηγούς
+     */
+    protected $driversRepository;
+
     /**
      * Constructor
      *
@@ -28,7 +45,17 @@ class JobListingController extends BaseJobListingController
     public function __construct($pdo = null)
     {
         // Κλήση του constructor της γονικής κλάσης
-        parent::__construct($pdo);
+        parent::__construct();
+
+        // Αν δεν έχει παραχθεί PDO, χρησιμοποιούμε το PDO από τον BaseController
+        if ($pdo === null) {
+            $pdo = $this->pdo;
+        }
+
+        // Αρχικοποίηση των repositories
+        $this->jobListingRepository = new JobListingRepository($pdo);
+        $this->companiesRepository = new CompaniesRepository($pdo);
+        $this->driversRepository = new DriversRepository($pdo);
     }
 
     /**
@@ -124,9 +151,11 @@ class JobListingController extends BaseJobListingController
 
             if (!$isActive || !$isApproved) {
                 // Αν ο χρήστης είναι η εταιρεία που δημιούργησε την αγγελία, επιτρέπουμε την προβολή
-                $isOwner = Session::has('user_id') && Session::get('user_role') === 'company' && Session::get('user_id') == $listing['company_id'];
+                $isCompanyOwner = Session::has('user_id') && Session::get('user_role') === 'company' && Session::get('user_id') == $listing['company_id'];
+                // Αν ο χρήστης είναι ο οδηγός που δημιούργησε την αγγελία, επιτρέπουμε την προβολή
+                $isDriverOwner = Session::has('user_id') && Session::get('user_role') === 'driver' && Session::get('user_id') == $listing['driver_id'];
 
-                if (!$isOwner) {
+                if (!$isCompanyOwner && !$isDriverOwner) {
                     Session::set('error_message', 'Η αγγελία δεν είναι διαθέσιμη');
                     header('Location: ' . BASE_URL . 'job-listings');
                     exit;
@@ -190,293 +219,6 @@ class JobListingController extends BaseJobListingController
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in job listing show', [
-                'id' => $id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings');
-            exit();
-        }
-    }
-
-    /**
-     * Εμφανίζει τη φόρμα δημιουργίας αγγελίας για εταιρείες
-     */
-    public function create()
-    {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως εταιρεία
-        AuthMiddleware::hasRole('company');
-
-        // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/job-listings/Company/create.php';
-    }
-
-
-    /**
-     * Εμφανίζει τη φόρμα δημιουργίας αγγελίας για οδηγούς
-     */
-    public function createDriverListing()
-    {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως οδηγός
-        AuthMiddleware::hasRole('driver');
-
-        // Λήψη των στοιχείων του οδηγού
-        $driverId = Session::get('user_id');
-        $driverProfile = $this->driversRepository->find($driverId);
-
-        if (!$driverProfile) {
-            Session::set('error_message', 'Τα στοιχεία του οδηγού δεν βρέθηκαν.');
-            header('Location: ' . BASE_URL . 'drivers/profile');
-            exit();
-        }
-
-        // Λήψη των δεδομένων του οδηγού για τη φόρμα
-        $driverLicenseTypes = [];
-        $driverOperatorSubSpecialities = [];
-
-        // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/job-listings/Driver/create.php';
-    }
-
-    /**
-     * Αποθηκεύει μια νέα αγγελία
-     */
-    public function store()
-    {
-        // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-            Logger::error('CSRF token validation failed in job listing store');
-            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings/Company/create');
-            exit();
-        }
-
-        // Επικύρωση βασικών δεδομένων
-        $validator = new Validator($_POST);
-        $validator->required('title', 'Ο τίτλος είναι υποχρεωτικός.')
-            ->required('description', 'Η περιγραφή είναι υποχρεωτική.')
-            ->required('location', 'Η τοποθεσία είναι υποχρεωτική.')
-            ->required('job_type', 'Ο τύπος εργασίας είναι υποχρεωτικός.');
-
-        if (!$validator->isValid()) {
-            Logger::error('Validation failed in job listing store', [
-                'errors' => $validator->getErrors(),
-                'post_data' => $_POST
-            ]);
-            Session::set('errors', $validator->getErrors());
-            Session::set('old_input', $_POST);
-
-            // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
-            if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                header('Location: ' . BASE_URL . 'job-listings/Driver/create');
-            } else {
-                header('Location: ' . BASE_URL . 'job-listings/Company/create');
-            }
-            exit();
-        }
-
-        // Συλλογή των δεδομένων από τη φόρμα
-        $data = $this->collectFormData();
-        $data['created_at'] = date('Y-m-d H:i:s');
-        $data['updated_at'] = date('Y-m-d H:i:s');
-        $data['views'] = 0;
-        $data['applications'] = 0;
-        $data['is_active'] = 1;
-        $data['is_approved'] = 1; // Αυτόματη έγκριση για τώρα
-
-        // Ανάλογα με τον τύπο της αγγελίας, προσθέτουμε τα κατάλληλα πεδία
-        if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-            // Αγγελία αναζήτησης εργασίας από οδηγό
-            $driverId = Session::get('user_id');
-            $data['driver_id'] = $driverId;
-            $data['company_id'] = null;
-
-            Logger::info('Starting driver job listing creation', ['driver_id' => $driverId]);
-        } else {
-            // Αγγελία προσφοράς εργασίας από εταιρεία
-            $companyId = Session::get('user_id');
-            $data['company_id'] = $companyId;
-            $data['driver_id'] = null;
-
-            Logger::info('Starting company job listing creation', ['company_id' => $companyId]);
-        }
-
-        Logger::info('Collected form data for job listing', ['data_keys' => array_keys($data)]);
-
-        try {
-            // Δημιουργία της αγγελίας με το repository
-            $listingId = $this->jobListingRepository->create($data);
-
-            if ($listingId) {
-                Logger::info('Job listing creation successful', ['listing_id' => $listingId]);
-                Session::set('success_message', 'Η αγγελία δημιουργήθηκε με επιτυχία.');
-                header('Location: ' . BASE_URL . 'job-listings/show/' . $listingId);
-                exit();
-            } else {
-                Logger::error('Job listing creation failed', [
-                    'user_id' => Session::get('user_id'),
-                    'data' => $data
-                ]);
-                Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά τη δημιουργία της αγγελίας. Παρακαλώ δοκιμάστε ξανά.');
-
-                // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
-                if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                    header('Location: ' . BASE_URL . 'job-listings/Driver/create');
-                } else {
-                    header('Location: ' . BASE_URL . 'job-listings/Company/create');
-                }
-                exit();
-            }
-        } catch (DatabaseException $e) {
-            Logger::error('Database exception in job listing store', [
-                'user_id' => Session::get('user_id'),
-                'message' => $e->getMessage(),
-                'context' => $e->getContext()
-            ]);
-            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-
-            // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
-            if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                header('Location: ' . BASE_URL . 'job-listings/Driver/create');
-            } else {
-                header('Location: ' . BASE_URL . 'job-listings/Company/create');
-            }
-            exit();
-        } catch (\Exception $e) {
-            Logger::error('Exception in job listing store', [
-                'user_id' => Session::get('user_id'),
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-
-            // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
-            if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                header('Location: ' . BASE_URL . 'job-listings/Driver/create');
-            } else {
-                header('Location: ' . BASE_URL . 'job-listings/Company/create');
-            }
-            exit();
-        }
-    }
-
-    /**
-     * Εμφανίζει τη φόρμα επεξεργασίας αγγελίας
-     * 
-     * @param int $id Το ID της αγγελίας
-     */
-    public function edit($id)
-    {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως εταιρεία
-        AuthMiddleware::hasRole('company');
-
-        // Έλεγχος αν το ID είναι έγκυρο
-        if (!$id || !is_numeric($id)) {
-            Session::set('error_message', 'Μη έγκυρο αναγνωριστικό αγγελίας');
-            header('Location: ' . BASE_URL . 'job-listings');
-            exit;
-        }
-
-        try {
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($id);
-
-            if (!$listing) {
-                Session::set('error_message', 'Η αγγελία δεν βρέθηκε');
-                header('Location: ' . BASE_URL . 'job-listings');
-                exit;
-            }
-
-            // Έλεγχος αν ο χρήστης είναι ο ιδιοκτήτης της αγγελίας
-            if ($listing['company_id'] != Session::get('user_id')) {
-                Session::set('error_message', 'Δεν έχετε δικαίωμα επεξεργασίας αυτής της αγγελίας');
-                header('Location: ' . BASE_URL . 'job-listings');
-                exit;
-            }
-
-            // Φόρτωση του view
-            include ROOT_DIR . '/src/Views/job-listings/edit.php';
-        } catch (DatabaseException $e) {
-            Logger::error('Database exception in job listing edit', [
-                'id' => $id,
-                'message' => $e->getMessage(),
-                'context' => $e->getContext()
-            ]);
-
-            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings');
-            exit();
-        } catch (\Exception $e) {
-            Logger::error('Exception in job listing edit', [
-                'id' => $id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings');
-            exit();
-        }
-    }
-
-    /**
-     * Εμφανίζει τη φόρμα επεξεργασίας αγγελίας οδηγού
-     * 
-     * @param int $id Το ID της αγγελίας
-     */
-    public function editDriverListing($id)
-    {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως οδηγός
-        AuthMiddleware::hasRole('driver');
-
-        // Έλεγχος αν το ID είναι έγκυρο
-        if (!$id || !is_numeric($id)) {
-            Session::set('error_message', 'Μη έγκυρο αναγνωριστικό αγγελίας');
-            header('Location: ' . BASE_URL . 'job-listings');
-            exit;
-        }
-
-        try {
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($id);
-
-            if (!$listing) {
-                Session::set('error_message', 'Η αγγελία δεν βρέθηκε');
-                header('Location: ' . BASE_URL . 'job-listings');
-                exit;
-            }
-
-            // Έλεγχος αν ο χρήστης είναι ο ιδιοκτήτης της αγγελίας
-            if ($listing['driver_id'] != Session::get('user_id')) {
-                Session::set('error_message', 'Δεν έχετε δικαίωμα επεξεργασίας αυτής της αγγελίας');
-                header('Location: ' . BASE_URL . 'job-listings');
-                exit;
-            }
-
-            // Λήψη των στοιχείων του οδηγού
-            $driverId = Session::get('user_id');
-            $driverProfile = $this->driversRepository->find($driverId);
-
-            // Λήψη των δεδομένων του οδηγού για τη φόρμα
-            $driverLicenseTypes = [];
-            $driverOperatorSubSpecialities = [];
-
-            // Φόρτωση του view
-            include ROOT_DIR . '/src/Views/job-listings/edit-driver.php';
-        } catch (DatabaseException $e) {
-            Logger::error('Database exception in driver job listing edit', [
-                'id' => $id,
-                'message' => $e->getMessage(),
-                'context' => $e->getContext()
-            ]);
-
-            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings');
-            exit();
-        } catch (\Exception $e) {
-            Logger::error('Exception in driver job listing edit', [
                 'id' => $id,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -986,9 +728,9 @@ class JobListingController extends BaseJobListingController
     }
 
     /**
-     * Προσθήκη της μεθόδου collectFormData για το sanitization
+     * Συλλέγει τα δεδομένα από τη φόρμα
      * 
-     * @return array Τα καθαρισμένα δεδομένα της φόρμας
+     * @return array Τα δεδομένα της φόρμας
      */
     protected function collectFormData()
     {
