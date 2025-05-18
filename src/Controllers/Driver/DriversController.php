@@ -146,7 +146,7 @@ class DriversController extends BaseUserController
         }
 
         // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/drivers/driver_profile.php';
+        include ROOT_DIR . '/src/Views/drivers/driver-profile.php';
     }
 
     /**
