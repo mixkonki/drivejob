@@ -2,12 +2,12 @@
 
 namespace Drivejob\Controllers\Company;
 
+use Drivejob\Controllers\BaseController;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
 use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
-use Drivejob\Core\Container;
 use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
@@ -21,7 +21,7 @@ use Drivejob\Helpers\JsonHelper;
  * 
  * Νέα έκδοση που χρησιμοποιεί το Repository pattern
  */
-class JobListingController
+class JobListingController extends BaseController
 {
     /**
      * @var JobListingRepository Το repository για τις αγγελίες εργασίας
@@ -39,23 +39,18 @@ class JobListingController
     private $driversRepository;
 
     /**
-     * @var Container Το container για τις εξαρτήσεις
-     */
-    private $container;
-
-    /**
      * Constructor
      *
      * @param PDO|null $pdo Η σύνδεση με τη βάση δεδομένων
      */
     public function __construct($pdo = null)
     {
-        // Λήψη του container
-        $this->container = Container::getInstance();
+        // Κλήση του constructor της γονικής κλάσης
+        parent::__construct();
 
-        // Αν δεν έχει παραχθεί PDO, πάρε το από το container
+        // Αν δεν έχει παραχθεί PDO, χρησιμοποιούμε το PDO από τον BaseController
         if ($pdo === null) {
-            $pdo = $this->container->get('pdo');
+            $pdo = $this->pdo;
         }
 
         // Αρχικοποίηση των repositories
@@ -1027,118 +1022,24 @@ class JobListingController
     {
         // Βασικά δεδομένα αγγελίας
         $data = [
-            'title' => $this->sanitize($_POST['title'] ?? null),
-            'description' => $this->sanitizeHtml($_POST['description'] ?? null),
-            'location' => $this->sanitize($_POST['location'] ?? null),
-            'job_type' => $this->sanitize($_POST['job_type'] ?? null),
-            'vehicle_type' => $this->sanitize($_POST['vehicle_type'] ?? null),
-            'salary_min' => $this->sanitizeFloat($_POST['salary_min'] ?? null),
-            'salary_max' => $this->sanitizeFloat($_POST['salary_max'] ?? null),
-            'salary_period' => $this->sanitize($_POST['salary_period'] ?? null),
-            'experience_years' => $this->sanitizeInt($_POST['experience_years'] ?? null),
+            'title' => parent::sanitize($_POST['title'] ?? null),
+            'description' => parent::sanitizeHtml($_POST['description'] ?? null),
+            'location' => parent::sanitize($_POST['location'] ?? null),
+            'job_type' => parent::sanitize($_POST['job_type'] ?? null),
+            'vehicle_type' => parent::sanitize($_POST['vehicle_type'] ?? null),
+            'salary_min' => parent::sanitizeFloat($_POST['salary_min'] ?? null),
+            'salary_max' => parent::sanitizeFloat($_POST['salary_max'] ?? null),
+            'salary_period' => parent::sanitize($_POST['salary_period'] ?? null),
+            'experience_years' => parent::sanitizeInt($_POST['experience_years'] ?? null),
             'required_licenses' => isset($_POST['required_licenses']) ? implode(',', $_POST['required_licenses']) : null,
             'required_skills' => isset($_POST['required_skills']) ? implode(',', $_POST['required_skills']) : null,
-            'benefits' => $this->sanitizeHtml($_POST['benefits'] ?? null),
-            'contact_email' => $this->sanitizeEmail($_POST['contact_email'] ?? null),
-            'contact_phone' => $this->sanitize($_POST['contact_phone'] ?? null),
-            'expires_at' => $this->sanitizeDate($_POST['expires_at'] ?? null),
+            'benefits' => parent::sanitizeHtml($_POST['benefits'] ?? null),
+            'contact_email' => parent::sanitizeEmail($_POST['contact_email'] ?? null),
+            'contact_phone' => parent::sanitize($_POST['contact_phone'] ?? null),
+            'expires_at' => parent::sanitizeDate($_POST['expires_at'] ?? null),
             'is_active' => isset($_POST['is_active']) ? 1 : 0
         ];
 
         return $data;
-    }
-
-    /**
-     * Καθαρίζει μια τιμή εισόδου
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return string|null Η καθαρισμένη τιμή
-     */
-    private function sanitize($input)
-    {
-        if ($input === null) {
-            return null;
-        }
-        return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
-    }
-
-    /**
-     * Καθαρίζει HTML
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return string|null Η καθαρισμένη τιμή
-     */
-    private function sanitizeHtml($input)
-    {
-        if ($input === null) {
-            return null;
-        }
-        // Επιτρέπουμε βασικά HTML tags
-        $allowedTags = '<p><br><strong><em><ul><ol><li><h2><h3><h4>';
-        return strip_tags(trim($input), $allowedTags);
-    }
-
-    /**
-     * Καθαρίζει έναν ακέραιο
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return int|null Η καθαρισμένη τιμή
-     */
-    private function sanitizeInt($input)
-    {
-        if ($input === null || $input === '') {
-            return null;
-        }
-        return (int)$input;
-    }
-
-    /**
-     * Καθαρίζει έναν αριθμό κινητής υποδιαστολής
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return float|null Η καθαρισμένη τιμή
-     */
-    private function sanitizeFloat($input)
-    {
-        if ($input === null || $input === '') {
-            return null;
-        }
-        return (float)$input;
-    }
-
-    /**
-     * Καθαρίζει ένα email
-     * 
-     * @param string|null $email Το email
-     * @return string|null Το καθαρισμένο email
-     */
-    private function sanitizeEmail($email)
-    {
-        if (empty($email)) {
-            return null;
-        }
-        $sanitizedEmail = filter_var($email, FILTER_SANITIZE_EMAIL);
-        if (filter_var($sanitizedEmail, FILTER_VALIDATE_EMAIL)) {
-            return $sanitizedEmail;
-        }
-        return null;
-    }
-
-    /**
-     * Καθαρίζει μια ημερομηνία
-     * 
-     * @param string|null $date Η ημερομηνία
-     * @return string|null Η καθαρισμένη ημερομηνία
-     */
-    private function sanitizeDate($date)
-    {
-        if ($date === null || empty($date)) {
-            return null;
-        }
-        $dateObj = \DateTime::createFromFormat('Y-m-d', $date);
-        if ($dateObj && $dateObj->format('Y-m-d') === $date) {
-            return $date;
-        }
-        return null;
     }
 }
