@@ -21,9 +21,9 @@ class CreateUserRolesTable
                 role_id INT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (user_id, role_id),
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                INDEX (user_id),
+                INDEX (role_id)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
         ";
 
         // Εκτέλεση του SQL

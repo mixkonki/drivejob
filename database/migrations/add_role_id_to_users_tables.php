@@ -19,27 +19,21 @@ class AddRoleIdToUsersTables
         $sql1 = "
             ALTER TABLE users
             ADD COLUMN role_id INT NULL,
-            ADD CONSTRAINT fk_users_role_id
-            FOREIGN KEY (role_id) REFERENCES roles(id)
-            ON DELETE SET NULL;
+            ADD INDEX (role_id);
         ";
 
         // Προσθήκη της στήλης role_id στον πίνακα drivers
         $sql2 = "
             ALTER TABLE drivers
             ADD COLUMN role_id INT NULL,
-            ADD CONSTRAINT fk_drivers_role_id
-            FOREIGN KEY (role_id) REFERENCES roles(id)
-            ON DELETE SET NULL;
+            ADD INDEX (role_id);
         ";
 
         // Προσθήκη της στήλης role_id στον πίνακα companies
         $sql3 = "
             ALTER TABLE companies
             ADD COLUMN role_id INT NULL,
-            ADD CONSTRAINT fk_companies_role_id
-            FOREIGN KEY (role_id) REFERENCES roles(id)
-            ON DELETE SET NULL;
+            ADD INDEX (role_id);
         ";
 
         // Εκτέλεση των SQL
@@ -61,24 +55,24 @@ class AddRoleIdToUsersTables
      */
     public function down(PDO $pdo)
     {
-        // Αφαίρεση του foreign key και της στήλης role_id από τον πίνακα users
+        // Αφαίρεση του index και της στήλης role_id από τον πίνακα users
         $sql1 = "
             ALTER TABLE users
-            DROP FOREIGN KEY fk_users_role_id,
+            DROP INDEX role_id,
             DROP COLUMN role_id;
         ";
 
-        // Αφαίρεση του foreign key και της στήλης role_id από τον πίνακα drivers
+        // Αφαίρεση του index και της στήλης role_id από τον πίνακα drivers
         $sql2 = "
             ALTER TABLE drivers
-            DROP FOREIGN KEY fk_drivers_role_id,
+            DROP INDEX role_id,
             DROP COLUMN role_id;
         ";
 
-        // Αφαίρεση του foreign key και της στήλης role_id από τον πίνακα companies
+        // Αφαίρεση του index και της στήλης role_id από τον πίνακα companies
         $sql3 = "
             ALTER TABLE companies
-            DROP FOREIGN KEY fk_companies_role_id,
+            DROP INDEX role_id,
             DROP COLUMN role_id;
         ";
 
