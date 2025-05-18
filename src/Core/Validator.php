@@ -160,12 +160,43 @@ class Validator
         return $data;
     }
     /**
- * Alias για τη μέθοδο validateToken για συμβατότητα
- *
- * @param string $token Το token προς επαλήθευση
- * @param int $maxTokenAge Μέγιστος χρόνος ζωής του token σε δευτερόλεπτα (προαιρετικό)
- * @return bool true εάν το token είναι έγκυρο, false διαφορετικά
- */
+     * Επαληθεύει ένα token
+     *
+     * @param string $token Το token προς επαλήθευση
+     * @param int $maxTokenAge Μέγιστος χρόνος ζωής του token σε δευτερόλεπτα (προαιρετικό)
+     * @return bool true εάν το token είναι έγκυρο, false διαφορετικά
+     */
+    public static function validateToken($token, $maxTokenAge = 7200)
+    {
+        if (empty($token)) {
+            return false;
+        }
+
+        // Έλεγχος αν το token υπάρχει στη συνεδρία
+        if (!isset($_SESSION['tokens']) || !isset($_SESSION['tokens'][$token])) {
+            return false;
+        }
+
+        // Έλεγχος αν το token έχει λήξει
+        $tokenTime = $_SESSION['tokens'][$token];
+        if (time() - $tokenTime > $maxTokenAge) {
+            // Αφαίρεση του ληγμένου token
+            unset($_SESSION['tokens'][$token]);
+            return false;
+        }
+
+        // Αφαίρεση του token μετά τη χρήση (one-time token)
+        unset($_SESSION['tokens'][$token]);
+        return true;
+    }
+
+    /**
+     * Alias για τη μέθοδο validateToken για συμβατότητα
+     *
+     * @param string $token Το token προς επαλήθευση
+     * @param int $maxTokenAge Μέγιστος χρόνος ζωής του token σε δευτερόλεπτα (προαιρετικό)
+     * @return bool true εάν το token είναι έγκυρο, false διαφορετικά
+     */
     public static function validate($token, $maxTokenAge = 7200)
     {
         return self::validateToken($token, $maxTokenAge);

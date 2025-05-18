@@ -245,7 +245,7 @@ class BaseJobListingController extends BaseController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job listing update');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/edit/' . $id);
@@ -436,7 +436,7 @@ class BaseJobListingController extends BaseController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job listing destroy');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/delete/' . $id);
