@@ -7,16 +7,15 @@ if (!isset($router)) {
 
 use Drivejob\Core\Router;
 use Drivejob\Controllers\HomeController;
-use Drivejob\Controllers\DriversController as OldDriversController;
 use Drivejob\Controllers\AuthController;
 use Drivejob\Controllers\MatchingController;
 
-// Νέοι controllers με Repository pattern
+// Controllers με Repository pattern
 use Drivejob\Controllers\Driver\DriversController;
 use Drivejob\Controllers\Driver\JobApplicationController;
 use Drivejob\Controllers\Driver\JobOfferController;
 use Drivejob\Controllers\Driver\DriverResumeController;
-use Drivejob\Controllers\Company\CompaniesController as NewCompaniesController;
+use Drivejob\Controllers\Company\CompaniesController;
 use Drivejob\Controllers\Company\JobListingController;
 use Drivejob\Controllers\Company\JobListingController as CompanyJobListingController;
 use Drivejob\Controllers\Driver\JobListingController as DriverJobListingController;
@@ -94,14 +93,14 @@ $router->post(
 );
 
 // Διαδρομές για εταιρείες (χρησιμοποιώντας τον νέο controller)
-$router->get('/companies/register', [NewCompaniesController::class, 'showRegistrationForm']);
-$router->post('/companies/register', [NewCompaniesController::class, 'register']);
-$router->get('/companies/profile', [NewCompaniesController::class, 'profile']);
-$router->get('/companies/profile/{id}', [NewCompaniesController::class, 'publicProfile']);
-$router->get('/companies/edit-profile', [NewCompaniesController::class, 'edit']);
-$router->post('/companies/update-profile', [NewCompaniesController::class, 'update']);
-$router->post('/companies/change-password', [NewCompaniesController::class, 'changePassword']);
-$router->get('/companies/search', [NewCompaniesController::class, 'search']);
+$router->get('/companies/register', [CompaniesController::class, 'showRegistrationForm']);
+$router->post('/companies/register', [CompaniesController::class, 'register']);
+$router->get('/companies/profile', [CompaniesController::class, 'profile']);
+$router->get('/companies/profile/{id}', [CompaniesController::class, 'publicProfile']);
+$router->get('/companies/edit-profile', [CompaniesController::class, 'edit']);
+$router->post('/companies/update-profile', [CompaniesController::class, 'update']);
+$router->post('/companies/change-password', [CompaniesController::class, 'changePassword']);
+$router->get('/companies/search', [CompaniesController::class, 'search']);
 
 // Διαδρομές για άλλες σελίδες
 $router->get('/about', [HomeController::class, 'about']);
