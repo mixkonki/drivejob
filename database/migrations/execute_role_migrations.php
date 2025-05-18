@@ -2,8 +2,8 @@
 
 // database/migrations/execute_role_migrations.php
 
-// Φόρτωση του bootstrap
-require_once __DIR__ . '/../../src/bootstrap.php';
+// Απενεργοποίηση του exception handler για αυτό το script
+define('DISABLE_EXCEPTION_HANDLER', true);
 
 // Φόρτωση των migrations
 require_once __DIR__ . '/create_roles_table.php';
@@ -64,3 +64,6 @@ if ($down) {
 }
 
 echo "Ολοκλήρωση των migrations.\n";
+
+// Φόρτωση του bootstrap στο τέλος για να αποφύγουμε προβλήματα με τον exception handler
+require_once __DIR__ . '/../../src/bootstrap.php';

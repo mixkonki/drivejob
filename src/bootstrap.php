@@ -31,17 +31,19 @@ if (ENVIRONMENT === 'development') {
     error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 }
 
-// Αρχικοποίηση του ExceptionHandler
-$exceptionHandler = new \Drivejob\Core\ExceptionHandler([
-    'debug' => ENVIRONMENT === 'development',
-    'log_exceptions' => true,
-    'display_errors' => ENVIRONMENT === 'development',
-    'error_view' => 'error',
-    'error_layout' => 'layout',
-    'error_views_path' => '/src/Views/errors/',
-    'default_error_message' => 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά αργότερα.'
-]);
-$exceptionHandler->register();
+// Αρχικοποίηση του ExceptionHandler αν δεν έχει απενεργοποιηθεί
+if (!defined('DISABLE_EXCEPTION_HANDLER') || !DISABLE_EXCEPTION_HANDLER) {
+    $exceptionHandler = new \Drivejob\Core\ExceptionHandler([
+        'debug' => ENVIRONMENT === 'development',
+        'log_exceptions' => true,
+        'display_errors' => ENVIRONMENT === 'development',
+        'error_view' => 'error',
+        'error_layout' => 'layout',
+        'error_views_path' => '/src/Views/errors/',
+        'default_error_message' => 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά αργότερα.'
+    ]);
+    $exceptionHandler->register();
+}
 
 // Αρχικοποίηση του Container
 $container = \Drivejob\Core\Container::getInstance();
