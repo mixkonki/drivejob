@@ -2,47 +2,24 @@
 
 namespace Drivejob\Controllers\Driver;
 
-use PDO;
+use Drivejob\Controllers\BaseJobApplicationController;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
 use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
-use Drivejob\Core\Container;
 use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
-use Drivejob\Repositories\JobListingRepository;
-use Drivejob\Repositories\JobApplicationRepository;
-use Drivejob\Repositories\DriversRepository;
-use Drivejob\Repositories\CompaniesRepository;
 use Drivejob\Helpers\JsonHelper;
 
 /**
- * Controller για τις αιτήσεις εργασίας
+ * Controller για τις αιτήσεις εργασίας από οδηγούς
+ * 
+ * Επεκτείνει τον BaseJobApplicationController για κοινές λειτουργίες
  */
-class JobApplicationController
+class JobApplicationController extends BaseJobApplicationController
 {
-    /**
-     * @var JobApplicationRepository Το repository για τις αιτήσεις εργασίας
-     */
-    private $jobApplicationRepository;
-
-    /**
-     * @var JobListingRepository Το repository για τις αγγελίες εργασίας
-     */
-    private $jobListingRepository;
-
-    /**
-     * @var DriversRepository Το repository για τους οδηγούς
-     */
-    private $driversRepository;
-
-    /**
-     * @var CompaniesRepository Το repository για τις εταιρείες
-     */
-    private $companiesRepository;
-
     /**
      * Constructor
      *
@@ -50,19 +27,8 @@ class JobApplicationController
      */
     public function __construct($pdo = null)
     {
-        // Λήψη του container
-        $container = Container::getInstance();
-
-        // Αν δεν έχει παραχθεί PDO, πάρε το από το container
-        if ($pdo === null) {
-            $pdo = $container->get('pdo');
-        }
-
-        // Αρχικοποίηση των repositories
-        $this->jobApplicationRepository = new JobApplicationRepository($pdo);
-        $this->jobListingRepository = new JobListingRepository($pdo);
-        $this->driversRepository = new DriversRepository($pdo);
-        $this->companiesRepository = new CompaniesRepository($pdo);
+        // Κλήση του constructor της γονικής κλάσης
+        parent::__construct($pdo);
     }
 
     /**
@@ -255,7 +221,7 @@ class JobApplicationController
      * 
      * @param int $id Το ID της αίτησης
      */
-    public function view($id)
+    public function viewApplication($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!Session::has('user_id') || !Session::has('user_role')) {
