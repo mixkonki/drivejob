@@ -11,7 +11,7 @@ require_once '../../templates/email_template.php'; // Εισαγωγή template 
 
 use Drivejob\Core\Session;
 
-include ROOT_DIR . '/src/Views/header.php'; // Header
+include ROOT_DIR . '/src/Views/partials/header.php'; // Header
 
 echo '<main>'; // Έναρξη του main
 
@@ -71,4 +71,4 @@ if (!empty($errorMessage)) {
 
 echo '</main>'; // Κλείσιμο του main
 
-include ROOT_DIR . '/src/Views/footer.php'; // Footer
+include ROOT_DIR . '/src/Views/partials/footer.php'; // Footer

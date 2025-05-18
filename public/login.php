@@ -8,7 +8,7 @@ require_once '../config/config.php';
 use Drivejob\Core\Session;
 
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php';
+include ROOT_DIR . '/src/Views/partials/header.php';
 
 echo '<main>'; // Έναρξη του main
 ?>
@@ -48,5 +48,5 @@ echo '<main>'; // Έναρξη του main
 
 <?php
 echo '</main>'; // Κλείσιμο του main
-include ROOT_DIR . '/src/Views/footer.php'; // Συμπερίληψη του footer
+include ROOT_DIR . '/src/Views/partials/footer.php'; // Συμπερίληψη του footer
 ?>

@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php';
+include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
 <!-- Σύνδεση με το CSS αρχείο του προφίλ οδηγού και της αυτοαξιολόγησης -->

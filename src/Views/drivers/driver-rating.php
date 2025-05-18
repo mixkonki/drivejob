@@ -1,6 +1,6 @@
 <?php
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php';
+include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
@@ -340,12 +340,44 @@ include ROOT_DIR . '/src/Views/header.php';
 
             // Οι συνολικές βαθμολογίες δεξιοτήτων έχουν ήδη υπολογιστεί παραπάνω
 
-            // Συνολικές βαθμολογίες
-            $freightTotalScore = $licensePoints + $freightExperiencePoints + $freightTotalSkillPoints;
-            $freightMaxTotalScore = $maxLicensePoints + 40 + $freightMaxSkillPoints;
+            // Υπολογισμός βαθμολογίας από πιστοποιητικά
+            $freightCertificationsPoints = 0;
+            $passengerCertificationsPoints = 0;
+            $maxCertificationsPoints = 200; // Μέγιστη βαθμολογία πιστοποιητικών
 
-            $passengerTotalScore = $passengerLicensePoints + $passengerExperiencePoints + $passengerTotalSkillPoints;
-            $passengerMaxTotalScore = 120 + 40 + $passengerMaxSkillPoints;
+            // Αντιστοίχιση κατηγοριών με βαθμούς
+            $certCategoryPoints = [
+                'road_safety' => 50,
+                'tachograph' => 20,
+                'loading_securing' => 50,
+                'technical' => 20,
+                'commercial' => 20,
+                'procedures' => 20,
+                'inspections' => 20,
+                'other' => 20
+            ];
+
+            // Υπολογισμός βαθμολογίας από πιστοποιητικά
+            if (isset($driverProfile['certifications']) && !empty($driverProfile['certifications'])) {
+                foreach ($driverProfile['certifications'] as $cert) {
+                    $points = $certCategoryPoints[$cert['category'] ?? ''] ?? 0;
+
+                    if (($cert['transport_type'] ?? 'both') === 'freight' || ($cert['transport_type'] ?? 'both') === 'both') {
+                        $freightCertificationsPoints += $points;
+                    }
+
+                    if (($cert['transport_type'] ?? 'both') === 'passenger' || ($cert['transport_type'] ?? 'both') === 'both') {
+                        $passengerCertificationsPoints += $points;
+                    }
+                }
+            }
+
+            // Συνολικές βαθμολογίες
+            $freightTotalScore = $licensePoints + $freightExperiencePoints + $freightTotalSkillPoints + $freightCertificationsPoints;
+            $freightMaxTotalScore = $maxLicensePoints + 40 + $freightMaxSkillPoints + $maxCertificationsPoints;
+
+            $passengerTotalScore = $passengerLicensePoints + $passengerExperiencePoints + $passengerTotalSkillPoints + $passengerCertificationsPoints;
+            $passengerMaxTotalScore = 120 + 40 + $passengerMaxSkillPoints + $maxCertificationsPoints;
             ?>
 
             <!-- Νέα δομή με τρεις στήλες βαθμολογίας -->
@@ -413,8 +445,12 @@ include ROOT_DIR . '/src/Views/header.php';
                                         }
                                         ?>
                                         <tr>
+                                            <td>Πιστοποιητικά Εκπαίδευσης: </td>
+                                            <td><?php echo $freightCertificationsPoints; ?> / <?php echo $maxCertificationsPoints; ?></td>
+                                        </tr>
+                                        <tr>
                                             <td><strong>Μερική βαθμολογία: </strong></td>
-                                            <td><strong><?php echo $freightTotalSkillPoints; ?> / <?php echo $freightMaxSkillPoints; ?></strong></td>
+                                            <td><strong><?php echo $freightTotalSkillPoints + $freightCertificationsPoints; ?> / <?php echo $freightMaxSkillPoints + $maxCertificationsPoints; ?></strong></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -443,11 +479,11 @@ include ROOT_DIR . '/src/Views/header.php';
                                         </tr>
                                         <tr>
                                             <td>ΠΕΙ επιβατών: </td>
-                                            <td>10</td>
+                                            <td><?php echo $hasPeiD ? 10 : 0; ?></td>
                                         </tr>
                                         <tr>
                                             <td>Κάρτα Ψηφιακού Ταχογράφου: </td>
-                                            <td>10</td>
+                                            <td><?php echo (isset($driverTachograph) && $driverTachograph) ? 10 : 0; ?></td>
                                         </tr>
                                         <tr>
                                             <td>Έτη προϋπηρεσίας (<?php echo $passengerExperienceRange; ?>): </td>
@@ -482,8 +518,14 @@ include ROOT_DIR . '/src/Views/header.php';
                                         }
                                         ?>
                                         <tr>
+                                            <td>Πιστοποιητικά Εκπαίδευσης: </td>
+                                            <td><?php echo $passengerCertificationsPoints; ?> / <?php echo $maxCertificationsPoints; ?></td>
+                                        </tr>
+                                        <tr>
+
+                                        <tr>
                                             <td><strong>Μερική βαθμολογία: </strong></td>
-                                            <td><strong><?php echo $passengerTotalSkillPoints; ?> / <?php echo $passengerMaxSkillPoints; ?></strong></td>
+                                            <td><strong><?php echo $passengerTotalSkillPoints + $passengerCertificationsPoints; ?> / <?php echo $passengerMaxSkillPoints + $maxCertificationsPoints; ?></strong></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -526,5 +568,5 @@ include ROOT_DIR . '/src/Views/header.php';
 
 <?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php';
+include ROOT_DIR . '/src/Views/partials/footer.php';
 ?>

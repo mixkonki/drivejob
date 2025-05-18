@@ -67,7 +67,7 @@ class JobListingRepository extends BaseRepository
     public function getCompanyListings($companyId, $activeOnly = false, $page = 1, $limit = 10)
     {
         try {
-            $query = "SELECT j.*, c.company_name, c.logo
+            $query = "SELECT j.*, c.company_name
                       FROM {$this->table} j
                       LEFT JOIN companies c ON j.company_id = c.id
                       WHERE j.company_id = :company_id";
@@ -75,7 +75,7 @@ class JobListingRepository extends BaseRepository
             $params = ['company_id' => $companyId];
 
             if ($activeOnly) {
-                $query .= " AND j.is_active = 1 AND j.is_approved = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())";
+                $query .= " AND j.is_active = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())";
             }
 
             $query .= " ORDER BY j.created_at DESC";
@@ -86,9 +86,7 @@ class JobListingRepository extends BaseRepository
 
             // Προσθήκη του LIMIT και OFFSET
             $offset = ($page - 1) * $limit;
-            $query .= " LIMIT :limit OFFSET :offset";
-            $params['limit'] = $limit;
-            $params['offset'] = $offset;
+            $query .= " LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
             // Εκτέλεση του ερωτήματος
             $results = $this->query($query, $params);
@@ -118,7 +116,7 @@ class JobListingRepository extends BaseRepository
     public function getDriverApplications($driverId, $page = 1, $limit = 10)
     {
         try {
-            $query = "SELECT j.*, c.company_name, c.logo, a.status, a.created_at as application_date
+            $query = "SELECT j.*, c.company_name, a.status, a.created_at as application_date
                       FROM job_applications a
                       LEFT JOIN {$this->table} j ON a.job_id = j.id
                       LEFT JOIN companies c ON j.company_id = c.id
@@ -133,9 +131,7 @@ class JobListingRepository extends BaseRepository
 
             // Προσθήκη του LIMIT και OFFSET
             $offset = ($page - 1) * $limit;
-            $query .= " LIMIT :limit OFFSET :offset";
-            $params['limit'] = $limit;
-            $params['offset'] = $offset;
+            $query .= " LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
             // Εκτέλεση του ερωτήματος
             $results = $this->query($query, $params);
@@ -165,10 +161,10 @@ class JobListingRepository extends BaseRepository
     public function searchListings(array $criteria = [], $page = 1, $limit = 10)
     {
         try {
-            $query = "SELECT j.*, c.company_name, c.logo
+            $query = "SELECT j.*, c.company_name
                       FROM {$this->table} j
                       LEFT JOIN companies c ON j.company_id = c.id
-                      WHERE j.is_active = 1 AND j.is_approved = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())";
+                      WHERE j.is_active = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())";
             $params = [];
             $conditions = [];
 
@@ -233,6 +229,11 @@ class JobListingRepository extends BaseRepository
                 $params['company_id'] = $criteria['company_id'];
             }
 
+            if (isset($criteria['driver_id']) && $criteria['driver_id']) {
+                $conditions[] = "j.driver_id = :driver_id";
+                $params['driver_id'] = $criteria['driver_id'];
+            }
+
             // Προσθήκη των συνθηκών στο ερώτημα
             if (!empty($conditions)) {
                 $query .= " AND " . implode(" AND ", $conditions);
@@ -251,7 +252,7 @@ class JobListingRepository extends BaseRepository
                     $query .= " ORDER BY j.created_at DESC";
                 }
             } else {
-                $query .= " ORDER BY j.is_featured DESC, j.created_at DESC";
+                $query .= " ORDER BY j.created_at DESC";
             }
 
             // Μέτρηση συνολικών αποτελεσμάτων
@@ -260,9 +261,7 @@ class JobListingRepository extends BaseRepository
 
             // Προσθήκη του LIMIT και OFFSET
             $offset = ($page - 1) * $limit;
-            $query .= " LIMIT :limit OFFSET :offset";
-            $params['limit'] = $limit;
-            $params['offset'] = $offset;
+            $query .= " LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
             // Εκτέλεση του ερωτήματος
             $results = $this->query($query, $params);
@@ -336,7 +335,7 @@ class JobListingRepository extends BaseRepository
             }
 
             // Δημιουργία του ερωτήματος για τις προτεινόμενες αγγελίες
-            $query = "SELECT j.*, c.company_name, c.logo,
+            $query = "SELECT j.*, c.company_name,
                       (
                           CASE
                               WHEN j.location LIKE :location THEN 10 ELSE 0
@@ -350,7 +349,7 @@ class JobListingRepository extends BaseRepository
                       ) as match_score
                       FROM {$this->table} j
                       LEFT JOIN companies c ON j.company_id = c.id
-                      WHERE j.is_active = 1 AND j.is_approved = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())
+                      WHERE j.is_active = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())
                       AND j.id NOT IN (
                           SELECT job_id FROM job_applications WHERE driver_id = :driver_id
                       )";
@@ -374,8 +373,7 @@ class JobListingRepository extends BaseRepository
             }
 
             // Ταξινόμηση με βάση το match_score και την ημερομηνία δημιουργίας
-            $query .= " ORDER BY match_score DESC, j.created_at DESC LIMIT :limit";
-            $params['limit'] = $limit;
+            $query .= " ORDER BY match_score DESC, j.created_at DESC LIMIT " . (int)$limit;
 
             // Εκτέλεση του ερωτήματος
             return $this->query($query, $params);
@@ -393,14 +391,14 @@ class JobListingRepository extends BaseRepository
     public function getRecentListings($limit = 10)
     {
         try {
-            $query = "SELECT j.*, c.company_name, c.logo
+            $query = "SELECT j.*, c.company_name
                       FROM {$this->table} j
                       LEFT JOIN companies c ON j.company_id = c.id
-                      WHERE j.is_active = 1 AND j.is_approved = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())
+                      WHERE j.is_active = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())
                       ORDER BY j.created_at DESC
-                      LIMIT :limit";
+                      LIMIT " . (int)$limit;
 
-            return $this->query($query, ['limit' => $limit]);
+            return $this->query($query);
         } catch (\PDOException $e) {
             throw DatabaseException::fromPDOException($e, $query ?? null, ['limit' => $limit]);
         }
@@ -415,14 +413,14 @@ class JobListingRepository extends BaseRepository
     public function getPopularListings($limit = 10)
     {
         try {
-            $query = "SELECT j.*, c.company_name, c.logo
+            $query = "SELECT j.*, c.company_name
                       FROM {$this->table} j
                       LEFT JOIN companies c ON j.company_id = c.id
-                      WHERE j.is_active = 1 AND j.is_approved = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())
+                      WHERE j.is_active = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())
                       ORDER BY j.views DESC, j.applications DESC
-                      LIMIT :limit";
+                      LIMIT " . (int)$limit;
 
-            return $this->query($query, ['limit' => $limit]);
+            return $this->query($query);
         } catch (\PDOException $e) {
             throw DatabaseException::fromPDOException($e, $query ?? null, ['limit' => $limit]);
         }
@@ -437,14 +435,14 @@ class JobListingRepository extends BaseRepository
     public function getFeaturedListings($limit = 10)
     {
         try {
-            $query = "SELECT j.*, c.company_name, c.logo
+            $query = "SELECT j.*, c.company_name
                       FROM {$this->table} j
                       LEFT JOIN companies c ON j.company_id = c.id
-                      WHERE j.is_active = 1 AND j.is_approved = 1 AND j.is_featured = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())
+                      WHERE j.is_active = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())
                       ORDER BY j.created_at DESC
-                      LIMIT :limit";
+                      LIMIT " . (int)$limit;
 
-            return $this->query($query, ['limit' => $limit]);
+            return $this->query($query);
         } catch (\PDOException $e) {
             throw DatabaseException::fromPDOException($e, $query ?? null, ['limit' => $limit]);
         }

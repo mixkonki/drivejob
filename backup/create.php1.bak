@@ -1,0 +1,246 @@
+<?php
+
+/**
+ * Φόρμα δημιουργίας αγγελίας από χειριστή μηχανημάτων έργου
+ */
+
+// Ορισμός του τίτλου της σελίδας
+$pageTitle = 'Δημιουργία Αγγελίας Αναζήτησης Εργασίας Χειριστή';
+
+// Συμπερίληψη του header
+include ROOT_DIR . '/src/Views/partials/header.php';
+?>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Δημιουργία Αγγελίας Αναζήτησης Εργασίας Χειριστή</h1>
+
+            <?php include ROOT_DIR . '/src/Views/partials/alerts.php'; ?>
+
+            <div class="card">
+                <div class="card-body">
+                    <form action="<?= BASE_URL ?>job-listings/store-operator" method="post">
+                        <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::generateToken() ?>">
+                        <input type="hidden" name="listing_type" value="job_search">
+
+                        <div class="form-group mb-3">
+                            <label for="title">Τίτλος Αγγελίας *</label>
+                            <input type="text" class="form-control" id="title" name="title" required
+                                value="<?= isset($_SESSION['old_input']['title']) ? htmlspecialchars($_SESSION['old_input']['title']) : '' ?>">
+                            <?php if (isset($_SESSION['errors']['title'])): ?>
+                                <div class="text-danger"><?= $_SESSION['errors']['title'] ?></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="description">Περιγραφή *</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" required><?= isset($_SESSION['old_input']['description']) ? htmlspecialchars($_SESSION['old_input']['description']) : '' ?></textarea>
+                            <?php if (isset($_SESSION['errors']['description'])): ?>
+                                <div class="text-danger"><?= $_SESSION['errors']['description'] ?></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="operator_type">Τύπος Χειριστή *</label>
+                            <select class="form-control" id="operator_type" name="operator_type" required onchange="updateMachineryOptions()">
+                                <option value="">Επιλέξτε τύπο χειριστή</option>
+                                <option value="operator" <?= (isset($_SESSION['old_input']['operator_type']) && $_SESSION['old_input']['operator_type'] === 'operator') ? 'selected' : '' ?>>Χειριστής Μηχανημάτων Έργου</option>
+                                <option value="assistant" <?= (isset($_SESSION['old_input']['operator_type']) && $_SESSION['old_input']['operator_type'] === 'assistant') ? 'selected' : '' ?>>Βοηθός Χειριστή Μηχανημάτων Έργου</option>
+                            </select>
+                            <?php if (isset($_SESSION['errors']['operator_type'])): ?>
+                                <div class="text-danger"><?= $_SESSION['errors']['operator_type'] ?></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="location">Τοποθεσία *</label>
+                            <input type="text" class="form-control" id="location" name="location" required
+                                value="<?= isset($_SESSION['old_input']['location']) ? htmlspecialchars($_SESSION['old_input']['location']) : '' ?>">
+                            <?php if (isset($_SESSION['errors']['location'])): ?>
+                                <div class="text-danger"><?= $_SESSION['errors']['location'] ?></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="job_type">Τύπος Εργασίας *</label>
+                            <select class="form-control" id="job_type" name="job_type" required>
+                                <option value="">Επιλέξτε τύπο εργασίας</option>
+                                <option value="full_time" <?= (isset($_SESSION['old_input']['job_type']) && $_SESSION['old_input']['job_type'] === 'full_time') ? 'selected' : '' ?>>Πλήρης Απασχόληση</option>
+                                <option value="part_time" <?= (isset($_SESSION['old_input']['job_type']) && $_SESSION['old_input']['job_type'] === 'part_time') ? 'selected' : '' ?>>Μερική Απασχόληση</option>
+                                <option value="contract" <?= (isset($_SESSION['old_input']['job_type']) && $_SESSION['old_input']['job_type'] === 'contract') ? 'selected' : '' ?>>Σύμβαση</option>
+                                <option value="temporary" <?= (isset($_SESSION['old_input']['job_type']) && $_SESSION['old_input']['job_type'] === 'temporary') ? 'selected' : '' ?>>Προσωρινή</option>
+                                <option value="seasonal" <?= (isset($_SESSION['old_input']['job_type']) && $_SESSION['old_input']['job_type'] === 'seasonal') ? 'selected' : '' ?>>Εποχιακή</option>
+                            </select>
+                            <?php if (isset($_SESSION['errors']['job_type'])): ?>
+                                <div class="text-danger"><?= $_SESSION['errors']['job_type'] ?></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="salary_range">Επιθυμητό Εύρος Μισθού</label>
+                            <select class="form-control" id="salary_range" name="salary_range">
+                                <option value="">Επιλέξτε εύρος μισθού</option>
+                                <option value="0-1000" <?= (isset($_SESSION['old_input']['salary_range']) && $_SESSION['old_input']['salary_range'] === '0-1000') ? 'selected' : '' ?>>Έως 1.000€</option>
+                                <option value="1000-1500" <?= (isset($_SESSION['old_input']['salary_range']) && $_SESSION['old_input']['salary_range'] === '1000-1500') ? 'selected' : '' ?>>1.000€ - 1.500€</option>
+                                <option value="1500-2000" <?= (isset($_SESSION['old_input']['salary_range']) && $_SESSION['old_input']['salary_range'] === '1500-2000') ? 'selected' : '' ?>>1.500€ - 2.000€</option>
+                                <option value="2000-2500" <?= (isset($_SESSION['old_input']['salary_range']) && $_SESSION['old_input']['salary_range'] === '2000-2500') ? 'selected' : '' ?>>2.000€ - 2.500€</option>
+                                <option value="2500+" <?= (isset($_SESSION['old_input']['salary_range']) && $_SESSION['old_input']['salary_range'] === '2500+') ? 'selected' : '' ?>>2.500€ και άνω</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="availability">Διαθεσιμότητα</label>
+                            <select class="form-control" id="availability" name="availability">
+                                <option value="">Επιλέξτε διαθεσιμότητα</option>
+                                <option value="immediate" <?= (isset($_SESSION['old_input']['availability']) && $_SESSION['old_input']['availability'] === 'immediate') ? 'selected' : '' ?>>Άμεση</option>
+                                <option value="1_week" <?= (isset($_SESSION['old_input']['availability']) && $_SESSION['old_input']['availability'] === '1_week') ? 'selected' : '' ?>>Εντός 1 εβδομάδας</option>
+                                <option value="2_weeks" <?= (isset($_SESSION['old_input']['availability']) && $_SESSION['old_input']['availability'] === '2_weeks') ? 'selected' : '' ?>>Εντός 2 εβδομάδων</option>
+                                <option value="1_month" <?= (isset($_SESSION['old_input']['availability']) && $_SESSION['old_input']['availability'] === '1_month') ? 'selected' : '' ?>>Εντός 1 μήνα</option>
+                                <option value="negotiable" <?= (isset($_SESSION['old_input']['availability']) && $_SESSION['old_input']['availability'] === 'negotiable') ? 'selected' : '' ?>>Διαπραγματεύσιμη</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Προτιμώμενοι Τύποι Μηχανημάτων</label>
+                            <div id="operator-machinery" style="display: none;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="excavator" id="machinery_excavator" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('excavator', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_excavator">Εκσκαφέας</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="bulldozer" id="machinery_bulldozer" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('bulldozer', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_bulldozer">Μπουλντόζα</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="crane" id="machinery_crane" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('crane', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_crane">Γερανός</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="forklift" id="machinery_forklift" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('forklift', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_forklift">Περονοφόρο</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="loader" id="machinery_loader" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('loader', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_loader">Φορτωτής</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="grader" id="machinery_grader" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('grader', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_grader">Ισοπεδωτής</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="paver" id="machinery_paver" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('paver', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_paver">Διαστρωτήρας</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="roller" id="machinery_roller" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('roller', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_roller">Οδοστρωτήρας</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="other" id="machinery_other" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('other', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_other">Άλλο</label>
+                                </div>
+                            </div>
+                            <div id="assistant-machinery" style="display: none;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="excavator" id="machinery_excavator_assistant" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('excavator', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_excavator_assistant">Εκσκαφέας</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="bulldozer" id="machinery_bulldozer_assistant" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('bulldozer', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_bulldozer_assistant">Μπουλντόζα</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="crane" id="machinery_crane_assistant" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('crane', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_crane_assistant">Γερανός</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="machinery_types[]" value="other" id="machinery_other_assistant" <?= (isset($_SESSION['old_input']['machinery_types']) && in_array('other', $_SESSION['old_input']['machinery_types'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="machinery_other_assistant">Άλλο</label>
+                                </div>
+                            </div>
+                            <div id="no-operator-type-selected" style="display: block;">
+                                <p class="text-muted">Επιλέξτε πρώτα τύπο χειριστή για να εμφανιστούν οι διαθέσιμοι τύποι μηχανημάτων.</p>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="experience_years">Έτη Εμπειρίας *</label>
+                            <select class="form-control" id="experience_years" name="experience_years" required>
+                                <option value="">Επιλέξτε έτη εμπειρίας</option>
+                                <option value="0-1" <?= (isset($_SESSION['old_input']['experience_years']) && $_SESSION['old_input']['experience_years'] === '0-1') ? 'selected' : '' ?>>Λιγότερο από 1 έτος</option>
+                                <option value="1-3" <?= (isset($_SESSION['old_input']['experience_years']) && $_SESSION['old_input']['experience_years'] === '1-3') ? 'selected' : '' ?>>1-3 έτη</option>
+                                <option value="3-5" <?= (isset($_SESSION['old_input']['experience_years']) && $_SESSION['old_input']['experience_years'] === '3-5') ? 'selected' : '' ?>>3-5 έτη</option>
+                                <option value="5-10" <?= (isset($_SESSION['old_input']['experience_years']) && $_SESSION['old_input']['experience_years'] === '5-10') ? 'selected' : '' ?>>5-10 έτη</option>
+                                <option value="10+" <?= (isset($_SESSION['old_input']['experience_years']) && $_SESSION['old_input']['experience_years'] === '10+') ? 'selected' : '' ?>>10+ έτη</option>
+                            </select>
+                            <?php if (isset($_SESSION['errors']['experience_years'])): ?>
+                                <div class="text-danger"><?= $_SESSION['errors']['experience_years'] ?></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="certifications">Πιστοποιήσεις και Άδειες</label>
+                            <textarea class="form-control" id="certifications" name="certifications" rows="3"><?= isset($_SESSION['old_input']['certifications']) ? htmlspecialchars($_SESSION['old_input']['certifications']) : '' ?></textarea>
+                            <small class="form-text text-muted">Αναφέρετε τις πιστοποιήσεις και άδειες που διαθέτετε (π.χ. Άδεια Χειριστή Μηχανημάτων Έργου, Πιστοποιητικό Ασφαλούς Χειρισμού, κλπ.)</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="additional_info">Επιπλέον Πληροφορίες</label>
+                            <textarea class="form-control" id="additional_info" name="additional_info" rows="3"><?= isset($_SESSION['old_input']['additional_info']) ? htmlspecialchars($_SESSION['old_input']['additional_info']) : '' ?></textarea>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked>
+                                <label class="form-check-label" for="is_active">Ενεργή Αγγελία</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary">Δημιουργία Αγγελίας</button>
+                            <a href="<?= BASE_URL ?>drivers/profile" class="btn btn-secondary ml-2">Ακύρωση</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateMachineryOptions() {
+        const operatorType = document.getElementById('operator_type').value;
+        const operatorMachinery = document.getElementById('operator-machinery');
+        const assistantMachinery = document.getElementById('assistant-machinery');
+        const noOperatorTypeSelected = document.getElementById('no-operator-type-selected');
+
+        // Απόκρυψη όλων των επιλογών
+        operatorMachinery.style.display = 'none';
+        assistantMachinery.style.display = 'none';
+        noOperatorTypeSelected.style.display = 'none';
+
+        // Εμφάνιση των κατάλληλων επιλογών με βάση τον τύπο χειριστή
+        if (operatorType === 'operator') {
+            operatorMachinery.style.display = 'block';
+        } else if (operatorType === 'assistant') {
+            assistantMachinery.style.display = 'block';
+        } else {
+            noOperatorTypeSelected.style.display = 'block';
+        }
+    }
+
+    // Αρχικοποίηση των επιλογών μηχανημάτων με βάση τον επιλεγμένο τύπο χειριστή
+    document.addEventListener('DOMContentLoaded', function() {
+        updateMachineryOptions();
+    });
+</script>
+
+<?php
+// Συμπερίληψη του footer
+include ROOT_DIR . '/src/Views/partials/footer.php';
+
+// Καθαρισμός των session μεταβλητών
+unset($_SESSION['errors']);
+unset($_SESSION['old_input']);
+?>

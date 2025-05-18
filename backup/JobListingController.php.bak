@@ -1,0 +1,348 @@
+<?php
+
+namespace Drivejob\Controllers;
+
+use Drivejob\Core\Validator;
+use Drivejob\Core\Logger;
+use Drivejob\Core\AuthMiddleware;
+use Drivejob\Core\Session;
+use Drivejob\Core\Sanitizer;
+use Drivejob\Core\CSRF;
+use Drivejob\Core\Debug;
+
+use Drivejob\Models\Driver\LicenseModel;
+use Drivejob\Models\Driver\CertificationModel;
+use Drivejob\Models\Driver\SkillModel;
+use Drivejob\Models\Driver\RatingModel;
+use Drivejob\Models\JobListingModel;
+use Drivejob\Models\MatchingModel;
+use Drivejob\Models\ProfileModel;
+use Drivejob\Services\DriverProfileService;
+
+class JobListingController
+{
+    private $jobListingModel;
+    private $matchingModel;
+    private $profileModel;
+    private $licenseModel;
+    private $certificationModel;
+    private $skillModel;
+    private $ratingModel;
+    private $driverProfileService;
+    private $pdo;
+
+    public function __construct($pdo)
+    {
+        $this->pdo = $pdo;
+        $this->jobListingModel = new JobListingModel($pdo);
+        $this->matchingModel = new MatchingModel($pdo);
+        $this->profileModel = new ProfileModel($pdo);
+        $this->licenseModel = new LicenseModel($pdo);
+        $this->certificationModel = new CertificationModel($pdo);
+        $this->skillModel = new SkillModel($pdo);
+        $this->ratingModel = new RatingModel($pdo);
+        $this->driverProfileService = new DriverProfileService($pdo);
+    }
+
+    /**
+     * Εμφανίζει τη λίστα των αγγελιών
+     */
+    public function index()
+    {
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = 10; // Αριθμός αγγελιών ανά σελίδα
+
+        // Φιλτράρισμα
+        $filters = [];
+        if (isset($_GET['listing_type']) && in_array($_GET['listing_type'], ['job_offer', 'job_search'])) {
+            $filters['listing_type'] = $_GET['listing_type'];
+        }
+
+        if (isset($_GET['job_type']) && in_array($_GET['job_type'], ['full_time', 'part_time', 'contract', 'temporary'])) {
+            $filters['job_type'] = $_GET['job_type'];
+        }
+
+        if (isset($_GET['vehicle_types']) && is_array($_GET['vehicle_types'])) {
+            $filters['vehicle_types'] = $_GET['vehicle_types'];
+        }
+
+        // Τοποθεσία και ακτίνα
+        if (isset($_GET['latitude']) && isset($_GET['longitude']) && isset($_GET['search_radius'])) {
+            $filters['latitude'] = $_GET['latitude'];
+            $filters['longitude'] = $_GET['longitude'];
+            $filters['search_radius'] = $_GET['search_radius'];
+        }
+
+        // Λήψη των αγγελιών με βάση τα φίλτρα
+        $listings = $this->jobListingModel->getActiveListings($filters, $page, $limit);
+
+        // Φόρτωση της προβολής
+        include ROOT_DIR . '/src/Views/job-listings/index.php';
+    }
+
+    /**
+     * Εμφανίζει μια αγγελία με πλήρεις πληροφορίες
+     *
+     * @param int $id Το ID της αγγελίας
+     */
+    public function show($id)
+    {
+        try {
+            // Έλεγχος αν το ID είναι έγκυρο
+            if (!$id || !is_numeric($id)) {
+                $_SESSION['error_message'] = 'Μη έγκυρο αναγνωριστικό αγγελίας';
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit;
+            }
+
+            // Ανάκτηση της αγγελίας με όλες τις λεπτομέρειες
+            $listing = $this->jobListingModel->getById($id);
+
+            // Προσθήκη των τύπων οχημάτων στην αγγελία
+            if ($listing) {
+                $listing['vehicle_types'] = $this->jobListingModel->getVehicleTypes($id);
+            }
+
+            // Αν δεν βρέθηκε η αγγελία
+            if (!$listing) {
+                $_SESSION['error_message'] = 'Η αγγελία δεν βρέθηκε';
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit;
+            }
+
+            // Αύξηση του μετρητή προβολών
+            $this->jobListingModel->incrementViewsCount($id);
+
+            // Ανάλογα με τον τύπο της αγγελίας, φορτώνουμε διαφορετικό template
+            if ($listing['listing_type'] === 'job_search' && isset($listing['driver_id']) && $listing['driver_id']) {
+                // Αγγελία αναζήτησης εργασίας από οδηγό
+
+                // Απλή ανάκτηση του οδηγού
+                $driver = $this->profileModel->getDriverById($listing['driver_id']);
+
+                // Φόρτωση του template
+                include ROOT_DIR . '/src/Views/job-listings/show-driver.php';
+            } else {
+                // Αγγελία προσφοράς εργασίας από εταιρεία
+
+                // Λήψη πληροφοριών εταιρείας
+                $company = null;
+                if (isset($listing['company_id']) && $listing['company_id']) {
+                    $companyModel = new \Drivejob\Models\CompaniesModel($this->pdo);
+                    $company = $companyModel->getCompanyById($listing['company_id']);
+                }
+
+                // Φόρτωση του template
+                include ROOT_DIR . '/src/Views/job-listings/show-company.php';
+            }
+        } catch (\Exception $e) {
+            Logger::error('Error in JobListingController::show: ' . $e->getMessage());
+
+            // Εμφάνιση σφάλματος για αποσφαλμάτωση (σε περιβάλλον ανάπτυξης)
+            if (ini_get('display_errors')) {
+                echo "<h1>Σφάλμα εφαρμογής</h1>";
+                echo "<p>Προέκυψε σφάλμα στη μέθοδο show: " . $e->getMessage() . "</p>";
+                echo "<pre>" . $e->getTraceAsString() . "</pre>";
+            } else {
+                $_SESSION['error_message'] = 'Προέκυψε σφάλμα κατά την εμφάνιση της αγγελίας.';
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit;
+            }
+        }
+    }
+
+    /**
+     * Εμφανίζει τις αγγελίες του συνδεδεμένου χρήστη
+     */
+    public function myListings()
+    {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+            $_SESSION['error_message'] = 'Πρέπει να συνδεθείτε για να δείτε τις αγγελίες σας';
+            header('Location: ' . BASE_URL . 'login.php');
+            exit();
+        }
+
+        // Ορισμός της σελίδας από το αίτημα URL ή προεπιλεγμένη τιμή 1
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) {
+            $page = 1;
+        }
+
+        // Ανάλογα με τον ρόλο του χρήστη, ανακτούμε διαφορετικές αγγελίες
+        if ($_SESSION['role'] === 'driver') {
+            // Ανάκτηση των αγγελιών του οδηγού
+            $listings = $this->jobListingModel->getDriverListings($_SESSION['user_id'], true, $page, 10);
+
+            // Φόρτωση του template
+            include ROOT_DIR . '/src/Views/job-listings/my-listings.php';
+        } else if ($_SESSION['role'] === 'company') {
+            // Ανάκτηση των αγγελιών της εταιρείας
+            $listings = $this->jobListingModel->getCompanyListings($_SESSION['user_id'], true, $page, 10);
+
+            // Φόρτωση του template
+            include ROOT_DIR . '/src/Views/job-listings/my-listings.php';
+        } else {
+            // Ο χρήστης δεν έχει δικαίωμα προβολής αγγελιών
+            $_SESSION['error_message'] = 'Δεν έχετε δικαίωμα προβολής αγγελιών';
+            header('Location: ' . BASE_URL . 'job-listings');
+            exit();
+        }
+    }
+
+    /**
+     * Εμφανίζει τις αγγελίες ενός συγκεκριμένου οδηγού
+     *
+     * @param int $id Το ID του οδηγού
+     */
+    public function driverListings($id)
+    {
+        // Έλεγχος αν το ID είναι έγκυρο
+        if (!$id || !is_numeric($id)) {
+            $_SESSION['error_message'] = 'Μη έγκυρο αναγνωριστικό οδηγού';
+            header('Location: ' . BASE_URL . 'job-listings');
+            return;
+        }
+
+        // Ανάκτηση πληροφοριών οδηγού
+        $driver = $this->profileModel->getDriverById($id);
+
+        // Αν δεν βρέθηκε ο οδηγός
+        if (!$driver) {
+            $_SESSION['error_message'] = 'Ο οδηγός δεν βρέθηκε';
+            header('Location: ' . BASE_URL . 'job-listings');
+            return;
+        }
+
+        // Ορισμός της σελίδας από το αίτημα URL ή προεπιλεγμένη τιμή 1
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) {
+            $page = 1;
+        }
+
+        // Ανάκτηση των αγγελιών του οδηγού
+        $listings = $this->jobListingModel->getDriverListings($id, true, $page, 10);
+
+        // Φόρτωση του template
+        include ROOT_DIR . '/src/Views/job-listings/driver-listings.php';
+    }
+
+    /**
+     * Εμφανίζει τη φόρμα δημιουργίας νέας αγγελίας
+     */
+    public function create()
+    {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+            $_SESSION['error_message'] = 'Πρέπει να συνδεθείτε για να δημιουργήσετε αγγελία';
+            header('Location: ' . BASE_URL . 'login.php');
+            exit();
+        }
+
+        // Έλεγχος της μεθόδου αιτήματος
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Επεξεργασία της φόρμας δημιουργίας αγγελίας
+            return $this->store();
+        }
+
+        // Ανάλογα με τον ρόλο του χρήστη, φορτώνουμε διαφορετικό template
+        if ($_SESSION['role'] === 'driver') {
+            // Φόρτωση του template για οδηγούς
+            include ROOT_DIR . '/src/Views/job-listings/create-driver.php';
+        } else if ($_SESSION['role'] === 'company') {
+            // Φόρτωση του template για εταιρείες
+            include ROOT_DIR . '/src/Views/job-listings/create-company.php';
+        } else {
+            // Ο χρήστης δεν έχει δικαίωμα δημιουργίας αγγελίας
+            $_SESSION['error_message'] = 'Δεν έχετε δικαίωμα δημιουργίας αγγελίας';
+            header('Location: ' . BASE_URL . 'job-listings');
+            exit();
+        }
+    }
+
+    /**
+     * Αποθηκεύει μια νέα αγγελία
+     */
+    public function store()
+    {
+        // Έλεγχος CSRF token
+        if (!isset($_POST['csrf_token']) || !\Drivejob\Core\CSRF::validateToken($_POST['csrf_token'])) {
+            $_SESSION['error_message'] = 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.';
+            header('Location: ' . BASE_URL . 'job-listings/create');
+            exit();
+        }
+
+        // Προετοιμασία των δεδομένων
+        $data = [
+            'title' => $_POST['title'] ?? '',
+            'description' => $_POST['description'] ?? '',
+            'job_type' => $_POST['job_type'] ?? '',
+            'salary_min' => $_POST['salary_min'] ?? null,
+            'salary_max' => $_POST['salary_max'] ?? null,
+            'salary_type' => $_POST['salary_type'] ?? null,
+            'location' => $_POST['location'] ?? '',
+            'latitude' => $_POST['latitude'] ?? null,
+            'longitude' => $_POST['longitude'] ?? null,
+            'radius' => $_POST['radius'] ?? 50,
+            'remote_possible' => isset($_POST['remote_possible']) ? 1 : 0,
+            'experience_years' => $_POST['experience_years'] ?? null,
+            'specialized_experience' => $_POST['specialized_experience'] ?? '',
+            'transport_type' => $_POST['transport_type'] ?? 'freight',
+            'is_active' => 1,
+            'created_at' => date('Y-m-d H:i:s'),
+            'expires_at' => $_POST['expires_at'] ?? date('Y-m-d', strtotime('+30 days')),
+            'preferred_schedule' => isset($_POST['preferred_schedule']) ? implode(',', $_POST['preferred_schedule']) : '',
+            'max_days_away' => $_POST['max_days_away'] ?? 0,
+            'show_rating' => isset($_POST['show_rating']) ? 1 : 0,
+            'show_adr' => isset($_POST['show_adr']) ? 1 : 0,
+            'show_operator_license' => isset($_POST['show_operator_license']) ? 1 : 0,
+            'show_tachograph' => isset($_POST['show_tachograph']) ? 1 : 0,
+            'contact_email' => $_POST['contact_email'] ?? '',
+            'contact_phone' => $_POST['contact_phone'] ?? ''
+        ];
+
+        // Ανάλογα με τον ρόλο του χρήστη, προσθέτουμε επιπλέον πεδία
+        if ($_SESSION['role'] === 'driver') {
+            $data['listing_type'] = 'job_search';
+            $data['driver_id'] = $_SESSION['user_id'];
+            $data['company_id'] = null;
+        } else if ($_SESSION['role'] === 'company') {
+            $data['listing_type'] = 'job_offer';
+            $data['company_id'] = $_SESSION['user_id'];
+            $data['driver_id'] = null;
+        }
+
+        // Προσθήκη των τύπων οχημάτων και μηχανημάτων
+        $vehicleTypes = $_POST['vehicle_types'] ?? [];
+        $machineryTypes = $_POST['machinery_types'] ?? [];
+
+        // Δημιουργία της αγγελίας
+        $jobListingId = $this->jobListingModel->create($data);
+
+        if ($jobListingId) {
+            // Προσθήκη των τύπων οχημάτων
+            if (!empty($vehicleTypes)) {
+                $this->jobListingModel->updateVehicleTypes($jobListingId, $vehicleTypes);
+            }
+
+            // Προσθήκη των τύπων μηχανημάτων έργου
+            if (!empty($machineryTypes)) {
+                $this->jobListingModel->updateMachineryTypes($jobListingId, $machineryTypes);
+            }
+
+            // Προσθήκη των tags
+            if (isset($_POST['tags']) && is_array($_POST['tags'])) {
+                $jobTagModel = new \Drivejob\Models\JobTagModel($this->pdo);
+                $jobTagModel->updateListingTags($jobListingId, $_POST['tags']);
+            }
+
+            $_SESSION['success_message'] = 'Η αγγελία δημιουργήθηκε με επιτυχία';
+            header('Location: ' . BASE_URL . 'job-listings/' . $jobListingId);
+            exit();
+        } else {
+            $_SESSION['error_message'] = 'Υπήρξε ένα σφάλμα κατά τη δημιουργία της αγγελίας';
+            header('Location: ' . BASE_URL . 'job-listings/create');
+            exit();
+        }
+    }
+}

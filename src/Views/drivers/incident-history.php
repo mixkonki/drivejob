@@ -1,7 +1,7 @@
 <?php
 
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php';
+include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
@@ -78,5 +78,5 @@ include ROOT_DIR . '/src/Views/header.php';
 
 <?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php';
+include ROOT_DIR . '/src/Views/partials/footer.php';
 ?>

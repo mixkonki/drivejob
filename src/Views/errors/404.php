@@ -2,7 +2,7 @@
 // src/Views/errors/404.php
 
 // Χρήση ROOT_DIR για σωστή διαδρομή
-include ROOT_DIR . '/src/Views/header.php'; // Διορθώθηκε
+include ROOT_DIR . '/src/Views/partials/header.php'; // Διορθώθηκε
 ?>
 
 <div class="container error-container">
@@ -17,5 +17,5 @@ include ROOT_DIR . '/src/Views/header.php'; // Διορθώθηκε
 
 <?php
 // Χρήση ROOT_DIR για σωστή διαδρομή
-include ROOT_DIR . '/src/Views/footer.php'; // Διορθώθηκε
+include ROOT_DIR . '/src/Views/partials/footer.php'; // Διορθώθηκε
 ?>

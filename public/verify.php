@@ -11,7 +11,7 @@ use Drivejob\Core\Session;
 
 Session::start();
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php';
+include ROOT_DIR . '/src/Views/partials/header.php';
 // Σύνδεση με το styles.css αν δεν φορτώνεται μέσω header.php
 echo '<link rel="stylesheet" href="' . BASE_URL . 'css/styles.css">';
 echo '<main>';
@@ -33,7 +33,7 @@ if (isset($_GET['email'], $_GET['role'])) {
         // Αν ο ρόλος δεν είναι έγκυρος
         echo "<div class='error'>Μη έγκυρος ρόλος.</div>";
         echo '</main>';
-        include ROOT_DIR . '/src/Views/footer.php';
+        include ROOT_DIR . '/src/Views/partials/footer.php';
         exit();
     }
 
@@ -55,4 +55,4 @@ echo '</main>';
 // Κλείσιμο του main
 
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php';
+include ROOT_DIR . '/src/Views/partials/footer.php';

@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php';
+include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
 <!-- Σύνδεση με το CSS αρχείο του προφίλ οδηγού και επεξεργασίας δεξιοτήτων -->
@@ -483,5 +483,5 @@ include ROOT_DIR . '/src/Views/header.php';
 
 <?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php';
+include ROOT_DIR . '/src/Views/partials/footer.php';
 ?>

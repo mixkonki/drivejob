@@ -23,9 +23,9 @@ class AuthController
         if (Session::has('user_id')) {
             $role = Session::get('role');
             if ($role === 'driver') {
-                header('Location: ' . BASE_URL . 'drivers/driver_profile.php');
+                header('Location: ' . BASE_URL . 'drivers/profile');
             } else {
-                header('Location: ' . BASE_URL . 'companies/company_profile.php');
+                header('Location: ' . BASE_URL . 'companies/profile');
             }
             exit();
         }
@@ -60,7 +60,7 @@ class AuthController
             // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
             $redirectUrl = Session::has('redirect_after_login')
                 ? Session::get('redirect_after_login')
-                : BASE_URL . 'drivers/driver_profile.php';
+                : BASE_URL . 'drivers/profile';
 
             Session::remove('redirect_after_login');
             header('Location: ' . $redirectUrl);
@@ -82,7 +82,7 @@ class AuthController
             // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
             $redirectUrl = Session::has('redirect_after_login')
                 ? Session::get('redirect_after_login')
-                : BASE_URL . 'companies/company_profile.php';
+                : BASE_URL . 'companies/profile';
 
             Session::remove('redirect_after_login');
             header('Location: ' . $redirectUrl);

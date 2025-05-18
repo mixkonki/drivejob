@@ -1,10 +1,12 @@
 <?php
 // Αυτό πρέπει να υπάρχει στην αρχή του αρχείου
+use Drivejob\Core\Session;
+
 if (session_status() === PHP_SESSION_NONE) {
     Session::start();
 }
 // Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/header.php';
+include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
 <!-- Σύνδεση με το CSS αρχείο του προφίλ εταιρείας -->
@@ -21,38 +23,38 @@ include ROOT_DIR . '/src/Views/header.php';
                     <img src="<?php echo BASE_URL; ?>img/default_company_logo.png" alt="Προεπιλεγμένο λογότυπο">
                 <?php endif; ?>
             </div>
-            
+
             <div class="profile-info">
                 <h1><?php echo htmlspecialchars($companyData['company_name']); ?></h1>
-                
+
                 <?php if (isset($companyData['city']) && $companyData['city']) : ?>
                     <p class="profile-location">
                         <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
                         <?php echo htmlspecialchars($companyData['city'] . ', ' . $companyData['country']); ?>
                     </p>
                 <?php endif; ?>
-                
+
                 <div class="profile-actions">
-                <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn-primary">Επεξεργασία Προφίλ</a>
-    <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-secondary">Νέα Αγγελία</a>
-</div>
+                    <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn-primary">Επεξεργασία Προφίλ</a>
+                    <a href="<?php echo BASE_URL; ?>job-listings/Company/create" class="btn-secondary">Νέα Αγγελία</a>
+                </div>
             </div>
         </div>
-        
+
         <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
                 <?php echo $_SESSION['success_message']; ?>
                 <?php unset($_SESSION['success_message']); ?>
             </div>
         <?php endif; ?>
-        
+
         <?php if (isset($_SESSION['error_message'])) : ?>
             <div class="error-message">
                 <?php echo $_SESSION['error_message']; ?>
                 <?php unset($_SESSION['error_message']); ?>
             </div>
         <?php endif; ?>
-        
+
         <div class="profile-content">
             <div class="profile-main">
                 <section class="profile-section">
@@ -65,7 +67,7 @@ include ROOT_DIR . '/src/Views/header.php';
                         <?php endif; ?>
                     </div>
                 </section>
-                
+
                 <section class="profile-section">
                     <h2>Πληροφορίες Εταιρείας</h2>
                     <div class="company-info">
@@ -76,21 +78,21 @@ include ROOT_DIR . '/src/Views/header.php';
                                     <div class="info-value"><?php echo htmlspecialchars($companyData['industry']); ?></div>
                                 </div>
                             <?php endif; ?>
-                            
+
                             <?php if (isset($companyData['company_size']) && $companyData['company_size']) : ?>
                                 <div class="info-item">
                                     <div class="info-label">Μέγεθος Εταιρείας</div>
                                     <div class="info-value"><?php echo htmlspecialchars($companyData['company_size']); ?></div>
                                 </div>
                             <?php endif; ?>
-                            
+
                             <?php if (isset($companyData['foundation_year']) && $companyData['foundation_year']) : ?>
                                 <div class="info-item">
                                     <div class="info-label">Έτος Ίδρυσης</div>
                                     <div class="info-value"><?php echo htmlspecialchars($companyData['foundation_year']); ?></div>
                                 </div>
                             <?php endif; ?>
-                            
+
                             <?php if (isset($companyData['vat_number']) && $companyData['vat_number']) : ?>
                                 <div class="info-item">
                                     <div class="info-label">ΑΦΜ</div>
@@ -100,7 +102,7 @@ include ROOT_DIR . '/src/Views/header.php';
                         </div>
                     </div>
                 </section>
-                
+
                 <section class="profile-section">
                     <h2>Οι Αγγελίες μας</h2>
                     <?php if (count($listings['results']) > 0) : ?>
@@ -119,15 +121,15 @@ include ROOT_DIR . '/src/Views/header.php';
                             <?php endforeach; ?>
                         </div>
                         <div class="profile-section-footer">
-    <a href="<?php echo BASE_URL; ?>my-listings/" class="btn-secondary">Όλες οι αγγελίες μας</a>
-    <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα αγγελία</a>
-</div>
+                            <a href="<?php echo BASE_URL; ?>my-listings/" class="btn-secondary">Όλες οι αγγελίες μας</a>
+                            <a href="<?php echo BASE_URL; ?>job-listings/Company/create" class="btn-primary">Νέα αγγελία</a>
+                        </div>
                     <?php else : ?>
-                        <p class="profile-empty">Δεν έχετε δημιουργήσει ακόμα αγγελίες. <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα αγγελία</a></p>
+                        <p class="profile-empty">Δεν έχετε δημιουργήσει ακόμα αγγελίες. <a href="<?php echo BASE_URL; ?>job-listings/Company/create" class="btn-primary">Νέα αγγελία</a></p>
                     <?php endif; ?>
                 </section>
             </div>
-            
+
             <div class="profile-sidebar">
                 <section class="profile-section">
                     <h2>Στοιχεία Επικοινωνίας</h2>
@@ -140,28 +142,28 @@ include ROOT_DIR . '/src/Views/header.php';
                             <img src="<?php echo BASE_URL; ?>img/phone_icon.png" alt="Τηλέφωνο">
                             <span><?php echo htmlspecialchars($companyData['phone']); ?></span>
                         </li>
-                        
+
                         <?php if (isset($companyData['website']) && $companyData['website']) : ?>
                             <li>
                                 <img src="<?php echo BASE_URL; ?>img/website_icon.png" alt="Ιστοσελίδα">
                                 <a href="<?php echo htmlspecialchars($companyData['website']); ?>" target="_blank"><?php echo htmlspecialchars($companyData['website']); ?></a>
                             </li>
                         <?php endif; ?>
-                        
+
                         <?php if (isset($companyData['social_linkedin']) && $companyData['social_linkedin']) : ?>
                             <li>
                                 <img src="<?php echo BASE_URL; ?>img/linkedin_icon.png" alt="LinkedIn">
                                 <a href="<?php echo htmlspecialchars($companyData['social_linkedin']); ?>" target="_blank">LinkedIn</a>
                             </li>
                         <?php endif; ?>
-                        
+
                         <?php if (isset($companyData['social_facebook']) && $companyData['social_facebook']) : ?>
                             <li>
                                 <img src="<?php echo BASE_URL; ?>img/facebook_icon.png" alt="Facebook">
                                 <a href="<?php echo htmlspecialchars($companyData['social_facebook']); ?>" target="_blank">Facebook</a>
                             </li>
                         <?php endif; ?>
-                        
+
                         <?php if (isset($companyData['social_twitter']) && $companyData['social_twitter']) : ?>
                             <li>
                                 <img src="<?php echo BASE_URL; ?>img/twitter_icon.png" alt="Twitter">
@@ -170,7 +172,7 @@ include ROOT_DIR . '/src/Views/header.php';
                         <?php endif; ?>
                     </ul>
                 </section>
-                
+
                 <section class="profile-section">
                     <h2>Υπεύθυνος Επικοινωνίας</h2>
                     <?php if (isset($companyData['contact_person']) && $companyData['contact_person']) : ?>
@@ -184,7 +186,7 @@ include ROOT_DIR . '/src/Views/header.php';
                         <p class="profile-empty">Δεν έχετε καταχωρήσει υπεύθυνο επικοινωνίας. <a href="<?php echo BASE_URL; ?>companies/edit_profile.php">Προσθέστε τώρα!</a></p>
                     <?php endif; ?>
                 </section>
-                
+
                 <?php if (isset($companyData['address']) && $companyData['address'] && isset($companyData['city']) && $companyData['city']) : ?>
                     <section class="profile-section">
                         <h2>Τοποθεσία</h2>
@@ -196,8 +198,7 @@ include ROOT_DIR . '/src/Views/header.php';
                                 scrolling="no"
                                 marginheight="0"
                                 marginwidth="0"
-                                src="https://maps.google.com/maps?q=<?php echo urlencode($companyData['address'] . ', ' . $companyData['city'] . ', ' . $companyData['country']); ?>&output=embed"
-                            ></iframe>
+                                src="https://maps.google.com/maps?q=<?php echo urlencode($companyData['address'] . ', ' . $companyData['city'] . ', ' . $companyData['country']); ?>&output=embed"></iframe>
                         </div>
                     </section>
                 <?php endif; ?>
@@ -208,5 +209,5 @@ include ROOT_DIR . '/src/Views/header.php';
 
 <?php
 // Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/footer.php';
+include ROOT_DIR . '/src/Views/partials/footer.php';
 ?>

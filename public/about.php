@@ -6,7 +6,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // Συμπερίληψη του config.php για να οριστούν οι σταθερές
 
 // Συμπερίληψη του header
-include '../src/Views/header.php';
+include '../src/Views/partials/header.php';
 ?>
 <main>
 <div class="container">

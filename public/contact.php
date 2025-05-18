@@ -21,7 +21,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/config.php';
 
 // Συμπερίληψη του header
-include '../src/Views/header.php';
+include '../src/Views/partials/header.php';
 ?>
 <main>
 <div class="container">
