@@ -55,6 +55,9 @@ $container->set('pdo', function () {
     return $pdo;
 });
 
+// Καταχώρηση των repositories
+require_once __DIR__ . '/container_bindings.php';
+
 // Αρχικοποίηση του Logger
 \Drivejob\Core\Logger::init();
 
