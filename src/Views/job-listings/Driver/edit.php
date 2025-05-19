@@ -20,7 +20,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
             <div class="card">
                 <div class="card-body">
-                    <form action="<?= BASE_URL ?>job-listings/update-driver/<?= $listing['id'] ?>" method="post">
+                    <form action="<?= BASE_URL ?>job-listings/update/<?= $listing['id'] ?>" method="post">
                         <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::generateToken() ?>">
                         <input type="hidden" name="listing_type" value="job_search">
 
@@ -136,7 +136,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     </form>
 
                     <div class="mt-4">
-                        <form action="<?= BASE_URL ?>job-listings/delete-driver/<?= $listing['id'] ?>" method="post" onsubmit="return confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την αγγελία;');">
+                        <form action="<?= BASE_URL ?>job-listings/destroy/<?= $listing['id'] ?>" method="post" onsubmit="return confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την αγγελία;');">
                             <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::generateToken() ?>">
                             <button type="submit" class="btn btn-danger">Διαγραφή Αγγελίας</button>
                         </form>

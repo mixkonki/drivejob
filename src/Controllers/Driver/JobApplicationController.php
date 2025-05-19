@@ -12,6 +12,7 @@ use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
 use Drivejob\Helpers\JsonHelper;
+use Drivejob\Services\FileService;
 
 /**
  * Controller για τις αιτήσεις εργασίας από οδηγούς
@@ -21,6 +22,11 @@ use Drivejob\Helpers\JsonHelper;
 class JobApplicationController extends BaseJobApplicationController
 {
     /**
+     * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
+     */
+    private $fileService;
+
+    /**
      * Constructor
      *
      * @param PDO|null $pdo Η σύνδεση με τη βάση δεδομένων
@@ -29,6 +35,34 @@ class JobApplicationController extends BaseJobApplicationController
     {
         // Κλήση του constructor της γονικής κλάσης
         parent::__construct($pdo);
+
+        // Αρχικοποίηση του FileService
+        $this->fileService = new FileService();
+    }
+
+    /**
+     * Ανεβάζει ένα αρχείο χρησιμοποιώντας το FileService
+     * 
+     * @param array $file Τα δεδομένα του αρχείου
+     * @param string $fileType Ο τύπος του αρχείου
+     * @param string $category Η κατηγορία του αρχείου (image, document, all)
+     * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
+     */
+    private function uploadFile($file, $fileType, $category = 'all')
+    {
+        $result = $this->fileService->uploadFile($file, $fileType, $category);
+
+        if ($result['success']) {
+            return $result['file_path'];
+        }
+
+        Logger::error('Αποτυχία ανεβάσματος αρχείου', [
+            'file_type' => $fileType,
+            'error' => $result['message'],
+            'error_code' => $result['error_code'] ?? 'unknown'
+        ]);
+
+        return false;
     }
 
     /**
@@ -48,7 +82,7 @@ class JobApplicationController extends BaseJobApplicationController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job application');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/' . $id);
@@ -99,6 +133,43 @@ class JobApplicationController extends BaseJobApplicationController
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
+
+            // Επεξεργασία των αρχείων που ανεβάζονται
+            if (isset($_FILES['resume_file']) && $_FILES['resume_file']['error'] === UPLOAD_ERR_OK) {
+                $resumePath = $this->uploadFile($_FILES['resume_file'], 'resume_file', 'document');
+                if ($resumePath) {
+                    $data['resume_file'] = $resumePath;
+                    Logger::info('Επιτυχές ανέβασμα βιογραφικού', [
+                        'driver_id' => $driverId,
+                        'file_path' => $resumePath
+                    ]);
+                } else {
+                    Session::set('error_message', 'Υπήρξε ένα πρόβλημα κατά το ανέβασμα του βιογραφικού.');
+                    header('Location: ' . BASE_URL . 'job-listings/' . $id);
+                    exit();
+                }
+            }
+
+            // Επεξεργασία άλλων αρχείων
+            $fileTypes = [
+                'cover_letter' => 'document',
+                'additional_document' => 'document',
+                'portfolio' => 'document'
+            ];
+
+            foreach ($fileTypes as $fileField => $category) {
+                if (isset($_FILES[$fileField]) && $_FILES[$fileField]['error'] === UPLOAD_ERR_OK) {
+                    $filePath = $this->uploadFile($_FILES[$fileField], $fileField, $category);
+                    if ($filePath) {
+                        $data[$fileField] = $filePath;
+                        Logger::info('Επιτυχές ανέβασμα αρχείου', [
+                            'driver_id' => $driverId,
+                            'file_type' => $fileField,
+                            'file_path' => $filePath
+                        ]);
+                    }
+                }
+            }
 
             // Δημιουργία της αίτησης
             $applicationId = $this->jobApplicationRepository->create($data);
@@ -315,7 +386,7 @@ class JobApplicationController extends BaseJobApplicationController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job application withdraw');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-applications/my-applications');

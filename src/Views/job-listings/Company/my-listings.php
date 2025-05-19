@@ -1,0 +1,124 @@
+<?php
+// Συμπερίληψη του header
+include ROOT_DIR . '/src/Views/partials/header.php';
+?>
+
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/job-listings.css">
+
+<main>
+    <div class="container">
+        <h1>Οι Αγγελίες μας</h1>
+
+        <?php if (isset($_SESSION['success_message'])) : ?>
+            <div class="success-message">
+                <?php echo $_SESSION['success_message']; ?>
+                <?php unset($_SESSION['success_message']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error_message'])) : ?>
+            <div class="error-message">
+                <?php echo $_SESSION['error_message']; ?>
+                <?php unset($_SESSION['error_message']); ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="listings-actions">
+            <a href="<?php echo BASE_URL; ?>job-listings/Company/create" class="btn-primary">Νέα Αγγελία</a>
+        </div>
+
+        <?php if (isset($listings) && count($listings['results']) > 0) : ?>
+            <div class="listings-container">
+                <?php foreach ($listings['results'] as $listing) : ?>
+                    <div class="listing-card">
+                        <div class="listing-header">
+                            <h2><a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>"><?php echo htmlspecialchars($listing['title']); ?></a></h2>
+                            <span class="listing-type <?php echo $listing['listing_type']; ?>">
+                                <?php echo $listing['listing_type'] === 'job_offer' ? 'Προσφορά Εργασίας' : 'Αναζήτηση Εργασίας'; ?>
+                            </span>
+                        </div>
+
+                        <div class="listing-details">
+                            <div class="listing-meta">
+                                <div class="meta-item">
+                                    <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                    <span><?php echo htmlspecialchars($listing['location']); ?></span>
+                                </div>
+                                <div class="meta-item">
+                                    <img src="<?php echo BASE_URL; ?>img/date_icon.png" alt="Ημερομηνία">
+                                    <span>Δημοσιεύτηκε: <?php echo date('d/m/Y', strtotime($listing['created_at'])); ?></span>
+                                </div>
+                                <div class="meta-item">
+                                    <img src="<?php echo BASE_URL; ?>img/car_icon.png" alt="Τύπος Οχήματος">
+                                    <span>
+                                        <?php
+                                        $vehicleTypes = [
+                                            'car' => 'Αυτοκίνητο',
+                                            'van' => 'Βαν',
+                                            'truck' => 'Φορτηγό',
+                                            'bus' => 'Λεωφορείο',
+                                            'taxi' => 'Ταξί',
+                                            'motorcycle' => 'Μοτοσυκλέτα',
+                                            'special' => 'Ειδικό Όχημα'
+                                        ];
+                                        echo isset($vehicleTypes[$listing['vehicle_type']]) ? $vehicleTypes[$listing['vehicle_type']] : $listing['vehicle_type'];
+                                        ?>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="listing-description">
+                                <?php echo substr(htmlspecialchars($listing['description']), 0, 200) . '...'; ?>
+                            </div>
+
+                            <div class="listing-status">
+                                <span class="status-label">Κατάσταση:</span>
+                                <span class="status-value <?php echo $listing['is_active'] ? 'active' : 'inactive'; ?>">
+                                    <?php echo $listing['is_active'] ? 'Ενεργή' : 'Ανενεργή'; ?>
+                                </span>
+                            </div>
+
+                            <div class="listing-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Προβολές:</span>
+                                    <span class="stat-value"><?php echo $listing['views']; ?></span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Αιτήσεις:</span>
+                                    <span class="stat-value"><?php echo $listing['applications']; ?></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="listing-actions">
+                            <a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>" class="btn-secondary">Προβολή</a>
+                            <a href="<?php echo BASE_URL; ?>job-listings/edit-company/<?php echo $listing['id']; ?>" class="btn-secondary">Επεξεργασία</a>
+                            <form action="<?php echo BASE_URL; ?>job-listings/delete-company/<?php echo $listing['id']; ?>" method="post" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="<?php echo \Drivejob\Core\CSRF::generateToken(); ?>">
+                                <button type="submit" class="btn-danger" onclick="return confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την αγγελία;')">Διαγραφή</button>
+                            </form>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <?php if ($listings['total_pages'] > 1) : ?>
+                <div class="pagination">
+                    <?php for ($i = 1; $i <= $listings['total_pages']; $i++) : ?>
+                        <a href="?page=<?php echo $i; ?>" class="<?php echo $i === $listings['current_page'] ? 'active' : ''; ?>"><?php echo $i; ?></a>
+                    <?php endfor; ?>
+                </div>
+            <?php endif; ?>
+        <?php else : ?>
+            <div class="no-listings">
+                <p>Δεν έχετε δημιουργήσει ακόμα αγγελίες.</p>
+                <a href="<?php echo BASE_URL; ?>job-listings/Company/create" class="btn-primary">Δημιουργία Αγγελίας</a>
+            </div>
+        <?php endif; ?>
+    </div>
+</main>
+
+<?php
+// Συμπερίληψη του footer
+include ROOT_DIR . '/src/Views/partials/footer.php';
+?>

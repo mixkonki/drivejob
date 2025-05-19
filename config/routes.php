@@ -16,9 +16,7 @@ use Drivejob\Controllers\Driver\JobApplicationController;
 use Drivejob\Controllers\Driver\JobOfferController;
 use Drivejob\Controllers\Driver\DriverResumeController;
 use Drivejob\Controllers\Company\CompaniesController;
-use Drivejob\Controllers\Company\JobListingController;
-use Drivejob\Controllers\Company\JobListingController as CompanyJobListingController;
-use Drivejob\Controllers\Driver\JobListingController as DriverJobListingController;
+use Drivejob\Controllers\UnifiedJobListingController;
 
 // Αρχική σελίδα
 $router->get('/', [HomeController::class, 'renderHomePage']);
@@ -35,27 +33,24 @@ $router->post('/password-reset/{token}', [AuthController::class, 'resetPassword'
 $router->get('/access-denied', [AuthController::class, 'accessDenied']);
 $router->get('/verification-required', [AuthController::class, 'verificationRequired']);
 
-// Διαδρομές για τις αγγελίες
-$router->get('/job-listings', [JobListingController::class, 'index']);
-$router->get('/job-listings/show/{id}', [JobListingController::class, 'show']);
-$router->get('/job-listings/company/{id}', [JobListingController::class, 'companyListings']);
-$router->get('/job-listings/driver/{id}', [JobListingController::class, 'driverListings']);
-$router->get('/job-listings/my-listings', [JobListingController::class, 'myListings']);
+// Διαδρομές για τις αγγελίες (χρησιμοποιώντας τον ενοποιημένο controller)
+$router->get('/job-listings', [UnifiedJobListingController::class, 'index']);
+$router->get('/job-listings/show/{id}', [UnifiedJobListingController::class, 'show']);
+$router->get('/job-listings/company/{id}', [UnifiedJobListingController::class, 'companyListings']);
+$router->get('/job-listings/driver/{id}', [UnifiedJobListingController::class, 'driverListings']);
+$router->get('/job-listings/my-listings', [UnifiedJobListingController::class, 'myListings']);
 
-// Διαδρομές για τις αγγελίες εταιρειών
-$router->get('/job-listings/Company/create', [CompanyJobListingController::class, 'create']);
-$router->post('/job-listings/Company/store', [CompanyJobListingController::class, 'store']);
-$router->get('/job-listings/edit/{id}', [CompanyJobListingController::class, 'edit']);
-$router->post('/job-listings/update/{id}', [CompanyJobListingController::class, 'update']);
-$router->get('/job-listings/delete/{id}', [CompanyJobListingController::class, 'delete']);
-$router->post('/job-listings/destroy/{id}', [CompanyJobListingController::class, 'destroy']);
+// Διαδρομές για τη δημιουργία αγγελιών (ενοποιημένες)
+$router->get('/job-listings/create', [UnifiedJobListingController::class, 'create']);
+$router->post('/job-listings/store', [UnifiedJobListingController::class, 'store']);
 
-// Διαδρομές για τις αγγελίες οδηγών
-$router->get('/job-listings/Driver/create', [DriverJobListingController::class, 'create']);
-$router->post('/job-listings/Driver/store', [DriverJobListingController::class, 'store']);
-$router->get('/job-listings/Driver/edit/{id}', [DriverJobListingController::class, 'edit']);
-$router->post('/job-listings/Driver/update/{id}', [DriverJobListingController::class, 'update']);
-$router->post('/job-listings/Driver/delete/{id}', [DriverJobListingController::class, 'delete']);
+// Διαδρομές για την επεξεργασία αγγελιών (ενοποιημένες)
+$router->get('/job-listings/edit/{id}', [UnifiedJobListingController::class, 'edit']);
+$router->post('/job-listings/update/{id}', [UnifiedJobListingController::class, 'update']);
+
+// Διαδρομές για τη διαγραφή αγγελιών (ενοποιημένες)
+$router->get('/job-listings/delete/{id}', [UnifiedJobListingController::class, 'delete']);
+$router->post('/job-listings/destroy/{id}', [UnifiedJobListingController::class, 'destroy']);
 
 // Διαδρομές για οδηγούς (χρησιμοποιώντας τον νέο controller)
 $router->get('/drivers/register', [DriversController::class, 'showRegistrationForm']);
@@ -121,6 +116,10 @@ $router->post('/drivers/save-incident', [DriversController::class, 'saveIncident
 // Διαδρομές για τα ταιριάσματα
 $router->get('/matching/driver-matches', [MatchingController::class, 'driverMatches']);
 $router->get('/matching/company-matches', [MatchingController::class, 'companyMatches']);
+$router->get('/matching/job-listing-matches/{id}', [MatchingController::class, 'jobListingMatches']);
+$router->get('/matching/preferences', [MatchingController::class, 'preferences']);
+$router->post('/matching/save-preferences', [MatchingController::class, 'savePreferences']);
+$router->post('/matching/log-action', [MatchingController::class, 'logAction']);
 
 // Διαδρομές για τις αιτήσεις εργασίας
 $router->post('/job-applications/apply/{id}', [JobApplicationController::class, 'apply']);
@@ -141,11 +140,8 @@ $router->get('/drivers/debug-request', [DriversController::class, 'debugRequest'
 // Διαδρομή για το δημόσιο προφίλ οδηγού
 $router->get('/drivers/profile/{id}', [DriversController::class, 'publicProfile']);
 // Διαδρομή για τις αγγελίες ενός συγκεκριμένου οδηγού
-$router->get('/job-listings/driver/{id}', [CompanyJobListingController::class, 'driverListings']);
-$router->get('/αγγελιες/οδηγος/{id}', [CompanyJobListingController::class, 'driverListings']);
-
-$router->get('/job-listings/delete/{id}', [CompanyJobListingController::class, 'delete']);
-$router->post('/job-listings/destroy/{id}', [CompanyJobListingController::class, 'destroy']);
+$router->get('/job-listings/driver/{id}', [UnifiedJobListingController::class, 'driverListings']);
+$router->get('/αγγελιες/οδηγος/{id}', [UnifiedJobListingController::class, 'driverListings']);
 
 $router->get('/drivers/edit-resume', [DriverResumeController::class, 'editResume']);
 $router->post('/drivers/update-resume', [DriverResumeController::class, 'updateResume']);

@@ -10,6 +10,7 @@ use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
 use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
+use Drivejob\Services\FileService;
 
 /**
  * Controller για τις αγγελίες εργασίας από οδηγούς
@@ -19,12 +20,20 @@ use Drivejob\Core\Exceptions\DatabaseException;
 class JobListingController extends BaseJobListingController
 {
     /**
+     * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
+     */
+    private $fileService;
+
+    /**
      * Constructor
      */
     public function __construct()
     {
         // Κλήση του constructor της γονικής κλάσης
         parent::__construct();
+
+        // Αρχικοποίηση του FileService
+        $this->fileService = new FileService();
     }
 
     /**
@@ -58,7 +67,7 @@ class JobListingController extends BaseJobListingController
         AuthMiddleware::hasRole('driver');
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in driver job listing store');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/Driver/create');
@@ -210,7 +219,7 @@ class JobListingController extends BaseJobListingController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in driver job listing update');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/edit-driver/' . $id);
@@ -318,7 +327,7 @@ class JobListingController extends BaseJobListingController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in driver job listing delete');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
@@ -382,6 +391,54 @@ class JobListingController extends BaseJobListingController
             'additional_info' => parent::sanitize($_POST['additional_info'] ?? '')
         ];
 
+        // Επεξεργασία των αρχείων που ανεβάζονται
+        if (isset($_FILES['job_image']) && $_FILES['job_image']['error'] === UPLOAD_ERR_OK) {
+            $imagePath = $this->uploadFile($_FILES['job_image'], 'job_image', 'image');
+            if ($imagePath) {
+                $data['image'] = $imagePath;
+            }
+        }
+
+        // Επεξεργασία άλλων αρχείων
+        $fileTypes = [
+            'job_attachment' => 'document',
+            'job_brochure' => 'document'
+        ];
+
+        foreach ($fileTypes as $fileField => $category) {
+            if (isset($_FILES[$fileField]) && $_FILES[$fileField]['error'] === UPLOAD_ERR_OK) {
+                $filePath = $this->uploadFile($_FILES[$fileField], $fileField, $category);
+                if ($filePath) {
+                    $data[$fileField] = $filePath;
+                }
+            }
+        }
+
         return $data;
+    }
+
+    /**
+     * Ανεβάζει ένα αρχείο χρησιμοποιώντας το FileService
+     * 
+     * @param array $file Τα δεδομένα του αρχείου
+     * @param string $fileType Ο τύπος του αρχείου
+     * @param string $category Η κατηγορία του αρχείου (image, document, all)
+     * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
+     */
+    private function uploadFile($file, $fileType, $category = 'all')
+    {
+        $result = $this->fileService->uploadFile($file, $fileType, $category);
+
+        if ($result['success']) {
+            return $result['file_path'];
+        }
+
+        Logger::error('Αποτυχία ανεβάσματος αρχείου', [
+            'file_type' => $fileType,
+            'error' => $result['message'],
+            'error_code' => $result['error_code'] ?? 'unknown'
+        ]);
+
+        return false;
     }
 }

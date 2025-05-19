@@ -11,6 +11,9 @@ use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
 use Drivejob\Helpers\JsonHelper;
+use Drivejob\Services\FileService;
+use Drivejob\Services\JobListing\JobListingService;
+use Drivejob\Services\JobListing\JobListingServiceInterface;
 
 /**
  * Ενιαίος Controller για τις αγγελίες εργασίας
@@ -45,6 +48,16 @@ class UnifiedJobListingController extends BaseJobListingController
     protected $jobApplicationRepository;
 
     /**
+     * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
+     */
+    private $fileService;
+
+    /**
+     * @var JobListingServiceInterface Η υπηρεσία για τη διαχείριση αγγελιών
+     */
+    private $jobListingService;
+
+    /**
      * Constructor
      *
      * @param PDO|null $pdo Η σύνδεση με τη βάση δεδομένων
@@ -61,6 +74,14 @@ class UnifiedJobListingController extends BaseJobListingController
         $this->driverADRRepository = $container->get('DriverADRRepository');
         $this->driverTachographRepository = $container->get('DriverTachographRepository');
         $this->jobApplicationRepository = $container->get('JobApplicationRepository');
+
+        // Αρχικοποίηση του FileService
+        $this->fileService = new FileService();
+
+        // Αρχικοποίηση του JobListingService
+        $this->jobListingService = new JobListingService(
+            $this->jobListingRepository
+        );
     }
 
     /**
@@ -78,8 +99,8 @@ class UnifiedJobListingController extends BaseJobListingController
         }
 
         try {
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($id);
+            // Ανάκτηση της αγγελίας με το service
+            $listing = $this->jobListingService->findJobListing($id);
 
             if (!$listing) {
                 Session::set('error_message', 'Η αγγελία δεν βρέθηκε');
@@ -123,9 +144,9 @@ class UnifiedJobListingController extends BaseJobListingController
                 $author = $driver;
             }
 
-            // Αύξηση των προβολών (αγνοούμε το αποτέλεσμα)
+            // Αύξηση των προβολών με το service (αγνοούμε το αποτέλεσμα)
             try {
-                $this->jobListingRepository->incrementViews($id);
+                $this->jobListingService->incrementViews($id);
             } catch (\Exception $e) {
                 // Αγνοούμε τυχόν σφάλματα κατά την αύξηση των προβολών
                 Logger::error('Error incrementing views', [
@@ -208,8 +229,8 @@ class UnifiedJobListingController extends BaseJobListingController
         $limit = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 10;
 
         try {
-            // Αναζήτηση αγγελιών με το repository
-            $result = $this->jobListingRepository->searchListings($criteria, $page, $limit);
+            // Αναζήτηση αγγελιών με το service
+            $result = $this->jobListingService->searchJobListings($criteria, $page, $limit);
 
             // Αν είναι AJAX αίτημα, επιστροφή JSON
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
@@ -461,20 +482,22 @@ class UnifiedJobListingController extends BaseJobListingController
 
             Logger::info('Collected form data for job listing', ['data_keys' => array_keys($data)]);
 
-            // Δημιουργία της αγγελίας με το repository
-            $listingId = $this->jobListingRepository->create($data);
+            // Δημιουργία της αγγελίας με το service
+            try {
+                $listingId = $this->jobListingService->createJobListing($data);
 
-            if ($listingId) {
                 Logger::info('Job listing creation successful', ['listing_id' => $listingId]);
                 Session::set('success_message', 'Η αγγελία δημιουργήθηκε με επιτυχία.');
                 header('Location: ' . BASE_URL . 'job-listings/show/' . $listingId);
                 exit();
-            } else {
-                Logger::error('Job listing creation failed', [
+            } catch (ValidationException $e) {
+                Logger::error('Validation exception in job listing creation', [
                     'user_id' => $userId,
-                    'data' => $data
+                    'errors' => $e->getErrors()
                 ]);
-                Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά τη δημιουργία της αγγελίας. Παρακαλώ δοκιμάστε ξανά.');
+
+                Session::set('errors', $e->getErrors());
+                Session::set('old_input', $_POST);
                 header('Location: ' . BASE_URL . 'job-listings/create');
                 exit();
             }
@@ -537,8 +560,8 @@ class UnifiedJobListingController extends BaseJobListingController
         $userId = Session::get('user_id');
 
         try {
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($id);
+            // Ανάκτηση της αγγελίας με το service
+            $listing = $this->jobListingService->findJobListing($id);
 
             if (!$listing) {
                 Session::set('error_message', 'Η αγγελία δεν βρέθηκε.');
@@ -613,8 +636,8 @@ class UnifiedJobListingController extends BaseJobListingController
         $userId = Session::get('user_id');
 
         try {
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($id);
+            // Ανάκτηση της αγγελίας με το service
+            $listing = $this->jobListingService->findJobListing($id);
 
             if (!$listing) {
                 Session::set('error_message', 'Η αγγελία δεν βρέθηκε.');
@@ -678,15 +701,22 @@ class UnifiedJobListingController extends BaseJobListingController
                 $data['requires_tachograph'] = isset($_POST['requires_tachograph']) ? 1 : 0;
             }
 
-            // Ενημέρωση της αγγελίας με το repository
-            $success = $this->jobListingRepository->update($id, $data);
+            // Ενημέρωση της αγγελίας με το service
+            try {
+                $success = $this->jobListingService->updateJobListing($id, $data);
 
-            if ($success) {
                 Session::set('success_message', 'Η αγγελία ενημερώθηκε με επιτυχία.');
                 header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
                 exit();
-            } else {
-                Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την ενημέρωση της αγγελίας. Παρακαλώ δοκιμάστε ξανά.');
+            } catch (ValidationException $e) {
+                Logger::error('Validation exception in job listing update', [
+                    'id' => $id,
+                    'user_id' => $userId,
+                    'errors' => $e->getErrors()
+                ]);
+
+                Session::set('errors', $e->getErrors());
+                Session::set('old_input', $_POST);
                 header('Location: ' . BASE_URL . 'job-listings/edit/' . $id);
                 exit();
             }
@@ -745,8 +775,8 @@ class UnifiedJobListingController extends BaseJobListingController
         $userId = Session::get('user_id');
 
         try {
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($id);
+            // Ανάκτηση της αγγελίας με το service
+            $listing = $this->jobListingService->findJobListing($id);
 
             if (!$listing) {
                 Session::set('error_message', 'Η αγγελία δεν βρέθηκε.');
@@ -821,8 +851,8 @@ class UnifiedJobListingController extends BaseJobListingController
         $userId = Session::get('user_id');
 
         try {
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($id);
+            // Ανάκτηση της αγγελίας με το service
+            $listing = $this->jobListingService->findJobListing($id);
 
             if (!$listing) {
                 Session::set('error_message', 'Η αγγελία δεν βρέθηκε.');
@@ -844,10 +874,10 @@ class UnifiedJobListingController extends BaseJobListingController
                 exit();
             }
 
-            // Διαγραφή της αγγελίας με το repository
-            $success = $this->jobListingRepository->delete($id);
+            // Διαγραφή της αγγελίας με το service
+            try {
+                $success = $this->jobListingService->deleteJobListing($id);
 
-            if ($success) {
                 Session::set('success_message', 'Η αγγελία διαγράφηκε με επιτυχία.');
 
                 // Ανακατεύθυνση στη λίστα αγγελιών του χρήστη
@@ -857,7 +887,13 @@ class UnifiedJobListingController extends BaseJobListingController
                     header('Location: ' . BASE_URL . 'drivers/profile');
                 }
                 exit();
-            } else {
+            } catch (\Exception $e) {
+                Logger::error('Exception in job listing deletion', [
+                    'id' => $id,
+                    'user_id' => $userId,
+                    'message' => $e->getMessage()
+                ]);
+
                 Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά τη διαγραφή της αγγελίας. Παρακαλώ δοκιμάστε ξανά.');
                 header('Location: ' . BASE_URL . 'job-listings/delete/' . $id);
                 exit();
@@ -914,20 +950,44 @@ class UnifiedJobListingController extends BaseJobListingController
         $userId = $_SESSION['user_id'];
         $userRole = $_SESSION['role'];
 
-        // Λήψη των αγγελιών του χρήστη
-        $jobListingRepository = new \Drivejob\Repositories\JobListingRepository($this->pdo);
+        // Λήψη των αγγελιών του χρήστη με το service
         $listings = [];
 
         if ($userRole === 'driver') {
-            $listings = $jobListingRepository->searchListings(['driver_id' => $userId], 1, 10);
+            $listings = $this->jobListingService->searchJobListings(['driver_id' => $userId], 1, 10);
             include ROOT_DIR . '/src/Views/job-listings/Driver/my-listings.php';
         } else if ($userRole === 'company') {
-            $listings = $jobListingRepository->searchListings(['company_id' => $userId], 1, 10);
+            $listings = $this->jobListingService->searchJobListings(['company_id' => $userId], 1, 10);
             include ROOT_DIR . '/src/Views/job-listings/Company/my-listings.php';
         } else {
             header('Location: ' . BASE_URL);
             exit();
         }
+    }
+
+    /**
+     * Ανεβάζει ένα αρχείο χρησιμοποιώντας το FileService
+     * 
+     * @param array $file Τα δεδομένα του αρχείου
+     * @param string $fileType Ο τύπος του αρχείου
+     * @param string $category Η κατηγορία του αρχείου (image, document, all)
+     * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
+     */
+    private function uploadFile($file, $fileType, $category = 'all')
+    {
+        $result = $this->fileService->uploadFile($file, $fileType, $category);
+
+        if ($result['success']) {
+            return $result['file_path'];
+        }
+
+        Logger::error('Αποτυχία ανεβάσματος αρχείου', [
+            'file_type' => $fileType,
+            'error' => $result['message'],
+            'error_code' => $result['error_code'] ?? 'unknown'
+        ]);
+
+        return false;
     }
 
     /**
@@ -956,6 +1016,37 @@ class UnifiedJobListingController extends BaseJobListingController
             'availability' => parent::sanitize($_POST['availability'] ?? ''),
             'additional_info' => parent::sanitizeHtml($_POST['additional_info'] ?? '')
         ];
+
+        // Επεξεργασία των αρχείων που ανεβάζονται
+        if (isset($_FILES['job_image']) && $_FILES['job_image']['error'] === UPLOAD_ERR_OK) {
+            $imagePath = $this->uploadFile($_FILES['job_image'], 'job_image', 'image');
+            if ($imagePath) {
+                $data['image'] = $imagePath;
+                Logger::info('Επιτυχές ανέβασμα εικόνας αγγελίας', [
+                    'file_path' => $imagePath
+                ]);
+            }
+        }
+
+        // Επεξεργασία άλλων αρχείων
+        $fileTypes = [
+            'job_attachment' => 'document',
+            'job_brochure' => 'document',
+            'job_description_file' => 'document'
+        ];
+
+        foreach ($fileTypes as $fileField => $category) {
+            if (isset($_FILES[$fileField]) && $_FILES[$fileField]['error'] === UPLOAD_ERR_OK) {
+                $filePath = $this->uploadFile($_FILES[$fileField], $fileField, $category);
+                if ($filePath) {
+                    $data[$fileField] = $filePath;
+                    Logger::info('Επιτυχές ανέβασμα αρχείου', [
+                        'file_type' => $fileField,
+                        'file_path' => $filePath
+                    ]);
+                }
+            }
+        }
 
         // Καταγραφή των δεδομένων για αποσφαλμάτωση
         Logger::debug('Collected form data', [

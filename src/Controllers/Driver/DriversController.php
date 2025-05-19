@@ -14,7 +14,8 @@ use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
 use Drivejob\Repositories\DriversRepository;
 use Drivejob\Services\DriverProfileService;
-use function json_encode;
+use Drivejob\Services\FileService;
+use Drivejob\Helpers\JsonHelper;
 
 /**
  * Controller για τους οδηγούς
@@ -33,6 +34,11 @@ class DriversController extends BaseUserController
      * @var DriverProfileService Η υπηρεσία για τα προφίλ οδηγών
      */
     private $driverProfileService;
+
+    /**
+     * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
+     */
+    private $fileService;
 
     /**
      * @var Container Το container για τις εξαρτήσεις
@@ -57,9 +63,10 @@ class DriversController extends BaseUserController
             $pdo = $this->container->get('pdo');
         }
 
-        // Αρχικοποίηση του repository και της υπηρεσίας
+        // Αρχικοποίηση του repository και των υπηρεσιών
         $this->driversRepository = new DriversRepository($pdo);
         $this->driverProfileService = new DriverProfileService($pdo);
+        $this->fileService = new FileService();
     }
 
     /**
@@ -73,80 +80,96 @@ class DriversController extends BaseUserController
         // Λήψη των στοιχείων του οδηγού
         $driverId = Session::get('user_id');
 
-        // Λήψη πλήρους προφίλ του οδηγού με τη νέα υπηρεσία
-        $driverProfile = $this->driverProfileService->getDriverProfile($driverId);
+        try {
+            // Λήψη πλήρους προφίλ του οδηγού με τη νέα υπηρεσία
+            $driverProfile = $this->driverProfileService->getDriverProfile($driverId);
 
-        if (!$driverProfile) {
-            Session::set('error_message', 'Τα στοιχεία του οδηγού δεν βρέθηκαν.');
+            if (!$driverProfile) {
+                Session::set('error_message', 'Τα στοιχεία του οδηγού δεν βρέθηκαν.');
+                header('Location: ' . BASE_URL);
+                exit();
+            }
+
+            // Προετοιμασία δεδομένων για το view
+            $viewData = $this->prepareDriverProfileViewData($driverProfile);
+
+            // Λήψη των αγγελιών του οδηγού
+            $jobListingRepository = new \Drivejob\Repositories\JobListingRepository($this->container->get('pdo'));
+            $viewData['myListings'] = $jobListingRepository->searchListings(['driver_id' => $driverId], 1, 10);
+
+            // Φόρτωση του view με τα προετοιμασμένα δεδομένα
+            extract($viewData);
+            include ROOT_DIR . '/src/Views/drivers/driver-profile.php';
+        } catch (\Exception $e) {
+            Logger::error('Error in driver profile view', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την προβολή του προφίλ. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL);
             exit();
         }
+    }
 
+    /**
+     * Προετοιμάζει τα δεδομένα του προφίλ οδηγού για το view
+     * 
+     * @param array $driverProfile Πλήρες προφίλ οδηγού
+     * @return array Δεδομένα για το view
+     */
+    private function prepareDriverProfileViewData($driverProfile)
+    {
         // Αντιστοίχιση μεταβλητών για συμβατότητα με το view
-        $driverData = $driverProfile;
-        $driverLicenses = $driverProfile['licenses'] ?? [];
-        $driverLicenseTypes = array_column($driverLicenses, 'license_type');
-        $driverSkills = $driverProfile['skills'] ?? [];
-        $driverCertifications = $driverProfile['certifications'] ?? [];
-        $driverVehicleExperience = $driverProfile['vehicle_experience'] ?? [];
+        $viewData = [
+            'driverData' => $driverProfile,
+            'driverLicenses' => $driverProfile['licenses'] ?? [],
+            'driverSkills' => $driverProfile['skills'] ?? [],
+            'driverCertifications' => $driverProfile['certifications'] ?? [],
+            'driverVehicleExperience' => $driverProfile['vehicle_experience'] ?? [],
+            'driverTachograph' => $driverProfile['tachograph_cards'][0] ?? null,
+            'driverOperator' => $driverProfile['operator_licenses'][0] ?? null,
+            'driverSpecialLicenses' => $driverProfile['special_licenses'] ?? [],
+            'driverADR' => $driverProfile['adr_certificates'][0] ?? null,
+            'driverRating' => $driverProfile['rating_details'] ?? null,
+            'recentIncidents' => array_slice($driverProfile['incidents'] ?? [], 0, 3),
+            'telemetryData' => $driverProfile['telemetry_data'] ?? null
+        ];
 
-        // Λήψη δεδομένων κάρτας ταχογράφου
-        $driverTachograph = $driverProfile['tachograph_cards'][0] ?? null;
-
-        // Λήψη δεδομένων άδειας χειριστή
-        $driverOperator = $driverProfile['operator_licenses'][0] ?? null;
+        // Εξαγωγή τύπων αδειών
+        $viewData['driverLicenseTypes'] = array_column($viewData['driverLicenses'], 'license_type');
 
         // Λήψη υποειδικοτήτων άδειας χειριστή
-        $operatorSubSpecialities = [];
-        if ($driverOperator) {
-            $operatorSubSpecialities = $driverOperator['sub_specialities'] ?? [];
+        $viewData['operatorSubSpecialities'] = [];
+        if ($viewData['driverOperator']) {
+            $viewData['operatorSubSpecialities'] = $viewData['driverOperator']['sub_specialities'] ?? [];
         }
 
-        // Λήψη ειδικών αδειών
-        $driverSpecialLicenses = $driverProfile['special_licenses'] ?? [];
-
-        // Λήψη δεδομένων πιστοποιητικού ADR
-        $driverADR = $driverProfile['adr_certificates'][0] ?? null;
-
-        // Λήψη βαθμολογίας οδηγού
-        $driverRating = $driverProfile['rating_details'] ?? null;
-
-        // Λήψη πρόσφατων συμβάντων
-        $recentIncidents = array_slice($driverProfile['incidents'] ?? [], 0, 3);
-
-        // Λήψη δεδομένων τηλεματικής
-        $telemetryData = $driverProfile['telemetry_data'] ?? null;
-
-        // Λήψη των αγγελιών του οδηγού
-        $jobListingRepository = new \Drivejob\Repositories\JobListingRepository($this->container->get('pdo'));
-        $myListings = $jobListingRepository->searchListings(['driver_id' => $driverId], 1, 10);
-
         // Έλεγχος για ΠΕΙ
-        $hasPeiC = false;
-        $hasPeiD = false;
-        $peiCExpiryDate = null;
-        $peiDExpiryDate = null;
+        $viewData['hasPeiC'] = false;
+        $viewData['hasPeiD'] = false;
+        $viewData['peiCExpiryDate'] = null;
+        $viewData['peiDExpiryDate'] = null;
 
-        if (!empty($driverLicenses)) {
-            foreach ($driverLicenses as $license) {
+        if (!empty($viewData['driverLicenses'])) {
+            foreach ($viewData['driverLicenses'] as $license) {
                 if (!empty($license['has_pei']) && $license['has_pei'] == 1) {
                     if (in_array($license['license_type'], ['C', 'CE', 'C1', 'C1E'])) {
-                        $hasPeiC = true;
+                        $viewData['hasPeiC'] = true;
                         if (!empty($license['pei_expiry_c'])) {
-                            $peiCExpiryDate = $license['pei_expiry_c'];
+                            $viewData['peiCExpiryDate'] = $license['pei_expiry_c'];
                         }
                     } else if (in_array($license['license_type'], ['D', 'DE', 'D1', 'D1E'])) {
-                        $hasPeiD = true;
+                        $viewData['hasPeiD'] = true;
                         if (!empty($license['pei_expiry_d'])) {
-                            $peiDExpiryDate = $license['pei_expiry_d'];
+                            $viewData['peiDExpiryDate'] = $license['pei_expiry_d'];
                         }
                     }
                 }
             }
         }
 
-        // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/drivers/driver-profile.php';
+        return $viewData;
     }
 
     /**
@@ -160,41 +183,49 @@ class DriversController extends BaseUserController
         // Λήψη των στοιχείων του οδηγού
         $driverId = Session::get('user_id');
 
-        // Λήψη πλήρους προφίλ του οδηγού με τη νέα υπηρεσία
-        $driverProfile = $this->driverProfileService->getDriverProfile($driverId);
+        try {
+            // Λήψη πλήρους προφίλ του οδηγού με τη νέα υπηρεσία
+            $driverProfile = $this->driverProfileService->getDriverProfile($driverId);
 
-        if (!$driverProfile) {
-            Session::set('error_message', 'Τα στοιχεία του οδηγού δεν βρέθηκαν.');
+            if (!$driverProfile) {
+                Session::set('error_message', 'Τα στοιχεία του οδηγού δεν βρέθηκαν.');
+                header('Location: ' . BASE_URL);
+                exit();
+            }
+
+            // Προετοιμασία δεδομένων για το view
+            $viewData = $this->prepareDriverProfileViewData($driverProfile);
+
+            // Επιπλέον δεδομένα για τη φόρμα επεξεργασίας
+            $viewData['driverPEI'] = array_column(array_filter($viewData['driverLicenses'], function ($license) {
+                return isset($license['has_pei']) && $license['has_pei'] == 1;
+            }), 'license_type');
+
+            // Υπολογισμός προϋπηρεσίας για εμπορευματικές και επιβατικές μεταφορές
+            $this->calculateExperienceYears($viewData);
+
+            // Φόρτωση του view με τα προετοιμασμένα δεδομένα
+            extract($viewData);
+            include ROOT_DIR . '/src/Views/drivers/edit-profile.php';
+        } catch (\Exception $e) {
+            Logger::error('Error in driver profile edit', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την επεξεργασία του προφίλ. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL);
             exit();
         }
+    }
 
-        // Αντιστοίχιση μεταβλητών για συμβατότητα με το view
-        $driverData = $driverProfile;
-        $driverLicenses = $driverProfile['licenses'] ?? [];
-        $driverLicenseTypes = array_column($driverLicenses, 'license_type');
-
-        // Υπολογισμός των αδειών που έχουν ΠΕΙ
-        $driverPEI = array_column(array_filter($driverLicenses, function ($license) {
-            return isset($license['has_pei']) && $license['has_pei'] == 1;
-        }), 'license_type');
-
-        // Αντιστοίχιση υπόλοιπων μεταβλητών
-        $driverADR = $driverProfile['adr_certificates'][0] ?? null;
-        $driverOperator = $driverProfile['operator_licenses'][0] ?? null;
-        $driverOperatorSubSpecialities = [];
-
-        if ($driverOperator) {
-            $driverOperatorSubSpecialities = $driverOperator['sub_specialities'] ?? [];
-        }
-
-        $driverSpecialLicenses = $driverProfile['special_licenses'] ?? [];
-        $driverTachograph = $driverProfile['tachograph_cards'][0] ?? null;
-        $driverSkills = $driverProfile['skills'] ?? [];
-        $driverCertifications = $driverProfile['certifications'] ?? [];
-        $driverVehicleExperience = $driverProfile['vehicle_experience'] ?? [];
-
-        // Υπολογισμός προϋπηρεσίας για εμπορευματικές και επιβατικές μεταφορές
+    /**
+     * Υπολογίζει τα έτη εμπειρίας για εμπορευματικές και επιβατικές μεταφορές
+     * 
+     * @param array &$viewData Δεδομένα για το view
+     */
+    private function calculateExperienceYears(&$viewData)
+    {
         $freightYears = 0;
         $freightMonths = 0;
         $freightDays = 0;
@@ -202,8 +233,8 @@ class DriversController extends BaseUserController
         $passengerMonths = 0;
         $passengerDays = 0;
 
-        if (!empty($driverVehicleExperience)) {
-            foreach ($driverVehicleExperience as $exp) {
+        if (!empty($viewData['driverVehicleExperience'])) {
+            foreach ($viewData['driverVehicleExperience'] as $exp) {
                 if (isset($exp['transport_type']) && $exp['transport_type'] === 'freight') {
                     $freightYears += isset($exp['years']) ? intval($exp['years']) : 0;
                     $freightMonths += isset($exp['months']) ? intval($exp['months']) : 0;
@@ -228,32 +259,15 @@ class DriversController extends BaseUserController
 
             // Στρογγυλοποίηση των ετών εμπορευματικών μεταφορών
             $freightDecimalYears = $freightYears + ($freightMonths / 12) + ($freightDays / 365);
-            $roundedFreightYears = round($freightDecimalYears);
+            $viewData['roundedFreightYears'] = round($freightDecimalYears);
 
             // Στρογγυλοποίηση των ετών επιβατικών μεταφορών
             $passengerDecimalYears = $passengerYears + ($passengerMonths / 12) + ($passengerDays / 365);
-            $roundedPassengerYears = round($passengerDecimalYears);
+            $viewData['roundedPassengerYears'] = round($passengerDecimalYears);
         } else {
-            $roundedFreightYears = 0;
-            $roundedPassengerYears = 0;
+            $viewData['roundedFreightYears'] = 0;
+            $viewData['roundedPassengerYears'] = 0;
         }
-
-        // Προετοιμασία δεδομένων ΠΕΙ
-        $peiCExpiryDate = null;
-        $peiDExpiryDate = null;
-
-        foreach ($driverLicenses as $license) {
-            if (isset($license['has_pei']) && $license['has_pei'] == 1) {
-                if (in_array($license['license_type'], ['C', 'CE', 'C1', 'C1E']) && !empty($license['pei_expiry_c'])) {
-                    $peiCExpiryDate = $license['pei_expiry_c'];
-                } else if (in_array($license['license_type'], ['D', 'DE', 'D1', 'D1E']) && !empty($license['pei_expiry_d'])) {
-                    $peiDExpiryDate = $license['pei_expiry_d'];
-                }
-            }
-        }
-
-        // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/drivers/edit_profile_new.php';
     }
 
     /**
@@ -265,7 +279,7 @@ class DriversController extends BaseUserController
         AuthMiddleware::hasRole('driver');
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in profile update');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'drivers/edit-profile');
@@ -298,34 +312,9 @@ class DriversController extends BaseUserController
         $data = $this->collectFormData();
         Logger::info('Collected form data for update', ['data_keys' => array_keys($data)]);
 
-        // Επεξεργασία των αρχείων που ανεβάζονται
-        $uploadedFiles = [
-            'profile_image' => $_FILES['profile_image'] ?? null,
-            'resume_file' => $_FILES['resume_file'] ?? null,
-            'criminal_record_file' => $_FILES['criminal_record_file'] ?? null,
-            'license_front_image' => $_FILES['license_front_image'] ?? null,
-            'license_back_image' => $_FILES['license_back_image'] ?? null,
-            'tachograph_front_image' => $_FILES['tachograph_front_image'] ?? null,
-            'tachograph_back_image' => $_FILES['tachograph_back_image'] ?? null,
-            'adr_front_image' => $_FILES['adr_front_image'] ?? null,
-            'adr_back_image' => $_FILES['adr_back_image'] ?? null,
-            'operator_front_image' => $_FILES['operator_front_image'] ?? null,
-            'operator_back_image' => $_FILES['operator_back_image'] ?? null
-        ];
-
-        // Επεξεργασία των αρχείων
-        foreach ($uploadedFiles as $fileType => $fileData) {
-            if ($fileData && $fileData['error'] === UPLOAD_ERR_OK) {
-                $uploadedFilePath = $this->uploadFile($fileData, $this->getUploadDirectory($fileType));
-                if ($uploadedFilePath) {
-                    $data[$fileType] = $uploadedFilePath;
-                }
-            }
-        }
-
         try {
-            // Ενημέρωση του προφίλ με τη νέα υπηρεσία
-            $updateResult = $this->driverProfileService->updateProfile($driverId, $data);
+            // Ενημέρωση του προφίλ με τη νέα υπηρεσία, συμπεριλαμβανομένων των αρχείων
+            $updateResult = $this->driverProfileService->updateProfileWithFiles($driverId, $data, $_FILES);
 
             if ($updateResult) {
                 Logger::info('Profile update successful');
@@ -366,9 +355,8 @@ class DriversController extends BaseUserController
         AuthMiddleware::hasRole('driver');
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-            header('Content-Type: application/json');
-            echo '{"success": false, "message": "Άκυρο αίτημα."}';
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            JsonHelper::error('Άκυρο αίτημα.');
             exit();
         }
 
@@ -378,8 +366,7 @@ class DriversController extends BaseUserController
             $driverProfile = $this->driverProfileService->getDriverProfile($driverId);
 
             if (!$driverProfile) {
-                header('Content-Type: application/json');
-                echo '{"success": false, "message": "Δεν βρέθηκε ο οδηγός."}';
+                JsonHelper::error('Δεν βρέθηκε ο οδηγός.');
                 exit();
             }
 
@@ -388,26 +375,40 @@ class DriversController extends BaseUserController
             $newStatus = $currentStatus ? 0 : 1;
 
             // Καταγραφή για εντοπισμό σφαλμάτων
-            Logger::info("Εναλλαγή διαθεσιμότητας για οδηγό $driverId από $currentStatus σε $newStatus");
+            Logger::info('Εναλλαγή διαθεσιμότητας για οδηγό', [
+                'driver_id' => $driverId,
+                'old_status' => $currentStatus,
+                'new_status' => $newStatus
+            ]);
 
-            $success = $this->driverProfileService->updateProfile($driverId, ['available_for_work' => $newStatus]);
+            // Ενημέρωση του προφίλ με τη νέα υπηρεσία
+            $success = $this->driverProfileService->updateBasicInfo($driverId, ['available_for_work' => $newStatus]);
 
             if ($success) {
-                header('Content-Type: application/json');
                 $statusText = $newStatus ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία';
-                echo '{"success": true, "message": "Η διαθεσιμότητα ενημερώθηκε με επιτυχία", "newStatus": ' . $newStatus . ', "statusText": "' . $statusText . '"}';
+                JsonHelper::success('Η διαθεσιμότητα ενημερώθηκε με επιτυχία', [
+                    'newStatus' => $newStatus,
+                    'statusText' => $statusText
+                ]);
             } else {
-                header('Content-Type: application/json');
-                echo '{"success": false, "message": "Αποτυχία ενημέρωσης διαθεσιμότητας"}';
+                JsonHelper::error('Αποτυχία ενημέρωσης διαθεσιμότητας');
             }
         } catch (DatabaseException $e) {
-            Logger::error("Σφάλμα βάσης δεδομένων κατά την εναλλαγή διαθεσιμότητας: " . $e->getMessage(), $e->getContext());
-            header('Content-Type: application/json');
-            echo '{"success": false, "message": "Σφάλμα βάσης δεδομένων"}';
+            Logger::error('Σφάλμα βάσης δεδομένων κατά την εναλλαγή διαθεσιμότητας', [
+                'driver_id' => $driverId ?? null,
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+
+            JsonHelper::error('Σφάλμα βάσης δεδομένων');
         } catch (\Exception $e) {
-            Logger::error("Σφάλμα κατά την εναλλαγή διαθεσιμότητας: " . $e->getMessage());
-            header('Content-Type: application/json');
-            echo '{"success": false, "message": "Σφάλμα επεξεργασίας αιτήματος"}';
+            Logger::error('Σφάλμα κατά την εναλλαγή διαθεσιμότητας', [
+                'driver_id' => $driverId ?? null,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            JsonHelper::error('Σφάλμα επεξεργασίας αιτήματος');
         }
 
         exit();
@@ -476,62 +477,27 @@ class DriversController extends BaseUserController
 
 
     /**
-     * Ανεβάζει ένα αρχείο
+     * Ανεβάζει ένα αρχείο χρησιμοποιώντας το FileService
      * 
      * @param array $file Τα δεδομένα του αρχείου
-     * @param string $directory Ο κατάλογος προορισμού
+     * @param string $fileType Ο τύπος του αρχείου
+     * @param string $category Η κατηγορία του αρχείου (image, document, all)
      * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
      */
-    private function uploadFile($file, $directory)
+    private function uploadFile($file, $fileType, $category = 'all')
     {
-        // Έλεγχος αν υπάρχει ο κατάλογος, αν όχι τον δημιουργούμε
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
+        $result = $this->fileService->uploadFile($file, $fileType, $category);
+
+        if ($result['success']) {
+            return $result['file_path'];
         }
 
-        // Δημιουργία μοναδικού ονόματος αρχείου
-        $filename = uniqid() . '_' . basename($file['name']);
-        $targetPath = $directory . '/' . $filename;
-
-        // Ανέβασμα του αρχείου
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            return $targetPath;
-        }
+        Logger::error('Αποτυχία ανεβάσματος αρχείου', [
+            'file_type' => $fileType,
+            'error' => $result['message'],
+            'error_code' => $result['error_code'] ?? 'unknown'
+        ]);
 
         return false;
-    }
-
-    /**
-     * Επιστρέφει τον κατάλογο προορισμού για ένα συγκεκριμένο τύπο αρχείου
-     * 
-     * @param string $fileType Ο τύπος του αρχείου
-     * @return string Ο κατάλογος προορισμού
-     */
-    private function getUploadDirectory($fileType)
-    {
-        $baseDir = ROOT_DIR . '/uploads';
-
-        switch ($fileType) {
-            case 'profile_image':
-                return $baseDir . '/profile_images';
-            case 'resume_file':
-                return $baseDir . '/resumes';
-            case 'criminal_record_file':
-                return $baseDir . '/criminal_records';
-            case 'license_front_image':
-            case 'license_back_image':
-                return $baseDir . '/licenses';
-            case 'tachograph_front_image':
-            case 'tachograph_back_image':
-                return $baseDir . '/tachographs';
-            case 'adr_front_image':
-            case 'adr_back_image':
-                return $baseDir . '/adr_certificates';
-            case 'operator_front_image':
-            case 'operator_back_image':
-                return $baseDir . '/operator_licenses';
-            default:
-                return $baseDir . '/misc';
-        }
     }
 }

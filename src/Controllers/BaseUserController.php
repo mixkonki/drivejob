@@ -469,7 +469,7 @@ class BaseUserController extends BaseController
     }
 
     /**
-     * Επικυρώνει τα δεδομένα εγγραφής
+     * Επικυρώνει τα δεδομένα εγγραφής χρησιμοποιώντας την κλάση Validator
      *
      * @param array $data Τα δεδομένα εγγραφής
      * @param string $userType Ο τύπος του χρήστη (driver ή company)
@@ -477,56 +477,33 @@ class BaseUserController extends BaseController
      */
     protected function validateRegistrationData($data, $userType)
     {
-        $errors = [];
+        // Δημιουργία του validator με τα δεδομένα της φόρμας
+        $validator = new \Drivejob\Core\Validator($_POST);
 
-        // Έλεγχος email
-        if (empty($data['email'])) {
-            $errors['email'] = 'Το email είναι υποχρεωτικό.';
-        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Παρακαλώ εισάγετε ένα έγκυρο email.';
-        }
+        // Κοινοί έλεγχοι για όλους τους χρήστες
+        $validator->required('email', 'Το email είναι υποχρεωτικό.')
+            ->email('email', 'Παρακαλώ εισάγετε ένα έγκυρο email.')
+            ->required('password', 'Ο κωδικός πρόσβασης είναι υποχρεωτικός.')
+            ->minLength('password', 8, 'Ο κωδικός πρόσβασης πρέπει να έχει τουλάχιστον 8 χαρακτήρες.')
+            ->matches('password', 'confirm_password', 'Οι κωδικοί πρόσβασης δεν ταιριάζουν.');
 
-        // Έλεγχος κωδικού πρόσβασης
-        if (empty($data['password'])) {
-            $errors['password'] = 'Ο κωδικός πρόσβασης είναι υποχρεωτικός.';
-        } elseif (strlen($data['password']) < 8) {
-            $errors['password'] = 'Ο κωδικός πρόσβασης πρέπει να έχει τουλάχιστον 8 χαρακτήρες.';
-        }
-
-        // Έλεγχος επιβεβαίωσης κωδικού πρόσβασης
-        if ($_POST['password'] !== $_POST['confirm_password']) {
-            $errors['confirm_password'] = 'Οι κωδικοί πρόσβασης δεν ταιριάζουν.';
-        }
-
+        // Ειδικοί έλεγχοι ανάλογα με τον τύπο του χρήστη
         if ($userType === 'company') {
             // Έλεγχοι για εταιρείες
-            if (empty($data['company_name'])) {
-                $errors['company_name'] = 'Το όνομα της εταιρείας είναι υποχρεωτικό.';
-            }
-            if (empty($data['contact_person'])) {
-                $errors['contact_person'] = 'Το όνομα του υπεύθυνου επικοινωνίας είναι υποχρεωτικό.';
-            }
-            if (empty($data['phone'])) {
-                $errors['phone'] = 'Το τηλέφωνο είναι υποχρεωτικό.';
-            } elseif (!preg_match('/^[0-9+\s()-]{10,15}$/', $data['phone'])) {
-                $errors['phone'] = 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.';
-            }
+            $validator->required('company_name', 'Το όνομα της εταιρείας είναι υποχρεωτικό.')
+                ->required('contact_person', 'Το όνομα του υπεύθυνου επικοινωνίας είναι υποχρεωτικό.')
+                ->required('phone', 'Το τηλέφωνο είναι υποχρεωτικό.')
+                ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
         } else {
             // Έλεγχοι για οδηγούς
-            if (empty($data['first_name'])) {
-                $errors['first_name'] = 'Το όνομα είναι υποχρεωτικό.';
-            }
-            if (empty($data['last_name'])) {
-                $errors['last_name'] = 'Το επώνυμο είναι υποχρεωτικό.';
-            }
-            if (empty($data['phone'])) {
-                $errors['phone'] = 'Το τηλέφωνο είναι υποχρεωτικό.';
-            } elseif (!preg_match('/^[0-9+\s()-]{10,15}$/', $data['phone'])) {
-                $errors['phone'] = 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.';
-            }
+            $validator->required('first_name', 'Το όνομα είναι υποχρεωτικό.')
+                ->required('last_name', 'Το επώνυμο είναι υποχρεωτικό.')
+                ->required('phone', 'Το τηλέφωνο είναι υποχρεωτικό.')
+                ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
         }
 
-        return $errors;
+        // Επιστροφή των σφαλμάτων επικύρωσης
+        return $validator->getErrors();
     }
 
     /**

@@ -8,7 +8,7 @@ use Drivejob\Core\Logger;
 
 // Αρχικοποίηση του Logger
 Logger::init();
-Logger::info("Φόρτωση της σελίδας edit_profile για τον οδηγό " . $driverId, "EditProfile");
+Logger::info("Φόρτωση της σελίδας edit_profile για τον οδηγό " . $driverId, ['section' => 'EditProfile']);
 
 // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
 $errors = $_SESSION['errors'] ?? [];

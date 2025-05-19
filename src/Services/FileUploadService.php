@@ -6,15 +6,22 @@ use PDO;
 use Drivejob\Core\Logger;
 use Drivejob\Models\Driver\ProfileModel;
 
+/**
+ * Υπηρεσία για το ανέβασμα αρχείων
+ * 
+ * @deprecated Χρησιμοποιήστε το FileService αντί για αυτό
+ */
 class FileUploadService
 {
     private $pdo;
     private $profileModel;
+    private $fileService;
 
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
         $this->profileModel = new ProfileModel($pdo);
+        $this->fileService = new FileService();
     }
     /**
      * Διαχειρίζεται τις μεταφορτώσεις αρχείων
@@ -27,40 +34,35 @@ class FileUploadService
     {
         $success = true;
 
-        // Μεταφορτώσεις εικόνων
-        $imageFields = [
-            'license_front_image',
-            'license_back_image',
-            'profile_image',
-            'adr_front_image',
-            'adr_back_image',
-            'operator_front_image',
-            'operator_back_image',
-            'tachograph_front_image',
-            'tachograph_back_image'
+        // Ορισμός των τύπων αρχείων
+        $fileTypes = [
+            'license_front_image' => 'license_front_image',
+            'license_back_image' => 'license_back_image',
+            'profile_image' => 'profile_image',
+            'adr_front_image' => 'adr_front_image',
+            'adr_back_image' => 'adr_back_image',
+            'operator_front_image' => 'operator_front_image',
+            'operator_back_image' => 'operator_back_image',
+            'tachograph_front_image' => 'tachograph_front_image',
+            'tachograph_back_image' => 'tachograph_back_image',
+            'resume_file' => 'resume_file'
         ];
 
-        foreach ($imageFields as $field) {
-            if (isset($files[$field]) && $files[$field]['error'] === UPLOAD_ERR_OK) {
-                if (in_array($field, ['license_front_image', 'license_back_image'])) {
-                    $result = $this->handleLicenseImageUpload($driverId, $field, $files[$field]);
-                } else if ($field === 'profile_image') {
-                    $result = $this->handleProfileImageUpload($driverId, $files[$field]);
+        // Χρήση του FileService για το ανέβασμα πολλαπλών αρχείων
+        $results = $this->fileService->processMultipleFiles($files, $fileTypes);
+
+        // Ενημέρωση της βάσης δεδομένων με τα αποτελέσματα
+        foreach ($results as $field => $result) {
+            if ($result['success']) {
+                if ($field === 'profile_image') {
+                    $this->profileModel->updateProfileImage($driverId, $result['file_path']);
+                } else if ($field === 'resume_file') {
+                    $this->profileModel->updateResumeFile($driverId, $result['file_path']);
                 } else {
-                    $uploadDir = $this->getUploadDirectory($field);
-                    $result = $this->handleDocumentImageUpload($driverId, $field, $uploadDir, $field, $files[$field]);
+                    $this->profileModel->updateDriverDocumentImage($driverId, $field, $result['file_path']);
                 }
-
-                if (!$result) {
-                    $success = false;
-                }
-            }
-        }
-
-        // Μεταφόρτωση βιογραφικού
-        if (isset($files['resume_file']) && $files['resume_file']['error'] === UPLOAD_ERR_OK) {
-            $result = $this->handleResumeFileUpload($driverId, $files['resume_file']);
-            if (!$result) {
+            } else {
+                $_SESSION['error_message'] = $result['message'];
                 $success = false;
             }
         }
@@ -103,41 +105,18 @@ class FileUploadService
      */
     private function handleProfileImageUpload($driverId, $file)
     {
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        $maxSize = 2 * 1024 * 1024; // 2MB
+        // Χρήση του FileService για το ανέβασμα του αρχείου
+        $result = $this->fileService->uploadFile($file, 'profile_image', 'image');
 
-        // Έλεγχος τύπου αρχείου
-        if (!in_array($file['type'], $allowedTypes)) {
-            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
-            return false;
-        }
-
-        // Έλεγχος μεγέθους αρχείου
-        if ($file['size'] > $maxSize) {
-            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
-            return false;
-        }
-
-        // Δημιουργία του καταλόγου αν δεν υπάρχει
-        $uploadDir = ROOT_DIR . '/public/uploads/profile_images/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        // Δημιουργία μοναδικού ονόματος αρχείου
-        $filename = $driverId . '_profile_' . time() . '_' . basename($file['name']);
-        $targetPath = $uploadDir . $filename;
-
-        // Μεταφορά του αρχείου
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+        if ($result['success']) {
             // Ενημέρωση του πεδίου στη βάση δεδομένων
-            $relativePath = 'uploads/profile_images/' . $filename;
-            $this->profileModel->updateProfileImage($driverId, $relativePath);
+            $this->profileModel->updateProfileImage($driverId, $result['file_path']);
             return true;
+        } else {
+            // Σε περίπτωση σφάλματος, αποθήκευση του μηνύματος σφάλματος
+            $_SESSION['error_message'] = $result['message'];
+            return false;
         }
-
-        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
-        return false;
     }
 
     /**
@@ -145,41 +124,18 @@ class FileUploadService
      */
     private function handleResumeFileUpload($driverId, $file)
     {
-        $allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-        $maxSize = 5 * 1024 * 1024; // 5MB
+        // Χρήση του FileService για το ανέβασμα του αρχείου
+        $result = $this->fileService->uploadFile($file, 'resume_file', 'document');
 
-        // Έλεγχος τύπου αρχείου
-        if (!in_array($file['type'], $allowedTypes)) {
-            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο PDF, DOC και DOCX.';
-            return false;
-        }
-
-        // Έλεγχος μεγέθους αρχείου
-        if ($file['size'] > $maxSize) {
-            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 5MB.';
-            return false;
-        }
-
-        // Δημιουργία του καταλόγου αν δεν υπάρχει
-        $uploadDir = ROOT_DIR . '/public/uploads/resumes/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        // Δημιουργία μοναδικού ονόματος αρχείου
-        $filename = $driverId . '_resume_' . time() . '_' . basename($file['name']);
-        $targetPath = $uploadDir . $filename;
-
-        // Μεταφορά του αρχείου
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+        if ($result['success']) {
             // Ενημέρωση του πεδίου στη βάση δεδομένων
-            $relativePath = 'uploads/resumes/' . $filename;
-            $this->profileModel->updateResumeFile($driverId, $relativePath);
+            $this->profileModel->updateResumeFile($driverId, $result['file_path']);
             return true;
+        } else {
+            // Σε περίπτωση σφάλματος, αποθήκευση του μηνύματος σφάλματος
+            $_SESSION['error_message'] = $result['message'];
+            return false;
         }
-
-        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση του βιογραφικού. Παρακαλώ δοκιμάστε ξανά.';
-        return false;
     }
 
     /**
@@ -187,43 +143,17 @@ class FileUploadService
      */
     private function handleDocumentImageUpload($driverId, $fieldName, $uploadPath, $documentType, $file)
     {
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        $maxSize = 2 * 1024 * 1024; // 2MB
+        // Χρήση του FileService για το ανέβασμα του αρχείου
+        $result = $this->fileService->uploadFile($file, $documentType, 'image');
 
-        // Έλεγχος τύπου αρχείου
-        if (!in_array($file['type'], $allowedTypes)) {
-            $_SESSION['error_message'] = 'Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο JPEG, PNG και GIF.';
-            return false;
-        }
-
-        // Έλεγχος μεγέθους αρχείου
-        if ($file['size'] > $maxSize) {
-            $_SESSION['error_message'] = 'Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 2MB.';
-            return false;
-        }
-
-        // Δημιουργία του καταλόγου αν δεν υπάρχει
-        $uploadDir = ROOT_DIR . '/public/' . $uploadPath;
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        // Δημιουργία μοναδικού ονόματος αρχείου
-        $filename = $driverId . '_' . $documentType . '_' . time() . '_' . basename($file['name']);
-        $targetPath = $uploadDir . $filename;
-
-        // Μεταφορά του αρχείου
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            // Επιστροφή του σχετικού μονοπατιού
-            $relativePath = $uploadPath . $filename;
-
+        if ($result['success']) {
             // Ενημέρωση του πεδίου στον πίνακα drivers
-            $this->profileModel->updateDriverDocumentImage($driverId, $documentType, $relativePath);
-
+            $this->profileModel->updateDriverDocumentImage($driverId, $documentType, $result['file_path']);
             return true;
+        } else {
+            // Σε περίπτωση σφάλματος, αποθήκευση του μηνύματος σφάλματος
+            $_SESSION['error_message'] = $result['message'];
+            return false;
         }
-
-        $_SESSION['error_message'] = 'Σφάλμα κατά τη μεταφόρτωση της εικόνας. Παρακαλώ δοκιμάστε ξανά.';
-        return false;
     }
 }

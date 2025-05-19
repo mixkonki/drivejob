@@ -11,6 +11,7 @@ use Drivejob\Models\Driver\CertificationModel;
 use Drivejob\Models\Driver\SkillModel;
 use Drivejob\Models\Driver\RatingModel;
 use Drivejob\Models\Driver\IncidentModel;
+use Drivejob\Services\FileService;
 
 /**
  * Υπηρεσία για τη διαχείριση των προφίλ οδηγών
@@ -24,6 +25,7 @@ class DriverProfileService
     private $skillModel;
     private $ratingModel;
     private $incidentModel;
+    private $fileService;
 
     /**
      * Constructor
@@ -39,6 +41,7 @@ class DriverProfileService
         $this->skillModel = new SkillModel($pdo);
         $this->ratingModel = new RatingModel($pdo);
         $this->incidentModel = new IncidentModel($pdo);
+        $this->fileService = new FileService();
     }
 
     /**
@@ -167,6 +170,94 @@ class DriverProfileService
             Logger::error('Error in updateProfile: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Ενημέρωση προφίλ οδηγού με επεξεργασία αρχείων
+     * 
+     * @param int $driverId ID του οδηγού
+     * @param array $data Δεδομένα προφίλ
+     * @param array $files Αρχεία που ανεβάζονται
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateProfileWithFiles($driverId, $data, $files)
+    {
+        try {
+            // Επεξεργασία των αρχείων που ανεβάζονται
+            $uploadedFiles = [
+                'profile_image' => $files['profile_image'] ?? null,
+                'resume_file' => $files['resume_file'] ?? null,
+                'criminal_record_file' => $files['criminal_record_file'] ?? null,
+                'license_front_image' => $files['license_front_image'] ?? null,
+                'license_back_image' => $files['license_back_image'] ?? null,
+                'tachograph_front_image' => $files['tachograph_front_image'] ?? null,
+                'tachograph_back_image' => $files['tachograph_back_image'] ?? null,
+                'adr_front_image' => $files['adr_front_image'] ?? null,
+                'adr_back_image' => $files['adr_back_image'] ?? null,
+                'operator_front_image' => $files['operator_front_image'] ?? null,
+                'operator_back_image' => $files['operator_back_image'] ?? null
+            ];
+
+            // Καθορισμός κατηγορίας αρχείου για κάθε τύπο
+            $fileCategories = [
+                'profile_image' => 'image',
+                'license_front_image' => 'image',
+                'license_back_image' => 'image',
+                'tachograph_front_image' => 'image',
+                'tachograph_back_image' => 'image',
+                'adr_front_image' => 'image',
+                'adr_back_image' => 'image',
+                'operator_front_image' => 'image',
+                'operator_back_image' => 'image',
+                'resume_file' => 'document',
+                'criminal_record_file' => 'document'
+            ];
+
+            // Επεξεργασία των αρχείων
+            foreach ($uploadedFiles as $fileType => $fileData) {
+                if ($fileData && $fileData['error'] === UPLOAD_ERR_OK) {
+                    $category = $fileCategories[$fileType] ?? 'all';
+                    $uploadedFilePath = $this->uploadFile($fileData, $fileType, $category);
+                    if ($uploadedFilePath) {
+                        $data[$fileType] = $uploadedFilePath;
+                    }
+                }
+            }
+
+            // Ενημέρωση του προφίλ
+            return $this->profileModel->updateProfile($driverId, $data);
+        } catch (PDOException $e) {
+            Logger::error('Error in updateProfileWithFiles: ' . $e->getMessage());
+            return false;
+        } catch (\Exception $e) {
+            Logger::error('Error in updateProfileWithFiles: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ανεβάζει ένα αρχείο χρησιμοποιώντας το FileService
+     * 
+     * @param array $file Τα δεδομένα του αρχείου
+     * @param string $fileType Ο τύπος του αρχείου
+     * @param string $category Η κατηγορία του αρχείου (image, document, all)
+     * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
+     */
+    private function uploadFile($file, $fileType, $category = 'all')
+    {
+        $result = $this->fileService->uploadFile($file, $fileType, $category);
+
+        if ($result['success']) {
+            return $result['file_path'];
+        }
+
+        Logger::error('Αποτυχία ανεβάσματος αρχείου', [
+            'file_type' => $fileType,
+            'error' => $result['message'],
+            'error_code' => $result['error_code'] ?? 'unknown'
+        ]);
+
+        return false;
     }
 
     /**
@@ -560,148 +651,6 @@ class DriverProfileService
         } catch (PDOException $e) {
             Logger::error('Error in addDriverIncident: ' . $e->getMessage());
             return false;
-        }
-    }
-
-    /**
-     * Ανάκτηση στατιστικών οδηγού
-     * 
-     * @param int $driverId ID του οδηγού
-     * @return array Στατιστικά οδηγού
-     */
-    public function getDriverStatistics($driverId)
-    {
-        try {
-            $stats = [
-                'total_incidents' => 0,
-                'incidents_by_type' => [],
-                'average_severity' => 0,
-                'days_since_last_incident' => -1,
-                'incident_trends' => [],
-                'rating' => 0,
-                'rating_breakdown' => [],
-                'skills_stats' => [],
-                'assessment_summary' => []
-            ];
-
-            // Στατιστικά συμβάντων
-            $incidents = $this->incidentModel->getDriverIncidents($driverId);
-            $stats['total_incidents'] = count($incidents);
-            $stats['incidents_by_type'] = $this->incidentModel->countIncidentsByType($driverId);
-            $stats['average_severity'] = $this->incidentModel->getAverageSeverity($driverId);
-            $stats['days_since_last_incident'] = $this->incidentModel->getDaysSinceLastIncident($driverId);
-            $stats['incident_trends'] = $this->incidentModel->getIncidentTrendsByYear($driverId);
-
-            // Στατιστικά βαθμολογίας
-            $stats['rating'] = $this->ratingModel->getDriverRating($driverId);
-            $ratingDetails = $this->ratingModel->getDriverRatingDetails($driverId);
-
-            if ($ratingDetails) {
-                $stats['rating_breakdown'] = [
-                    'skills' => $ratingDetails['skills_score'] ?? 0,
-                    'safety' => $ratingDetails['safety_score'] ?? 0,
-                    'professionalism' => $ratingDetails['professionalism_score'] ?? 0,
-                    'technical' => $ratingDetails['technical_score'] ?? 0
-                ];
-            }
-
-            // Στατιστικά δεξιοτήτων
-            $skills = $this->skillModel->getDriverSkills($driverId);
-            if (!empty($skills)) {
-                $skillCount = 0;
-                foreach ($skills as $key => $value) {
-                    if ($value == 1 && !in_array($key, ['driver_id'])) {
-                        $skillCount++;
-                    }
-                }
-                $stats['skills_stats'] = [
-                    'total_skills' => $skillCount,
-                    'skill_categories' => [
-                        'driving' => $this->countSkillsInCategory($skills, 'driving'),
-                        'safety' => $this->countSkillsInCategory($skills, 'safety'),
-                        'customer' => $this->countSkillsInCategory($skills, 'customer'),
-                        'technical' => $this->countSkillsInCategory($skills, 'technical')
-                    ]
-                ];
-            }
-
-            // Σύνοψη αυτοαξιολόγησης
-            $assessment = $this->skillModel->getDriverAssessment($driverId);
-            if (!empty($assessment)) {
-                $stats['assessment_summary'] = [
-                    'driving_skills' => $assessment['driving_skills'] ?? 0,
-                    'safety_compliance' => $assessment['safety_compliance'] ?? 0,
-                    'professionalism' => $assessment['professionalism'] ?? 0,
-                    'technical_knowledge' => $assessment['technical_knowledge'] ?? 0,
-                    'total_score' => $assessment['total_score'] ?? 0
-                ];
-            }
-
-            return $stats;
-        } catch (PDOException $e) {
-            Logger::error('Error in getDriverStatistics: ' . $e->getMessage());
-            return [];
-        }
-    }
-
-    /**
-     * Υπολογίζει τον αριθμό δεξιοτήτων σε μια συγκεκριμένη κατηγορία
-     * 
-     * @param array $skills Όλες οι δεξιότητες
-     * @param string $category Όνομα κατηγορίας
-     * @return int Αριθμός δεξιοτήτων στην κατηγορία
-     */
-    private function countSkillsInCategory($skills, $category)
-    {
-        $categoryMap = [
-            'driving' => ['defensive_driving', 'eco_driving', 'night_driving', 'mountain_driving', 'extreme_conditions'],
-            'safety' => ['loading_securing', 'emergency_response', 'first_aid', 'dangerous_goods', 'tacograph_compliance'],
-            'customer' => ['customer_service', 'time_management', 'route_planning', 'conflict_resolution', 'multilingual'],
-            'technical' => ['vehicle_maintenance', 'troubleshooting', 'digital_tachograph', 'gps_systems', 'logistics_software']
-        ];
-
-        $count = 0;
-        if (isset($categoryMap[$category])) {
-            foreach ($categoryMap[$category] as $skill) {
-                if (isset($skills[$skill]) && $skills[$skill] == 1) {
-                    $count++;
-                }
-            }
-        }
-
-        return $count;
-    }
-
-    /**
-     * Λαμβάνει όλες τις άδειες που λήγουν σύντομα
-     * 
-     * @return array Λίστα αδειών που λήγουν ανά τύπο
-     */
-    public function getExpiringLicenses()
-    {
-        try {
-            $result = [
-                'driving_licenses' => [],
-                'adr_certificates' => [],
-                'operator_licenses' => []
-            ];
-
-            // Άδειες οδήγησης
-            $result['driving_licenses'] = $this->licenseModel->getDriversWithExpiringLicenses();
-
-            // Πιστοποιητικά ADR και άδειες χειριστή
-            $certifications = $this->certificationModel->getDriversWithExpiringCertifications();
-            $result['adr_certificates'] = $certifications['adr_certificate'] ?? [];
-            $result['operator_licenses'] = $certifications['operator_license'] ?? [];
-
-            return $result;
-        } catch (PDOException $e) {
-            Logger::error('Error in getExpiringLicenses: ' . $e->getMessage());
-            return [
-                'driving_licenses' => [],
-                'adr_certificates' => [],
-                'operator_licenses' => []
-            ];
         }
     }
 }

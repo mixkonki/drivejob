@@ -12,6 +12,7 @@ use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
 use Drivejob\Helpers\JsonHelper;
+use Drivejob\Services\FileService;
 
 /**
  * Controller για τις αγγελίες εργασίας
@@ -21,6 +22,11 @@ use Drivejob\Helpers\JsonHelper;
 class JobListingController extends BaseJobListingController
 {
     /**
+     * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
+     */
+    private $fileService;
+
+    /**
      * Constructor
      *
      * @param PDO|null $pdo Η σύνδεση με τη βάση δεδομένων
@@ -29,6 +35,9 @@ class JobListingController extends BaseJobListingController
     {
         // Κλήση του constructor της γονικής κλάσης
         parent::__construct($pdo);
+
+        // Αρχικοποίηση του FileService
+        $this->fileService = new FileService();
     }
 
     /**
@@ -246,7 +255,7 @@ class JobListingController extends BaseJobListingController
     public function store()
     {
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job listing store');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/Company/create');
@@ -503,7 +512,7 @@ class JobListingController extends BaseJobListingController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job listing update');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/edit/' . $id);
@@ -694,7 +703,7 @@ class JobListingController extends BaseJobListingController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job listing destroy');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/delete/' . $id);
@@ -990,6 +999,31 @@ class JobListingController extends BaseJobListingController
      * 
      * @return array Τα καθαρισμένα δεδομένα της φόρμας
      */
+    /**
+     * Ανεβάζει ένα αρχείο χρησιμοποιώντας το FileService
+     * 
+     * @param array $file Τα δεδομένα του αρχείου
+     * @param string $fileType Ο τύπος του αρχείου
+     * @param string $category Η κατηγορία του αρχείου (image, document, all)
+     * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
+     */
+    private function uploadFile($file, $fileType, $category = 'all')
+    {
+        $result = $this->fileService->uploadFile($file, $fileType, $category);
+
+        if ($result['success']) {
+            return $result['file_path'];
+        }
+
+        Logger::error('Αποτυχία ανεβάσματος αρχείου', [
+            'file_type' => $fileType,
+            'error' => $result['message'],
+            'error_code' => $result['error_code'] ?? 'unknown'
+        ]);
+
+        return false;
+    }
+
     protected function collectFormData()
     {
         // Βασικά δεδομένα αγγελίας
@@ -1011,6 +1045,29 @@ class JobListingController extends BaseJobListingController
             'expires_at' => parent::sanitizeDate($_POST['expires_at'] ?? null),
             'is_active' => isset($_POST['is_active']) ? 1 : 0
         ];
+
+        // Επεξεργασία των αρχείων που ανεβάζονται
+        if (isset($_FILES['job_image']) && $_FILES['job_image']['error'] === UPLOAD_ERR_OK) {
+            $imagePath = $this->uploadFile($_FILES['job_image'], 'job_image', 'image');
+            if ($imagePath) {
+                $data['image'] = $imagePath;
+            }
+        }
+
+        // Επεξεργασία άλλων αρχείων
+        $fileTypes = [
+            'job_attachment' => 'document',
+            'job_brochure' => 'document'
+        ];
+
+        foreach ($fileTypes as $fileField => $category) {
+            if (isset($_FILES[$fileField]) && $_FILES[$fileField]['error'] === UPLOAD_ERR_OK) {
+                $filePath = $this->uploadFile($_FILES[$fileField], $fileField, $category);
+                if ($filePath) {
+                    $data[$fileField] = $filePath;
+                }
+            }
+        }
 
         return $data;
     }
