@@ -2,7 +2,7 @@
 
 namespace Drivejob\Repositories;
 
-use Drivejob\Core\Database;
+use PDO;
 use Drivejob\Core\Exceptions\DatabaseException;
 
 /**
@@ -11,18 +11,18 @@ use Drivejob\Core\Exceptions\DatabaseException;
 class JobApplicationRepository
 {
     /**
-     * @var Database Η σύνδεση με τη βάση δεδομένων
+     * @var PDO Η σύνδεση με τη βάση δεδομένων
      */
     private $db;
 
     /**
      * Constructor
      *
-     * @param Database|null $db Η σύνδεση με τη βάση δεδομένων
+     * @param PDO $db Η σύνδεση με τη βάση δεδομένων
      */
-    public function __construct(Database $db = null)
+    public function __construct(PDO $db)
     {
-        $this->db = $db ?? new Database();
+        $this->db = $db;
     }
 
     /**
@@ -38,8 +38,9 @@ class JobApplicationRepository
             $sql = "SELECT * FROM job_applications WHERE id = :id";
             $params = [':id' => $id];
 
-            $result = $this->db->query($sql, $params);
-            $application = $result->fetch(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $application = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return $application ?: null;
         } catch (\PDOException $e) {
@@ -65,8 +66,9 @@ class JobApplicationRepository
             // Εύρεση του συνολικού αριθμού αιτήσεων
             $countSql = "SELECT COUNT(*) as total FROM job_applications WHERE driver_id = :driver_id";
             $countParams = [':driver_id' => $driverId];
-            $countResult = $this->db->query($countSql, $countParams);
-            $total = $countResult->fetch(\PDO::FETCH_ASSOC)['total'] ?? 0;
+            $countStmt = $this->db->prepare($countSql);
+            $countStmt->execute($countParams);
+            $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
 
             // Εύρεση των αιτήσεων
             $sql = "SELECT ja.*, jl.title, jl.location, jl.job_type, c.company_name
@@ -83,8 +85,9 @@ class JobApplicationRepository
                 ':offset' => $offset
             ];
 
-            $result = $this->db->query($sql, $params);
-            $applications = $result->fetchAll(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // Υπολογισμός των σελίδων
             $totalPages = ceil($total / $limit);
@@ -122,8 +125,9 @@ class JobApplicationRepository
             // Εύρεση του συνολικού αριθμού αιτήσεων
             $countSql = "SELECT COUNT(*) as total FROM job_applications WHERE job_listing_id = :job_listing_id";
             $countParams = [':job_listing_id' => $jobListingId];
-            $countResult = $this->db->query($countSql, $countParams);
-            $total = $countResult->fetch(\PDO::FETCH_ASSOC)['total'] ?? 0;
+            $countStmt = $this->db->prepare($countSql);
+            $countStmt->execute($countParams);
+            $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
 
             // Εύρεση των αιτήσεων
             $sql = "SELECT ja.*, d.first_name, d.last_name, d.email, d.phone, d.city
@@ -139,8 +143,9 @@ class JobApplicationRepository
                 ':offset' => $offset
             ];
 
-            $result = $this->db->query($sql, $params);
-            $applications = $result->fetchAll(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // Υπολογισμός των σελίδων
             $totalPages = ceil($total / $limit);
@@ -178,8 +183,9 @@ class JobApplicationRepository
                 ':job_listing_id' => $jobListingId
             ];
 
-            $result = $this->db->query($sql, $params);
-            $count = $result->fetch(\PDO::FETCH_ASSOC)['count'] ?? 0;
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $count = $stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0;
 
             return $count > 0;
         } catch (\PDOException $e) {
@@ -207,7 +213,8 @@ class JobApplicationRepository
                 ':status' => $data['status'] ?? 'pending'
             ];
 
-            $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $this->db->lastInsertId();
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη δημιουργία της αίτησης εργασίας: " . $e->getMessage());
@@ -237,7 +244,8 @@ class JobApplicationRepository
                 ':status' => $data['status'] ?? 'pending'
             ];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά την ενημέρωση της αίτησης εργασίας: " . $e->getMessage());
@@ -257,7 +265,8 @@ class JobApplicationRepository
             $sql = "DELETE FROM job_applications WHERE id = :id";
             $params = [':id' => $id];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη διαγραφή της αίτησης εργασίας: " . $e->getMessage());
@@ -277,7 +286,8 @@ class JobApplicationRepository
             $sql = "DELETE FROM job_applications WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη διαγραφή των αιτήσεων εργασίας: " . $e->getMessage());
@@ -297,7 +307,8 @@ class JobApplicationRepository
             $sql = "DELETE FROM job_applications WHERE job_listing_id = :job_listing_id";
             $params = [':job_listing_id' => $jobListingId];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη διαγραφή των αιτήσεων εργασίας: " . $e->getMessage());

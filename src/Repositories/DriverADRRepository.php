@@ -2,7 +2,7 @@
 
 namespace Drivejob\Repositories;
 
-use Drivejob\Core\Database;
+use PDO;
 use Drivejob\Core\Exceptions\DatabaseException;
 
 /**
@@ -11,18 +11,18 @@ use Drivejob\Core\Exceptions\DatabaseException;
 class DriverADRRepository
 {
     /**
-     * @var Database Η σύνδεση με τη βάση δεδομένων
+     * @var PDO Η σύνδεση με τη βάση δεδομένων
      */
     private $db;
 
     /**
      * Constructor
      *
-     * @param Database|null $db Η σύνδεση με τη βάση δεδομένων
+     * @param PDO $db Η σύνδεση με τη βάση δεδομένων
      */
-    public function __construct(Database $db = null)
+    public function __construct(PDO $db)
     {
-        $this->db = $db ?? new Database();
+        $this->db = $db;
     }
 
     /**
@@ -38,8 +38,9 @@ class DriverADRRepository
             $sql = "SELECT * FROM driver_adr WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
-            $result = $this->db->query($sql, $params);
-            $adr = $result->fetch(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $adr = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return $adr ?: null;
         } catch (\PDOException $e) {
@@ -60,8 +61,9 @@ class DriverADRRepository
             $sql = "SELECT * FROM driver_adr WHERE id = :id";
             $params = [':id' => $id];
 
-            $result = $this->db->query($sql, $params);
-            $adr = $result->fetch(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $adr = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return $adr ?: null;
         } catch (\PDOException $e) {
@@ -90,7 +92,8 @@ class DriverADRRepository
                 ':adr_classes' => $data['adr_classes'] ?? null
             ];
 
-            $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $this->db->lastInsertId();
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη δημιουργία του πιστοποιητικού ADR: " . $e->getMessage());
@@ -124,7 +127,8 @@ class DriverADRRepository
                 ':adr_classes' => $data['adr_classes'] ?? null
             ];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά την ενημέρωση του πιστοποιητικού ADR: " . $e->getMessage());
@@ -144,7 +148,8 @@ class DriverADRRepository
             $sql = "DELETE FROM driver_adr WHERE id = :id";
             $params = [':id' => $id];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη διαγραφή του πιστοποιητικού ADR: " . $e->getMessage());
@@ -164,7 +169,8 @@ class DriverADRRepository
             $sql = "DELETE FROM driver_adr WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη διαγραφή του πιστοποιητικού ADR: " . $e->getMessage());

@@ -2,7 +2,7 @@
 
 namespace Drivejob\Repositories;
 
-use Drivejob\Core\Database;
+use PDO;
 use Drivejob\Core\Exceptions\DatabaseException;
 
 /**
@@ -11,18 +11,18 @@ use Drivejob\Core\Exceptions\DatabaseException;
 class DriverTachographRepository
 {
     /**
-     * @var Database Η σύνδεση με τη βάση δεδομένων
+     * @var PDO Η σύνδεση με τη βάση δεδομένων
      */
     private $db;
 
     /**
      * Constructor
      *
-     * @param Database|null $db Η σύνδεση με τη βάση δεδομένων
+     * @param PDO $db Η σύνδεση με τη βάση δεδομένων
      */
-    public function __construct(Database $db = null)
+    public function __construct(PDO $db)
     {
-        $this->db = $db ?? new Database();
+        $this->db = $db;
     }
 
     /**
@@ -38,8 +38,9 @@ class DriverTachographRepository
             $sql = "SELECT * FROM driver_tachograph WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
-            $result = $this->db->query($sql, $params);
-            $tachograph = $result->fetch(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $tachograph = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return $tachograph ?: null;
         } catch (\PDOException $e) {
@@ -60,8 +61,9 @@ class DriverTachographRepository
             $sql = "SELECT * FROM driver_tachograph WHERE id = :id";
             $params = [':id' => $id];
 
-            $result = $this->db->query($sql, $params);
-            $tachograph = $result->fetch(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $tachograph = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return $tachograph ?: null;
         } catch (\PDOException $e) {
@@ -89,7 +91,8 @@ class DriverTachographRepository
                 ':expiry_date' => $data['expiry_date'] ?? null
             ];
 
-            $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $this->db->lastInsertId();
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη δημιουργία της κάρτας ταχογράφου: " . $e->getMessage());
@@ -121,7 +124,8 @@ class DriverTachographRepository
                 ':expiry_date' => $data['expiry_date'] ?? null
             ];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά την ενημέρωση της κάρτας ταχογράφου: " . $e->getMessage());
@@ -141,7 +145,8 @@ class DriverTachographRepository
             $sql = "DELETE FROM driver_tachograph WHERE id = :id";
             $params = [':id' => $id];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη διαγραφή της κάρτας ταχογράφου: " . $e->getMessage());
@@ -161,7 +166,8 @@ class DriverTachographRepository
             $sql = "DELETE FROM driver_tachograph WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη διαγραφή της κάρτας ταχογράφου: " . $e->getMessage());

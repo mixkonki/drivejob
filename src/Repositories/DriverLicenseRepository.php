@@ -2,7 +2,7 @@
 
 namespace Drivejob\Repositories;
 
-use Drivejob\Core\Database;
+use PDO;
 use Drivejob\Core\Exceptions\DatabaseException;
 
 /**
@@ -11,18 +11,18 @@ use Drivejob\Core\Exceptions\DatabaseException;
 class DriverLicenseRepository
 {
     /**
-     * @var Database Η σύνδεση με τη βάση δεδομένων
+     * @var PDO Η σύνδεση με τη βάση δεδομένων
      */
     private $db;
 
     /**
      * Constructor
      *
-     * @param Database|null $db Η σύνδεση με τη βάση δεδομένων
+     * @param PDO $db Η σύνδεση με τη βάση δεδομένων
      */
-    public function __construct(Database $db = null)
+    public function __construct(PDO $db)
     {
-        $this->db = $db ?? new Database();
+        $this->db = $db;
     }
 
     /**
@@ -38,8 +38,9 @@ class DriverLicenseRepository
             $sql = "SELECT * FROM driver_licenses WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
-            $result = $this->db->query($sql, $params);
-            return $result->fetchAll(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά την εύρεση των αδειών οδήγησης: " . $e->getMessage());
         }
@@ -58,8 +59,9 @@ class DriverLicenseRepository
             $sql = "SELECT * FROM driver_licenses WHERE id = :id";
             $params = [':id' => $id];
 
-            $result = $this->db->query($sql, $params);
-            $license = $result->fetch(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $license = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return $license ?: null;
         } catch (\PDOException $e) {
@@ -90,7 +92,8 @@ class DriverLicenseRepository
                 ':has_tachograph' => $data['has_tachograph'] ?? 0
             ];
 
-            $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $this->db->lastInsertId();
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη δημιουργία της άδειας οδήγησης: " . $e->getMessage());
@@ -128,7 +131,8 @@ class DriverLicenseRepository
                 ':has_tachograph' => $data['has_tachograph'] ?? 0
             ];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά την ενημέρωση της άδειας οδήγησης: " . $e->getMessage());
@@ -148,7 +152,8 @@ class DriverLicenseRepository
             $sql = "DELETE FROM driver_licenses WHERE id = :id";
             $params = [':id' => $id];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη διαγραφή της άδειας οδήγησης: " . $e->getMessage());
@@ -168,7 +173,8 @@ class DriverLicenseRepository
             $sql = "DELETE FROM driver_licenses WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
-            $stmt = $this->db->query($sql, $params);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
             throw new DatabaseException("Σφάλμα κατά τη διαγραφή των αδειών οδήγησης: " . $e->getMessage());
