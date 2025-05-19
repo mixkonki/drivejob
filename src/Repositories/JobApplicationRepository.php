@@ -22,9 +22,13 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
     protected $fillable = [
         'job_listing_id',
         'driver_id',
-        'company_id',
-        'message',
+        'cover_letter',
+        'resume_path',
         'status',
+        'notes',
+        'interview_date',
+        'interview_location',
+        'interview_notes',
         'created_at',
         'updated_at'
     ];
@@ -33,59 +37,91 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
      * @var array Τα πεδία που δεν μπορούν να ενημερωθούν
      */
     protected $guarded = [
-        'id'
+        'id',
+        'created_at'
     ];
 
     /**
-     * Constructor
-     *
-     * @param PDO $pdo Η σύνδεση με τη βάση δεδομένων
+     * {@inheritdoc}
      */
-    public function __construct(PDO $pdo)
-    {
-        parent::__construct($pdo);
-    }
-
-
-    /**
-     * Βρίσκει μια αίτηση εργασίας με βάση τον οδηγό και την αγγελία
-     * 
-     * @param int $driverId Το ID του οδηγού
-     * @param int $listingId Το ID της αγγελίας
-     * @return array|null Τα δεδομένα της αίτησης ή null αν δεν βρέθηκε
-     */
-    public function findByDriverAndListing($driverId, $listingId)
+    public function findByListingAndDriver($jobListingId, $driverId)
     {
         try {
-            // Δημιουργία του SQL ερωτήματος
-            $sql = "SELECT * FROM {$this->table} WHERE driver_id = ? AND job_listing_id = ?";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$driverId, $listingId]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            return $result ?: null;
+            $query = "SELECT * FROM {$this->table} WHERE job_listing_id = :job_listing_id AND driver_id = :driver_id";
+            $params = [
+                'job_listing_id' => $jobListingId,
+                'driver_id' => $driverId
+            ];
+            return $this->queryOne($query, $params);
         } catch (\PDOException $e) {
-            Logger::error('PDO exception in findByDriverAndListing', [
+            Logger::error('Error in findByListingAndDriver', [
                 'message' => $e->getMessage(),
-                'driver_id' => $driverId,
-                'listing_id' => $listingId
+                'job_listing_id' => $jobListingId,
+                'driver_id' => $driverId
             ]);
-            throw new DatabaseException('Failed to find job application by driver and listing', (int)$e->getCode(), $e, [
-                'driver_id' => $driverId,
-                'listing_id' => $listingId
+            throw new DatabaseException('Failed to find job application by listing and driver', (int)$e->getCode(), $e, [
+                'job_listing_id' => $jobListingId,
+                'driver_id' => $driverId
             ]);
         }
     }
 
     /**
-     * Βρίσκει τις αιτήσεις εργασίας ενός οδηγού
-     * 
-     * @param int $driverId Το ID του οδηγού
-     * @param int $page Η σελίδα των αποτελεσμάτων
-     * @param int $limit Ο αριθμός των αποτελεσμάτων ανά σελίδα
-     * @return array Τα αποτελέσματα και οι πληροφορίες σελιδοποίησης
+     * {@inheritdoc}
+     */
+    public function findByListing($jobListingId, $page = 1, $limit = 10)
+    {
+        try {
+            // Υπολογισμός του offset
+            $offset = ($page - 1) * $limit;
+
+            // Δημιουργία του SQL ερωτήματος
+            $query = "SELECT a.*, d.first_name, d.last_name, d.profile_image, d.rating, d.experience_years
+                      FROM {$this->table} a
+                      JOIN drivers d ON a.driver_id = d.id
+                      WHERE a.job_listing_id = :job_listing_id
+                      ORDER BY a.created_at DESC
+                      LIMIT :limit OFFSET :offset";
+            $params = [
+                'job_listing_id' => $jobListingId,
+                'limit' => $limit,
+                'offset' => $offset
+            ];
+
+            // Εκτέλεση του ερωτήματος
+            $results = $this->query($query, $params);
+
+            // Μέτρηση του συνολικού αριθμού αιτήσεων
+            $countQuery = "SELECT COUNT(*) FROM {$this->table} WHERE job_listing_id = :job_listing_id";
+            $countParams = ['job_listing_id' => $jobListingId];
+            $totalResults = $this->queryScalar($countQuery, $countParams);
+
+            return [
+                'results' => $results,
+                'pagination' => [
+                    'total' => $totalResults,
+                    'page' => $page,
+                    'limit' => $limit,
+                    'pages' => ceil($totalResults / $limit)
+                ]
+            ];
+        } catch (\PDOException $e) {
+            Logger::error('Error in findByListing', [
+                'message' => $e->getMessage(),
+                'job_listing_id' => $jobListingId,
+                'page' => $page,
+                'limit' => $limit
+            ]);
+            throw new DatabaseException('Failed to find job applications by listing', (int)$e->getCode(), $e, [
+                'job_listing_id' => $jobListingId,
+                'page' => $page,
+                'limit' => $limit
+            ]);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function findByDriver($driverId, $page = 1, $limit = 10)
     {
@@ -93,42 +129,40 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
             // Υπολογισμός του offset
             $offset = ($page - 1) * $limit;
 
-            // Μέτρηση του συνολικού αριθμού αιτήσεων
-            $countSql = "SELECT COUNT(*) FROM {$this->table} WHERE driver_id = ?";
-            $countStmt = $this->pdo->prepare($countSql);
-            $countStmt->execute([$driverId]);
-            $totalCount = $countStmt->fetchColumn();
-
-            // Δημιουργία του SQL ερωτήματος για τις αιτήσεις
-            $sql = "SELECT a.*, j.title as job_title, j.location as job_location, c.name as company_name
-                    FROM {$this->table} a
-                    JOIN job_listings j ON a.job_listing_id = j.id
-                    JOIN companies c ON a.company_id = c.id
-                    WHERE a.driver_id = ?
-                    ORDER BY a.created_at DESC
-                    LIMIT ? OFFSET ?";
+            // Δημιουργία του SQL ερωτήματος
+            $query = "SELECT a.*, jl.title, jl.location, jl.job_type, jl.vehicle_type, jl.salary_min, jl.salary_max,
+                      c.company_name, c.logo as company_logo
+                      FROM {$this->table} a
+                      JOIN job_listings jl ON a.job_listing_id = jl.id
+                      JOIN companies c ON jl.company_id = c.id
+                      WHERE a.driver_id = :driver_id
+                      ORDER BY a.created_at DESC
+                      LIMIT :limit OFFSET :offset";
+            $params = [
+                'driver_id' => $driverId,
+                'limit' => $limit,
+                'offset' => $offset
+            ];
 
             // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$driverId, $limit, $offset]);
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $results = $this->query($query, $params);
 
-            // Υπολογισμός του συνολικού αριθμού σελίδων
-            $totalPages = ceil($totalCount / $limit);
+            // Μέτρηση του συνολικού αριθμού αιτήσεων
+            $countQuery = "SELECT COUNT(*) FROM {$this->table} WHERE driver_id = :driver_id";
+            $countParams = ['driver_id' => $driverId];
+            $totalResults = $this->queryScalar($countQuery, $countParams);
 
             return [
                 'results' => $results,
                 'pagination' => [
-                    'total' => $totalCount,
-                    'per_page' => $limit,
-                    'current_page' => $page,
-                    'last_page' => $totalPages,
-                    'from' => $offset + 1,
-                    'to' => min($offset + $limit, $totalCount)
+                    'total' => $totalResults,
+                    'page' => $page,
+                    'limit' => $limit,
+                    'pages' => ceil($totalResults / $limit)
                 ]
             ];
         } catch (\PDOException $e) {
-            Logger::error('PDO exception in findByDriver', [
+            Logger::error('Error in findByDriver', [
                 'message' => $e->getMessage(),
                 'driver_id' => $driverId,
                 'page' => $page,
@@ -143,12 +177,7 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
     }
 
     /**
-     * Βρίσκει τις αιτήσεις εργασίας μιας εταιρείας
-     * 
-     * @param int $companyId Το ID της εταιρείας
-     * @param int $page Η σελίδα των αποτελεσμάτων
-     * @param int $limit Ο αριθμός των αποτελεσμάτων ανά σελίδα
-     * @return array Τα αποτελέσματα και οι πληροφορίες σελιδοποίησης
+     * {@inheritdoc}
      */
     public function findByCompany($companyId, $page = 1, $limit = 10)
     {
@@ -156,42 +185,42 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
             // Υπολογισμός του offset
             $offset = ($page - 1) * $limit;
 
-            // Μέτρηση του συνολικού αριθμού αιτήσεων
-            $countSql = "SELECT COUNT(*) FROM {$this->table} WHERE company_id = ?";
-            $countStmt = $this->pdo->prepare($countSql);
-            $countStmt->execute([$companyId]);
-            $totalCount = $countStmt->fetchColumn();
-
-            // Δημιουργία του SQL ερωτήματος για τις αιτήσεις
-            $sql = "SELECT a.*, j.title as job_title, j.location as job_location, d.first_name, d.last_name
-                    FROM {$this->table} a
-                    JOIN job_listings j ON a.job_listing_id = j.id
-                    JOIN drivers d ON a.driver_id = d.id
-                    WHERE a.company_id = ?
-                    ORDER BY a.created_at DESC
-                    LIMIT ? OFFSET ?";
+            // Δημιουργία του SQL ερωτήματος
+            $query = "SELECT a.*, jl.title, jl.location, jl.job_type, jl.vehicle_type,
+                      d.first_name, d.last_name, d.profile_image, d.rating, d.experience_years
+                      FROM {$this->table} a
+                      JOIN job_listings jl ON a.job_listing_id = jl.id
+                      JOIN drivers d ON a.driver_id = d.id
+                      WHERE jl.company_id = :company_id
+                      ORDER BY a.created_at DESC
+                      LIMIT :limit OFFSET :offset";
+            $params = [
+                'company_id' => $companyId,
+                'limit' => $limit,
+                'offset' => $offset
+            ];
 
             // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$companyId, $limit, $offset]);
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $results = $this->query($query, $params);
 
-            // Υπολογισμός του συνολικού αριθμού σελίδων
-            $totalPages = ceil($totalCount / $limit);
+            // Μέτρηση του συνολικού αριθμού αιτήσεων
+            $countQuery = "SELECT COUNT(*) FROM {$this->table} a
+                          JOIN job_listings jl ON a.job_listing_id = jl.id
+                          WHERE jl.company_id = :company_id";
+            $countParams = ['company_id' => $companyId];
+            $totalResults = $this->queryScalar($countQuery, $countParams);
 
             return [
                 'results' => $results,
                 'pagination' => [
-                    'total' => $totalCount,
-                    'per_page' => $limit,
-                    'current_page' => $page,
-                    'last_page' => $totalPages,
-                    'from' => $offset + 1,
-                    'to' => min($offset + $limit, $totalCount)
+                    'total' => $totalResults,
+                    'page' => $page,
+                    'limit' => $limit,
+                    'pages' => ceil($totalResults / $limit)
                 ]
             ];
         } catch (\PDOException $e) {
-            Logger::error('PDO exception in findByCompany', [
+            Logger::error('Error in findByCompany', [
                 'message' => $e->getMessage(),
                 'company_id' => $companyId,
                 'page' => $page,
@@ -206,61 +235,143 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
     }
 
     /**
-     * Βρίσκει τις αιτήσεις εργασίας για μια αγγελία
-     * 
-     * @param int $listingId Το ID της αγγελίας
-     * @param int $page Η σελίδα των αποτελεσμάτων
-     * @param int $limit Ο αριθμός των αποτελεσμάτων ανά σελίδα
-     * @return array Τα αποτελέσματα και οι πληροφορίες σελιδοποίησης
+     * {@inheritdoc}
      */
-    public function findByListing($listingId, $page = 1, $limit = 10)
+    public function searchApplications(array $criteria = [], $page = 1, $limit = 10)
     {
         try {
             // Υπολογισμός του offset
             $offset = ($page - 1) * $limit;
 
-            // Μέτρηση του συνολικού αριθμού αιτήσεων
-            $countSql = "SELECT COUNT(*) FROM {$this->table} WHERE job_listing_id = ?";
-            $countStmt = $this->pdo->prepare($countSql);
-            $countStmt->execute([$listingId]);
-            $totalCount = $countStmt->fetchColumn();
+            // Δημιουργία του βασικού SQL ερωτήματος
+            $query = "SELECT a.*, jl.title, jl.location, jl.job_type, jl.vehicle_type,
+                      d.first_name, d.last_name, d.profile_image, d.rating, d.experience_years,
+                      c.company_name, c.logo as company_logo
+                      FROM {$this->table} a
+                      JOIN job_listings jl ON a.job_listing_id = jl.id
+                      JOIN drivers d ON a.driver_id = d.id
+                      JOIN companies c ON jl.company_id = c.id
+                      WHERE 1=1";
+            $params = [];
+            $conditions = [];
 
-            // Δημιουργία του SQL ερωτήματος για τις αιτήσεις
-            $sql = "SELECT a.*, d.first_name, d.last_name, d.email, d.phone, d.profile_image, d.rating
-                    FROM {$this->table} a
-                    JOIN drivers d ON a.driver_id = d.id
-                    WHERE a.job_listing_id = ?
-                    ORDER BY a.created_at DESC
-                    LIMIT ? OFFSET ?";
+            // Προσθήκη των κριτηρίων
+            if (isset($criteria['job_listing_id']) && $criteria['job_listing_id']) {
+                $conditions[] = "a.job_listing_id = :job_listing_id";
+                $params['job_listing_id'] = $criteria['job_listing_id'];
+            }
+
+            if (isset($criteria['driver_id']) && $criteria['driver_id']) {
+                $conditions[] = "a.driver_id = :driver_id";
+                $params['driver_id'] = $criteria['driver_id'];
+            }
+
+            if (isset($criteria['company_id']) && $criteria['company_id']) {
+                $conditions[] = "jl.company_id = :company_id";
+                $params['company_id'] = $criteria['company_id'];
+            }
+
+            if (isset($criteria['status']) && $criteria['status']) {
+                $conditions[] = "a.status = :status";
+                $params['status'] = $criteria['status'];
+            }
+
+            if (isset($criteria['location']) && $criteria['location']) {
+                $conditions[] = "jl.location LIKE :location";
+                $params['location'] = '%' . $criteria['location'] . '%';
+            }
+
+            if (isset($criteria['job_type']) && $criteria['job_type']) {
+                $conditions[] = "jl.job_type = :job_type";
+                $params['job_type'] = $criteria['job_type'];
+            }
+
+            if (isset($criteria['vehicle_type']) && $criteria['vehicle_type']) {
+                $conditions[] = "jl.vehicle_type = :vehicle_type";
+                $params['vehicle_type'] = $criteria['vehicle_type'];
+            }
+
+            if (isset($criteria['created_from']) && $criteria['created_from']) {
+                $conditions[] = "a.created_at >= :created_from";
+                $params['created_from'] = $criteria['created_from'];
+            }
+
+            if (isset($criteria['created_to']) && $criteria['created_to']) {
+                $conditions[] = "a.created_at <= :created_to";
+                $params['created_to'] = $criteria['created_to'];
+            }
+
+            if (isset($criteria['interview_from']) && $criteria['interview_from']) {
+                $conditions[] = "a.interview_date >= :interview_from";
+                $params['interview_from'] = $criteria['interview_from'];
+            }
+
+            if (isset($criteria['interview_to']) && $criteria['interview_to']) {
+                $conditions[] = "a.interview_date <= :interview_to";
+                $params['interview_to'] = $criteria['interview_to'];
+            }
+
+            // Προσθήκη των συνθηκών στο ερώτημα
+            if (!empty($conditions)) {
+                $query .= " AND " . implode(" AND ", $conditions);
+            }
+
+            // Προσθήκη της ταξινόμησης
+            if (isset($criteria['sort_by']) && $criteria['sort_by']) {
+                $sortField = $criteria['sort_by'];
+                $sortDirection = isset($criteria['sort_direction']) && strtoupper($criteria['sort_direction']) === 'DESC' ? 'DESC' : 'ASC';
+
+                // Έλεγχος για έγκυρο πεδίο ταξινόμησης
+                $validSortFields = ['created_at', 'updated_at', 'status', 'interview_date'];
+                if (in_array($sortField, $validSortFields)) {
+                    $query .= " ORDER BY a.$sortField $sortDirection";
+                } else {
+                    $query .= " ORDER BY a.created_at DESC";
+                }
+            } else {
+                $query .= " ORDER BY a.created_at DESC";
+            }
+
+            // Μέτρηση του συνολικού αριθμού αιτήσεων
+            $countQuery = "SELECT COUNT(*) FROM ({$query}) as count_table";
+            $countStmt = $this->pdo->prepare($countQuery);
+            foreach ($params as $key => $value) {
+                $countStmt->bindValue(":$key", $value);
+            }
+            $countStmt->execute();
+            $totalResults = $countStmt->fetchColumn();
+
+            // Προσθήκη του LIMIT και OFFSET
+            $query .= " LIMIT :limit OFFSET :offset";
+            $params['limit'] = $limit;
+            $params['offset'] = $offset;
 
             // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$listingId, $limit, $offset]);
+            $stmt = $this->pdo->prepare($query);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue(":$key", $value);
+            }
+            $stmt->execute();
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // Υπολογισμός του συνολικού αριθμού σελίδων
-            $totalPages = ceil($totalCount / $limit);
 
             return [
                 'results' => $results,
                 'pagination' => [
-                    'total' => $totalCount,
-                    'per_page' => $limit,
-                    'current_page' => $page,
-                    'last_page' => $totalPages,
-                    'from' => $offset + 1,
-                    'to' => min($offset + $limit, $totalCount)
+                    'total' => $totalResults,
+                    'page' => $page,
+                    'limit' => $limit,
+                    'pages' => ceil($totalResults / $limit)
                 ]
             ];
         } catch (\PDOException $e) {
-            Logger::error('PDO exception in findByListing', [
+            Logger::error('Error in searchApplications', [
                 'message' => $e->getMessage(),
-                'listing_id' => $listingId,
+                'criteria' => $criteria,
                 'page' => $page,
                 'limit' => $limit
             ]);
-            throw new DatabaseException('Failed to find job applications by listing', (int)$e->getCode(), $e, [
-                'listing_id' => $listingId,
+            throw new DatabaseException('Failed to search job applications', (int)$e->getCode(), $e, [
+                'criteria' => $criteria,
                 'page' => $page,
                 'limit' => $limit
             ]);
@@ -268,33 +379,19 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
     }
 
     /**
-     * Ενημερώνει την κατάσταση μιας αίτησης
-     * 
-     * @param int $id Το ID της αίτησης
-     * @param string $status Η νέα κατάσταση
-     * @return bool Επιτυχία/αποτυχία
+     * {@inheritdoc}
      */
     public function updateStatus($id, $status)
     {
         try {
-            // Δημιουργία του SQL ερωτήματος
-            $sql = "UPDATE {$this->table} SET status = ?, updated_at = ? WHERE id = ?";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $result = $stmt->execute([$status, date('Y-m-d H:i:s'), $id]);
-
-            if (!$result) {
-                Logger::error('Failed to update job application status', [
-                    'id' => $id,
-                    'status' => $status,
-                    'error' => $stmt->errorInfo()
-                ]);
-            }
-
-            return $result;
+            $query = "UPDATE {$this->table} SET status = :status, updated_at = NOW() WHERE id = :id";
+            $params = [
+                'status' => $status,
+                'id' => $id
+            ];
+            return $this->execute($query, $params) > 0;
         } catch (\PDOException $e) {
-            Logger::error('PDO exception in updateStatus', [
+            Logger::error('Error in updateStatus', [
                 'message' => $e->getMessage(),
                 'id' => $id,
                 'status' => $status
@@ -302,6 +399,87 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
             throw new DatabaseException('Failed to update job application status', (int)$e->getCode(), $e, [
                 'id' => $id,
                 'status' => $status
+            ]);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function acceptApplication($id)
+    {
+        return $this->updateStatus($id, 'accepted');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rejectApplication($id)
+    {
+        return $this->updateStatus($id, 'rejected');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function cancelApplication($id)
+    {
+        return $this->updateStatus($id, 'cancelled');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRecentApplications($limit = 10)
+    {
+        try {
+            $query = "SELECT a.*, jl.title, jl.location, jl.job_type, jl.vehicle_type,
+                      d.first_name, d.last_name, d.profile_image,
+                      c.company_name, c.logo as company_logo
+                      FROM {$this->table} a
+                      JOIN job_listings jl ON a.job_listing_id = jl.id
+                      JOIN drivers d ON a.driver_id = d.id
+                      JOIN companies c ON jl.company_id = c.id
+                      ORDER BY a.created_at DESC
+                      LIMIT :limit";
+            $params = ['limit' => $limit];
+            return $this->query($query, $params);
+        } catch (\PDOException $e) {
+            Logger::error('Error in getRecentApplications', [
+                'message' => $e->getMessage(),
+                'limit' => $limit
+            ]);
+            throw new DatabaseException('Failed to get recent job applications', (int)$e->getCode(), $e, [
+                'limit' => $limit
+            ]);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPendingApplications($limit = 10)
+    {
+        try {
+            $query = "SELECT a.*, jl.title, jl.location, jl.job_type, jl.vehicle_type,
+                      d.first_name, d.last_name, d.profile_image,
+                      c.company_name, c.logo as company_logo
+                      FROM {$this->table} a
+                      JOIN job_listings jl ON a.job_listing_id = jl.id
+                      JOIN drivers d ON a.driver_id = d.id
+                      JOIN companies c ON jl.company_id = c.id
+                      WHERE a.status = 'pending'
+                      ORDER BY a.created_at DESC
+                      LIMIT :limit";
+            $params = ['limit' => $limit];
+            return $this->query($query, $params);
+        } catch (\PDOException $e) {
+            Logger::error('Error in getPendingApplications', [
+                'message' => $e->getMessage(),
+                'limit' => $limit
+            ]);
+            throw new DatabaseException('Failed to get pending job applications', (int)$e->getCode(), $e, [
+                'limit' => $limit
             ]);
         }
     }
