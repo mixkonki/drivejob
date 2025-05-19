@@ -36,7 +36,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                 <div class="profile-actions">
                     <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn-primary">Επεξεργασία Προφίλ</a>
-                    <a href="<?php echo BASE_URL; ?>job-listings/Company/create" class="btn-secondary">Νέα Αγγελία</a>
+                    <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-secondary">Νέα Αγγελία</a>
                 </div>
             </div>
         </div>
@@ -122,10 +122,10 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         </div>
                         <div class="profile-section-footer">
                             <a href="<?php echo BASE_URL; ?>job-listings/my-listings" class="btn-secondary">Όλες οι αγγελίες μας</a>
-                            <a href="<?php echo BASE_URL; ?>job-listings/Company/create" class="btn-primary">Νέα αγγελία</a>
+                            <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα αγγελία</a>
                         </div>
                     <?php else : ?>
-                        <p class="profile-empty">Δεν έχετε δημιουργήσει ακόμα αγγελίες. <a href="<?php echo BASE_URL; ?>job-listings/Company/create" class="btn-primary">Νέα αγγελία</a></p>
+                        <p class="profile-empty">Δεν έχετε δημιουργήσει ακόμα αγγελίες. <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα αγγελία</a></p>
                     <?php endif; ?>
                 </section>
             </div>
