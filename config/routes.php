@@ -101,6 +101,7 @@ $router->get('/companies/edit-profile', [CompaniesController::class, 'edit']);
 $router->post('/companies/update-profile', [CompaniesController::class, 'update']);
 $router->post('/companies/change-password', [CompaniesController::class, 'changePassword']);
 $router->get('/companies/search', [CompaniesController::class, 'search']);
+$router->post('/companies/add-review/{id}', [CompaniesController::class, 'addReview']);
 
 // Διαδρομές για άλλες σελίδες
 $router->get('/about', [HomeController::class, 'about']);

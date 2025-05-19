@@ -13,6 +13,9 @@ use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
 use Drivejob\Repositories\CompaniesRepository;
+use Drivejob\Models\Company\CompanyRatingModel;
+use Drivejob\Services\FileService;
+use Drivejob\Helpers\JsonHelper;
 
 /**
  * Controller για τις εταιρείες
@@ -26,6 +29,16 @@ class CompaniesController extends BaseUserController
      * @var CompaniesRepository Το repository για τις εταιρείες
      */
     private $companiesRepository;
+
+    /**
+     * @var CompanyRatingModel Το μοντέλο για τις αξιολογήσεις των εταιρειών
+     */
+    private $companyRatingModel;
+
+    /**
+     * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
+     */
+    private $fileService;
 
     /**
      * @var Container Το container για τις εξαρτήσεις
@@ -50,8 +63,10 @@ class CompaniesController extends BaseUserController
             $pdo = $this->container->get('pdo');
         }
 
-        // Αρχικοποίηση του repository
+        // Αρχικοποίηση του repository και των υπηρεσιών
         $this->companiesRepository = new CompaniesRepository($pdo);
+        $this->companyRatingModel = new CompanyRatingModel($pdo);
+        $this->fileService = new FileService();
     }
 
     /**
@@ -111,7 +126,7 @@ class CompaniesController extends BaseUserController
         AuthMiddleware::hasRole('company');
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in company profile update');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'companies/edit-profile');
@@ -204,6 +219,29 @@ class CompaniesController extends BaseUserController
         // Λήψη των αγγελιών της εταιρείας
         $jobListingRepository = new \Drivejob\Repositories\JobListingRepository($this->container->get('pdo'));
         $listings = $jobListingRepository->searchListings(['company_id' => $id], 1, 5);
+
+        // Λήψη των αξιολογήσεων της εταιρείας
+        $companyReviews = $this->companyRatingModel->getCompanyReviews($id);
+        $averageRating = $this->companyRatingModel->getCompanyRating($id);
+
+        // Έλεγχος αν ο συνδεδεμένος χρήστης είναι οδηγός και μπορεί να αξιολογήσει την εταιρεία
+        $canReview = false;
+        $hasReviewed = false;
+
+        if (Session::has('user_id') && Session::get('user_role') === 'driver') {
+            $driverId = Session::get('user_id');
+
+            // Έλεγχος αν ο οδηγός έχει ήδη αξιολογήσει την εταιρεία
+            foreach ($companyReviews as $review) {
+                if ($review['driver_id'] == $driverId) {
+                    $hasReviewed = true;
+                    break;
+                }
+            }
+
+            // Ο οδηγός μπορεί να αξιολογήσει την εταιρεία αν δεν την έχει ήδη αξιολογήσει
+            $canReview = !$hasReviewed;
+        }
 
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/companies/public-profile.php';
@@ -327,13 +365,152 @@ class CompaniesController extends BaseUserController
     }
 
     /**
+     * Προσθέτει μια νέα αξιολόγηση για μια εταιρεία
+     * 
+     * @param int $id Το ID της εταιρείας
+     */
+    public function addReview($id)
+    {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως οδηγός
+        AuthMiddleware::hasRole('driver');
+
+        // Έλεγχος αν το ID είναι έγκυρο
+        if (!$id || !is_numeric($id)) {
+            Session::set('error_message', 'Μη έγκυρο αναγνωριστικό εταιρείας');
+            header('Location: ' . BASE_URL . 'home');
+            exit;
+        }
+
+        // Έλεγχος για CSRF token
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            Logger::error('CSRF token validation failed in company review');
+            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'companies/profile/' . $id);
+            exit();
+        }
+
+        // Επικύρωση βασικών δεδομένων
+        $validator = new Validator($_POST);
+        $validator->required('rating', 'Η βαθμολογία είναι υποχρεωτική.')
+            ->numeric('rating', 'Η βαθμολογία πρέπει να είναι αριθμός.');
+
+        // Έλεγχος εύρους τιμών για τη βαθμολογία
+        if (isset($_POST['rating']) && is_numeric($_POST['rating'])) {
+            $rating = floatval($_POST['rating']);
+            if ($rating < 1 || $rating > 5) {
+                // Δεν μπορούμε να προσπελάσουμε απευθείας το $errors, οπότε θα χρησιμοποιήσουμε μια διαφορετική προσέγγιση
+                Session::set('errors', ['rating' => 'Η βαθμολογία πρέπει να είναι μεταξύ 1 και 5.']);
+                Session::set('old_input', $_POST);
+                header('Location: ' . BASE_URL . 'companies/profile/' . $id);
+                exit();
+            }
+        }
+
+        if (!$validator->isValid()) {
+            Logger::error('Validation failed in company review', [
+                'errors' => $validator->getErrors(),
+                'post_data' => $_POST
+            ]);
+            Session::set('errors', $validator->getErrors());
+            Session::set('old_input', $_POST);
+            header('Location: ' . BASE_URL . 'companies/profile/' . $id);
+            exit();
+        }
+
+        // Λήψη ID του συνδεδεμένου οδηγού
+        $driverId = Session::get('user_id');
+        Logger::info('Starting company review', ['company_id' => $id, 'driver_id' => $driverId]);
+
+        // Συλλογή των δεδομένων από τη φόρμα
+        $rating = floatval($_POST['rating']);
+        $comment = $this->sanitize($_POST['comment'] ?? '');
+
+        // Επιμέρους βαθμολογίες (αν υπάρχουν)
+        $reliabilityRating = isset($_POST['reliability_rating']) ? floatval($_POST['reliability_rating']) : $rating;
+        $communicationRating = isset($_POST['communication_rating']) ? floatval($_POST['communication_rating']) : $rating;
+        $paymentRating = isset($_POST['payment_rating']) ? floatval($_POST['payment_rating']) : $rating;
+        $workingConditionsRating = isset($_POST['working_conditions_rating']) ? floatval($_POST['working_conditions_rating']) : $rating;
+
+        try {
+            // Έλεγχος αν ο οδηγός έχει ήδη αξιολογήσει την εταιρεία
+            $reviews = $this->companyRatingModel->getCompanyReviews($id);
+            foreach ($reviews as $review) {
+                if ($review['driver_id'] == $driverId) {
+                    Session::set('error_message', 'Έχετε ήδη αξιολογήσει αυτή την εταιρεία.');
+                    header('Location: ' . BASE_URL . 'companies/profile/' . $id);
+                    exit();
+                }
+            }
+
+            // Προσθήκη της αξιολόγησης
+            $result = $this->companyRatingModel->addCompanyReview($id, $driverId, $rating, $comment);
+
+            if ($result) {
+                Logger::info('Company review successful');
+                Session::set('success_message', 'Η αξιολόγησή σας προστέθηκε με επιτυχία.');
+            } else {
+                Logger::error('Company review failed', [
+                    'company_id' => $id,
+                    'driver_id' => $driverId,
+                    'rating' => $rating
+                ]);
+                Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την προσθήκη της αξιολόγησης. Παρακαλώ δοκιμάστε ξανά.');
+            }
+        } catch (DatabaseException $e) {
+            Logger::error('Database exception in company review', [
+                'company_id' => $id,
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
+        } catch (\Exception $e) {
+            Logger::error('Exception in company review', [
+                'company_id' => $id,
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
+        }
+
+        header('Location: ' . BASE_URL . 'companies/profile/' . $id);
+        exit();
+    }
+
+    /**
+     * Ανεβάζει ένα αρχείο χρησιμοποιώντας το FileService
+     * 
+     * @param array $file Τα δεδομένα του αρχείου
+     * @param string $fileType Ο τύπος του αρχείου
+     * @param string $category Η κατηγορία του αρχείου (image, document, all)
+     * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
+     */
+    private function uploadFile($file, $fileType, $category = 'all')
+    {
+        $result = $this->fileService->uploadFile($file, $fileType, $category);
+
+        if ($result['success']) {
+            return $result['file_path'];
+        }
+
+        Logger::error('Αποτυχία ανεβάσματος αρχείου', [
+            'file_type' => $fileType,
+            'error' => $result['message'],
+            'error_code' => $result['error_code'] ?? 'unknown'
+        ]);
+
+        return false;
+    }
+
+    /**
      * Προσθήκη της μεθόδου collectFormData για το sanitization
      * 
      * @return array Τα καθαρισμένα δεδομένα της φόρμας
      */
     private function collectFormData()
     {
-        return [
+        $data = [
             'email' => $this->sanitize($_POST['email'] ?? null),
             'company_name' => $this->sanitize($_POST['company_name'] ?? null),
             'contact_person' => $this->sanitize($_POST['contact_person'] ?? null),
@@ -349,5 +526,31 @@ class CompaniesController extends BaseUserController
             'founded_year' => $this->sanitize($_POST['founded_year'] ?? null),
             'updated_at' => date('Y-m-d H:i:s')
         ];
+
+        // Επεξεργασία των αρχείων που ανεβάζονται
+        if (isset($_FILES['company_logo']) && $_FILES['company_logo']['error'] === UPLOAD_ERR_OK) {
+            $logoPath = $this->uploadFile($_FILES['company_logo'], 'company_logo', 'image');
+            if ($logoPath) {
+                $data['logo'] = $logoPath;
+            }
+        }
+
+        // Επεξεργασία άλλων αρχείων
+        $fileTypes = [
+            'company_brochure' => 'document',
+            'company_certificate' => 'document',
+            'company_license' => 'document'
+        ];
+
+        foreach ($fileTypes as $fileField => $category) {
+            if (isset($_FILES[$fileField]) && $_FILES[$fileField]['error'] === UPLOAD_ERR_OK) {
+                $filePath = $this->uploadFile($_FILES[$fileField], $fileField, $category);
+                if ($filePath) {
+                    $data[$fileField] = $filePath;
+                }
+            }
+        }
+
+        return $data;
     }
 }

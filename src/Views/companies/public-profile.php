@@ -1,6 +1,9 @@
 <?php
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/partials/header.php';
+
+// Εισαγωγή της κλάσης CSRF
+use Drivejob\Core\CSRF;
 ?>
 
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/company-profile.css">
@@ -153,9 +156,10 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                 </section>
 
                 <!-- Αξιολογήσεις -->
-                <?php if (isset($companyReviews) && !empty($companyReviews)) : ?>
-                    <section class="profile-section">
-                        <h2>Αξιολογήσεις</h2>
+                <section class="profile-section">
+                    <h2>Αξιολογήσεις</h2>
+
+                    <?php if (isset($companyReviews) && !empty($companyReviews)) : ?>
                         <div class="company-reviews">
                             <?php foreach ($companyReviews as $review) : ?>
                                 <div class="review-item">
@@ -176,8 +180,61 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                    </section>
-                <?php endif; ?>
+                    <?php else : ?>
+                        <div class="no-reviews">
+                            <p>Δεν υπάρχουν ακόμα αξιολογήσεις για αυτή την εταιρεία.</p>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Φόρμα Αξιολόγησης για Οδηγούς -->
+                    <?php if (isset($canReview) && $canReview) : ?>
+                        <div class="review-form-container">
+                            <h3>Αξιολογήστε την εταιρεία</h3>
+
+                            <?php if (isset($_SESSION['errors']) && isset($_SESSION['errors']['rating'])) : ?>
+                                <div class="error-message">
+                                    <?php echo $_SESSION['errors']['rating']; ?>
+                                    <?php unset($_SESSION['errors']['rating']); ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <form action="<?php echo BASE_URL; ?>companies/add-review/<?php echo $companyData['id']; ?>" method="post" class="review-form">
+                                <input type="hidden" name="csrf_token" value="<?php echo CSRF::generateToken(); ?>">
+
+                                <div class="form-group">
+                                    <label for="rating">Βαθμολογία:</label>
+                                    <div class="rating-input">
+                                        <?php for ($i = 5; $i >= 1; $i--) : ?>
+                                            <input type="radio" id="star<?php echo $i; ?>" name="rating" value="<?php echo $i; ?>" <?php echo (isset($_SESSION['old_input']['rating']) && $_SESSION['old_input']['rating'] == $i) ? 'checked' : ''; ?>>
+                                            <label for="star<?php echo $i; ?>">★</label>
+                                        <?php endfor; ?>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="comment">Σχόλιο:</label>
+                                    <textarea name="comment" id="comment" rows="4" placeholder="Γράψτε την εμπειρία σας με την εταιρεία..."><?php echo isset($_SESSION['old_input']['comment']) ? htmlspecialchars($_SESSION['old_input']['comment']) : ''; ?></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" class="btn-primary">Υποβολή Αξιολόγησης</button>
+                                </div>
+                            </form>
+                        </div>
+                    <?php elseif (isset($hasReviewed) && $hasReviewed) : ?>
+                        <div class="already-reviewed">
+                            <p>Έχετε ήδη αξιολογήσει αυτή την εταιρεία.</p>
+                        </div>
+                    <?php elseif (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'driver') : ?>
+                        <div class="review-info">
+                            <p>Για να αξιολογήσετε αυτή την εταιρεία, πρέπει να έχετε συνεργαστεί μαζί της.</p>
+                        </div>
+                    <?php elseif (!isset($_SESSION['user_id'])) : ?>
+                        <div class="review-login-prompt">
+                            <p>Για να αξιολογήσετε αυτή την εταιρεία, πρέπει να <a href="<?php echo BASE_URL; ?>login">συνδεθείτε</a> ως οδηγός.</p>
+                        </div>
+                    <?php endif; ?>
+                </section>
             </div>
 
             <!-- Δεξιά Στήλη -->
@@ -694,4 +751,122 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
     .job-type.full_time {
         background-color: #e8f5e9;
-        color
+        color: #2e7d32;
+    }
+
+    .job-type.part_time {
+        background-color: #e3f2fd;
+        color: #1565c0;
+    }
+
+    .job-type.contract {
+        background-color: #fff3e0;
+        color: #e65100;
+    }
+
+    .job-type.temporary {
+        background-color: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .listing-type {
+        background-color: #f5f5f5;
+        color: #616161;
+    }
+
+    .listing-type.job_offer {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .listing-type.job_search {
+        background-color: #e3f2fd;
+        color: #1565c0;
+    }
+
+    /* Φόρμα Αξιολόγησης */
+    .review-form-container {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .review-form-container h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+
+    .review-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+
+    .rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+
+    .rating-input input {
+        display: none;
+    }
+
+    .rating-input label {
+        cursor: pointer;
+        font-size: 30px;
+        color: #ddd;
+        margin-right: 5px;
+    }
+
+    .rating-input label:hover,
+    .rating-input label:hover~label,
+    .rating-input input:checked~label {
+        color: #f8b739;
+    }
+
+    .review-form textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        resize: vertical;
+    }
+
+    .no-reviews,
+    .already-reviewed,
+    .review-info,
+    .review-login-prompt {
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .no-reviews p,
+    .already-reviewed p,
+    .review-info p,
+    .review-login-prompt p {
+        margin: 0;
+        color: #666;
+    }
+
+    .review-login-prompt a {
+        color: #0277bd;
+        text-decoration: none;
+    }
+
+    .review-login-prompt a:hover {
+        text-decoration: underline;
+    }
