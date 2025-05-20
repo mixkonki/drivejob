@@ -10,6 +10,10 @@ class Router
     private $middlewares = [];
     private $routeMiddlewares = [];
     private $container;
+    private $namedRoutes = [];
+    private $currentRouteName = null;
+    private $currentPrefix = '';
+    private $currentMiddlewares = [];
 
     public function __construct($baseUrl = '', $container = null)
     {
@@ -78,10 +82,71 @@ class Router
      */
     private function addRoute($method, $path, $callback, $middlewares = [])
     {
-        $this->routes[$method][$path] = $callback;
-        if (!empty($middlewares)) {
-            $this->routeMiddlewares[$method][$path] = $middlewares;
+        // Προσθήκη του τρέχοντος προθέματος στη διαδρομή
+        if (!empty($this->currentPrefix)) {
+            $path = rtrim($this->currentPrefix, '/') . '/' . ltrim($path, '/');
         }
+
+        $this->routes[$method][$path] = $callback;
+
+        // Συνδυασμός των middlewares της διαδρομής με τα τρέχοντα middlewares
+        if (!empty($this->currentMiddlewares) || !empty($middlewares)) {
+            $allMiddlewares = array_merge($this->currentMiddlewares, $middlewares);
+            $this->routeMiddlewares[$method][$path] = $allMiddlewares;
+        }
+
+        $this->currentRouteName = null;
+        return $this;
+    }
+
+    /**
+     * Ορίζει ένα όνομα για την τελευταία διαδρομή που προστέθηκε
+     *
+     * @param string $name Το όνομα της διαδρομής
+     * @return $this
+     */
+    public function name($name)
+    {
+        if ($this->currentRouteName === null) {
+            // Βρίσκουμε την τελευταία διαδρομή που προστέθηκε
+            $lastMethod = array_key_last($this->routes);
+            if ($lastMethod !== null) {
+                $lastPath = array_key_last($this->routes[$lastMethod]);
+                if ($lastPath !== null) {
+                    $this->namedRoutes[$name] = [
+                        'method' => $lastMethod,
+                        'path' => $lastPath
+                    ];
+                    $this->currentRouteName = $name;
+                }
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * Δημιουργεί ένα URL για μια ονομαστική διαδρομή
+     *
+     * @param string $name Το όνομα της διαδρομής
+     * @param array $params Οι παράμετροι για τη διαδρομή
+     * @return string Το URL
+     * @throws \Exception Αν η διαδρομή δεν βρεθεί
+     */
+    public function url($name, $params = [])
+    {
+        if (!isset($this->namedRoutes[$name])) {
+            throw new \Exception("Route with name '{$name}' not found");
+        }
+
+        $path = $this->namedRoutes[$name]['path'];
+
+        // Αντικατάσταση των παραμέτρων στη διαδρομή
+        foreach ($params as $paramName => $paramValue) {
+            $path = str_replace("{{$paramName}}", $paramValue, $path);
+        }
+
+        // Προσθήκη του βασικού URL
+        return $this->baseUrl . $path;
     }
 
     /**
@@ -218,6 +283,17 @@ class Router
         // Καθαρισμός του path
         $path = trim($path, '/');
         $path = '/' . $path;
+
+        // Καταγραφή του path για αποσφαλμάτωση
+        if (defined('DEBUG_MODE') && DEBUG_MODE) {
+            error_log("Router::getPath - Original URI: " . $_SERVER['REQUEST_URI']);
+            error_log("Router::getPath - Processed path: " . $path);
+        }
+
+        // Προσθήκη αποσφαλμάτωσης
+        error_log("Router::getPath - Original URI: " . $_SERVER['REQUEST_URI']);
+        error_log("Router::getPath - Processed path: " . $path);
+
         return $path ?: '/';
     }
 
@@ -225,14 +301,16 @@ class Router
      * Μετατροπή διαδρομής σε κανονική έκφραση
      *
      * @param string $route Η διαδρομή
+     * @param bool $caseInsensitive Αν το ταίριασμα θα είναι case-insensitive
      * @return string Η κανονική έκφραση
      */
-    private function convertRouteToRegex($route)
+    private function convertRouteToRegex($route, $caseInsensitive = true)
     {
         // Αντικατάσταση παραμέτρων της μορφής {id} με ομάδες regex
         $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $route);
         // Προσθήκη ^ και $ για ακριβές ταίριασμα και προετοιμασία για preg_match
-        return "#^{$pattern}$#";
+        $flags = $caseInsensitive ? 'i' : '';
+        return "#^{$pattern}$" . ($flags ? "#{$flags}" : "#");
     }
 
     /**
@@ -338,5 +416,82 @@ class Router
     public function getRoutes()
     {
         return $this->routes;
+    }
+
+    /**
+     * Ομαδοποίηση διαδρομών με κοινά χαρακτηριστικά
+     *
+     * @param array $attributes Τα κοινά χαρακτηριστικά των διαδρομών
+     * @param callable $callback Η συνάρτηση που ορίζει τις διαδρομές
+     * @return $this
+     */
+    public function group(array $attributes, callable $callback)
+    {
+        // Αποθήκευση των τρεχόντων χαρακτηριστικών
+        $previousAttributes = [
+            'prefix' => $this->getCurrentPrefix(),
+            'middlewares' => $this->getCurrentMiddlewares()
+        ];
+
+        // Εφαρμογή των νέων χαρακτηριστικών
+        $this->applyGroupAttributes($attributes);
+
+        // Εκτέλεση του callback για τον ορισμό των διαδρομών
+        $callback($this);
+
+        // Επαναφορά των προηγούμενων χαρακτηριστικών
+        $this->resetGroupAttributes($previousAttributes);
+
+        return $this;
+    }
+
+    /**
+     * Λήψη του τρέχοντος προθέματος
+     *
+     * @return string Το τρέχον πρόθεμα
+     */
+    private function getCurrentPrefix()
+    {
+        return $this->currentPrefix ?? '';
+    }
+
+    /**
+     * Λήψη των τρεχόντων middlewares
+     *
+     * @return array Τα τρέχοντα middlewares
+     */
+    private function getCurrentMiddlewares()
+    {
+        return $this->currentMiddlewares ?? [];
+    }
+
+    /**
+     * Εφαρμογή των χαρακτηριστικών της ομάδας
+     *
+     * @param array $attributes Τα χαρακτηριστικά της ομάδας
+     */
+    private function applyGroupAttributes(array $attributes)
+    {
+        // Εφαρμογή του προθέματος
+        if (isset($attributes['prefix'])) {
+            $this->currentPrefix = $this->getCurrentPrefix() . '/' . trim($attributes['prefix'], '/');
+        }
+
+        // Εφαρμογή των middlewares
+        if (isset($attributes['middleware'])) {
+            $middlewares = is_array($attributes['middleware']) ? $attributes['middleware'] : [$attributes['middleware']];
+            $this->currentMiddlewares = array_merge($this->getCurrentMiddlewares(), $middlewares);
+        }
+    }
+
+    /**
+     * Επαναφορά των χαρακτηριστικών της ομάδας
+     *
+     * @param array $attributes Τα χαρακτηριστικά της ομάδας
+     */
+    private function resetGroupAttributes(array $attributes)
+    {
+        $this->currentPrefix = $attributes['prefix'];
+        $this->currentMiddlewares = $attributes['middlewares'];
     }
 }
