@@ -195,57 +195,32 @@ class Router
             }
         }
 
-        // Έλεγχος αν υπάρχει ακριβής διαδρομή
-        if (isset($this->routes[$method][$path])) {
-            $callback = $this->routes[$method][$path];
+        // Εύρεση διαδρομής
+        $routeInfo = $this->findRoute($method, $path);
+        if ($routeInfo) {
+            $callback = $routeInfo['callback'];
+            $params = $routeInfo['params'];
+
+            // Εύρεση της διαδρομής για τα middlewares
+            $routePath = null;
+            foreach ($this->routes[$method] as $route => $cb) {
+                if ($cb === $callback) {
+                    $routePath = $route;
+                    break;
+                }
+            }
+
             // Εκτέλεση των middlewares της διαδρομής
-            if (isset($this->routeMiddlewares[$method][$path])) {
-                foreach ($this->routeMiddlewares[$method][$path] as $middleware) {
-                    $response = call_user_func($middleware);
+            if ($routePath && isset($this->routeMiddlewares[$method][$routePath])) {
+                foreach ($this->routeMiddlewares[$method][$routePath] as $middleware) {
+                    $response = call_user_func($middleware, $params);
                     if ($response !== null) {
                         return $response;
                     }
                 }
             }
 
-            return $this->executeCallback($callback);
-        }
-
-        // Έλεγχος για παραμετροποιημένες διαδρομές
-        foreach ($this->routes[$method] ?? [] as $route => $callback) {
-            $pattern = $this->convertRouteToRegex($route);
-            if (preg_match($pattern, $path, $matches)) {
-                // Αφαίρεση του πρώτου στοιχείου (ολόκληρο το ταίριασμα)
-                array_shift($matches);
-                // Εύρεση των ονομάτων παραμέτρων
-                $paramNames = [];
-                preg_match_all('/\{([a-zA-Z0-9_]+)\}/', $route, $paramMatches);
-                if (!empty($paramMatches[1])) {
-                    $paramNames = $paramMatches[1];
-                }
-
-                // Συνδυασμός ονομάτων με τιμές
-                $params = [];
-                foreach ($matches as $index => $value) {
-                    if (isset($paramNames[$index])) {
-                        $params[$paramNames[$index]] = $value;
-                    } else {
-                        $params[] = $value;
-                    }
-                }
-
-                // Εκτέλεση των middlewares της διαδρομής
-                if (isset($this->routeMiddlewares[$method][$route])) {
-                    foreach ($this->routeMiddlewares[$method][$route] as $middleware) {
-                        $response = call_user_func($middleware, $params);
-                        if ($response !== null) {
-                            return $response;
-                        }
-                    }
-                }
-
-                return $this->executeCallback($callback, $params);
-            }
+            return $this->executeCallback($callback, $params);
         }
 
         // Αν δεν βρέθηκε καμία διαδρομή
@@ -295,6 +270,74 @@ class Router
         error_log("Router::getPath - Processed path: " . $path);
 
         return $path ?: '/';
+    }
+
+    /**
+     * Έλεγχος αν υπάρχει διαδρομή που ταιριάζει με το δοσμένο path
+     *
+     * @param string $method Η μέθοδος HTTP
+     * @param string $path Το path προς έλεγχο
+     * @return bool|array Επιστρέφει false αν δεν βρεθεί διαδρομή, αλλιώς επιστρέφει πίνακα με το callback και τις παραμέτρους
+     */
+    private function findRoute($method, $path)
+    {
+        // Έλεγχος αν υπάρχει ακριβής διαδρομή
+        if (isset($this->routes[$method][$path])) {
+            return [
+                'callback' => $this->routes[$method][$path],
+                'params' => []
+            ];
+        }
+
+        // Έλεγχος αν υπάρχει διαδρομή με ή χωρίς κάθετο στο τέλος
+        $pathWithSlash = rtrim($path, '/') . '/';
+        $pathWithoutSlash = rtrim($path, '/');
+
+        if (isset($this->routes[$method][$pathWithSlash])) {
+            return [
+                'callback' => $this->routes[$method][$pathWithSlash],
+                'params' => []
+            ];
+        }
+
+        if (isset($this->routes[$method][$pathWithoutSlash]) && $pathWithoutSlash !== '') {
+            return [
+                'callback' => $this->routes[$method][$pathWithoutSlash],
+                'params' => []
+            ];
+        }
+
+        // Έλεγχος για παραμετροποιημένες διαδρομές
+        foreach ($this->routes[$method] ?? [] as $route => $callback) {
+            $pattern = $this->convertRouteToRegex($route);
+            if (preg_match($pattern, $path, $matches)) {
+                // Αφαίρεση του πρώτου στοιχείου (ολόκληρο το ταίριασμα)
+                array_shift($matches);
+                // Εύρεση των ονομάτων παραμέτρων
+                $paramNames = [];
+                preg_match_all('/\{([a-zA-Z0-9_]+)\}/', $route, $paramMatches);
+                if (!empty($paramMatches[1])) {
+                    $paramNames = $paramMatches[1];
+                }
+
+                // Συνδυασμός ονομάτων με τιμές
+                $params = [];
+                foreach ($matches as $index => $value) {
+                    if (isset($paramNames[$index])) {
+                        $params[$paramNames[$index]] = $value;
+                    } else {
+                        $params[] = $value;
+                    }
+                }
+
+                return [
+                    'callback' => $callback,
+                    'params' => $params
+                ];
+            }
+        }
+
+        return false;
     }
 
     /**
