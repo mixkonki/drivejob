@@ -47,8 +47,22 @@ $userRole = Session::has('role') ? Session::get('role') : '';
     <link rel="icon" href="<?php echo BASE_URL; ?>img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
+    <!-- Επιπλέον CSS αρχεία -->
+    <?php if (isset($extraCss) && is_array($extraCss)) : ?>
+        <?php foreach ($extraCss as $css) : ?>
+            <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/<?php echo $css; ?>">
+        <?php endforeach; ?>
+    <?php endif; ?>
+
     <!-- Σύνδεση του header.js -->
     <script src="<?php echo BASE_URL; ?>js/header.js" defer></script>
+
+    <!-- Επιπλέον JS αρχεία -->
+    <?php if (isset($extraJs) && is_array($extraJs)) : ?>
+        <?php foreach ($extraJs as $js) : ?>
+            <script src="<?php echo BASE_URL; ?>js/<?php echo $js; ?>" defer></script>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </head>
 
 <body>
