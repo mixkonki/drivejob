@@ -15,7 +15,6 @@ use Drivejob\Controllers\Driver\DriversController;
 use Drivejob\Controllers\Driver\JobApplicationController;
 use Drivejob\Controllers\Driver\JobOfferController;
 use Drivejob\Controllers\Driver\DriverResumeController;
-use Drivejob\Controllers\Driver\JobListingController;
 use Drivejob\Controllers\Company\CompaniesController;
 use Drivejob\Controllers\UnifiedJobListingController;
 
