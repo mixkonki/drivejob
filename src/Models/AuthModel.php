@@ -37,18 +37,31 @@ class AuthModel
     public function authenticate($email, $password, $role = null)
     {
         try {
+            Logger::debug('AuthModel::authenticate called', [
+                'email' => $email,
+                'role' => $role,
+                'session_id' => session_id()
+            ]);
+
             // Έλεγχος αν ο χρήστης είναι οδηγός
             if ($role === 'driver' || $role === null) {
+                Logger::debug('Attempting driver authentication');
                 $driver = $this->authenticateDriver($email, $password);
                 if ($driver) {
+                    Logger::debug('Driver authentication successful', [
+                        'driver_id' => $driver['id'],
+                        'is_verified' => $driver['is_verified']
+                    ]);
                     return [
                         'user_id' => $driver['id'],
                         'role' => 'driver',
                         'email' => $driver['email'],
                         'name' => $driver['first_name'] . ' ' . $driver['last_name'],
                         'is_verified' => $driver['is_verified'],
-                        'is_active' => $driver['is_active']
+                        'is_active' => $driver['is_verified'] // Χρησιμοποιούμε το is_verified αντί για is_active
                     ];
+                } else {
+                    Logger::debug('Driver authentication failed');
                 }
             }
 
@@ -62,12 +75,14 @@ class AuthModel
                         'email' => $company['email'],
                         'name' => $company['company_name'],
                         'is_verified' => $company['is_verified'],
-                        'is_active' => $company['is_active']
+                        'is_active' => $company['is_verified'] // Χρησιμοποιούμε το is_verified αντί για is_active
                     ];
                 }
             }
 
             // Έλεγχος αν ο χρήστης είναι διαχειριστής
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             if ($role === 'admin' || $role === null) {
                 $admin = $this->authenticateAdmin($email, $password);
                 if ($admin) {
@@ -81,6 +96,7 @@ class AuthModel
                     ];
                 }
             }
+            */
 
             return false;
         } catch (\Exception $e) {
@@ -99,15 +115,37 @@ class AuthModel
     private function authenticateDriver($email, $password)
     {
         try {
+            Logger::debug('AuthModel::authenticateDriver called', [
+                'email' => $email,
+                'session_id' => session_id()
+            ]);
+
             $query = "SELECT * FROM drivers WHERE email = ?";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([$email]);
             $driver = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-            if ($driver && password_verify($password, $driver['password'])) {
-                // Ενημέρωση της ημερομηνίας τελευταίας σύνδεσης
-                $this->updateLastLogin('drivers', $driver['id']);
-                return $driver;
+            Logger::debug('Driver query result', [
+                'driver_found' => !empty($driver),
+                'driver_data' => $driver ? [
+                    'id' => $driver['id'],
+                    'email' => $driver['email'],
+                    'is_verified' => $driver['is_verified'] ?? null,
+                    'is_active' => $driver['is_active'] ?? null
+                ] : null
+            ]);
+
+            if ($driver) {
+                $passwordVerified = password_verify($password, $driver['password']);
+                Logger::debug('Password verification result', [
+                    'password_verified' => $passwordVerified
+                ]);
+
+                if ($passwordVerified) {
+                    // Ενημέρωση της ημερομηνίας τελευταίας σύνδεσης
+                    $this->updateLastLogin('drivers', $driver['id']);
+                    return $driver;
+                }
             }
 
             return false;
@@ -154,6 +192,11 @@ class AuthModel
      */
     private function authenticateAdmin($email, $password)
     {
+        // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+        Logger::debug('authenticateAdmin method is disabled');
+        return false;
+
+        /*
         try {
             $query = "SELECT * FROM admins WHERE email = ?";
             $stmt = $this->pdo->prepare($query);
@@ -171,6 +214,7 @@ class AuthModel
             Logger::error('Error in authenticateAdmin: ' . $e->getMessage());
             return false;
         }
+        */
     }
 
     /**
@@ -316,12 +360,15 @@ class AuthModel
             }
 
             // Έλεγχος στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             $query = "SELECT COUNT(*) FROM admins WHERE email = ?";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([$email]);
             if ($stmt->fetchColumn() > 0) {
                 return true;
             }
+            */
 
             return false;
         } catch (\PDOException $e) {
@@ -455,6 +502,80 @@ class AuthModel
     }
 
     /**
+     * Αποστολή συνδέσμου επαναφοράς συνθηματικού
+     *
+     * @param string $email Email του χρήστη
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function sendPasswordResetLink($email)
+    {
+        try {
+            // Έλεγχος αν υπάρχει χρήστης με το συγκεκριμένο email
+            if (!$this->emailExists($email)) {
+                return false;
+            }
+
+            // Δημιουργία του κωδικού επαναφοράς
+            $resetCode = $this->generateVerificationCode();
+            $resetExpires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+            // Ενημέρωση του λογαριασμού στη βάση δεδομένων
+            $this->updateResetCode($email, $resetCode, $resetExpires);
+
+            // Αποστολή email επαναφοράς
+            $this->sendResetEmail($email, $resetCode);
+
+            return true;
+        } catch (\Exception $e) {
+            Logger::error('Error in sendPasswordResetLink: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Έλεγχος εγκυρότητας του token επαναφοράς
+     *
+     * @param string $token Token επαναφοράς
+     * @return bool Αν το token είναι έγκυρο
+     */
+    public function isValidResetToken($token)
+    {
+        try {
+            // Έλεγχος στον πίνακα drivers
+            $query = "SELECT COUNT(*) FROM drivers WHERE reset_code = ? AND reset_expires > NOW()";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$token]);
+            if ($stmt->fetchColumn() > 0) {
+                return true;
+            }
+
+            // Έλεγχος στον πίνακα companies
+            $query = "SELECT COUNT(*) FROM companies WHERE reset_code = ? AND reset_expires > NOW()";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$token]);
+            if ($stmt->fetchColumn() > 0) {
+                return true;
+            }
+
+            // Έλεγχος στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
+            $query = "SELECT COUNT(*) FROM admins WHERE reset_code = ? AND reset_expires > NOW()";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$token]);
+            if ($stmt->fetchColumn() > 0) {
+                return true;
+            }
+            */
+
+            return false;
+        } catch (\PDOException $e) {
+            Logger::error('Error in isValidResetToken: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Αποστολή email επαναφοράς κωδικού πρόσβασης
      *
      * @param string $email Email του χρήστη
@@ -507,9 +628,12 @@ class AuthModel
             $stmt->execute([$resetCode, $resetExpires, $email]);
 
             // Ενημέρωση στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             $query = "UPDATE admins SET reset_code = ?, reset_expires = ? WHERE email = ?";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([$resetCode, $resetExpires, $email]);
+            */
 
             return true;
         } catch (\PDOException $e) {
@@ -598,6 +722,8 @@ class AuthModel
             }
 
             // Έλεγχος στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             $query = "SELECT id FROM admins WHERE reset_code = ? AND reset_expires > NOW()";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([$resetCode]);
@@ -609,6 +735,7 @@ class AuthModel
                     'table' => 'admins'
                 ];
             }
+            */
 
             return false;
         } catch (\PDOException $e) {

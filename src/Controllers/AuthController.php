@@ -154,7 +154,7 @@ class AuthController extends BaseUserController
     {
         // Έλεγχος αν το αίτημα είναι POST
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . 'login.php');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit();
         }
 
@@ -169,7 +169,7 @@ class AuthController extends BaseUserController
         if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
             Logger::warning('CSRF validation failed during login');
             Session::set('login_error', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . 'login.php');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit();
         }
 
@@ -218,7 +218,7 @@ class AuthController extends BaseUserController
             // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
             $redirectUrl = Session::has('redirect_after_login')
                 ? Session::get('redirect_after_login')
-                : BASE_URL . ($user['role'] === 'driver' ? 'drivers/driver_profile.php' : 'companies/company_profile.php');
+                : BASE_URL . ($user['role'] === 'driver' ? 'drivers/profile' : 'companies/profile');
 
             Session::remove('redirect_after_login');
 
@@ -236,7 +236,7 @@ class AuthController extends BaseUserController
         ]);
 
         Session::set('login_error', 'Εσφαλμένο email ή συνθηματικό.');
-        header('Location: ' . 'login.php');
+        header('Location: ' . BASE_URL . 'auth/login');
         exit();
     }
 

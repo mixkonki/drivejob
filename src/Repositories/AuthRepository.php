@@ -82,6 +82,8 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
             }
 
             // Έλεγχος αν ο χρήστης είναι διαχειριστής
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             if ($role === 'admin' || $role === null) {
                 $admin = $this->authenticateAdmin($email, $password);
                 if ($admin) {
@@ -95,6 +97,7 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
                     ];
                 }
             }
+            */
 
             return false;
         } catch (\Exception $e) {
@@ -219,10 +222,13 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
             }
 
             // Έλεγχος στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             $query = "SELECT COUNT(*) FROM admins WHERE email = :email";
             if ($this->queryScalar($query, $params) > 0) {
                 return true;
             }
+            */
 
             return false;
         } catch (\PDOException $e) {
@@ -479,8 +485,11 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
             $this->execute($query, $params);
 
             // Ενημέρωση στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             $query = "UPDATE admins SET reset_code = :reset_code, reset_expires = :reset_expires WHERE email = :email";
             $this->execute($query, $params);
+            */
 
             return true;
         } catch (\PDOException $e) {
@@ -562,6 +571,8 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
             }
 
             // Έλεγχος στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             $query = "SELECT id FROM admins WHERE reset_code = :reset_code AND reset_expires > NOW()";
             $admin = $this->queryOne($query, $params);
 
@@ -571,6 +582,7 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
                     'table' => 'admins'
                 ];
             }
+            */
 
             return false;
         } catch (\PDOException $e) {

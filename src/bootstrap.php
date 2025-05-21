@@ -95,7 +95,7 @@ if (!IS_CLI) {
             Session::destroy();
             Session::start();
             if (!headers_sent() && !isset($_GET['ajax'])) {
-                header('Location: ' . BASE_URL . 'login.php?expired=1');
+                header('Location: login.php?expired=1');
                 exit();
             }
         } else {

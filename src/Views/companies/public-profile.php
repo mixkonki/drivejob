@@ -202,12 +202,56 @@ use Drivejob\Core\CSRF;
                                 <input type="hidden" name="csrf_token" value="<?php echo CSRF::generateToken(); ?>">
 
                                 <div class="form-group">
-                                    <label for="rating">Βαθμολογία:</label>
+                                    <label for="rating">Συνολική Βαθμολογία:</label>
                                     <div class="rating-input">
                                         <?php for ($i = 5; $i >= 1; $i--) : ?>
                                             <input type="radio" id="star<?php echo $i; ?>" name="rating" value="<?php echo $i; ?>" <?php echo (isset($_SESSION['old_input']['rating']) && $_SESSION['old_input']['rating'] == $i) ? 'checked' : ''; ?>>
                                             <label for="star<?php echo $i; ?>">★</label>
                                         <?php endfor; ?>
+                                    </div>
+                                </div>
+
+                                <div class="detailed-ratings">
+                                    <h4>Λεπτομερής Αξιολόγηση</h4>
+
+                                    <div class="form-group">
+                                        <label for="reliability_rating">Αξιοπιστία:</label>
+                                        <div class="rating-input">
+                                            <?php for ($i = 5; $i >= 1; $i--) : ?>
+                                                <input type="radio" id="reliability_star<?php echo $i; ?>" name="detailed_ratings[reliability_rating]" value="<?php echo $i; ?>" <?php echo (isset($_SESSION['old_input']['detailed_ratings']['reliability_rating']) && $_SESSION['old_input']['detailed_ratings']['reliability_rating'] == $i) ? 'checked' : ''; ?>>
+                                                <label for="reliability_star<?php echo $i; ?>">★</label>
+                                            <?php endfor; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="communication_rating">Επικοινωνία:</label>
+                                        <div class="rating-input">
+                                            <?php for ($i = 5; $i >= 1; $i--) : ?>
+                                                <input type="radio" id="communication_star<?php echo $i; ?>" name="detailed_ratings[communication_rating]" value="<?php echo $i; ?>" <?php echo (isset($_SESSION['old_input']['detailed_ratings']['communication_rating']) && $_SESSION['old_input']['detailed_ratings']['communication_rating'] == $i) ? 'checked' : ''; ?>>
+                                                <label for="communication_star<?php echo $i; ?>">★</label>
+                                            <?php endfor; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="payment_rating">Πληρωμή:</label>
+                                        <div class="rating-input">
+                                            <?php for ($i = 5; $i >= 1; $i--) : ?>
+                                                <input type="radio" id="payment_star<?php echo $i; ?>" name="detailed_ratings[payment_rating]" value="<?php echo $i; ?>" <?php echo (isset($_SESSION['old_input']['detailed_ratings']['payment_rating']) && $_SESSION['old_input']['detailed_ratings']['payment_rating'] == $i) ? 'checked' : ''; ?>>
+                                                <label for="payment_star<?php echo $i; ?>">★</label>
+                                            <?php endfor; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="working_conditions_rating">Συνθήκες Εργασίας:</label>
+                                        <div class="rating-input">
+                                            <?php for ($i = 5; $i >= 1; $i--) : ?>
+                                                <input type="radio" id="working_conditions_star<?php echo $i; ?>" name="detailed_ratings[working_conditions_rating]" value="<?php echo $i; ?>" <?php echo (isset($_SESSION['old_input']['detailed_ratings']['working_conditions_rating']) && $_SESSION['old_input']['detailed_ratings']['working_conditions_rating'] == $i) ? 'checked' : ''; ?>>
+                                                <label for="working_conditions_star<?php echo $i; ?>">★</label>
+                                            <?php endfor; ?>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -869,4 +913,27 @@ use Drivejob\Core\CSRF;
 
     .review-login-prompt a:hover {
         text-decoration: underline;
+    }
+
+    /* Λεπτομερείς Αξιολογήσεις */
+    .detailed-ratings {
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .detailed-ratings h4 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #333;
+        font-size: 16px;
+    }
+
+    .detailed-ratings .form-group {
+        margin-bottom: 10px;
+    }
+
+    .detailed-ratings .rating-input label {
+        font-size: 24px;
     }

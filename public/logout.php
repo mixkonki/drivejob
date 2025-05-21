@@ -1,13 +1,7 @@
 <?php
-
-// public/logout.php
-
 // Αρχικοποίηση της εφαρμογής
-$container = require_once __DIR__ . '/../src/bootstrap.php';
+require_once __DIR__ . '/../config/config.php';
 
-// Λήψη του PDO από το container
-$pdo = $container->get('pdo');
-
-// Ανακατεύθυνση στο νέο controller
-$controller = new \Drivejob\Controllers\AuthController($pdo);
-$controller->logout();
+// Ανακατεύθυνση στη νέα διαδρομή auth/logout
+header('Location: ' . BASE_URL . 'auth/logout');
+exit;

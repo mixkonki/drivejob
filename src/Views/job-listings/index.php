@@ -106,9 +106,9 @@ Session::remove('old_input');
         <!-- Επικεφαλίδα αγγελιών -->
         <div class="job-listings-header">
             <h2>Αποτελέσματα Αναζήτησης</h2>
-            <?php if (isset($_SESSION['user_id'])) : ?>
-                <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα Αγγελία</a>
-            <?php endif; ?>
+                <?php if (!isset($_SESSION['user_id'])) : ?>
+                <a href="<?php echo BASE_URL; ?>auth/login" class="btn-primary">Συνδεθείτε για να δημιουργήσετε αγγελία</a>
+                <?php endif; ?>
         </div>
 
         <!-- Λίστα Αγγελιών -->

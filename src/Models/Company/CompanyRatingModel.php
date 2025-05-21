@@ -23,6 +23,26 @@ class CompanyRatingModel extends BaseModel
     }
 
     /**
+     * Επιστρέφει το ID της τελευταίας εγγραφής που προστέθηκε
+     * 
+     * @return int Το ID της τελευταίας εγγραφής
+     */
+    public function getLastInsertId(): int
+    {
+        return (int)$this->pdo->lastInsertId();
+    }
+
+    /**
+     * Επιστρέφει τη σύνδεση με τη βάση δεδομένων
+     * 
+     * @return PDO Η σύνδεση με τη βάση δεδομένων
+     */
+    public function getPdo(): PDO
+    {
+        return $this->pdo;
+    }
+
+    /**
      * Επιστρέφει τα δεδομένα αξιολόγησης μιας εταιρείας
      * 
      * @param int $companyId Το ID της εταιρείας

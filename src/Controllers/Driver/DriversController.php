@@ -16,6 +16,8 @@ use Drivejob\Repositories\DriversRepository;
 use Drivejob\Services\DriverProfileService;
 use Drivejob\Services\FileService;
 use Drivejob\Helpers\JsonHelper;
+use Drivejob\Models\Driver\IncidentModel;
+use Drivejob\Models\Driver\AssessmentModel;
 
 /**
  * Controller για τους οδηγούς
@@ -39,6 +41,16 @@ class DriversController extends BaseUserController
      * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
      */
     private $fileService;
+
+    /**
+     * @var IncidentModel Το μοντέλο για τα περιστατικά
+     */
+    private $incidentModel;
+
+    /**
+     * @var AssessmentModel Το μοντέλο για τις αυτοαξιολογήσεις
+     */
+    private $assessmentModel;
 
     /**
      * @var Container Το container για τις εξαρτήσεις
@@ -67,6 +79,8 @@ class DriversController extends BaseUserController
         $this->driversRepository = new DriversRepository($pdo);
         $this->driverProfileService = new DriverProfileService($pdo);
         $this->fileService = new FileService();
+        $this->incidentModel = new IncidentModel($pdo);
+        $this->assessmentModel = new AssessmentModel($pdo);
     }
 
     /**
@@ -499,5 +513,250 @@ class DriversController extends BaseUserController
         ]);
 
         return false;
+    }
+
+    /**
+     * Εμφανίζει το ιστορικό περιστατικών του οδηγού
+     */
+    public function incidentHistory()
+    {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        AuthMiddleware::hasRole('driver');
+
+        // Λήψη των στοιχείων του οδηγού
+        $driverId = Session::get('user_id');
+
+        try {
+            // Λήψη των περιστατικών του οδηγού
+            $incidents = $this->incidentModel->getDriverIncidents($driverId);
+
+            // Φόρτωση του view
+            include ROOT_DIR . '/src/Views/drivers/incident-history.php';
+        } catch (\Exception $e) {
+            Logger::error('Error in incident history view', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την προβολή του ιστορικού περιστατικών. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'drivers/profile');
+            exit();
+        }
+    }
+
+    /**
+     * Εμφανίζει τη φόρμα αναφοράς περιστατικού
+     */
+    public function reportIncident()
+    {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        AuthMiddleware::hasRole('driver');
+
+        // Φόρτωση του view
+        include ROOT_DIR . '/src/Views/drivers/report-incident.php';
+    }
+
+    /**
+     * Αποθηκεύει ένα νέο περιστατικό
+     */
+    public function saveIncident()
+    {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        AuthMiddleware::hasRole('driver');
+
+        // Έλεγχος για CSRF token
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            Logger::error('CSRF token validation failed in incident report');
+            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'drivers/report-incident');
+            exit();
+        }
+
+        // Επικύρωση βασικών δεδομένων
+        $validator = new Validator($_POST);
+        $validator->required('incident_type', 'Ο τύπος περιστατικού είναι υποχρεωτικός.')
+            ->required('incident_date', 'Η ημερομηνία περιστατικού είναι υποχρεωτική.')
+            ->required('description', 'Η περιγραφή είναι υποχρεωτική.');
+
+        if (!$validator->isValid()) {
+            Logger::error('Validation failed in incident report', [
+                'errors' => $validator->getErrors(),
+                'post_data' => $_POST
+            ]);
+            Session::set('errors', $validator->getErrors());
+            Session::set('old_input', $_POST);
+            header('Location: ' . BASE_URL . 'drivers/report-incident');
+            exit();
+        }
+
+        // Λήψη ID του συνδεδεμένου οδηγού
+        $driverId = Session::get('user_id');
+        Logger::info('Starting incident report for driver', ['driver_id' => $driverId]);
+
+        // Συλλογή των δεδομένων από τη φόρμα
+        $data = [
+            'driver_id' => $driverId,
+            'incident_type' => $this->sanitize($_POST['incident_type'] ?? null),
+            'incident_date' => $this->sanitizeDate($_POST['incident_date'] ?? null),
+            'description' => $this->sanitize($_POST['description'] ?? null),
+            'location' => $this->sanitize($_POST['location'] ?? null),
+            'severity' => $this->sanitize($_POST['severity'] ?? 'medium'),
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        try {
+            // Ανέβασμα αρχείου αν υπάρχει
+            if (isset($_FILES['incident_file']) && $_FILES['incident_file']['error'] === UPLOAD_ERR_OK) {
+                $filePath = $this->uploadFile($_FILES['incident_file'], 'incident_file', 'document');
+                if ($filePath) {
+                    $data['file_path'] = $filePath;
+                }
+            }
+
+            // Αποθήκευση του περιστατικού
+            $result = $this->incidentModel->addIncident($data);
+
+            if ($result) {
+                Logger::info('Incident report successful');
+                Session::set('success_message', 'Το περιστατικό καταχωρήθηκε με επιτυχία.');
+                header('Location: ' . BASE_URL . 'drivers/incident-history');
+                exit();
+            } else {
+                Logger::error('Incident report failed', [
+                    'driver_id' => $driverId,
+                    'data' => $data
+                ]);
+                Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την καταχώρηση του περιστατικού. Παρακαλώ δοκιμάστε ξανά.');
+                header('Location: ' . BASE_URL . 'drivers/report-incident');
+                exit();
+            }
+        } catch (DatabaseException $e) {
+            Logger::error('Database exception in incident report', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'drivers/report-incident');
+            exit();
+        } catch (\Exception $e) {
+            Logger::error('Exception in incident report', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'drivers/report-incident');
+            exit();
+        }
+    }
+
+    /**
+     * Εμφανίζει τη φόρμα εγγραφής για νέους οδηγούς
+     */
+    public function showRegistrationForm()
+    {
+        // Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
+        if (Session::has('user_id')) {
+            // Ανακατεύθυνση στην αρχική σελίδα
+            header('Location: ' . BASE_URL);
+            exit();
+        }
+
+        // Φόρτωση του view
+        include ROOT_DIR . '/src/Views/drivers/drivers-registration.php';
+    }
+
+    /**
+     * Εμφανίζει και επεξεργάζεται την αυτοαξιολόγηση του οδηγού
+     */
+    public function updateAssessment()
+    {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        AuthMiddleware::hasRole('driver');
+
+        // Λήψη των στοιχείων του οδηγού
+        $driverId = Session::get('user_id');
+
+        // Έλεγχος αν είναι POST αίτημα
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Έλεγχος για CSRF token
+            if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+                Logger::error('CSRF token validation failed in assessment update');
+                Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+                header('Location: ' . BASE_URL . 'drivers/update-assessment');
+                exit();
+            }
+
+            // Συλλογή των δεδομένων από τη φόρμα
+            $data = [
+                'driver_id' => $driverId,
+                'driving_skills' => intval($_POST['driving_skills'] ?? 3),
+                'vehicle_knowledge' => intval($_POST['vehicle_knowledge'] ?? 3),
+                'safety_awareness' => intval($_POST['safety_awareness'] ?? 3),
+                'time_management' => intval($_POST['time_management'] ?? 3),
+                'customer_service' => intval($_POST['customer_service'] ?? 3),
+                'stress_handling' => intval($_POST['stress_handling'] ?? 3),
+                'comments' => $this->sanitize($_POST['comments'] ?? ''),
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            try {
+                // Έλεγχος αν υπάρχει ήδη αυτοαξιολόγηση
+                $existingAssessment = $this->assessmentModel->getDriverAssessment($driverId);
+
+                if ($existingAssessment) {
+                    // Ενημέρωση της υπάρχουσας αυτοαξιολόγησης
+                    $result = $this->assessmentModel->updateAssessment($driverId, $data);
+                } else {
+                    // Προσθήκη νέας αυτοαξιολόγησης
+                    $result = $this->assessmentModel->addAssessment($data);
+                }
+
+                if ($result) {
+                    Logger::info('Assessment update successful');
+                    Session::set('success_message', 'Η αυτοαξιολόγησή σας ενημερώθηκε με επιτυχία.');
+                    header('Location: ' . BASE_URL . 'drivers/profile');
+                    exit();
+                } else {
+                    Logger::error('Assessment update failed', [
+                        'driver_id' => $driverId,
+                        'data' => $data
+                    ]);
+                    Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την ενημέρωση της αυτοαξιολόγησης. Παρακαλώ δοκιμάστε ξανά.');
+                }
+            } catch (DatabaseException $e) {
+                Logger::error('Database exception in assessment update', [
+                    'driver_id' => $driverId,
+                    'message' => $e->getMessage(),
+                    'context' => $e->getContext()
+                ]);
+                Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
+            } catch (\Exception $e) {
+                Logger::error('Exception in assessment update', [
+                    'driver_id' => $driverId,
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
+            }
+        }
+
+        try {
+            // Λήψη της τρέχουσας αυτοαξιολόγησης
+            $assessment = $this->assessmentModel->getDriverAssessment($driverId);
+
+            // Φόρτωση του view
+            include ROOT_DIR . '/src/Views/drivers/update-assessment.php';
+        } catch (\Exception $e) {
+            Logger::error('Error in assessment view', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την προβολή της αυτοαξιολόγησης. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'drivers/profile');
+            exit();
+        }
     }
 }

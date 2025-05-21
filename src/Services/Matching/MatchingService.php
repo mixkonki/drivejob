@@ -637,12 +637,33 @@ class MatchingService implements MatchingServiceInterface
     {
         $score = 0;
         $maxScore = 0;
+        $matchDetails = [];
 
         // Ταίριασμα τοποθεσίας
         if (isset($jobListing['location']) && isset($driver['city'])) {
             $maxScore += $weights['location'];
-            if (stripos($jobListing['location'], $driver['city']) !== false || stripos($driver['city'], $jobListing['location']) !== false) {
+
+            // Έλεγχος για ακριβές ταίριασμα
+            if (strtolower($jobListing['location']) === strtolower($driver['city'])) {
                 $score += $weights['location'];
+                $matchDetails['location'] = 100;
+            }
+            // Έλεγχος για μερικό ταίριασμα (η μία τοποθεσία περιέχει την άλλη)
+            else if (stripos($jobListing['location'], $driver['city']) !== false || stripos($driver['city'], $jobListing['location']) !== false) {
+                $score += $weights['location'] * 0.8;
+                $matchDetails['location'] = 80;
+            }
+            // Έλεγχος για γεωγραφική εγγύτητα
+            else {
+                // Εδώ θα μπορούσαμε να χρησιμοποιήσουμε μια υπηρεσία γεωκωδικοποίησης για να υπολογίσουμε την απόσταση
+                // Για απλότητα, χρησιμοποιούμε μια λίστα με γειτονικές περιοχές
+                $nearbyLocations = $this->getNearbyLocations($jobListing['location']);
+                if (in_array(strtolower($driver['city']), array_map('strtolower', $nearbyLocations))) {
+                    $score += $weights['location'] * 0.6;
+                    $matchDetails['location'] = 60;
+                } else {
+                    $matchDetails['location'] = 0;
+                }
             }
         }
 
@@ -795,5 +816,54 @@ class MatchingService implements MatchingServiceInterface
     {
         // Χρησιμοποιούμε την ίδια μέθοδο με το calculateMatchScore, αλλά με διαφορετικό όνομα για σαφήνεια
         return $this->calculateMatchScore($jobListing, $driver, $driverLicenses, $driverSkills, $driverRating, $weights);
+    }
+
+    /**
+     * Επιστρέφει μια λίστα με γειτονικές περιοχές για μια δεδομένη τοποθεσία
+     * 
+     * @param string $location Η τοποθεσία
+     * @return array Οι γειτονικές περιοχές
+     */
+    private function getNearbyLocations(string $location): array
+    {
+        // Απλοποιημένη υλοποίηση με προκαθορισμένες γειτονικές περιοχές
+        // Σε μια πραγματική εφαρμογή, θα χρησιμοποιούσαμε μια υπηρεσία γεωκωδικοποίησης
+        $nearbyLocationsMap = [
+            'αθήνα' => ['πειραιάς', 'καλλιθέα', 'νέα σμύρνη', 'παλαιό φάληρο', 'γλυφάδα', 'μαρούσι', 'χαλάνδρι', 'κηφισιά'],
+            'θεσσαλονίκη' => ['καλαμαριά', 'πυλαία', 'συκιές', 'σταυρούπολη', 'εύοσμος', 'πολίχνη'],
+            'πάτρα' => ['ρίο', 'αντίρριο', 'αίγιο'],
+            'ηράκλειο' => ['γάζι', 'αλικαρνασσός', 'αγία βαρβάρα'],
+            'λάρισα' => ['τύρναβος', 'φάρσαλα', 'ελασσόνα'],
+            'βόλος' => ['νέα ιωνία', 'αγριά', 'πορταριά'],
+            'ιωάννινα' => ['ανατολή', 'κατσικά', 'πεδινή'],
+            'χανιά' => ['σούδα', 'ακρωτήρι', 'πλατανιάς'],
+            'καβάλα' => ['παλιό', 'νέα καρβάλη', 'χρυσούπολη'],
+            'σέρρες' => ['λευκώνας', 'νέο σούλι', 'σκούταρι']
+        ];
+
+        // Μετατροπή της τοποθεσίας σε πεζά για case-insensitive αναζήτηση
+        $locationLower = strtolower($location);
+
+        // Έλεγχος αν η τοποθεσία υπάρχει στο χάρτη
+        if (isset($nearbyLocationsMap[$locationLower])) {
+            return $nearbyLocationsMap[$locationLower];
+        }
+
+        // Έλεγχος αν η τοποθεσία είναι γειτονική περιοχή κάποιας άλλης
+        foreach ($nearbyLocationsMap as $mainLocation => $nearbyLocations) {
+            if (in_array($locationLower, $nearbyLocations)) {
+                // Επιστροφή της κύριας τοποθεσίας και των άλλων γειτονικών περιοχών
+                $result = [$mainLocation];
+                foreach ($nearbyLocations as $nearby) {
+                    if ($nearby !== $locationLower) {
+                        $result[] = $nearby;
+                    }
+                }
+                return $result;
+            }
+        }
+
+        // Αν δεν βρέθηκε, επιστροφή κενής λίστας
+        return [];
     }
 }

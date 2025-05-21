@@ -275,7 +275,7 @@ require_once ROOT_DIR . '/src/Views/partials/header.php';
                                 <a href="<?php echo BASE_URL; ?>job-offers/create/<?php echo $listing['id']; ?>" class="btn-primary">Αποστολή Προσφοράς</a>
                             <?php endif; ?>
                         <?php else: ?>
-                            <a href="<?php echo BASE_URL; ?>login" class="btn-primary">Συνδεθείτε για να υποβάλετε αίτηση</a>
+                            <a href="<?php echo BASE_URL; ?>auth/login" class="btn-primary">Συνδεθείτε για να υποβάλετε αίτηση</a>
                         <?php endif; ?>
                         <a href="<?php echo BASE_URL; ?>job-listings" class="btn-secondary">Επιστροφή στις Αγγελίες</a>
                     </div>

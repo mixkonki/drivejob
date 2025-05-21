@@ -24,7 +24,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
         <?php endif; ?>
 
         <div class="listings-actions">
-            <a href="<?php echo BASE_URL; ?>job-listings/Driver/create" class="btn-primary">Νέα Αγγελία</a>
+            <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα Αγγελία</a>
         </div>
 
         <?php if (isset($listings) && count($listings['results']) > 0) : ?>
@@ -92,8 +92,8 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                         <div class="listing-actions">
                             <a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>" class="btn-secondary">Προβολή</a>
-                            <a href="<?php echo BASE_URL; ?>job-listings/edit-driver/<?php echo $listing['id']; ?>" class="btn-secondary">Επεξεργασία</a>
-                            <form action="<?php echo BASE_URL; ?>job-listings/delete-driver/<?php echo $listing['id']; ?>" method="post" style="display:inline;">
+                            <a href="<?php echo BASE_URL; ?>job-listings/edit/<?php echo $listing['id']; ?>" class="btn-secondary">Επεξεργασία</a>
+                            <form action="<?php echo BASE_URL; ?>job-listings/delete/<?php echo $listing['id']; ?>" method="post" style="display:inline;">
                                 <input type="hidden" name="csrf_token" value="<?php echo \Drivejob\Core\CSRF::generateToken(); ?>">
                                 <button type="submit" class="btn-danger" onclick="return confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την αγγελία;')">Διαγραφή</button>
                             </form>
@@ -112,7 +112,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
         <?php else : ?>
             <div class="no-listings">
                 <p>Δεν έχετε δημιουργήσει ακόμα αγγελίες.</p>
-                <a href="<?php echo BASE_URL; ?>job-listings/Driver/create" class="btn-primary">Δημιουργία Αγγελίας</a>
+                <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Δημιουργία Αγγελίας</a>
             </div>
         <?php endif; ?>
     </div>

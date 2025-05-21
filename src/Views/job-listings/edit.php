@@ -7,7 +7,7 @@
 
 // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
-    header('Location: ' . BASE_URL . 'login');
+    header('Location: ' . BASE_URL . 'auth/login');
     exit();
 }
 

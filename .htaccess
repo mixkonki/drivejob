@@ -1,0 +1,23 @@
+# Ανακατεύθυνση όλων των αιτημάτων στον φάκελο public
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Αν το αίτημα δεν είναι ήδη για τον φάκελο public, ανακατεύθυνε το εκεί
+    RewriteCond %{REQUEST_URI} !^/drivejob/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Απαγόρευση πρόσβασης σε συγκεκριμένους φακέλους
+<IfModule mod_rewrite.c>
+    RewriteRule ^(src|config|database|logs|templates|tests|vendor)/.*$ - [F,L]
+</IfModule>
+
+# Απαγόρευση πρόσβασης σε αρχεία .env, .log, .json, .lock, .xml
+<FilesMatch "\.(env|log|json|lock|xml)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</FilesMatch>
+
+# Απαγόρευση εμφάνισης λίστας αρχείων
+Options -Indexes

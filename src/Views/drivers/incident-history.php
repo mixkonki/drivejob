@@ -1,82 +1,184 @@
 <?php
-
-// Συμπερίληψη του header
+// Φόρτωση του header
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-incidents.css">
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">Ιστορικό Περιστατικών</h1>
 
-<main>
-    <div class="container">
-        <div class="incidents-header">
-            <h1>Ιστορικό Συμβάντων</h1>
-            <a href="<?php echo BASE_URL; ?>drivers/report-incident" class="btn-primary">Καταχώρηση Νέου Συμβάντος</a>
-        </div>
-        
-        <?php if (isset($_SESSION['success_message'])) : ?>
-            <div class="success-message">
-                <?php echo $_SESSION['success_message']; ?>
-                <?php unset($_SESSION['success_message']); ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (empty($incidents)) : ?>
-            <div class="no-incidents">
-                <p>Δεν έχετε καταχωρήσει κανένα συμβάν.</p>
-                <p>Η καταχώρηση συμβάντων είναι εθελοντική αλλά συνιστάται για την ακριβέστερη αξιολόγηση της οδηγικής σας συμπεριφοράς.</p>
-            </div>
-        <?php else : ?>
-            <div class="incidents-list">
-                <?php foreach ($incidents as $incident) : ?>
-                    <div class="incident-item severity-<?php echo $incident['severity']; ?>">
-                        <div class="incident-header">
-                            <div class="incident-type">
-                                <?php
-                                $typeLabels = [
-                                'accident' => 'Ατύχημα',
-                                'traffic_violation' => 'Παράβαση ΚΟΚ',
-                                'near_miss' => 'Παρ\' ολίγον ατύχημα',
-                                'complaint' => 'Παράπονο',
-                                'other' => 'Άλλο'
-                                ];
-                                echo isset($typeLabels[$incident['incident_type']]) ? $typeLabels[$incident['incident_type']] : $incident['incident_type'];
-                                ?>
-                        </div>
-                        <div class="incident-date"><?php echo date('d/m/Y', strtotime($incident['incident_date'])); ?></div>
-                    </div>
-                    
-                    <div class="incident-severity">
-                        Σοβαρότητα: 
-                        <?php for ($i = 1; $i <= 5; $i++) : ?>
-                            <span class="severity-dot <?php echo $i <= $incident['severity'] ? 'active' : ''; ?>"></span>
-                        <?php endfor; ?>
-                    </div>
-                    
-                    <div class="incident-description">
-                        <?php echo nl2br(htmlspecialchars($incident['description'])); ?>
-                    </div>
-                    
-                    <div class="incident-verification">
-                        <?php if ($incident['verified']) : ?>
-                            <span class="verification-badge verified">Επαληθευμένο</span>
-                        <?php else : ?>
-                            <span class="verification-badge unverified">Μη επαληθευμένο</span>
-                        <?php endif; ?>
-                    </div>
+            <?php if (isset($_SESSION['success_message'])): ?>
+                <div class="alert alert-success">
+                    <?php echo $_SESSION['success_message']; ?>
+                    <?php unset($_SESSION['success_message']); ?>
                 </div>
-                <?php endforeach; ?>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['error_message'])): ?>
+                <div class="alert alert-danger">
+                    <?php echo $_SESSION['error_message']; ?>
+                    <?php unset($_SESSION['error_message']); ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="action-buttons mb-4">
+                <a href="<?php echo BASE_URL; ?>drivers/report-incident" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Αναφορά Νέου Περιστατικού
+                </a>
+                <a href="<?php echo BASE_URL; ?>drivers/profile" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Επιστροφή στο Προφίλ
+                </a>
+            </div>
+
+            <?php if (empty($incidents)): ?>
+                <div class="alert alert-info">
+                    Δεν έχετε καταχωρήσει κανένα περιστατικό ακόμα.
+                </div>
+            <?php else: ?>
+                <div class="incidents-list">
+                    <?php foreach ($incidents as $incident): ?>
+                        <div class="incident-card">
+                            <div class="incident-header">
+                                <h3 class="incident-type">
+                                    <?php echo htmlspecialchars($incident['incident_type']); ?>
+                                </h3>
+                                <span class="incident-date">
+                                    <?php echo date('d/m/Y', strtotime($incident['incident_date'])); ?>
+                                </span>
+                                <span class="incident-severity severity-<?php echo strtolower($incident['severity']); ?>">
+                                    <?php
+                                    $severityLabels = [
+                                        'low' => 'Χαμηλή',
+                                        'medium' => 'Μέτρια',
+                                        'high' => 'Υψηλή',
+                                        'critical' => 'Κρίσιμη'
+                                    ];
+                                    echo $severityLabels[$incident['severity']] ?? $incident['severity'];
+                                    ?>
+                                </span>
+                            </div>
+                            <div class="incident-body">
+                                <p class="incident-description">
+                                    <?php echo nl2br(htmlspecialchars($incident['description'])); ?>
+                                </p>
+                                <?php if (!empty($incident['location'])): ?>
+                                    <p class="incident-location">
+                                        <strong>Τοποθεσία:</strong> <?php echo htmlspecialchars($incident['location']); ?>
+                                    </p>
+                                <?php endif; ?>
+                                <?php if (!empty($incident['file_path'])): ?>
+                                    <p class="incident-file">
+                                        <a href="<?php echo BASE_URL . $incident['file_path']; ?>" target="_blank" class="btn btn-sm btn-info">
+                                            <i class="fas fa-file"></i> Προβολή Αρχείου
+                                        </a>
+                                    </p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="incident-footer">
+                                <span class="incident-created">
+                                    Καταχωρήθηκε: <?php echo date('d/m/Y H:i', strtotime($incident['created_at'])); ?>
+                                </span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
-        
-        <div class="incidents-info">
-            <p><strong>Σημείωση:</strong> Η επαλήθευση συμβάντων γίνεται αυτόματα ή από το διαχειριστή του συστήματος. 
-            Τα μη επαληθευμένα συμβάντα μπορεί να έχουν μικρότερη επίδραση στη βαθμολογία σας.</p>
-        </div>
-        <?php endif; ?>
+    </div>
 </div>
-</main>
+
+<style>
+    .incidents-list {
+        margin-top: 20px;
+    }
+
+    .incident-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        padding: 15px;
+        border-left: 5px solid #007bff;
+    }
+
+    .incident-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+
+    .incident-type {
+        font-size: 18px;
+        margin: 0;
+        color: #333;
+    }
+
+    .incident-date {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .incident-severity {
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .severity-low {
+        background-color: #28a745;
+    }
+
+    .severity-medium {
+        background-color: #ffc107;
+        color: #333;
+    }
+
+    .severity-high {
+        background-color: #fd7e14;
+    }
+
+    .severity-critical {
+        background-color: #dc3545;
+    }
+
+    .incident-body {
+        margin-bottom: 15px;
+    }
+
+    .incident-description {
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+
+    .incident-location {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .incident-footer {
+        font-size: 12px;
+        color: #999;
+        text-align: right;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+    }
+
+    .action-buttons {
+        margin-bottom: 20px;
+    }
+
+    .action-buttons .btn {
+        margin-right: 10px;
+    }
+</style>
 
 <?php
-// Συμπερίληψη του footer
+// Φόρτωση του footer
 include ROOT_DIR . '/src/Views/partials/footer.php';
 ?>

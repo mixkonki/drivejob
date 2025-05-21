@@ -31,9 +31,9 @@ class CompaniesController extends BaseUserController
     private $companiesRepository;
 
     /**
-     * @var CompanyRatingModel Το μοντέλο για τις αξιολογήσεις των εταιρειών
+     * @var \Drivejob\Services\Rating\RatingServiceInterface Η υπηρεσία για τις αξιολογήσεις
      */
-    private $companyRatingModel;
+    private $ratingService;
 
     /**
      * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
@@ -65,8 +65,24 @@ class CompaniesController extends BaseUserController
 
         // Αρχικοποίηση του repository και των υπηρεσιών
         $this->companiesRepository = new CompaniesRepository($pdo);
-        $this->companyRatingModel = new CompanyRatingModel($pdo);
+        $this->ratingService = $this->container->get('rating_service') ?? new \Drivejob\Services\Rating\RatingService($pdo);
         $this->fileService = new FileService();
+    }
+
+    /**
+     * Εμφανίζει τη φόρμα εγγραφής για νέες εταιρείες
+     */
+    public function showRegistrationForm()
+    {
+        // Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
+        if (Session::has('user_id')) {
+            // Ανακατεύθυνση στην αρχική σελίδα
+            header('Location: ' . BASE_URL);
+            exit();
+        }
+
+        // Φόρτωση του view
+        include ROOT_DIR . '/src/Views/companies/company_registration.php';
     }
 
     /**
@@ -221,8 +237,8 @@ class CompaniesController extends BaseUserController
         $listings = $jobListingRepository->searchListings(['company_id' => $id], 1, 5);
 
         // Λήψη των αξιολογήσεων της εταιρείας
-        $companyReviews = $this->companyRatingModel->getCompanyReviews($id);
-        $averageRating = $this->companyRatingModel->getCompanyRating($id);
+        $companyReviews = $this->ratingService->getCompanyReviews($id);
+        $averageRating = $this->ratingService->getCompanyRating($id);
 
         // Έλεγχος αν ο συνδεδεμένος χρήστης είναι οδηγός και μπορεί να αξιολογήσει την εταιρεία
         $canReview = false;
@@ -433,17 +449,22 @@ class CompaniesController extends BaseUserController
 
         try {
             // Έλεγχος αν ο οδηγός έχει ήδη αξιολογήσει την εταιρεία
-            $reviews = $this->companyRatingModel->getCompanyReviews($id);
-            foreach ($reviews as $review) {
-                if ($review['driver_id'] == $driverId) {
-                    Session::set('error_message', 'Έχετε ήδη αξιολογήσει αυτή την εταιρεία.');
-                    header('Location: ' . BASE_URL . 'companies/profile/' . $id);
-                    exit();
-                }
+            if ($this->ratingService->hasDriverReviewedCompany($driverId, $id)) {
+                Session::set('error_message', 'Έχετε ήδη αξιολογήσει αυτή την εταιρεία.');
+                header('Location: ' . BASE_URL . 'companies/profile/' . $id);
+                exit();
             }
 
+            // Συλλογή των λεπτομερών αξιολογήσεων
+            $detailedRatings = [
+                'reliability_rating' => $reliabilityRating,
+                'communication_rating' => $communicationRating,
+                'payment_rating' => $paymentRating,
+                'working_conditions_rating' => $workingConditionsRating
+            ];
+
             // Προσθήκη της αξιολόγησης
-            $result = $this->companyRatingModel->addCompanyReview($id, $driverId, $rating, $comment);
+            $result = $this->ratingService->addCompanyReview($id, $driverId, $rating, $comment, $detailedRatings);
 
             if ($result) {
                 Logger::info('Company review successful');

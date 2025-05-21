@@ -10,6 +10,11 @@ $container->set('DriverLicenseRepository', function () use ($container) {
     return new \Drivejob\Repositories\DriverLicenseRepository($container->get('pdo'));
 });
 
+// Καταχώρηση των services
+$container->set('rating_service', function () use ($container) {
+    return new \Drivejob\Services\Rating\RatingService($container->get('pdo'));
+});
+
 $container->set('DriverOperatorLicenseRepository', function () use ($container) {
     return new \Drivejob\Repositories\DriverOperatorLicenseRepository($container->get('pdo'));
 });

@@ -8,8 +8,6 @@ Options -Indexes
     
     # Επανέγγραψε όλα τα άλλα στο index.php
     RewriteRule ^(.*)$ index.php [QSA,L]
-
-    
 </IfModule>
 
 <IfModule mod_headers.c>

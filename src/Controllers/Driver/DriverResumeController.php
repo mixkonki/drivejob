@@ -6,7 +6,8 @@ use Drivejob\Models\Driver\ProfileModel;
 use Drivejob\Models\Driver\LicenseModel;
 use Drivejob\Models\Driver\CertificationModel;
 use Drivejob\Models\Driver\SkillModel;
-use Drivejob\Models\Driver\RatingModel;
+use Drivejob\Services\Rating\RatingServiceInterface;
+use Drivejob\Services\Rating\RatingService;
 use Drivejob\Utils\DriverResumePDF;
 use Drivejob\Services\FileService;
 use Drivejob\Core\Logger;
@@ -17,7 +18,7 @@ class DriverResumeController
     private $licenseModel;
     private $certificationModel;
     private $skillModel;
-    private $ratingModel;
+    private $ratingService;
     private $fileService;
     private $pdo;
 
@@ -28,7 +29,11 @@ class DriverResumeController
         $this->licenseModel = new LicenseModel($pdo);
         $this->certificationModel = new CertificationModel($pdo);
         $this->skillModel = new SkillModel($pdo);
-        $this->ratingModel = new RatingModel($pdo);
+
+        // Χρήση του container για να πάρουμε το rating_service αν υπάρχει
+        $container = \Drivejob\Core\Container::getInstance();
+        $this->ratingService = $container->get('rating_service') ?? new RatingService($pdo);
+
         $this->fileService = new FileService();
     }
 
@@ -77,7 +82,7 @@ class DriverResumeController
         $driverAdrCertificates = $this->certificationModel->getDriverAdrCertificates($id);
         $driverOperatorLicenses = $this->certificationModel->getDriverOperatorLicenses($id);
         $driverTachographCard = $this->certificationModel->getDriverTachographCards($id);
-        $averageRating = $this->ratingModel->getDriverRating($id);
+        $averageRating = $this->ratingService->getDriverRating($id);
 
         // Δημιουργία του PDF
         $options = [
@@ -244,7 +249,7 @@ class DriverResumeController
         $driverAdrCertificates = $this->certificationModel->getDriverAdrCertificates($id);
         $driverOperatorLicenses = $this->certificationModel->getDriverOperatorLicenses($id);
         $driverTachographCard = $this->certificationModel->getDriverTachographCards($id);
-        $averageRating = $this->ratingModel->getDriverRating($id);
+        $averageRating = $this->ratingService->getDriverRating($id);
 
         // Φόρτωση της προβολής επεξεργασίας βιογραφικού
         include ROOT_DIR . '/src/Views/drivers/edit-resume.php';

@@ -1,121 +1,152 @@
 <?php
-// Συμπερίληψη του header
+// Φόρτωση του header
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-incidents.css">
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">Αναφορά Περιστατικού</h1>
 
-<main>
-    <div class="container">
-        <div class="page-header">
-            <h1>Καταχώρηση Συμβάντος</h1>
-            <p>Καταχωρήστε ατυχήματα, παραβάσεις και άλλα συμβάντα που σχετίζονται με την οδήγησή σας.</p>
-        </div>
-        
-        <?php if (isset($_SESSION['error_message'])) : ?>
-            <div class="error-message">
-                <?php echo $_SESSION['error_message']; ?>
-                <?php unset($_SESSION['error_message']); ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php
-        // Ανάκτηση σφαλμάτων και παλιών τιμών από το session
-        $errors = $_SESSION['errors'] ?? [];
-        $oldInput = $_SESSION['old_input'] ?? [];
-        unset($_SESSION['errors'], $_SESSION['old_input']);
-        ?>
-        
-        <div class="incident-form-container">
-            <form method="POST" action="<?php echo BASE_URL; ?>drivers/save-incident" id="incident-form">
-                <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
-                
-                <div class="form-row">
-                    <div class="form-group <?php echo isset($errors['incident_type']) ? 'has-error' : ''; ?>">
-                        <label for="incident_type">Τύπος Συμβάντος:</label>
-                        <select id="incident_type" name="incident_type" required>
-                            <option value="">Επιλέξτε τύπο συμβάντος</option>
-                            <option value="accident" <?php echo isset($oldInput['incident_type']) && $oldInput['incident_type'] == 'accident' ? 'selected' : ''; ?>>Ατύχημα</option>
-                            <option value="traffic_violation" <?php echo isset($oldInput['incident_type']) && $oldInput['incident_type'] == 'traffic_violation' ? 'selected' : ''; ?>>Παράβαση ΚΟΚ</option>
-                            <option value="near_miss" <?php echo isset($oldInput['incident_type']) && $oldInput['incident_type'] == 'near_miss' ? 'selected' : ''; ?>>Παρ' ολίγον ατύχημα</option>
-                            <option value="complaint" <?php echo isset($oldInput['incident_type']) && $oldInput['incident_type'] == 'complaint' ? 'selected' : ''; ?>>Παράπονο</option>
-                            <option value="other" <?php echo isset($oldInput['incident_type']) && $oldInput['incident_type'] == 'other' ? 'selected' : ''; ?>>Άλλο</option>
-                        </select>
-                        <?php if (isset($errors['incident_type'])) : ?>
-                            <div class="error-message"><?php echo $errors['incident_type']; ?></div>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="form-group <?php echo isset($errors['incident_date']) ? 'has-error' : ''; ?>">
-                        <label for="incident_date">Ημερομηνία Συμβάντος:</label>
-                        <input type="date" id="incident_date" name="incident_date" required max="<?php echo date('Y-m-d'); ?>" value="<?php echo $oldInput['incident_date'] ?? ''; ?>">
-                        <?php if (isset($errors['incident_date'])) : ?>
-                            <div class="error-message"><?php echo $errors['incident_date']; ?></div>
-                        <?php endif; ?>
-                    </div>
+            <?php if (isset($_SESSION['error_message'])): ?>
+                <div class="alert alert-danger">
+                    <?php echo $_SESSION['error_message']; ?>
+                    <?php unset($_SESSION['error_message']); ?>
                 </div>
-                
-                <div class="form-group <?php echo isset($errors['severity']) ? 'has-error' : ''; ?>">
-                    <label for="severity">Σοβαρότητα:</label>
-                    <div class="severity-selector">
-                        <?php for ($i = 1; $i <= 5; $i++) : ?>
-                            <div class="severity-option">
-                                <input type="radio" id="severity-<?php echo $i; ?>" name="severity" value="<?php echo $i; ?>" <?php echo (isset($oldInput['severity']) && $oldInput['severity'] == $i) ? 'checked' : ''; ?> required>
-                                <label for="severity-<?php echo $i; ?>" class="severity-label severity-<?php echo $i; ?>">
-                                    <span class="severity-number"><?php echo $i; ?></span>
-                                    <span class="severity-text">
-                                        <?php
-                                        switch ($i) {
-                                            case 1:
-                                                echo "Ελάχιστη";
-                                                break;
-                                            case 2:
-                                                echo "Μικρή";
-                                                break;
-                                            case 3:
-                                                echo "Μέτρια";
-                                                break;
-                                            case 4:
-                                                echo "Σημαντική";
-                                                break;
-                                            case 5:
-                                                echo "Σοβαρή";
-                                                break;
-                                        }
-                                        ?>
-                                    </span>
-                                </label>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['errors']) && is_array($_SESSION['errors'])): ?>
+                <div class="alert alert-danger">
+                    <ul>
+                        <?php foreach ($_SESSION['errors'] as $error): ?>
+                            <li><?php echo $error; ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php unset($_SESSION['errors']); ?>
+            <?php endif; ?>
+
+            <div class="card">
+                <div class="card-body">
+                    <form action="<?php echo BASE_URL; ?>drivers/save-incident" method="post" enctype="multipart/form-data">
+                        <!-- CSRF Token -->
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+
+                        <div class="form-group">
+                            <label for="incident_type">Τύπος Περιστατικού <span class="text-danger">*</span></label>
+                            <select name="incident_type" id="incident_type" class="form-control" required>
+                                <option value="">-- Επιλέξτε Τύπο Περιστατικού --</option>
+                                <option value="Ατύχημα" <?php echo (isset($_SESSION['old_input']['incident_type']) && $_SESSION['old_input']['incident_type'] == 'Ατύχημα') ? 'selected' : ''; ?>>Ατύχημα</option>
+                                <option value="Βλάβη Οχήματος" <?php echo (isset($_SESSION['old_input']['incident_type']) && $_SESSION['old_input']['incident_type'] == 'Βλάβη Οχήματος') ? 'selected' : ''; ?>>Βλάβη Οχήματος</option>
+                                <option value="Καθυστέρηση Παράδοσης" <?php echo (isset($_SESSION['old_input']['incident_type']) && $_SESSION['old_input']['incident_type'] == 'Καθυστέρηση Παράδοσης') ? 'selected' : ''; ?>>Καθυστέρηση Παράδοσης</option>
+                                <option value="Πρόβλημα με Φορτίο" <?php echo (isset($_SESSION['old_input']['incident_type']) && $_SESSION['old_input']['incident_type'] == 'Πρόβλημα με Φορτίο') ? 'selected' : ''; ?>>Πρόβλημα με Φορτίο</option>
+                                <option value="Πρόβλημα με Πελάτη" <?php echo (isset($_SESSION['old_input']['incident_type']) && $_SESSION['old_input']['incident_type'] == 'Πρόβλημα με Πελάτη') ? 'selected' : ''; ?>>Πρόβλημα με Πελάτη</option>
+                                <option value="Άλλο" <?php echo (isset($_SESSION['old_input']['incident_type']) && $_SESSION['old_input']['incident_type'] == 'Άλλο') ? 'selected' : ''; ?>>Άλλο</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="incident_date">Ημερομηνία Περιστατικού <span class="text-danger">*</span></label>
+                            <input type="date" name="incident_date" id="incident_date" class="form-control"
+                                value="<?php echo isset($_SESSION['old_input']['incident_date']) ? $_SESSION['old_input']['incident_date'] : date('Y-m-d'); ?>"
+                                max="<?php echo date('Y-m-d'); ?>" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="severity">Σοβαρότητα</label>
+                            <select name="severity" id="severity" class="form-control">
+                                <option value="low" <?php echo (isset($_SESSION['old_input']['severity']) && $_SESSION['old_input']['severity'] == 'low') ? 'selected' : ''; ?>>Χαμηλή</option>
+                                <option value="medium" <?php echo (!isset($_SESSION['old_input']['severity']) || (isset($_SESSION['old_input']['severity']) && $_SESSION['old_input']['severity'] == 'medium')) ? 'selected' : ''; ?>>Μέτρια</option>
+                                <option value="high" <?php echo (isset($_SESSION['old_input']['severity']) && $_SESSION['old_input']['severity'] == 'high') ? 'selected' : ''; ?>>Υψηλή</option>
+                                <option value="critical" <?php echo (isset($_SESSION['old_input']['severity']) && $_SESSION['old_input']['severity'] == 'critical') ? 'selected' : ''; ?>>Κρίσιμη</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Τοποθεσία</label>
+                            <input type="text" name="location" id="location" class="form-control"
+                                value="<?php echo isset($_SESSION['old_input']['location']) ? htmlspecialchars($_SESSION['old_input']['location']) : ''; ?>"
+                                placeholder="Πού συνέβη το περιστατικό;">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Περιγραφή <span class="text-danger">*</span></label>
+                            <textarea name="description" id="description" class="form-control" rows="5"
+                                placeholder="Περιγράψτε λεπτομερώς το περιστατικό..." required><?php echo isset($_SESSION['old_input']['description']) ? htmlspecialchars($_SESSION['old_input']['description']) : ''; ?></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="incident_file">Αρχείο Τεκμηρίωσης (προαιρετικό)</label>
+                            <div class="custom-file">
+                                <input type="file" name="incident_file" id="incident_file" class="custom-file-input">
+                                <label class="custom-file-label" for="incident_file">Επιλέξτε αρχείο...</label>
                             </div>
-                        <?php endfor; ?>
-                    </div>
-                    <?php if (isset($errors['severity'])) : ?>
-                        <div class="error-message"><?php echo $errors['severity']; ?></div>
-                    <?php endif; ?>
+                            <small class="form-text text-muted">Μπορείτε να ανεβάσετε φωτογραφίες, έγγραφα ή άλλα αρχεία σχετικά με το περιστατικό (μέγιστο μέγεθος: 5MB).</small>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Αποθήκευση Περιστατικού
+                            </button>
+                            <a href="<?php echo BASE_URL; ?>drivers/incident-history" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Ακύρωση
+                            </a>
+                        </div>
+                    </form>
                 </div>
-                
-                <div class="form-group <?php echo isset($errors['description']) ? 'has-error' : ''; ?>">
-                    <label for="description">Περιγραφή Συμβάντος:</label>
-                    <textarea id="description" name="description" rows="5" required placeholder="Περιγράψτε το συμβάν με λεπτομέρειες..."><?php echo $oldInput['description'] ?? ''; ?></textarea>
-                    <?php if (isset($errors['description'])) : ?>
-                        <div class="error-message"><?php echo $errors['description']; ?></div>
-                    <?php endif; ?>
-                </div>
-                
-                <div class="incident-note">
-                    <p>Σημείωση: Η καταχώρηση συμβάντων είναι εθελοντική αλλά συνιστάται για την ακριβέστερη αξιολόγηση της οδηγικής σας συμπεριφοράς. Τα καταχωρημένα συμβάντα μπορεί να επηρεάσουν τη βαθμολογία ασφάλειάς σας.</p>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary">Υποβολή Συμβάντος</button>
-                    <a href="<?php echo BASE_URL; ?>drivers/incident-history" class="btn-secondary">Ακύρωση</a>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
-</main>
+</div>
+
+<script>
+    // Ενημέρωση του ονόματος του επιλεγμένου αρχείου στο input
+    document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+        var fileName = e.target.files[0].name;
+        var nextSibling = e.target.nextElementSibling;
+        nextSibling.innerText = fileName;
+    });
+</script>
+
+<style>
+    .page-title {
+        margin-bottom: 20px;
+    }
+
+    .card {
+        margin-bottom: 30px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .custom-file-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        margin-right: 10px;
+    }
+</style>
 
 <?php
-// Συμπερίληψη του footer
+// Καθαρισμός των παλιών δεδομένων εισόδου
+if (isset($_SESSION['old_input'])) {
+    unset($_SESSION['old_input']);
+}
+
+// Φόρτωση του footer
 include ROOT_DIR . '/src/Views/partials/footer.php';
 ?>

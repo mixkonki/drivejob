@@ -1368,10 +1368,10 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                 <h3>Προϋπηρεσία σε Οχήματα</h3>
 
                 <!-- Εμφάνιση του πίνακα προϋπηρεσίας -->
-                <?php include ROOT_DIR . '/src/Views/drivers/vehicle_experience_summary.php'; ?>
+                <?php include ROOT_DIR . '/src/Views/drivers/vehicle-experience-summary.php'; ?>
 
                 <div class="vehicle-experience-link" style="margin-top: 15px;">
-                    <a href="<?php echo BASE_URL; ?>drivers/vehicle_experience" class="btn-primary">Διαχείριση Προϋπηρεσίας σε Οχήματα</a>
+                    <a href="<?php echo BASE_URL; ?>drivers/vehicle-experience" class="btn-primary">Διαχείριση Προϋπηρεσίας σε Οχήματα</a>
                 </div>
             </div>
 
@@ -1466,7 +1466,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 
         <div class="form-buttons">
             <button type="submit" class="btn-primary btn-save">Αποθήκευση Αλλαγών</button>
-            <a href="<?php echo BASE_URL; ?>drivers/driver_profile" class="btn-secondary">Ακύρωση</a>
+            <a href="<?php echo BASE_URL; ?>drivers/driver-profile" class="btn-secondary">Ακύρωση</a>
         </div>
 
     </div>

@@ -258,7 +258,7 @@ class JobListingController extends BaseJobListingController
         if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job listing store');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings/Company/create');
+            header('Location: ' . BASE_URL . 'job-listings/create');
             exit();
         }
 
@@ -279,9 +279,9 @@ class JobListingController extends BaseJobListingController
 
             // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
             if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                header('Location: ' . BASE_URL . 'job-listings/Driver/create');
+                header('Location: ' . BASE_URL . 'job-listings/create');
             } else {
-                header('Location: ' . BASE_URL . 'job-listings/Company/create');
+                header('Location: ' . BASE_URL . 'job-listings/create');
             }
             exit();
         }
@@ -332,9 +332,9 @@ class JobListingController extends BaseJobListingController
 
                 // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
                 if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                    header('Location: ' . BASE_URL . 'job-listings/Driver/create');
+                    header('Location: ' . BASE_URL . 'job-listings/create');
                 } else {
-                    header('Location: ' . BASE_URL . 'job-listings/Company/create');
+                    header('Location: ' . BASE_URL . 'job-listings/create');
                 }
                 exit();
             }
@@ -348,9 +348,9 @@ class JobListingController extends BaseJobListingController
 
             // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
             if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                header('Location: ' . BASE_URL . 'job-listings/Driver/create');
+                header('Location: ' . BASE_URL . 'job-listings/create');
             } else {
-                header('Location: ' . BASE_URL . 'job-listings/Company/create');
+                header('Location: ' . BASE_URL . 'job-listings/create');
             }
             exit();
         } catch (\Exception $e) {
@@ -361,12 +361,8 @@ class JobListingController extends BaseJobListingController
             ]);
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
 
-            // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
-            if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                header('Location: ' . BASE_URL . 'job-listings/Driver/create');
-            } else {
-                header('Location: ' . BASE_URL . 'job-listings/Company/create');
-            }
+            // Ανακατεύθυνση στη σελίδα δημιουργίας αγγελίας
+            header('Location: ' . BASE_URL . 'job-listings/create');
             exit();
         }
     }

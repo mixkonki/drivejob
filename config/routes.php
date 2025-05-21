@@ -29,7 +29,7 @@ $router->group(['prefix' => 'auth'], function ($router) {
     $router->get('/login', [AuthController::class, 'showLoginForm'])->name('auth.login');
     $router->post('/login', [AuthController::class, 'login']);
     $router->get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
-    $router->get('/verify', [AuthController::class, 'verify'])->name('auth.verify');
+    $router->get('/verify/{token}', [AuthController::class, 'verify'])->name('auth.verify');
     $router->get('/password-reset', [AuthController::class, 'showPasswordResetForm'])->name('auth.password-reset');
     $router->post('/password-reset', [AuthController::class, 'sendPasswordResetLink']);
     $router->get('/password-reset/{token}', [AuthController::class, 'showResetPasswordForm'])->name('auth.password-reset.token');
