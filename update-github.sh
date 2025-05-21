@@ -25,6 +25,6 @@ git commit -m "Βελτιώσεις στην ασφάλεια των διαδρ�
 
 # Push των αλλαγών
 echo "Push των αλλαγών στο GitHub..."
-git push origin main
+git push origin feature/repository-pattern
 
 echo "Η ενημέρωση του GitHub ολοκληρώθηκε με επιτυχία!"
