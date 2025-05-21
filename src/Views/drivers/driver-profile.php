@@ -3,9 +3,9 @@
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 <!-- Σύνδεση με το CSS αρχείο του προφίλ οδηγού -->
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-skills-css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/expiring-licenses-css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-profile.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-skills.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/expiring-licenses.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-rating-profile.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/toggle-switch.css">
 
@@ -14,7 +14,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
     // Ορισμός των βασικών μεταβλητών
     const BASE_URL = '<?php echo BASE_URL; ?>';
 </script>
-<script src="<?php echo BASE_URL; ?>js/driver_profile.js"></script>
+<script src="<?php echo BASE_URL; ?>js/driver-profile.js"></script>
 <!-- Μετά το link του CSS και πριν το </head> -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgZpJWVYyrY0U8U1jBGelEWryur3vIrzc&libraries=places"></script>
 
@@ -1466,7 +1466,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
         </div>
     </div>
     </div>
-    <script src="<?php echo BASE_URL; ?>js/driver_profile.js"></script>
+    <script src="<?php echo BASE_URL; ?>js/driver-profile.js"></script>
 </main>
 <?php
 // Συμπερίληψη του footer

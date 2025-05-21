@@ -2,84 +2,77 @@
 
 namespace Drivejob\Core\Exceptions;
 
+use Exception;
+
 /**
- * Βασική κλάση εξαίρεσης για την εφαρμογή
+ * Βασική κλάση εξαίρεσης
  * 
- * Επεκτείνει την κλάση Exception της PHP και προσθέτει
- * υποστήριξη για context και άλλες χρήσιμες λειτουργίες.
+ * Όλες οι εξαιρέσεις της εφαρμογής κληρονομούν από αυτή την κλάση
  */
-class BaseException extends \Exception
+class BaseException extends Exception
 {
     /**
-     * @var array Το context της εξαίρεσης
+     * Ο κωδικός HTTP
+     *
+     * @var int
      */
-    protected $context;
+    protected $httpCode = 500;
+
+    /**
+     * Ο τύπος του σφάλματος
+     *
+     * @var string
+     */
+    protected $errorType = 'Server Error';
+
+    /**
+     * Το πλαίσιο του σφάλματος
+     *
+     * @var array|null
+     */
+    protected $context = null;
 
     /**
      * Constructor
      *
-     * @param string $message Το μήνυμα της εξαίρεσης
-     * @param int $code Ο κωδικός της εξαίρεσης
-     * @param \Throwable|null $previous Η προηγούμενη εξαίρεση
-     * @param array $context Το context της εξαίρεσης
+     * @param string $message Το μήνυμα του σφάλματος
+     * @param array|null $context Το πλαίσιο του σφάλματος
+     * @param int $code Ο κωδικός του σφάλματος
+     * @param Exception|null $previous Η προηγούμενη εξαίρεση
      */
-    public function __construct($message = "", $code = 0, \Throwable $previous = null, array $context = [])
+    public function __construct(string $message = '', array $context = null, int $code = 0, Exception $previous = null)
     {
         parent::__construct($message, $code, $previous);
         $this->context = $context;
     }
 
     /**
-     * Επιστρέφει το context της εξαίρεσης
+     * Επιστρέφει τον κωδικό HTTP
      *
-     * @return array Το context της εξαίρεσης
+     * @return int Ο κωδικός HTTP
      */
-    public function getContext()
+    public function getHttpCode(): int
+    {
+        return $this->httpCode;
+    }
+
+    /**
+     * Επιστρέφει τον τύπο του σφάλματος
+     *
+     * @return string Ο τύπος του σφάλματος
+     */
+    public function getErrorType(): string
+    {
+        return $this->errorType;
+    }
+
+    /**
+     * Επιστρέφει το πλαίσιο του σφάλματος
+     *
+     * @return array|null Το πλαίσιο του σφάλματος
+     */
+    public function getContext(): ?array
     {
         return $this->context;
-    }
-
-    /**
-     * Προσθέτει δεδομένα στο context της εξαίρεσης
-     *
-     * @param string $key Το κλειδί
-     * @param mixed $value Η τιμή
-     * @return $this
-     */
-    public function addContext($key, $value)
-    {
-        $this->context[$key] = $value;
-        return $this;
-    }
-
-    /**
-     * Επιστρέφει μια αναπαράσταση της εξαίρεσης σε μορφή πίνακα
-     *
-     * @return array Η εξαίρεση σε μορφή πίνακα
-     */
-    public function toArray()
-    {
-        return [
-            'message' => $this->getMessage(),
-            'code' => $this->getCode(),
-            'file' => $this->getFile(),
-            'line' => $this->getLine(),
-            'trace' => $this->getTraceAsString(),
-            'context' => $this->getContext()
-        ];
-    }
-
-    /**
-     * Καταγράφει την εξαίρεση στο σύστημα καταγραφής
-     *
-     * @return void
-     */
-    public function log()
-    {
-        if (class_exists('\\Drivejob\\Core\\Logger')) {
-            \Drivejob\Core\Logger::error($this->getMessage(), $this->toArray());
-        } else {
-            error_log($this->getMessage() . ' in ' . $this->getFile() . ' on line ' . $this->getLine());
-        }
     }
 }

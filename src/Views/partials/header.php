@@ -172,7 +172,7 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                         <?php
                         else :
                         ?>
-                            <a href="<?php echo BASE_URL; ?>drivers/driver_profile">
+                            <a href="<?php echo BASE_URL; ?>drivers/profile">
                                 <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
                                 Προφίλ
                             </a>

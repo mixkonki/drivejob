@@ -82,7 +82,7 @@ class CompaniesController extends BaseUserController
         }
 
         // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/companies/company_registration.php';
+        include ROOT_DIR . '/src/Views/companies/company-registration.php';
     }
 
     /**
@@ -130,7 +130,7 @@ class CompaniesController extends BaseUserController
         }
 
         // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/companies/edit_profile.php';
+        include ROOT_DIR . '/src/Views/companies/edit-profile.php';
     }
 
     /**

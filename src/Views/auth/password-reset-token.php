@@ -22,7 +22,7 @@ $token = $token ?? '';
                     <p class="mb-4">Εισάγετε το νέο συνθηματικό σας παρακάτω.</p>
 
                     <form action="<?= BASE_URL ?>auth/password-reset/<?= htmlspecialchars($token) ?>" method="post">
-                        <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::generateToken() ?>">
+                        <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
                         <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
 
                         <div class="form-group mb-3">

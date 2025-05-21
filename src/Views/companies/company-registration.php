@@ -3,7 +3,7 @@
 $pageTitle = 'Εγγραφή Επιχείρησης';
 
 // Προσθήκη επιπλέον CSS
-$extraCss = ['company_registration.css'];
+$extraCss = ['company-registration.css'];
 
 // Προσθήκη επιπλέον JS
 $extraJs = ['company_registration.js'];
@@ -24,7 +24,7 @@ $extraJs = ['company_registration.js'];
 
     <!-- Σύνδεση με το CSS αρχείο -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/styles.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/company_registration.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/company-registration.css">
     <link rel="icon" href="<?php echo BASE_URL; ?>img/favicon.ico" type="image/x-icon">
 </head>
 

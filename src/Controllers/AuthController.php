@@ -145,100 +145,6 @@ class AuthController extends BaseUserController
         $this->redirect(BASE_URL . 'auth/login');
     }
 
-    /**
-     * Επεξεργάζεται το αίτημα σύνδεσης από το login.php
-     * 
-     * @return void
-     */
-    public function processLogin()
-    {
-        // Έλεγχος αν το αίτημα είναι POST
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASE_URL . 'auth/login');
-            exit();
-        }
-
-        // Καταγραφή για αποσφαλμάτωση
-        Logger::debug('Processing login request', [
-            'email' => $_POST['email'] ?? 'not set',
-            'has_password' => isset($_POST['password']) && !empty($_POST['password']),
-            'has_csrf' => isset($_POST['csrf_token'])
-        ]);
-
-        // Έλεγχος CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-            Logger::warning('CSRF validation failed during login');
-            Session::set('login_error', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'auth/login');
-            exit();
-        }
-
-        $email = $_POST['email'] ?? '';
-        $password = $_POST['password'] ?? '';
-
-        // Καταγραφή για αποσφαλμάτωση
-        Logger::debug('Attempting authentication', [
-            'email' => $email,
-            'password_length' => strlen($password)
-        ]);
-
-        // Αυθεντικοποίηση χρήστη
-        Logger::debug('Before authenticate call', [
-            'email' => $email,
-            'password_length' => strlen($password),
-            'session_id' => session_id(),
-            'session_data' => $_SESSION
-        ]);
-
-        $user = $this->authModel->authenticate($email, $password);
-
-        Logger::debug('After authenticate call', [
-            'authentication_result' => $user ? 'success' : 'failure',
-            'user_data' => $user,
-            'session_id' => session_id(),
-            'session_data' => $_SESSION
-        ]);
-
-        if ($user) {
-            // Επιτυχής σύνδεση
-            Logger::info('User logged in successfully', [
-                'user_id' => $user['user_id'],
-                'role' => $user['role']
-            ]);
-
-            Session::set('user_id', $user['user_id']);
-            Session::set('role', $user['role']);
-            Session::set('user_name', $user['name']);
-
-            Logger::debug('After setting session data', [
-                'session_id' => session_id(),
-                'session_data' => $_SESSION
-            ]);
-
-            // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
-            $redirectUrl = Session::has('redirect_after_login')
-                ? Session::get('redirect_after_login')
-                : BASE_URL . ($user['role'] === 'driver' ? 'drivers/profile' : 'companies/profile');
-
-            Session::remove('redirect_after_login');
-
-            Logger::debug('Redirecting after successful login', [
-                'redirect_url' => $redirectUrl
-            ]);
-
-            header('Location: ' . $redirectUrl);
-            exit();
-        }
-
-        // Αποτυχία σύνδεσης
-        Logger::warning('Login failed', [
-            'email' => $email
-        ]);
-
-        Session::set('login_error', 'Εσφαλμένο email ή συνθηματικό.');
-        header('Location: ' . BASE_URL . 'auth/login');
-        exit();
-    }
 
     /**
      * Αποσυνδέει τον χρήστη
@@ -403,5 +309,43 @@ class AuthController extends BaseUserController
             Session::set('error_message', 'Το token επαλήθευσης είναι άκυρο ή έχει λήξει.');
             $this->redirect(BASE_URL . 'auth/login');
         }
+    }
+    /**
+     * Επαναποστέλλει το email επαλήθευσης
+     *
+     * @return void
+     */
+    public function resendVerification()
+    {
+        // Έλεγχος αν το αίτημα είναι POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect(BASE_URL . 'auth/verification-required');
+        }
+
+        // Έλεγχος CSRF token
+        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+            Logger::warning('CSRF validation failed during resend verification request');
+            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            $this->redirect(BASE_URL . 'auth/verification-required');
+        }
+
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        if (!Session::has('user_id')) {
+            Session::set('error_message', 'Πρέπει να είστε συνδεδεμένοι για να ζητήσετε επαναποστολή του email επαλήθευσης.');
+            $this->redirect(BASE_URL . 'auth/login');
+        }
+
+        $userId = Session::get('user_id');
+
+        // Επαναποστολή του email επαλήθευσης
+        $result = $this->authModel->resendVerificationEmail($userId);
+
+        if ($result) {
+            Session::set('success_message', 'Ένα νέο email επαλήθευσης έχει σταλεί στη διεύθυνση email σας.');
+        } else {
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την επαναποστολή του email επαλήθευσης. Παρακαλώ δοκιμάστε ξανά αργότερα.');
+        }
+
+        $this->redirect(BASE_URL . 'auth/verification-required');
     }
 }

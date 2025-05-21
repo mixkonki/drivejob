@@ -871,4 +871,48 @@ class AuthModel
     {
         Session::destroy();
     }
+
+    /**
+     * Επαναποστέλλει το email επαλήθευσης στον χρήστη
+     *
+     * @param int $userId Το ID του χρήστη
+     * @return bool Επιτυχία ή αποτυχία
+     */
+    public function resendVerificationEmail($userId)
+    {
+        try {
+            // Ανάκτηση των στοιχείων του χρήστη
+            $role = Session::get('role');
+            $table = $this->getTableByRole($role);
+
+            $query = "SELECT * FROM $table WHERE id = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$userId]);
+            $user = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$user) {
+                Logger::error("User not found for resendVerificationEmail: $userId");
+                return false;
+            }
+
+            // Δημιουργία νέου token επαλήθευσης
+            $verificationCode = $this->generateVerificationCode();
+            $verificationExpires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+            // Αποθήκευση του νέου token στη βάση δεδομένων
+            $updateQuery = "UPDATE $table SET verification_code = ?, verification_expires = ? WHERE id = ?";
+            $updateStmt = $this->pdo->prepare($updateQuery);
+            $updateStmt->execute([$verificationCode, $verificationExpires, $userId]);
+
+            // Αποστολή του email επαλήθευσης
+            $email = $user['email'];
+            $name = $role === 'driver' ? $user['first_name'] . ' ' . $user['last_name'] : $user['company_name'];
+
+            // Αποστολή του email επαλήθευσης
+            return $this->sendVerificationEmail($email, $verificationCode, $role);
+        } catch (\Exception $e) {
+            Logger::error('Error in resendVerificationEmail: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

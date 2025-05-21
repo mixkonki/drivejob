@@ -16,8 +16,8 @@ $oldInput = $_SESSION['old_input'] ?? [];
 unset($_SESSION['errors'], $_SESSION['old_input']);
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_edit_profile.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-profile.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-edit-profile.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-skills.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/toggle-switch.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/vehicle-experience.css">

@@ -3,6 +3,7 @@
 namespace Drivejob\Services\Driver;
 
 use PDO;
+use Drivejob\Services\Driver\DriverProfileServiceInterface;
 use PDOException;
 use Drivejob\Core\Logger;
 use Drivejob\Models\Driver\ProfileModel;
@@ -16,7 +17,7 @@ use Drivejob\Services\FileService;
 /**
  * Υπηρεσία για τη διαχείριση των προφίλ οδηγών
  */
-class DriverProfileService
+class DriverProfileService implements DriverProfileServiceInterface
 {
     private $pdo;
     private $profileModel;

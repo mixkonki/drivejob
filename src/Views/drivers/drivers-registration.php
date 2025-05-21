@@ -3,7 +3,7 @@
 $pageTitle = 'Εγγραφή Οδηγού';
 
 // Προσθήκη επιπλέον CSS
-$extraCss = ['drivers_registration.css'];
+$extraCss = ['drivers-registration.css'];
 
 // Προσθήκη επιπλέον JS
 $extraJs = ['drivers_registration.js'];
@@ -24,7 +24,7 @@ $extraJs = ['drivers_registration.js'];
 
     <!-- Σύνδεση με το CSS αρχείο -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/styles.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/drivers_registration.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/drivers-registration.css">
     <link rel="icon" href="<?php echo BASE_URL; ?>img/favicon.ico" type="image/x-icon">
 </head>
 

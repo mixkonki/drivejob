@@ -194,3 +194,19 @@ $router->get('/αγγελιες/οδηγος/{id}', [UnifiedJobListingController
 $router->notFound(function () {
     require_once ROOT_DIR . '/src/Views/errors/404.php';
 });
+
+
+// Ομαδοποίηση διαδρομών αυθεντικοποίησης
+$router->group(['prefix' => 'auth'], function ($router) {
+    $router->get('/login', [AuthController::class, 'showLoginForm'])->name('auth.login');
+    $router->post('/login', [AuthController::class, 'login']);
+    $router->get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    $router->get('/verify/{token}', [AuthController::class, 'verify'])->name('auth.verify');
+    $router->get('/password-reset', [AuthController::class, 'showPasswordResetForm'])->name('auth.password-reset');
+    $router->post('/password-reset', [AuthController::class, 'sendPasswordResetLink']);
+    $router->get('/password-reset/{token}', [AuthController::class, 'showResetPasswordForm'])->name('auth.password-reset.token');
+    $router->post('/password-reset/{token}', [AuthController::class, 'resetPassword']);
+    $router->get('/access-denied', [AuthController::class, 'accessDenied'])->name('auth.access-denied');
+    $router->get('/verification-required', [AuthController::class, 'verificationRequired'])->name('auth.verification-required');
+    $router->post('/resend-verification', [AuthController::class, 'resendVerification'])->name('auth.resend-verification');
+});

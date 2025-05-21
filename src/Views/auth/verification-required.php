@@ -26,7 +26,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         <p>Αν δεν βρίσκετε το email επαλήθευσης, παρακαλούμε ελέγξτε το φάκελο ανεπιθύμητης αλληλογραφίας (spam) ή ζητήστε να σας αποσταλεί ξανά.</p>
 
                         <form action="<?= BASE_URL ?>auth/resend-verification" method="post" class="mt-3">
-                            <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::generateToken() ?>">
+                            <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">Αποστολή Νέου Email Επαλήθευσης</button>
                             </div>

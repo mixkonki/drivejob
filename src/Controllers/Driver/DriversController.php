@@ -13,6 +13,7 @@ use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
 use Drivejob\Repositories\DriversRepository;
+use Drivejob\Services\Driver\DriverProfileServiceInterface;
 use Drivejob\Services\Driver\DriverProfileService;
 use Drivejob\Services\FileService;
 use Drivejob\Helpers\JsonHelper;
@@ -33,7 +34,7 @@ class DriversController extends BaseUserController
     private $driversRepository;
 
     /**
-     * @var DriverProfileService Η υπηρεσία για τα προφίλ οδηγών
+     * @var DriverProfileServiceInterface Η υπηρεσία για τα προφίλ οδηγών
      */
     private $driverProfileService;
 
