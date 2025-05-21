@@ -13,7 +13,7 @@ use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
 use Drivejob\Repositories\DriversRepository;
-use Drivejob\Services\DriverProfileService;
+use Drivejob\Services\Driver\DriverProfileService;
 use Drivejob\Services\FileService;
 use Drivejob\Helpers\JsonHelper;
 use Drivejob\Models\Driver\IncidentModel;
