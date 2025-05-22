@@ -1,0 +1,306 @@
+/* Στυλ για τη σελίδα πιστοποιητικών εκπαίδευσης */
+
+.certifications-container {
+  margin-bottom: $spacing-lg;
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -$spacing-sm;
+    margin-left: -$spacing-sm;
+  }
+
+  .col-md-6 {
+    position: relative;
+    width: 50%;
+    padding-right: $spacing-sm;
+    padding-left: $spacing-sm;
+    box-sizing: border-box;
+  }
+}
+
+.certification-form {
+  background-color: $gray-100;
+  padding: $spacing-md;
+  border-radius: $border-radius;
+  margin-bottom: $spacing-md;
+
+  h4 {
+    margin-top: 0;
+    margin-bottom: $spacing-md;
+    color: $dark-color;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.certifications-table {
+  background-color: $light-color;
+  padding: $spacing-md;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+
+  h4 {
+    margin-top: 0;
+    margin-bottom: $spacing-md;
+    color: $dark-color;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.form-group {
+  margin-bottom: $spacing-sm;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -$spacing-xs;
+  margin-left: -$spacing-xs;
+  margin-bottom: $spacing-sm;
+
+  .form-group {
+    flex: 1 0 0%;
+    padding-right: $spacing-xs;
+    padding-left: $spacing-xs;
+    margin-bottom: 0;
+  }
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: $spacing-xs;
+  font-weight: $font-weight-medium;
+  color: $gray-700;
+}
+
+.form-control {
+  width: 100%;
+  padding: $spacing-xs $spacing-sm;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+
+  &:focus {
+    border-color: lighten($primary-color, 25%);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+  }
+}
+
+.file-upload {
+  margin-bottom: $spacing-sm;
+
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: $font-weight-medium;
+    color: $gray-700;
+  }
+
+  &-input {
+    position: relative;
+    overflow: hidden;
+    margin-top: $spacing-xs;
+
+    input[type="file"] {
+      width: 100%;
+      padding: $spacing-xs $spacing-sm;
+      border: 1px solid $gray-300;
+      border-radius: $border-radius-sm;
+      font-size: $font-size-sm;
+      background-color: $gray-100;
+    }
+  }
+}
+
+.edit-certification {
+  background-color: $info-color;
+  color: $light-color;
+  border: none;
+  padding: 6px;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  margin-right: $spacing-xs;
+  width: 32px;
+  height: 32px;
+  @include flex-center;
+
+  &:hover {
+    background-color: darken($info-color, 10%);
+  }
+}
+
+.btn-delete-certification {
+  background-color: $danger-color;
+  color: $light-color;
+  border: none;
+  padding: 6px;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  width: 32px;
+  height: 32px;
+  @include flex-center;
+
+  &:hover {
+    background-color: darken($danger-color, 10%);
+  }
+}
+
+.file-preview {
+  margin-left: $spacing-xs;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+
+  img {
+    border: 1px solid $gray-300;
+    border-radius: $border-radius-sm;
+    padding: 2px;
+    background-color: $light-color;
+  }
+}
+
+.btn-primary {
+  background-color: $primary-color;
+  color: $light-color;
+  border: none;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: $font-size-sm;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: $spacing-xs;
+    border-bottom: 1px solid $gray-300;
+    text-align: left;
+  }
+
+  /* Προσαρμογή πλάτους στηλών */
+  th:first-child,
+  td:first-child {
+    width: 40px;
+  }
+
+  th:nth-child(2),
+  td:nth-child(2) {
+    width: 30%;
+  }
+
+  th:last-child,
+  td:last-child {
+    width: 90px;
+    text-align: center;
+  }
+
+  th {
+    background-color: $gray-200;
+    font-weight: $font-weight-bold;
+  }
+
+  &-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  tfoot {
+    tr.total-row {
+      background-color: $gray-100;
+      font-weight: $font-weight-medium;
+    }
+
+    tr.grand-total {
+      background-color: $gray-200;
+      font-weight: $font-weight-bold;
+    }
+  }
+}
+
+.text-right {
+  text-align: right;
+}
+
+.form-actions {
+  margin: $spacing-md 0;
+  padding: $spacing-sm;
+  background-color: $gray-100;
+  border-radius: $border-radius;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-save {
+  background-color: $success-color;
+
+  &:hover {
+    background-color: darken($success-color, 10%);
+  }
+}
+
+.btn-secondary {
+  background-color: $secondary-color;
+  color: $light-color;
+  border: none;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  text-decoration: none;
+
+  &:hover {
+    background-color: darken($secondary-color, 10%);
+    text-decoration: none;
+    color: $light-color;
+  }
+}
+
+.highlight-save-button {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba($success-color, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba($success-color, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba($success-color, 0);
+  }
+}
+
+/* Προσαρμογή για κινητές συσκευές */
+@include media-breakpoint-down(md) {
+  .row {
+    flex-direction: column;
+  }
+  
+  .col-md-6 {
+    width: 100%;
+    margin-bottom: $spacing-md;
+  }
+  
+  .form-buttons {
+    flex-direction: column;
+    
+    button,
+    a {
+      width: 100%;
+      margin-bottom: $spacing-xs;
+    }
+  }
+}
