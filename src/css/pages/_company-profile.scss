@@ -1,0 +1,1057 @@
+/* Company Profile Styles */
+
+// Profile container
+.company-profile-container {
+  padding: $spacing-lg 0;
+  
+  .profile-header {
+    background-color: $light-color;
+    border-radius: $border-radius-lg;
+    box-shadow: $box-shadow;
+    padding: $spacing-lg;
+    margin-bottom: $spacing-lg;
+    position: relative;
+    overflow: hidden;
+    
+    .profile-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 150px;
+      background-color: $primary-color;
+      background-image: linear-gradient(135deg, $primary-color, $secondary-color);
+      z-index: 1;
+    }
+    
+    .profile-content {
+      position: relative;
+      z-index: 2;
+      padding-top: 80px;
+      display: flex;
+      flex-wrap: wrap;
+      
+      @include media-breakpoint-down(md) {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      
+      .company-logo {
+        width: 150px;
+        height: 150px;
+        border-radius: 10px;
+        border: 5px solid $light-color;
+        overflow: hidden;
+        margin-right: $spacing-lg;
+        flex-shrink: 0;
+        background-color: $light-color;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        @include media-breakpoint-down(md) {
+          margin-right: 0;
+          margin-bottom: $spacing-md;
+        }
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+      }
+      
+      .company-info {
+        flex: 1;
+        
+        .company-name {
+          font-size: $font-size-xl;
+          font-weight: $font-weight-bold;
+          color: $dark-color;
+          margin-bottom: $spacing-xs;
+        }
+        
+        .company-industry {
+          font-size: $font-size-lg;
+          color: $gray-600;
+          margin-bottom: $spacing-sm;
+        }
+        
+        .company-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: $spacing-md;
+          margin-bottom: $spacing-md;
+          
+          @include media-breakpoint-down(md) {
+            justify-content: center;
+          }
+          
+          .meta-item {
+            display: flex;
+            align-items: center;
+            
+            i, img {
+              margin-right: $spacing-xs;
+              color: $primary-color;
+              font-size: $font-size-lg;
+            }
+            
+            span {
+              font-size: $font-size-md;
+              color: $gray-700;
+            }
+          }
+        }
+        
+        .company-description {
+          font-size: $font-size-md;
+          color: $gray-700;
+          line-height: 1.6;
+          margin-bottom: $spacing-md;
+        }
+      }
+      
+      .profile-actions {
+        display: flex;
+        gap: $spacing-sm;
+        margin-left: auto;
+        align-self: flex-start;
+        
+        @include media-breakpoint-down(md) {
+          margin-left: 0;
+          align-self: center;
+        }
+        
+        .btn {
+          padding: $spacing-xs $spacing-md;
+          font-size: $font-size-sm;
+          font-weight: $font-weight-bold;
+          border-radius: $border-radius;
+          transition: $transition-base;
+          
+          &.btn-primary {
+            background-color: $primary-color;
+            color: $light-color;
+            border: none;
+            
+            &:hover {
+              background-color: $primary-color-light;
+            }
+          }
+          
+          &.btn-outline-primary {
+            background-color: transparent;
+            color: $primary-color;
+            border: 1px solid $primary-color;
+            
+            &:hover {
+              background-color: rgba($primary-color, 0.1);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .profile-tabs {
+    margin-bottom: $spacing-lg;
+    
+    .nav-tabs {
+      border-bottom: 1px solid $gray-300;
+      
+      .nav-item {
+        margin-bottom: -1px;
+        
+        .nav-link {
+          padding: $spacing-sm $spacing-md;
+          font-size: $font-size-md;
+          font-weight: $font-weight-bold;
+          color: $gray-600;
+          border: 1px solid transparent;
+          border-top-left-radius: $border-radius;
+          border-top-right-radius: $border-radius;
+          transition: $transition-base;
+          
+          &:hover {
+            color: $primary-color;
+            border-color: transparent;
+          }
+          
+          &.active {
+            color: $primary-color;
+            background-color: $light-color;
+            border-color: $gray-300 $gray-300 $light-color;
+          }
+          
+          i {
+            margin-right: $spacing-xs;
+          }
+        }
+      }
+    }
+    
+    .tab-content {
+      background-color: $light-color;
+      border: 1px solid $gray-300;
+      border-top: none;
+      border-bottom-left-radius: $border-radius;
+      border-bottom-right-radius: $border-radius;
+      padding: $spacing-lg;
+      
+      .tab-pane {
+        &.active {
+          animation: fadeIn 0.3s ease-in-out;
+        }
+      }
+    }
+  }
+}
+
+// Company overview section
+.company-overview {
+  margin-bottom: $spacing-lg;
+  
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+  }
+  
+  .overview-content {
+    font-size: $font-size-md;
+    color: $gray-700;
+    line-height: 1.6;
+    
+    p {
+      margin-bottom: $spacing-md;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+  
+  .company-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: $spacing-md;
+    margin-top: $spacing-lg;
+    
+    .stat-item {
+      background-color: $gray-100;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      text-align: center;
+      
+      .stat-icon {
+        font-size: 32px;
+        color: $primary-color;
+        margin-bottom: $spacing-xs;
+      }
+      
+      .stat-value {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-bold;
+        color: $dark-color;
+        margin-bottom: $spacing-xs;
+      }
+      
+      .stat-label {
+        font-size: $font-size-sm;
+        color: $gray-600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+    }
+  }
+}
+
+// Company jobs section
+.company-jobs {
+  margin-bottom: $spacing-lg;
+  
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+  }
+  
+  .jobs-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-md;
+    
+    .filter-item {
+      .form-control {
+        padding: $spacing-xs $spacing-sm;
+        font-size: $font-size-sm;
+        border: 1px solid $gray-300;
+        border-radius: $border-radius;
+      }
+    }
+    
+    .filter-actions {
+      margin-left: auto;
+      
+      @include media-breakpoint-down(md) {
+        margin-left: 0;
+        width: 100%;
+      }
+      
+      .btn {
+        padding: $spacing-xs $spacing-sm;
+        font-size: $font-size-sm;
+      }
+    }
+  }
+  
+  .jobs-list {
+    .job-item {
+      background-color: $light-color;
+      border: 1px solid $gray-300;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      margin-bottom: $spacing-md;
+      transition: $transition-base;
+      display: flex;
+      flex-wrap: wrap;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      &:hover {
+        box-shadow: $box-shadow;
+        transform: translateY(-3px);
+      }
+      
+      .job-content {
+        flex: 1;
+        min-width: 0;
+        
+        .job-title {
+          font-size: $font-size-lg;
+          font-weight: $font-weight-bold;
+          color: $dark-color;
+          margin-bottom: $spacing-xs;
+          
+          a {
+            color: inherit;
+            text-decoration: none;
+            
+            &:hover {
+              color: $primary-color;
+            }
+          }
+        }
+        
+        .job-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: $spacing-sm;
+          margin-bottom: $spacing-sm;
+          
+          .meta-item {
+            display: flex;
+            align-items: center;
+            font-size: $font-size-sm;
+            color: $gray-600;
+            
+            i, img {
+              margin-right: $spacing-xs;
+              color: $primary-color;
+              font-size: $font-size-md;
+            }
+          }
+        }
+        
+        .job-description {
+          font-size: $font-size-md;
+          color: $gray-700;
+          margin-bottom: $spacing-sm;
+          
+          @include media-breakpoint-down(md) {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+        }
+        
+        .job-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: $spacing-xs;
+          
+          .tag {
+            font-size: $font-size-xs;
+            color: $gray-700;
+            background-color: $gray-100;
+            padding: 2px 8px;
+            border-radius: 10px;
+          }
+        }
+      }
+      
+      .job-actions {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-left: $spacing-md;
+        
+        @include media-breakpoint-down(md) {
+          margin-left: 0;
+          margin-top: $spacing-sm;
+          flex-direction: row;
+          width: 100%;
+          justify-content: flex-start;
+          gap: $spacing-sm;
+        }
+        
+        .btn {
+          padding: $spacing-xs $spacing-md;
+          font-size: $font-size-sm;
+          margin-bottom: $spacing-sm;
+          white-space: nowrap;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          @include media-breakpoint-down(md) {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+  
+  .jobs-pagination {
+    margin-top: $spacing-lg;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+// Company reviews section
+.company-reviews {
+  margin-bottom: $spacing-lg;
+  
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+  }
+  
+  .reviews-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-lg;
+    
+    .overall-rating {
+      flex: 0 0 200px;
+      text-align: center;
+      
+      .rating-value {
+        font-size: 64px;
+        font-weight: $font-weight-bold;
+        color: $primary-color;
+        line-height: 1;
+        margin-bottom: $spacing-xs;
+      }
+      
+      .rating-stars {
+        display: flex;
+        justify-content: center;
+        margin-bottom: $spacing-xs;
+        
+        .star {
+          color: $warning-color;
+          font-size: $font-size-lg;
+          margin: 0 2px;
+          
+          &.empty {
+            color: $gray-300;
+          }
+        }
+      }
+      
+      .rating-count {
+        font-size: $font-size-sm;
+        color: $gray-600;
+      }
+    }
+    
+    .rating-breakdown {
+      flex: 1;
+      min-width: 300px;
+      
+      .breakdown-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: $spacing-sm;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        .breakdown-label {
+          width: 150px;
+          font-size: $font-size-md;
+          color: $gray-700;
+          margin-right: $spacing-sm;
+        }
+        
+        .breakdown-bar {
+          flex: 1;
+          height: 8px;
+          background-color: $gray-200;
+          border-radius: 4px;
+          overflow: hidden;
+          margin-right: $spacing-sm;
+          
+          .bar-fill {
+            height: 100%;
+            background-color: $primary-color;
+            border-radius: 4px;
+          }
+        }
+        
+        .breakdown-value {
+          width: 40px;
+          font-size: $font-size-sm;
+          font-weight: $font-weight-bold;
+          color: $gray-700;
+          text-align: right;
+        }
+      }
+    }
+  }
+  
+  .reviews-list {
+    .review-item {
+      background-color: $light-color;
+      border: 1px solid $gray-300;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      margin-bottom: $spacing-md;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: $spacing-sm;
+        
+        .review-author {
+          display: flex;
+          align-items: center;
+          
+          .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: $spacing-sm;
+            
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+          
+          .author-info {
+            .author-name {
+              font-size: $font-size-md;
+              font-weight: $font-weight-bold;
+              color: $dark-color;
+            }
+            
+            .author-role {
+              font-size: $font-size-sm;
+              color: $gray-600;
+            }
+          }
+        }
+        
+        .review-date {
+          font-size: $font-size-sm;
+          color: $gray-600;
+        }
+      }
+      
+      .review-rating {
+        display: flex;
+        margin-bottom: $spacing-sm;
+        
+        .rating-stars {
+          display: flex;
+          margin-right: $spacing-sm;
+          
+          .star {
+            color: $warning-color;
+            font-size: $font-size-md;
+            margin-right: 2px;
+            
+            &.empty {
+              color: $gray-300;
+            }
+          }
+        }
+        
+        .rating-value {
+          font-size: $font-size-md;
+          font-weight: $font-weight-bold;
+          color: $dark-color;
+        }
+      }
+      
+      .review-content {
+        font-size: $font-size-md;
+        color: $gray-700;
+        line-height: 1.6;
+        margin-bottom: $spacing-sm;
+      }
+      
+      .review-pros-cons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-md;
+        margin-bottom: $spacing-sm;
+        
+        .review-pros,
+        .review-cons {
+          flex: 1;
+          min-width: 250px;
+          
+          .section-label {
+            font-size: $font-size-sm;
+            font-weight: $font-weight-bold;
+            margin-bottom: $spacing-xs;
+          }
+          
+          .section-content {
+            font-size: $font-size-sm;
+            color: $gray-700;
+            
+            ul {
+              margin: 0;
+              padding-left: $spacing-md;
+              
+              li {
+                margin-bottom: $spacing-xs;
+                
+                &:last-child {
+                  margin-bottom: 0;
+                }
+              }
+            }
+          }
+        }
+        
+        .review-pros {
+          .section-label {
+            color: $success-color;
+          }
+        }
+        
+        .review-cons {
+          .section-label {
+            color: $danger-color;
+          }
+        }
+      }
+      
+      .review-categories {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-sm;
+        
+        .category-item {
+          background-color: $gray-100;
+          border-radius: $border-radius;
+          padding: $spacing-xs $spacing-sm;
+          
+          .category-label {
+            font-size: $font-size-sm;
+            color: $gray-600;
+            margin-right: $spacing-xs;
+          }
+          
+          .category-value {
+            font-size: $font-size-sm;
+            font-weight: $font-weight-bold;
+            color: $gray-700;
+          }
+        }
+      }
+    }
+  }
+  
+  .reviews-pagination {
+    margin-top: $spacing-lg;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+// Company contact section
+.company-contact {
+  margin-bottom: $spacing-lg;
+  
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+  }
+  
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: $spacing-lg;
+    
+    .contact-info {
+      .info-list {
+        .info-item {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: $spacing-md;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba($primary-color, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: $spacing-sm;
+            flex-shrink: 0;
+            
+            i, img {
+              font-size: $font-size-lg;
+              color: $primary-color;
+            }
+          }
+          
+          .info-content {
+            .info-label {
+              font-size: $font-size-sm;
+              color: $gray-600;
+              margin-bottom: $spacing-xs;
+            }
+            
+            .info-value {
+              font-size: $font-size-md;
+              color: $dark-color;
+              font-weight: $font-weight-bold;
+              
+              a {
+                color: $primary-color;
+                text-decoration: none;
+                
+                &:hover {
+                  text-decoration: underline;
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      .social-links {
+        display: flex;
+        gap: $spacing-sm;
+        margin-top: $spacing-md;
+        
+        .social-link {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background-color: $gray-200;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: $gray-700;
+          transition: $transition-base;
+          
+          &:hover {
+            background-color: $primary-color;
+            color: $light-color;
+          }
+          
+          i {
+            font-size: $font-size-md;
+          }
+        }
+      }
+    }
+    
+    .contact-form {
+      background-color: $gray-100;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      
+      .form-title {
+        font-size: $font-size-md;
+        font-weight: $font-weight-bold;
+        color: $dark-color;
+        margin-bottom: $spacing-md;
+      }
+      
+      .form-group {
+        margin-bottom: $spacing-md;
+        
+        label {
+          display: block;
+          margin-bottom: $spacing-xs;
+          font-weight: $font-weight-bold;
+          color: $dark-color;
+          font-size: $font-size-sm;
+        }
+        
+        .form-control {
+          width: 100%;
+          padding: $spacing-sm;
+          font-size: $font-size-md;
+          border: 1px solid $gray-300;
+          border-radius: $border-radius;
+          transition: $transition-base;
+          
+          &:focus {
+            border-color: $primary-color;
+            box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+            outline: none;
+          }
+        }
+        
+        textarea.form-control {
+          min-height: 120px;
+          resize: vertical;
+        }
+      }
+      
+      .form-actions {
+        text-align: right;
+        
+        .btn-primary {
+          background-color: $primary-color;
+          color: $light-color;
+          border: none;
+          padding: $spacing-sm $spacing-lg;
+          font-size: $font-size-md;
+          font-weight: $font-weight-bold;
+          border-radius: $border-radius;
+          cursor: pointer;
+          transition: $transition-base;
+          
+          &:hover {
+            background-color: $primary-color-light;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Edit company profile form
+.edit-company-form {
+  background-color: $light-color;
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow;
+  padding: $spacing-lg;
+  
+  .form-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 1px solid $gray-300;
+  }
+  
+  .form-section {
+    margin-bottom: $spacing-lg;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .section-title {
+      font-size: $font-size-md;
+      font-weight: $font-weight-bold;
+      color: $dark-color;
+      margin-bottom: $spacing-md;
+    }
+  }
+  
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -$spacing-sm;
+    margin-left: -$spacing-sm;
+    
+    .form-group {
+      flex: 1 0 50%;
+      max-width: 50%;
+      padding-right: $spacing-sm;
+      padding-left: $spacing-sm;
+      margin-bottom: $spacing-md;
+      
+      @include media-breakpoint-down(sm) {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+      
+      &.form-group-full {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+      
+      label {
+        display: block;
+        margin-bottom: $spacing-xs;
+        font-weight: $font-weight-bold;
+        color: $dark-color;
+      }
+      
+      .form-control {
+        width: 100%;
+        padding: $spacing-sm;
+        font-size: $font-size-md;
+        border: 1px solid $gray-300;
+        border-radius: $border-radius;
+        transition: $transition-base;
+        
+        &:focus {
+          border-color: $primary-color;
+          box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+          outline: none;
+        }
+      }
+      
+      .form-text {
+        display: block;
+        margin-top: $spacing-xs;
+        font-size: $font-size-sm;
+        color: $gray-600;
+      }
+    }
+  }
+  
+  .logo-upload {
+    display: flex;
+    align-items: center;
+    margin-bottom: $spacing-md;
+    
+    .logo-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: $border-radius;
+      overflow: hidden;
+      margin-right: $spacing-md;
+      border: 1px solid $gray-300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: $light-color;
+      
+      img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+    }
+    
+    .logo-controls {
+      .btn {
+        margin-bottom: $spacing-xs;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+      
+      .upload-info {
+        font-size: $font-size-sm;
+        color: $gray-600;
+        margin-top: $spacing-xs;
+      }
+    }
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-sm;
+    margin-top: $spacing-lg;
+    padding-top: $spacing-md;
+    border-top: 1px solid $gray-300;
+    
+    .btn {
+      padding: $spacing-sm $spacing-lg;
+      font-size: $font-size-md;
+      font-weight: $font-weight-bold;
+      border-radius: $border-radius;
+      transition: $transition-base;
+      
+      &.btn-secondary {
+        background-color: $gray-300;
+        color: $dark-color;
+        border: none;
+        
+        &:hover {
+          background-color: $gray-400;
+        }
+      }
+      
+      &.btn-primary {
+        background-color: $primary-color;
+        color: $light-color;
+        border: none;
+        
+        &:hover {
+          background-color: $primary-color-light;
+        }
+      }
+    }
+  }
+}
+
+// Animation
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

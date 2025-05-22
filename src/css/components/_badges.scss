@@ -1,0 +1,320 @@
+/* Badge Styles */
+
+.badge {
+  display: inline-block;
+  padding: $spacing-xs $spacing-sm;
+  font-size: 75%;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: $border-radius;
+  transition: $transition-base;
+  
+  // Empty badges collapse automatically
+  &:empty {
+    display: none;
+  }
+  
+  // Badge as link
+  a& {
+    text-decoration: none;
+    
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
+  }
+}
+
+// Badge in buttons
+.btn .badge {
+  position: relative;
+  top: -1px;
+}
+
+// Badge pill
+.badge-pill {
+  padding-right: $spacing-sm;
+  padding-left: $spacing-sm;
+  border-radius: 10rem;
+}
+
+// Badge variants
+.badge-primary {
+  color: $light-color;
+  background-color: $primary-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+.badge-secondary {
+  color: $light-color;
+  background-color: $secondary-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: darken($secondary-color, 10%);
+    }
+  }
+}
+
+.badge-success {
+  color: $light-color;
+  background-color: $success-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: darken($success-color, 10%);
+    }
+  }
+}
+
+.badge-danger {
+  color: $light-color;
+  background-color: $danger-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: darken($danger-color, 10%);
+    }
+  }
+}
+
+.badge-warning {
+  color: $dark-color;
+  background-color: $warning-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $dark-color;
+      background-color: darken($warning-color, 10%);
+    }
+  }
+}
+
+.badge-info {
+  color: $light-color;
+  background-color: $info-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: darken($info-color, 10%);
+    }
+  }
+}
+
+.badge-light {
+  color: $dark-color;
+  background-color: $light-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $dark-color;
+      background-color: darken($light-color, 10%);
+    }
+  }
+}
+
+.badge-dark {
+  color: $light-color;
+  background-color: $dark-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: darken($dark-color, 10%);
+    }
+  }
+}
+
+// Badge outline variants
+.badge-outline-primary {
+  color: $primary-color;
+  background-color: transparent;
+  border: 1px solid $primary-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: $primary-color;
+    }
+  }
+}
+
+.badge-outline-secondary {
+  color: $secondary-color;
+  background-color: transparent;
+  border: 1px solid $secondary-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: $secondary-color;
+    }
+  }
+}
+
+.badge-outline-success {
+  color: $success-color;
+  background-color: transparent;
+  border: 1px solid $success-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: $success-color;
+    }
+  }
+}
+
+.badge-outline-danger {
+  color: $danger-color;
+  background-color: transparent;
+  border: 1px solid $danger-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: $danger-color;
+    }
+  }
+}
+
+.badge-outline-warning {
+  color: $warning-color;
+  background-color: transparent;
+  border: 1px solid $warning-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $dark-color;
+      background-color: $warning-color;
+    }
+  }
+}
+
+.badge-outline-info {
+  color: $info-color;
+  background-color: transparent;
+  border: 1px solid $info-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: $info-color;
+    }
+  }
+}
+
+.badge-outline-light {
+  color: $gray-600;
+  background-color: transparent;
+  border: 1px solid $gray-300;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $dark-color;
+      background-color: $light-color;
+    }
+  }
+}
+
+.badge-outline-dark {
+  color: $dark-color;
+  background-color: transparent;
+  border: 1px solid $dark-color;
+  
+  a& {
+    &:hover,
+    &:focus {
+      color: $light-color;
+      background-color: $dark-color;
+    }
+  }
+}
+
+// Badge sizes
+.badge-sm {
+  font-size: 65%;
+  padding: calc(#{$spacing-xs} / 2) $spacing-xs;
+}
+
+.badge-lg {
+  font-size: 85%;
+  padding: $spacing-xs $spacing-sm;
+}
+
+// Badge with icon
+.badge-icon {
+  display: inline-flex;
+  align-items: center;
+  
+  i, svg {
+    margin-right: $spacing-xs;
+  }
+}
+
+// Badge counter
+.badge-counter {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  padding: 0.25em 0.4em;
+  font-size: 75%;
+  line-height: 1;
+  border-radius: 10rem;
+  z-index: 1;
+}
+
+// Badge dot
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+// Badge with animation
+@keyframes badge-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.badge-pulse {
+  animation: badge-pulse 1.5s infinite;
+}

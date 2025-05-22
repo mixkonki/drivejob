@@ -1,0 +1,275 @@
+/* Utility classes */
+
+// Display
+.d-none { display: none !important; }
+.d-inline { display: inline !important; }
+.d-inline-block { display: inline-block !important; }
+.d-block { display: block !important; }
+.d-table { display: table !important; }
+.d-table-row { display: table-row !important; }
+.d-table-cell { display: table-cell !important; }
+
+// Responsive display utilities
+@each $breakpoint in (sm, md, lg, xl) {
+  @include media-breakpoint-up($breakpoint) {
+    .d-#{$breakpoint}-none { display: none !important; }
+    .d-#{$breakpoint}-inline { display: inline !important; }
+    .d-#{$breakpoint}-inline-block { display: inline-block !important; }
+    .d-#{$breakpoint}-block { display: block !important; }
+    .d-#{$breakpoint}-table { display: table !important; }
+    .d-#{$breakpoint}-table-row { display: table-row !important; }
+    .d-#{$breakpoint}-table-cell { display: table-cell !important; }
+  }
+}
+
+// Spacing utilities
+@each $prop, $abbrev in (margin: m, padding: p) {
+  @each $size, $value in (
+    0: 0,
+    1: $spacing-xs,
+    2: $spacing-sm,
+    3: $spacing-md,
+    4: $spacing-lg,
+    5: $spacing-xl
+  ) {
+    // All sides
+    .#{$abbrev}-#{$size} { #{$prop}: $value !important; }
+    
+    // Top
+    .#{$abbrev}t-#{$size} { #{$prop}-top: $value !important; }
+    
+    // Right
+    .#{$abbrev}r-#{$size} { #{$prop}-right: $value !important; }
+    
+    // Bottom
+    .#{$abbrev}b-#{$size} { #{$prop}-bottom: $value !important; }
+    
+    // Left
+    .#{$abbrev}l-#{$size} { #{$prop}-left: $value !important; }
+    
+    // X-axis (left and right)
+    .#{$abbrev}x-#{$size} {
+      #{$prop}-right: $value !important;
+      #{$prop}-left: $value !important;
+    }
+    
+    // Y-axis (top and bottom)
+    .#{$abbrev}y-#{$size} {
+      #{$prop}-top: $value !important;
+      #{$prop}-bottom: $value !important;
+    }
+  }
+}
+
+// Auto margins
+.m-auto { margin: auto !important; }
+.mt-auto { margin-top: auto !important; }
+.mr-auto { margin-right: auto !important; }
+.mb-auto { margin-bottom: auto !important; }
+.ml-auto { margin-left: auto !important; }
+.mx-auto {
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
+.my-auto {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+
+// Responsive margin utilities
+@each $breakpoint in (sm, md, lg, xl) {
+  @include media-breakpoint-up($breakpoint) {
+    .m-#{$breakpoint}-auto { margin: auto !important; }
+    .mt-#{$breakpoint}-auto { margin-top: auto !important; }
+    .mr-#{$breakpoint}-auto { margin-right: auto !important; }
+    .mb-#{$breakpoint}-auto { margin-bottom: auto !important; }
+    .ml-#{$breakpoint}-auto { margin-left: auto !important; }
+    .mx-#{$breakpoint}-auto {
+      margin-right: auto !important;
+      margin-left: auto !important;
+    }
+    .my-#{$breakpoint}-auto {
+      margin-top: auto !important;
+      margin-bottom: auto !important;
+    }
+  }
+}
+
+// Width and height
+@each $prop, $abbrev in (width: w, height: h) {
+  @each $size, $value in (
+    25: 25%,
+    50: 50%,
+    75: 75%,
+    100: 100%,
+    auto: auto
+  ) {
+    .#{$abbrev}-#{$size} { #{$prop}: $value !important; }
+  }
+}
+
+.mw-100 { max-width: 100% !important; }
+.mh-100 { max-height: 100% !important; }
+.min-vw-100 { min-width: 100vw !important; }
+.min-vh-100 { min-height: 100vh !important; }
+.vw-100 { width: 100vw !important; }
+.vh-100 { height: 100vh !important; }
+
+// Position
+.position-static { position: static !important; }
+.position-relative { position: relative !important; }
+.position-absolute { position: absolute !important; }
+.position-fixed { position: fixed !important; }
+.position-sticky { position: sticky !important; }
+
+.fixed-top {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: $z-index-fixed;
+}
+
+.fixed-bottom {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: $z-index-fixed;
+}
+
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: $z-index-sticky;
+}
+
+// Visibility
+.visible { visibility: visible !important; }
+.invisible { visibility: hidden !important; }
+
+// Overflow
+.overflow-auto { overflow: auto !important; }
+.overflow-hidden { overflow: hidden !important; }
+.overflow-visible { overflow: visible !important; }
+.overflow-scroll { overflow: scroll !important; }
+
+// Float
+.float-left { float: left !important; }
+.float-right { float: right !important; }
+.float-none { float: none !important; }
+
+// Responsive float utilities
+@each $breakpoint in (sm, md, lg, xl) {
+  @include media-breakpoint-up($breakpoint) {
+    .float-#{$breakpoint}-left { float: left !important; }
+    .float-#{$breakpoint}-right { float: right !important; }
+    .float-#{$breakpoint}-none { float: none !important; }
+  }
+}
+
+// Clearfix
+.clearfix {
+  @include clearfix();
+}
+
+// Shadows
+.shadow-none { box-shadow: none !important; }
+.shadow-sm { box-shadow: $box-shadow-sm !important; }
+.shadow { box-shadow: $box-shadow !important; }
+.shadow-lg { box-shadow: $box-shadow-lg !important; }
+
+// Border
+.border { border: $border-width solid $border-color !important; }
+.border-0 { border: 0 !important; }
+.border-top { border-top: $border-width solid $border-color !important; }
+.border-top-0 { border-top: 0 !important; }
+.border-right { border-right: $border-width solid $border-color !important; }
+.border-right-0 { border-right: 0 !important; }
+.border-bottom { border-bottom: $border-width solid $border-color !important; }
+.border-bottom-0 { border-bottom: 0 !important; }
+.border-left { border-left: $border-width solid $border-color !important; }
+.border-left-0 { border-left: 0 !important; }
+
+// Border color
+.border-primary { border-color: $primary-color !important; }
+.border-secondary { border-color: $secondary-color !important; }
+.border-success { border-color: $success-color !important; }
+.border-danger { border-color: $danger-color !important; }
+.border-warning { border-color: $warning-color !important; }
+.border-info { border-color: $info-color !important; }
+.border-light { border-color: $light-color !important; }
+.border-dark { border-color: $dark-color !important; }
+.border-white { border-color: #fff !important; }
+
+// Border radius
+.rounded { border-radius: $border-radius !important; }
+.rounded-top {
+  border-top-left-radius: $border-radius !important;
+  border-top-right-radius: $border-radius !important;
+}
+.rounded-right {
+  border-top-right-radius: $border-radius !important;
+  border-bottom-right-radius: $border-radius !important;
+}
+.rounded-bottom {
+  border-bottom-right-radius: $border-radius !important;
+  border-bottom-left-radius: $border-radius !important;
+}
+.rounded-left {
+  border-top-left-radius: $border-radius !important;
+  border-bottom-left-radius: $border-radius !important;
+}
+.rounded-circle { border-radius: 50% !important; }
+.rounded-pill { border-radius: 50rem !important; }
+.rounded-0 { border-radius: 0 !important; }
+
+// Background
+.bg-primary { background-color: $primary-color !important; }
+.bg-secondary { background-color: $secondary-color !important; }
+.bg-success { background-color: $success-color !important; }
+.bg-danger { background-color: $danger-color !important; }
+.bg-warning { background-color: $warning-color !important; }
+.bg-info { background-color: $info-color !important; }
+.bg-light { background-color: $light-color !important; }
+.bg-dark { background-color: $dark-color !important; }
+.bg-white { background-color: #fff !important; }
+.bg-transparent { background-color: transparent !important; }
+
+// Screen readers
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only-focusable {
+  &:active,
+  &:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}
+
+// Print utilities
+@media print {
+  .d-print-none { display: none !important; }
+  .d-print-inline { display: inline !important; }
+  .d-print-inline-block { display: inline-block !important; }
+  .d-print-block { display: block !important; }
+  .d-print-table { display: table !important; }
+  .d-print-table-row { display: table-row !important; }
+  .d-print-table-cell { display: table-cell !important; }
+  .d-print-flex { display: flex !important; }
+  .d-print-inline-flex { display: inline-flex !important; }
+}

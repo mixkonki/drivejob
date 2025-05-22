@@ -1,0 +1,70 @@
+/* Footer Styles */
+
+footer {
+  background-color: $dark-color;
+  color: $light-color;
+  padding: 20px 40px;
+  font-size: $font-size-sm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .footer-left {
+    text-align: left;
+  }
+
+  .footer-center {
+    text-align: center;
+  }
+
+  .footer-right {
+    text-align: right;
+
+    img {
+      height: 25px;
+      margin-left: 10px;
+      transition: $transition-base;
+
+      &:hover {
+        transform: scale(1.2);
+      }
+    }
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      display: inline;
+      margin: 0 10px;
+    }
+
+    a {
+      color: $secondary-color;
+      text-decoration: none;
+    }
+  }
+}
+
+/* Responsive Styles */
+@include media-breakpoint-down(md) {
+  footer {
+    flex-direction: column;
+    text-align: center;
+
+    .footer-left,
+    .footer-center,
+    .footer-right {
+      text-align: center;
+      margin: 10px 0;
+    }
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  footer {
+    padding: 30px 60px;
+  }
+}

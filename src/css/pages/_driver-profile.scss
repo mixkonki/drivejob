@@ -1,0 +1,1056 @@
+/* Driver Profile Styles */
+
+// Profile container
+.driver-profile-container {
+  padding: $spacing-lg 0;
+  
+  .profile-header {
+    background-color: $light-color;
+    border-radius: $border-radius-lg;
+    box-shadow: $box-shadow;
+    padding: $spacing-lg;
+    margin-bottom: $spacing-lg;
+    position: relative;
+    overflow: hidden;
+    
+    .profile-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 150px;
+      background-color: $primary-color;
+      background-image: linear-gradient(135deg, $primary-color, $secondary-color);
+      z-index: 1;
+    }
+    
+    .profile-content {
+      position: relative;
+      z-index: 2;
+      padding-top: 80px;
+      display: flex;
+      flex-wrap: wrap;
+      
+      @include media-breakpoint-down(md) {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      
+      .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 5px solid $light-color;
+        overflow: hidden;
+        margin-right: $spacing-lg;
+        flex-shrink: 0;
+        
+        @include media-breakpoint-down(md) {
+          margin-right: 0;
+          margin-bottom: $spacing-md;
+        }
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+      
+      .profile-info {
+        flex: 1;
+        
+        .profile-name {
+          font-size: $font-size-xl;
+          font-weight: $font-weight-bold;
+          color: $dark-color;
+          margin-bottom: $spacing-xs;
+        }
+        
+        .profile-title {
+          font-size: $font-size-lg;
+          color: $gray-600;
+          margin-bottom: $spacing-sm;
+        }
+        
+        .profile-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: $spacing-md;
+          margin-bottom: $spacing-md;
+          
+          @include media-breakpoint-down(md) {
+            justify-content: center;
+          }
+          
+          .meta-item {
+            display: flex;
+            align-items: center;
+            
+            i, img {
+              margin-right: $spacing-xs;
+              color: $primary-color;
+              font-size: $font-size-lg;
+            }
+            
+            span {
+              font-size: $font-size-md;
+              color: $gray-700;
+            }
+          }
+        }
+        
+        .profile-bio {
+          font-size: $font-size-md;
+          color: $gray-700;
+          line-height: 1.6;
+          margin-bottom: $spacing-md;
+        }
+      }
+      
+      .profile-actions {
+        display: flex;
+        gap: $spacing-sm;
+        margin-left: auto;
+        align-self: flex-start;
+        
+        @include media-breakpoint-down(md) {
+          margin-left: 0;
+          align-self: center;
+        }
+        
+        .btn {
+          padding: $spacing-xs $spacing-md;
+          font-size: $font-size-sm;
+          font-weight: $font-weight-bold;
+          border-radius: $border-radius;
+          transition: $transition-base;
+          
+          &.btn-primary {
+            background-color: $primary-color;
+            color: $light-color;
+            border: none;
+            
+            &:hover {
+              background-color: $primary-color-light;
+            }
+          }
+          
+          &.btn-outline-primary {
+            background-color: transparent;
+            color: $primary-color;
+            border: 1px solid $primary-color;
+            
+            &:hover {
+              background-color: rgba($primary-color, 0.1);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .profile-tabs {
+    margin-bottom: $spacing-lg;
+    
+    .nav-tabs {
+      border-bottom: 1px solid $gray-300;
+      
+      .nav-item {
+        margin-bottom: -1px;
+        
+        .nav-link {
+          padding: $spacing-sm $spacing-md;
+          font-size: $font-size-md;
+          font-weight: $font-weight-bold;
+          color: $gray-600;
+          border: 1px solid transparent;
+          border-top-left-radius: $border-radius;
+          border-top-right-radius: $border-radius;
+          transition: $transition-base;
+          
+          &:hover {
+            color: $primary-color;
+            border-color: transparent;
+          }
+          
+          &.active {
+            color: $primary-color;
+            background-color: $light-color;
+            border-color: $gray-300 $gray-300 $light-color;
+          }
+          
+          i {
+            margin-right: $spacing-xs;
+          }
+        }
+      }
+    }
+    
+    .tab-content {
+      background-color: $light-color;
+      border: 1px solid $gray-300;
+      border-top: none;
+      border-bottom-left-radius: $border-radius;
+      border-bottom-right-radius: $border-radius;
+      padding: $spacing-lg;
+      
+      .tab-pane {
+        &.active {
+          animation: fadeIn 0.3s ease-in-out;
+        }
+      }
+    }
+  }
+}
+
+// Driver skills section
+.driver-skills {
+  margin-bottom: $spacing-lg;
+  
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+  }
+  
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: $spacing-md;
+    
+    .skill-item {
+      background-color: $gray-100;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      
+      .skill-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: $spacing-sm;
+        
+        .skill-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background-color: rgba($primary-color, 0.1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: $spacing-sm;
+          
+          i, img {
+            font-size: $font-size-lg;
+            color: $primary-color;
+          }
+        }
+        
+        .skill-name {
+          font-size: $font-size-md;
+          font-weight: $font-weight-bold;
+          color: $dark-color;
+        }
+      }
+      
+      .skill-rating {
+        display: flex;
+        align-items: center;
+        
+        .rating-stars {
+          display: flex;
+          margin-right: $spacing-sm;
+          
+          .star {
+            color: $warning-color;
+            font-size: $font-size-md;
+            margin-right: 2px;
+            
+            &.empty {
+              color: $gray-300;
+            }
+            
+            &.half {
+              position: relative;
+              
+              &::before {
+                content: "\2605"; // Full star
+                color: $warning-color;
+                position: absolute;
+                width: 50%;
+                overflow: hidden;
+              }
+              
+              &::after {
+                content: "\2605"; // Full star
+                color: $gray-300;
+              }
+            }
+          }
+        }
+        
+        .rating-value {
+          font-size: $font-size-sm;
+          color: $gray-600;
+        }
+      }
+      
+      .skill-description {
+        margin-top: $spacing-sm;
+        font-size: $font-size-sm;
+        color: $gray-600;
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+// Driver certifications section
+.driver-certifications {
+  margin-bottom: $spacing-lg;
+  
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+  }
+  
+  .certifications-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: $spacing-md;
+    
+    .certification-item {
+      background-color: $light-color;
+      border: 1px solid $gray-300;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      transition: $transition-base;
+      
+      &:hover {
+        box-shadow: $box-shadow;
+        transform: translateY(-3px);
+      }
+      
+      .certification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: $spacing-sm;
+        
+        .certification-title {
+          font-size: $font-size-md;
+          font-weight: $font-weight-bold;
+          color: $dark-color;
+        }
+        
+        .certification-status {
+          font-size: $font-size-xs;
+          font-weight: $font-weight-bold;
+          padding: 2px 8px;
+          border-radius: 10px;
+          
+          &.valid {
+            background-color: rgba($success-color, 0.1);
+            color: $success-color;
+          }
+          
+          &.expiring {
+            background-color: rgba($warning-color, 0.1);
+            color: $warning-color;
+          }
+          
+          &.expired {
+            background-color: rgba($danger-color, 0.1);
+            color: $danger-color;
+          }
+        }
+      }
+      
+      .certification-details {
+        .detail-item {
+          display: flex;
+          margin-bottom: $spacing-xs;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          .detail-label {
+            font-size: $font-size-sm;
+            color: $gray-600;
+            width: 100px;
+            flex-shrink: 0;
+          }
+          
+          .detail-value {
+            font-size: $font-size-sm;
+            color: $gray-700;
+          }
+        }
+      }
+      
+      .certification-actions {
+        margin-top: $spacing-sm;
+        display: flex;
+        gap: $spacing-xs;
+        
+        .btn {
+          padding: $spacing-xs $spacing-sm;
+          font-size: $font-size-xs;
+          border-radius: $border-radius-sm;
+          
+          &.btn-primary {
+            background-color: $primary-color;
+            color: $light-color;
+            border: none;
+            
+            &:hover {
+              background-color: $primary-color-light;
+            }
+          }
+          
+          &.btn-outline-secondary {
+            background-color: transparent;
+            color: $gray-600;
+            border: 1px solid $gray-300;
+            
+            &:hover {
+              background-color: $gray-100;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Driver experience section
+.driver-experience {
+  margin-bottom: $spacing-lg;
+  
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+  }
+  
+  .experience-list {
+    .experience-item {
+      background-color: $light-color;
+      border: 1px solid $gray-300;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      margin-bottom: $spacing-md;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .experience-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: $spacing-sm;
+        
+        .experience-title {
+          font-size: $font-size-lg;
+          font-weight: $font-weight-bold;
+          color: $dark-color;
+          margin-bottom: $spacing-xs;
+        }
+        
+        .experience-period {
+          font-size: $font-size-sm;
+          color: $gray-600;
+          background-color: $gray-100;
+          padding: $spacing-xs $spacing-sm;
+          border-radius: $border-radius;
+        }
+      }
+      
+      .experience-company {
+        font-size: $font-size-md;
+        color: $primary-color;
+        margin-bottom: $spacing-sm;
+      }
+      
+      .experience-description {
+        font-size: $font-size-md;
+        color: $gray-700;
+        line-height: 1.6;
+        margin-bottom: $spacing-sm;
+      }
+      
+      .experience-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-xs;
+        
+        .tag {
+          font-size: $font-size-xs;
+          color: $gray-700;
+          background-color: $gray-100;
+          padding: 2px 8px;
+          border-radius: 10px;
+        }
+      }
+    }
+  }
+}
+
+// Driver vehicle experience section
+.vehicle-experience {
+  margin-bottom: $spacing-lg;
+  
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+  }
+  
+  .vehicle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: $spacing-md;
+    
+    .vehicle-item {
+      background-color: $light-color;
+      border: 1px solid $gray-300;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      transition: $transition-base;
+      
+      &:hover {
+        box-shadow: $box-shadow;
+      }
+      
+      .vehicle-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: $spacing-sm;
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+      }
+      
+      .vehicle-type {
+        font-size: $font-size-md;
+        font-weight: $font-weight-bold;
+        color: $dark-color;
+        margin-bottom: $spacing-xs;
+      }
+      
+      .vehicle-details {
+        .detail-item {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: $spacing-xs;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          .detail-label {
+            font-size: $font-size-sm;
+            color: $gray-600;
+          }
+          
+          .detail-value {
+            font-size: $font-size-sm;
+            color: $gray-700;
+            font-weight: $font-weight-bold;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Driver ratings section
+.driver-ratings {
+  margin-bottom: $spacing-lg;
+  
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+  }
+  
+  .ratings-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-lg;
+    
+    .overall-rating {
+      flex: 0 0 200px;
+      text-align: center;
+      
+      .rating-value {
+        font-size: 64px;
+        font-weight: $font-weight-bold;
+        color: $primary-color;
+        line-height: 1;
+        margin-bottom: $spacing-xs;
+      }
+      
+      .rating-stars {
+        display: flex;
+        justify-content: center;
+        margin-bottom: $spacing-xs;
+        
+        .star {
+          color: $warning-color;
+          font-size: $font-size-lg;
+          margin: 0 2px;
+          
+          &.empty {
+            color: $gray-300;
+          }
+        }
+      }
+      
+      .rating-count {
+        font-size: $font-size-sm;
+        color: $gray-600;
+      }
+    }
+    
+    .rating-breakdown {
+      flex: 1;
+      min-width: 300px;
+      
+      .breakdown-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: $spacing-sm;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        .breakdown-label {
+          width: 150px;
+          font-size: $font-size-md;
+          color: $gray-700;
+          margin-right: $spacing-sm;
+        }
+        
+        .breakdown-bar {
+          flex: 1;
+          height: 8px;
+          background-color: $gray-200;
+          border-radius: 4px;
+          overflow: hidden;
+          margin-right: $spacing-sm;
+          
+          .bar-fill {
+            height: 100%;
+            background-color: $primary-color;
+            border-radius: 4px;
+          }
+        }
+        
+        .breakdown-value {
+          width: 40px;
+          font-size: $font-size-sm;
+          font-weight: $font-weight-bold;
+          color: $gray-700;
+          text-align: right;
+        }
+      }
+    }
+  }
+  
+  .ratings-list {
+    .rating-item {
+      background-color: $light-color;
+      border: 1px solid $gray-300;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      margin-bottom: $spacing-md;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .rating-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: $spacing-sm;
+        
+        .rating-author {
+          display: flex;
+          align-items: center;
+          
+          .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: $spacing-sm;
+            
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+          
+          .author-info {
+            .author-name {
+              font-size: $font-size-md;
+              font-weight: $font-weight-bold;
+              color: $dark-color;
+            }
+            
+            .author-role {
+              font-size: $font-size-sm;
+              color: $gray-600;
+            }
+          }
+        }
+        
+        .rating-date {
+          font-size: $font-size-sm;
+          color: $gray-600;
+        }
+      }
+      
+      .rating-stars {
+        display: flex;
+        margin-bottom: $spacing-sm;
+        
+        .star {
+          color: $warning-color;
+          font-size: $font-size-md;
+          margin-right: 2px;
+          
+          &.empty {
+            color: $gray-300;
+          }
+        }
+      }
+      
+      .rating-content {
+        font-size: $font-size-md;
+        color: $gray-700;
+        line-height: 1.6;
+        margin-bottom: $spacing-sm;
+      }
+      
+      .rating-categories {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-sm;
+        
+        .category-item {
+          background-color: $gray-100;
+          border-radius: $border-radius;
+          padding: $spacing-xs $spacing-sm;
+          
+          .category-label {
+            font-size: $font-size-sm;
+            color: $gray-600;
+            margin-right: $spacing-xs;
+          }
+          
+          .category-value {
+            font-size: $font-size-sm;
+            font-weight: $font-weight-bold;
+            color: $gray-700;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Driver incidents section
+.driver-incidents {
+  margin-bottom: $spacing-lg;
+  
+  .section-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+  }
+  
+  .incidents-list {
+    .incident-item {
+      background-color: $light-color;
+      border-left: 4px solid $danger-color;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      margin-bottom: $spacing-md;
+      box-shadow: $box-shadow-sm;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      &.minor {
+        border-left-color: $warning-color;
+      }
+      
+      &.major {
+        border-left-color: $danger-color;
+      }
+      
+      .incident-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: $spacing-sm;
+        
+        .incident-title {
+          font-size: $font-size-md;
+          font-weight: $font-weight-bold;
+          color: $dark-color;
+        }
+        
+        .incident-date {
+          font-size: $font-size-sm;
+          color: $gray-600;
+          background-color: $gray-100;
+          padding: $spacing-xs $spacing-sm;
+          border-radius: $border-radius;
+        }
+      }
+      
+      .incident-details {
+        font-size: $font-size-md;
+        color: $gray-700;
+        line-height: 1.6;
+        margin-bottom: $spacing-sm;
+      }
+      
+      .incident-severity {
+        display: inline-block;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-bold;
+        padding: $spacing-xs $spacing-sm;
+        border-radius: $border-radius;
+        margin-bottom: $spacing-sm;
+        
+        &.minor {
+          background-color: rgba($warning-color, 0.1);
+          color: $warning-color;
+        }
+        
+        &.major {
+          background-color: rgba($danger-color, 0.1);
+          color: $danger-color;
+        }
+      }
+      
+      .incident-resolution {
+        font-size: $font-size-sm;
+        color: $gray-700;
+        background-color: $gray-100;
+        padding: $spacing-sm;
+        border-radius: $border-radius;
+        border-left: 2px solid $primary-color;
+      }
+    }
+  }
+}
+
+// Edit profile form
+.edit-profile-form {
+  background-color: $light-color;
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow;
+  padding: $spacing-lg;
+  
+  .form-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 1px solid $gray-300;
+  }
+  
+  .form-section {
+    margin-bottom: $spacing-lg;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .section-title {
+      font-size: $font-size-md;
+      font-weight: $font-weight-bold;
+      color: $dark-color;
+      margin-bottom: $spacing-md;
+    }
+  }
+  
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -$spacing-sm;
+    margin-left: -$spacing-sm;
+    
+    .form-group {
+      flex: 1 0 50%;
+      max-width: 50%;
+      padding-right: $spacing-sm;
+      padding-left: $spacing-sm;
+      margin-bottom: $spacing-md;
+      
+      @include media-breakpoint-down(sm) {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+      
+      &.form-group-full {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+      
+      label {
+        display: block;
+        margin-bottom: $spacing-xs;
+        font-weight: $font-weight-bold;
+        color: $dark-color;
+      }
+      
+      .form-control {
+        width: 100%;
+        padding: $spacing-sm;
+        font-size: $font-size-md;
+        border: 1px solid $gray-300;
+        border-radius: $border-radius;
+        transition: $transition-base;
+        
+        &:focus {
+          border-color: $primary-color;
+          box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+          outline: none;
+        }
+      }
+      
+      .form-text {
+        display: block;
+        margin-top: $spacing-xs;
+        font-size: $font-size-sm;
+        color: $gray-600;
+      }
+    }
+  }
+  
+  .avatar-upload {
+    display: flex;
+    align-items: center;
+    margin-bottom: $spacing-md;
+    
+    .avatar-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-right: $spacing-md;
+      border: 1px solid $gray-300;
+      
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+    
+    .avatar-controls {
+      .btn {
+        margin-bottom: $spacing-xs;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+      
+      .upload-info {
+        font-size: $font-size-sm;
+        color: $gray-600;
+        margin-top: $spacing-xs;
+      }
+    }
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-sm;
+    margin-top: $spacing-lg;
+    padding-top: $spacing-md;
+    border-top: 1px solid $gray-300;
+    
+    .btn {
+      padding: $spacing-sm $spacing-lg;
+      font-size: $font-size-md;
+      font-weight: $font-weight-bold;
+      border-radius: $border-radius;
+      transition: $transition-base;
+      
+      &.btn-secondary {
+        background-color: $gray-300;
+        color: $dark-color;
+        border: none;
+        
+        &:hover {
+          background-color: $gray-400;
+        }
+      }
+      
+      &.btn-primary {
+        background-color: $primary-color;
+        color: $light-color;
+        border: none;
+        
+        &:hover {
+          background-color: $primary-color-light;
+        }
+      }
+    }
+  }
+}
+
+// Animation
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

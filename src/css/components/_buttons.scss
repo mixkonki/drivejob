@@ -1,0 +1,255 @@
+/* Button Styles */
+
+// Base button styles
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: $font-weight-bold;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: $border-width solid transparent;
+  padding: $spacing-sm $spacing-md;
+  font-size: $font-size-md;
+  line-height: $line-height-base;
+  border-radius: $border-radius;
+  transition: $transition-base;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:focus,
+  &.focus {
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+  }
+
+  &:disabled,
+  &.disabled {
+    opacity: 0.65;
+    pointer-events: none;
+  }
+
+  // Icon in button
+  i, img {
+    margin-right: $spacing-sm;
+  }
+}
+
+// Button variants
+.btn-primary {
+  @include button-variant($primary-color, $primary-color);
+}
+
+.btn-secondary {
+  @include button-variant($secondary-color, $secondary-color);
+}
+
+.btn-success {
+  @include button-variant($success-color, $success-color);
+}
+
+.btn-danger {
+  @include button-variant($danger-color, $danger-color);
+}
+
+.btn-warning {
+  @include button-variant($warning-color, $warning-color);
+}
+
+.btn-info {
+  @include button-variant($info-color, $info-color);
+}
+
+.btn-light {
+  @include button-variant($light-color, $gray-300);
+}
+
+.btn-dark {
+  @include button-variant($dark-color, $dark-color);
+}
+
+// Outline buttons
+.btn-outline-primary {
+  @include button-outline-variant($primary-color);
+}
+
+.btn-outline-secondary {
+  @include button-outline-variant($secondary-color);
+}
+
+.btn-outline-success {
+  @include button-outline-variant($success-color);
+}
+
+.btn-outline-danger {
+  @include button-outline-variant($danger-color);
+}
+
+.btn-outline-warning {
+  @include button-outline-variant($warning-color);
+}
+
+.btn-outline-info {
+  @include button-outline-variant($info-color);
+}
+
+.btn-outline-light {
+  @include button-outline-variant($light-color);
+}
+
+.btn-outline-dark {
+  @include button-outline-variant($dark-color);
+}
+
+// Button sizes
+.btn-lg {
+  padding: $spacing-md $spacing-lg;
+  font-size: $font-size-lg;
+  border-radius: $border-radius-lg;
+}
+
+.btn-sm {
+  padding: $spacing-xs $spacing-sm;
+  font-size: $font-size-sm;
+  border-radius: $border-radius-sm;
+}
+
+// Block button
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+// Button group
+.btn-group {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+
+  > .btn {
+    position: relative;
+    flex: 1 1 auto;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active {
+      z-index: 1;
+    }
+  }
+
+  > .btn:not(:first-child) {
+    margin-left: -$border-width;
+  }
+
+  > .btn:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  > .btn:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+// Vertical button group
+.btn-group-vertical {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+
+  > .btn {
+    width: 100%;
+  }
+
+  > .btn:not(:first-child) {
+    margin-top: -$border-width;
+    margin-left: 0;
+  }
+
+  > .btn:not(:last-child) {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  > .btn:not(:first-child) {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
+// Specific button styles from styles.css
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
+
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $primary-color;
+    color: $light-color;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: $border-radius;
+    font-size: $font-size-md;
+    font-weight: $font-weight-bold;
+    transition: $transition-base;
+    min-width: 250px;
+    width: auto;
+    box-sizing: border-box;
+
+    &:hover {
+      background-color: $primary-color-light;
+      transform: scale(1.05);
+    }
+
+    img {
+      margin-right: 10px;
+      height: 30px;
+      transition: $transition-base;
+      flex-shrink: 0;
+      filter: brightness(0) invert(1); // Αυτή η γραμμή κάνει τα εικονίδια λευκά
+
+      &:hover {
+        transform: scale(1.2);
+      }
+    }
+  }
+}
+
+// Login button
+.login-btn {
+  padding: 1.1em;
+  font-size: 1.2em;
+  color: $light-color;
+  background-color: $primary-color;
+  border: none;
+  border-radius: $border-radius;
+  cursor: pointer;
+  width: 100%;
+  display: block;
+  margin: 0 auto;
+
+  &:hover {
+    background-color: $primary-color-light;
+  }
+}
+
+/* Responsive Styles */
+@include media-breakpoint-down(sm) {
+  .buttons {
+    flex-direction: column;
+    align-items: center;
+
+    .btn-secondary {
+      width: 100%;
+      max-width: 300px;
+    }
+  }
+}

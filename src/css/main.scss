@@ -1,0 +1,39 @@
+/* Main SCSS File */
+
+// Base
+@import 'base/variables';
+@import 'base/reset';
+@import 'base/mixins';
+@import 'base/typography';
+@import 'base/utilities';
+
+// Layouts
+@import 'layouts/grid';
+@import 'layouts/header';
+@import 'layouts/footer';
+@import 'layouts/sidebar';
+
+// Components
+@import 'components/alerts';
+@import 'components/badges';
+@import 'components/buttons';
+@import 'components/cards';
+@import 'components/dropdowns';
+@import 'components/forms';
+@import 'components/modals';
+@import 'components/navigation';
+@import 'components/pagination';
+@import 'components/progress';
+@import 'components/tables';
+@import 'components/tooltips';
+
+// Pages
+@import 'pages/home';
+@import 'pages/authentication';
+@import 'pages/driver-profile';
+@import 'pages/company-profile';
+@import 'pages/job-listings';
+
+// Themes
+@import 'themes/default';
+@import 'themes/dark';
