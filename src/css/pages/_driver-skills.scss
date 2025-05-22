@@ -1,0 +1,332 @@
+/* Στυλ για τις δεξιότητες οδηγού */
+
+/* Γενικά στυλ για το τμήμα δεξιοτήτων */
+.driver-skills-section {
+  margin-bottom: $spacing-lg;
+}
+
+.skills-summary {
+  margin-top: $spacing-md;
+}
+
+/* Στυλ για τις κατηγορίες δεξιοτήτων */
+.skills-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.skills-category {
+  background-color: $gray-100;
+  border-radius: $border-radius;
+  padding: $spacing-sm;
+  box-shadow: $box-shadow-sm;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.category-icon {
+  width: 40px;
+  height: 40px;
+  background-color: $light-color;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-xs;
+  box-shadow: $box-shadow-sm;
+  
+  img {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.skills-category h3 {
+  margin: 0;
+  font-size: $font-size-lg;
+  color: $dark-color;
+}
+
+/* Στυλ για τις ετικέτες δεξιοτήτων */
+.skill-tag {
+  display: inline-block;
+  background-color: $gray-200;
+  color: $gray-700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-right: $spacing-xs;
+  margin-bottom: $spacing-xs;
+  font-size: $font-size-sm;
+  transition: $transition-base;
+  
+  &:hover {
+    background-color: $gray-300;
+    transform: translateY(-2px);
+  }
+}
+
+/* Στυλ για τις προσωπικές λεπτομέρειες */
+.personal-details-section {
+  margin-bottom: $spacing-lg;
+}
+
+.personal-details-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: $spacing-sm;
+}
+
+.personal-detail-item {
+  background-color: $gray-100;
+  padding: $spacing-xs;
+  border-radius: $border-radius-sm;
+}
+
+.personal-detail-label {
+  font-weight: $font-weight-medium;
+  color: $gray-600;
+  margin-bottom: $spacing-xs;
+}
+
+.personal-detail-value {
+  color: $dark-color;
+}
+
+/* Στυλ για τις γλωσσικές ικανότητες */
+.languages-section {
+  margin-bottom: $spacing-lg;
+}
+
+.languages-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: $spacing-sm;
+}
+
+.language-item {
+  background-color: $gray-100;
+  padding: $spacing-xs;
+  border-radius: $border-radius-sm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.language-name {
+  font-weight: $font-weight-medium;
+  color: $dark-color;
+}
+
+.language-level {
+  padding: 4px $spacing-xs;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  
+  &.native {
+    background-color: lighten($success-color, 30%);
+    color: darken($success-color, 20%);
+  }
+  
+  &.fluent {
+    background-color: lighten($info-color, 30%);
+    color: darken($info-color, 20%);
+  }
+  
+  &.good {
+    background-color: lighten($warning-color, 30%);
+    color: darken($warning-color, 20%);
+  }
+  
+  &.basic {
+    background-color: lighten($danger-color, 30%);
+    color: darken($danger-color, 20%);
+  }
+}
+
+/* Στυλ για τις πιστοποιήσεις */
+.certifications-section {
+  margin-bottom: $spacing-lg;
+}
+
+.certifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.certification-item {
+  background-color: $gray-100;
+  border-radius: $border-radius-sm;
+  padding: $spacing-sm;
+  box-shadow: $box-shadow-sm;
+}
+
+.certification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-xs;
+  padding-bottom: $spacing-xs;
+  border-bottom: 1px solid $gray-300;
+  
+  h4 {
+    margin: 0;
+    font-size: $font-size-md;
+    color: $dark-color;
+  }
+}
+
+.certification-status {
+  display: inline-block;
+  padding: 4px $spacing-xs;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  
+  &.valid {
+    background-color: lighten($success-color, 30%);
+    color: darken($success-color, 20%);
+  }
+  
+  &.expired {
+    background-color: lighten($danger-color, 30%);
+    color: darken($danger-color, 20%);
+  }
+  
+  &.expiring-soon {
+    background-color: lighten($warning-color, 30%);
+    color: darken($warning-color, 20%);
+  }
+}
+
+.certification-details {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.certification-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $gray-600;
+}
+
+.certification-description {
+  margin-top: $spacing-xs;
+  font-size: $font-size-sm;
+  line-height: 1.5;
+}
+
+/* Στυλ για την εκπαίδευση */
+.training-section {
+  margin-bottom: $spacing-lg;
+}
+
+.training-details {
+  line-height: 1.6;
+  color: $gray-700;
+}
+
+/* Στυλ για την προϋπηρεσία σε οχήματα */
+.vehicle-experience-section {
+  margin-bottom: $spacing-lg;
+}
+
+.vehicle-experience-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.vehicle-experience-item {
+  background-color: $gray-100;
+  border-radius: $border-radius-sm;
+  padding: $spacing-sm;
+  box-shadow: $box-shadow-sm;
+}
+
+.vehicle-experience-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-xs;
+}
+
+.vehicle-title {
+  font-weight: $font-weight-medium;
+  color: $dark-color;
+}
+
+.vehicle-years {
+  background-color: $info-color;
+  color: $light-color;
+  padding: 2px $spacing-xs;
+  border-radius: 10px;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.vehicle-period {
+  color: $gray-600;
+  font-size: $font-size-sm;
+  margin-bottom: $spacing-xs;
+}
+
+.vehicle-description {
+  font-size: $font-size-sm;
+  line-height: 1.5;
+  color: $gray-700;
+}
+
+/* Στυλ για τα κουμπιά ενεργειών */
+.skills-actions {
+  margin-top: $spacing-lg;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-primary {
+  background-color: $danger-color;
+  color: $light-color;
+  border: none;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: $font-size-sm;
+  transition: $transition-base;
+  
+  &:hover {
+    background-color: darken($danger-color, 5%);
+    transform: translateY(-2px);
+    box-shadow: $box-shadow;
+  }
+}
+
+/* Στυλ για το μήνυμα όταν δεν υπάρχουν δεξιότητες */
+.no-skills {
+  color: $gray-600;
+  font-style: italic;
+  margin: 5px 0;
+}
+
+/* Responsive */
+@include media-breakpoint-down(md) {
+  .skills-categories {
+    grid-template-columns: 1fr;
+  }
+  
+  .personal-details-list,
+  .languages-list {
+    grid-template-columns: 1fr;
+  }
+}
