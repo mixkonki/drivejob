@@ -1,0 +1,353 @@
+/* Στυλ για τις σελίδες συμβάντων οδηγού */
+
+.incidents-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+  
+  h1 {
+    margin: 0;
+    color: $dark-color;
+    font-size: 2em;
+  }
+}
+
+.btn-primary {
+  display: inline-block;
+  padding: $spacing-xs $spacing-md;
+  background-color: $danger-color;
+  color: $light-color;
+  text-decoration: none;
+  border-radius: $border-radius-sm;
+  border: none;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: $transition-base;
+  
+  &:hover {
+    background-color: darken($danger-color, 5%);
+    transform: translateY(-2px);
+    box-shadow: $box-shadow;
+  }
+}
+
+.btn-secondary {
+  display: inline-block;
+  padding: $spacing-xs $spacing-md;
+  background-color: $secondary-color;
+  color: $light-color;
+  text-decoration: none;
+  border-radius: $border-radius-sm;
+  border: none;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: $transition-base;
+  
+  &:hover {
+    background-color: darken($secondary-color, 5%);
+    transform: translateY(-2px);
+    box-shadow: $box-shadow;
+  }
+}
+
+/* Φόρμα Καταχώρησης Συμβάντος */
+.incident-form-container {
+  background-color: $light-color;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.form-group {
+  margin-bottom: $spacing-md;
+  
+  &.has-error {
+    label {
+      color: $danger-color;
+    }
+    
+    input,
+    select,
+    textarea {
+      border-color: $danger-color;
+    }
+  }
+  
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: $font-weight-medium;
+    color: $gray-700;
+  }
+  
+  input[type="text"],
+  input[type="date"],
+  select,
+  textarea {
+    width: 100%;
+    padding: $spacing-xs;
+    border: 1px solid $gray-300;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-md;
+    
+    &:focus {
+      border-color: $danger-color;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba($danger-color, 0.1);
+    }
+  }
+}
+
+/* Επιλογέας Σοβαρότητας */
+.severity-selector {
+  display: flex;
+  justify-content: space-between;
+  margin-top: $spacing-xs;
+}
+
+.severity-option {
+  flex: 1;
+  text-align: center;
+  
+  input[type="radio"] {
+    display: none;
+    
+    &:checked + .severity-label {
+      background-color: $danger-color;
+      color: $light-color;
+      
+      .severity-number {
+        background-color: $light-color;
+        color: $danger-color;
+      }
+    }
+  }
+}
+
+.severity-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: $spacing-xs;
+  border-radius: $border-radius-sm;
+  transition: $transition-base;
+  
+  &:hover {
+    background-color: $gray-100;
+  }
+}
+
+.severity-number {
+  display: block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  border-radius: 50%;
+  background-color: $gray-200;
+  color: $dark-color;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.severity-text {
+  font-size: $font-size-sm;
+}
+
+/* Σημείωση */
+.incident-note {
+  background-color: $gray-100;
+  border-radius: $border-radius-sm;
+  padding: $spacing-sm;
+  margin-bottom: $spacing-md;
+  
+  p {
+    margin: 0;
+    color: $gray-600;
+    font-size: $font-size-sm;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+  margin-top: $spacing-lg;
+}
+
+/* Λίστα Συμβάντων */
+.no-incidents {
+  padding: $spacing-xl $spacing-md;
+  text-align: center;
+  background-color: $gray-100;
+  border-radius: $border-radius;
+  margin-bottom: $spacing-lg;
+  
+  p {
+    margin: 0 0 $spacing-sm 0;
+    color: $gray-600;
+  }
+}
+
+.incidents-list {
+  display: grid;
+  grid-gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.incident-item {
+  background-color: $light-color;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+  padding: $spacing-md;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+  }
+  
+  &.severity-1::before {
+    background-color: $success-color; /* Πράσινο - Ελάχιστη */
+  }
+  
+  &.severity-2::before {
+    background-color: lighten($success-color, 10%); /* Ανοιχτό πράσινο - Μικρή */
+  }
+  
+  &.severity-3::before {
+    background-color: $warning-color; /* Κίτρινο - Μέτρια */
+  }
+  
+  &.severity-4::before {
+    background-color: darken($warning-color, 10%); /* Πορτοκαλί - Σημαντική */
+  }
+  
+  &.severity-5::before {
+    background-color: $danger-color; /* Κόκκινο - Σοβαρή */
+  }
+}
+
+.incident-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+  border-bottom: 1px solid $gray-200;
+  padding-bottom: $spacing-sm;
+}
+
+.incident-type {
+  font-weight: $font-weight-bold;
+  color: $dark-color;
+}
+
+.incident-date {
+  color: $gray-600;
+  font-size: $font-size-sm;
+}
+
+.incident-severity {
+  margin-bottom: $spacing-sm;
+}
+
+.severity-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: $gray-200;
+  margin-right: $spacing-xs;
+  
+  &.active {
+    background-color: $danger-color;
+  }
+}
+
+.incident-description {
+  margin-bottom: $spacing-sm;
+  line-height: 1.5;
+  color: $gray-700;
+}
+
+.incident-verification {
+  text-align: right;
+}
+
+.verification-badge {
+  display: inline-block;
+  padding: 5px $spacing-xs;
+  border-radius: 20px;
+  font-size: $font-size-sm;
+  
+  &.verified {
+    background-color: lighten($info-color, 30%);
+    color: darken($info-color, 20%);
+  }
+  
+  &.unverified {
+    background-color: lighten($danger-color, 30%);
+    color: darken($danger-color, 20%);
+  }
+}
+
+.incidents-info {
+  background-color: $gray-100;
+  border-radius: $border-radius;
+  padding: $spacing-sm;
+  margin-top: $spacing-md;
+  
+  p {
+    margin: 0;
+    color: $gray-600;
+    font-size: $font-size-sm;
+  }
+}
+
+.error-message {
+  color: $danger-color;
+  font-size: $font-size-xs;
+  margin-top: $spacing-xs;
+}
+
+/* Responsive design */
+@include media-breakpoint-down(md) {
+  .incidents-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-sm;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .severity-selector {
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    
+    button,
+    a {
+      width: 100%;
+    }
+  }
+}
