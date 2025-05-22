@@ -6,7 +6,6 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 use Drivejob\Core\CSRF;
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/company-profile.css">
 
 <main>
     <div class="container">

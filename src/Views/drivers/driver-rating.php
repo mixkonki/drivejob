@@ -4,7 +4,6 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-rating.css">
 <script src="<?php echo BASE_URL; ?>js/driver-rating-fix.js"></script>
 <script src="<?php echo BASE_URL; ?>js/driver-rating-update.js"></script>
 

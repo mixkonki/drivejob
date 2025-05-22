@@ -3,12 +3,8 @@
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 <!-- Σύνδεση με το CSS αρχείο του προφίλ οδηγού -->
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-profile.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-skills.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/expiring-licenses.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-rating-profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/toggle-switch.css">
-
 
 <script>
     // Ορισμός των βασικών μεταβλητών

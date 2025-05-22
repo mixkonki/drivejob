@@ -1,0 +1,148 @@
+/* Range Slider Styles */
+input[type=range] {
+  height: 25px;
+  -webkit-appearance: none;
+  margin: $spacing-sm 0;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 5px;
+    cursor: pointer;
+    animate: 0.2s;
+    box-shadow: 0px 0px 0px $dark-color;
+    background: $info-color;
+    border-radius: 1px;
+    border: 0px solid $dark-color;
+  }
+
+  &::-webkit-slider-thumb {
+    box-shadow: 0px 0px 0px $dark-color;
+    border: 1px solid $info-color;
+    height: 18px;
+    width: 18px;
+    border-radius: 25px;
+    background: $white;
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -7px;
+  }
+
+  &:focus::-webkit-slider-runnable-track {
+    background: $info-dark;
+  }
+
+  &::-moz-range-track {
+    width: 100%;
+    height: 5px;
+    cursor: pointer;
+    animate: 0.2s;
+    box-shadow: 0px 0px 0px $dark-color;
+    background: $info-color;
+    border-radius: 1px;
+    border: 0px solid $dark-color;
+  }
+
+  &::-moz-range-thumb {
+    box-shadow: 0px 0px 0px $dark-color;
+    border: 1px solid $info-color;
+    height: 18px;
+    width: 18px;
+    border-radius: 25px;
+    background: $white;
+    cursor: pointer;
+  }
+
+  &::-ms-track {
+    width: 100%;
+    height: 5px;
+    cursor: pointer;
+    animate: 0.2s;
+    background: transparent;
+    border-color: transparent;
+    color: transparent;
+  }
+
+  &::-ms-fill-lower {
+    background: $info-color;
+    border: 0px solid $dark-color;
+    border-radius: 2px;
+    box-shadow: 0px 0px 0px $dark-color;
+  }
+
+  &::-ms-fill-upper {
+    background: $info-color;
+    border: 0px solid $dark-color;
+    border-radius: 2px;
+    box-shadow: 0px 0px 0px $dark-color;
+  }
+
+  &::-ms-thumb {
+    margin-top: 1px;
+    box-shadow: 0px 0px 0px $dark-color;
+    border: 1px solid $info-color;
+    height: 18px;
+    width: 18px;
+    border-radius: 25px;
+    background: $white;
+    cursor: pointer;
+  }
+
+  &:focus::-ms-fill-lower {
+    background: $info-color;
+  }
+
+  &:focus::-ms-fill-upper {
+    background: $info-dark;
+  }
+}
+
+/* Διαχωριστικά σημεία στο slider */
+.absence-slider {
+  .absence-markers {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: $spacing-sm;
+  }
+}
+
+.absence-marker {
+  position: relative;
+  cursor: pointer;
+  font-size: $font-size-xs;
+  color: $gray-500;
+
+  &:before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 8px;
+    background: $gray-400;
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  &:hover {
+    color: $info-color;
+  }
+}
+
+/* Εμφάνιση της επιλεγμένης τιμής */
+.absence-value {
+  margin-top: $spacing-md;
+  text-align: center;
+  font-weight: $font-weight-bold;
+  color: $gray-800;
+}
+
+#absence-days-text {
+  color: $info-color;
+}

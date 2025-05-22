@@ -27,17 +27,25 @@
 @import 'components/tables';
 @import 'components/tooltips';
 @import 'components/form-buttons-fix';
+@import 'components/toggle-switch';
+@import 'components/range-slider';
 
 // Pages
 @import 'pages/home';
 @import 'pages/authentication';
 @import 'pages/driver-profile';
+@import 'pages/driver-edit-profile';
 @import 'pages/company-profile';
+@import 'pages/company-registration';
 @import 'pages/job-listings';
 @import 'pages/certifications';
 @import 'pages/driver-assessment';
 @import 'pages/driver-incidents';
 @import 'pages/driver-skills';
+@import 'pages/vehicle-experience';
+@import 'pages/driver-rating-profile';
+@import 'pages/driver-rating';
+@import 'pages/drivers-registration';
 
 // Themes
 @import 'themes/default';

@@ -1,0 +1,129 @@
+/* Στυλ για το toggle switch */
+.toggle-switch {
+  &-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  &-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .toggle-switch-slider {
+      background-color: $info-color;
+
+      &:before {
+        transform: translateX(26px);
+      }
+    }
+
+    &:focus + .toggle-switch-slider {
+      box-shadow: 0 0 1px $info-color;
+    }
+  }
+
+  &-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: $gray-400;
+    transition: $transition-base;
+    border-radius: 34px;
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: $white;
+      transition: $transition-base;
+      border-radius: 50%;
+    }
+  }
+
+  &-text {
+    margin-left: $spacing-sm;
+  }
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.toggle-label-text {
+  margin-right: $spacing-sm;
+  font-weight: $font-weight-medium;
+}
+
+/* Στυλ για το container του toggle */
+.toggle-container {
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+}
+
+/* Στυλ για το container του ποινικού μητρώου */
+.criminal-record-upload {
+  margin-top: $spacing-md;
+  padding: $spacing-md;
+  border: $border-width solid $border-color;
+  border-radius: $border-radius;
+  background-color: $gray-100;
+
+  .file-upload-label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: $font-weight-medium;
+  }
+
+  input[type="file"] {
+    width: 100%;
+    padding: $spacing-sm;
+    border: $border-width solid $border-color;
+    border-radius: $border-radius;
+    background-color: $white;
+  }
+
+  .current-file {
+    margin-top: $spacing-sm;
+    padding: $spacing-xs;
+    background-color: $info-light;
+    border-radius: $border-radius;
+
+    a {
+      color: $link-color;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+/* Προσαρμογή για μικρότερες οθόνες */
+@media (max-width: map-get($grid-breakpoints, md)) {
+  .toggle-switch-label {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .toggle-label-text {
+    margin-bottom: $spacing-sm;
+  }
+  
+  .toggle-switch-text {
+    margin-top: $spacing-sm;
+    margin-left: 0;
+  }
+}
