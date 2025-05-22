@@ -34,7 +34,6 @@ $driverCertifications = $driverProfile['certifications'] ?? [];
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/form-buttons-fix.css">
 <script src="<?php echo BASE_URL; ?>js/certifications.js"></script>
 
 <main>

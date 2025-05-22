@@ -1,0 +1,311 @@
+/* Στυλ για τη σελίδα πιστοποιητικών εκπαίδευσης */
+
+.certifications-container {
+    margin-bottom: 30px;
+}
+
+.certifications-container .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.certifications-container .col-md-6 {
+    position: relative;
+    width: 50%;
+    padding-right: 15px;
+    padding-left: 15px;
+    box-sizing: border-box;
+}
+
+.certification-form {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.certification-form h4 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 600;
+}
+
+.certifications-table {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.certifications-table h4 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -10px;
+    margin-left: -10px;
+    margin-bottom: 15px;
+}
+
+.form-row .form-group {
+    flex: 1 0 0%;
+    padding-right: 10px;
+    padding-left: 10px;
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.file-upload {
+    margin-bottom: 15px;
+}
+
+.file-upload label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.file-upload-input {
+    position: relative;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.file-upload-input input[type="file"] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #f8f9fa;
+}
+
+.edit-certification {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 5px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-certification:hover {
+    background-color: #138496;
+}
+
+.btn-delete-certification {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-delete-certification:hover {
+    background-color: #c82333;
+}
+
+.file-preview {
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+}
+
+.file-preview img {
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 2px;
+    background-color: #fff;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+}
+
+/* Αφαιρέθηκε η διπλή δήλωση */
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+/* Προσαρμογή πλάτους στηλών */
+.table th:first-child,
+.table td:first-child {
+    width: 40px;
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+    width: 30%;
+}
+
+.table th:last-child,
+.table td:last-child {
+    width: 90px;
+    text-align: center;
+}
+
+.table th {
+    background-color: #f2f2f2;
+    font-weight: 600;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.table tfoot tr.total-row {
+    background-color: #f8f9fa;
+    font-weight: 500;
+}
+
+.table tfoot tr.grand-total {
+    background-color: #e9ecef;
+    font-weight: 700;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.form-actions {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-save {
+    background-color: #28a745;
+}
+
+.btn-save:hover {
+    background-color: #218838;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    text-decoration: none;
+    color: white;
+}
+
+.highlight-save-button {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* Προσαρμογή για κινητές συσκευές */
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+    }
+    
+    .col-md-6 {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .form-buttons {
+        flex-direction: column;
+    }
+    
+    .form-buttons button,
+    .form-buttons a {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
