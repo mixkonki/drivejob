@@ -326,3 +326,41 @@
     @content;
   }
 }
+
+// Overlay mixin
+@mixin overlay($color, $opacity) {
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: $color;
+    opacity: $opacity;
+    z-index: 1;
+  }
+}
+
+// Custom scrollbar mixin
+@mixin custom-scrollbar($width, $track-color, $thumb-color) {
+  &::-webkit-scrollbar {
+    width: $width;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: $track-color;
+    border-radius: $width / 2;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: $thumb-color;
+    border-radius: $width / 2;
+    border: 2px solid $track-color;
+  }
+  
+  scrollbar-width: thin;
+  scrollbar-color: $thumb-color $track-color;
+}
