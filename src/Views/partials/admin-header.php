@@ -71,6 +71,13 @@
                     <span>Logs</span>
                 </a>
             </li>
+
+            <li class="admin-nav-item">
+                <a href="<?php echo BASE_URL; ?>admin/monitoring/dashboard" class="admin-nav-link <?php echo strpos($_SERVER['REQUEST_URI'], '/admin/monitoring') !== false ? 'active' : ''; ?>">
+                    <i class="icon-monitoring"></i>
+                    <span>System Monitoring</span>
+                </a>
+            </li>
         </ul>
 
         <div class="admin-nav-footer">
