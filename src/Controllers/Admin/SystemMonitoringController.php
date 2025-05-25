@@ -5,6 +5,8 @@ namespace Drivejob\Controllers\Admin;
 use Drivejob\Core\Controller;
 use Drivejob\Models\Admin\SystemMonitoringModel;
 use Drivejob\Models\Admin\SystemMonitoringModelFactory;
+use Drivejob\Models\Admin\DummySystemMonitoringModel;
+use Drivejob\Models\Admin\DummySystemMonitoringModelFactory;
 use Drivejob\Helpers\MonitoringHelper;
 
 class SystemMonitoringController extends Controller
@@ -14,7 +16,14 @@ class SystemMonitoringController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->model = SystemMonitoringModelFactory::create();
+
+        // Προσπάθεια χρήσης του κανονικού μοντέλου
+        try {
+            $this->model = SystemMonitoringModelFactory::create();
+        } catch (\Exception $e) {
+            // Σε περίπτωση σφάλματος, χρήση του dummy μοντέλου
+            $this->model = DummySystemMonitoringModelFactory::create();
+        }
     }
 
     /**
