@@ -217,28 +217,28 @@ $router->group(['prefix' => 'admin'], function ($router) {
     // System Monitoring
     $router->group(['prefix' => 'monitoring'], function ($router) {
         // Dashboard
-        $router->get('/dashboard', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'dashboard'])->name('admin.monitoring.dashboard');
+        $router->get('/dashboard', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'dashboard'])->name('admin.monitoring.dashboard');
 
         // Errors
-        $router->get('/errors', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'errors'])->name('admin.monitoring.errors');
-        $router->get('/errors/{period}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'errors'])->name('admin.monitoring.errors.period');
+        $router->get('/errors', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'errors'])->name('admin.monitoring.errors');
+        $router->get('/errors/{period}', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'errors'])->name('admin.monitoring.errors.period');
 
         // Performance
-        $router->get('/performance', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'performance'])->name('admin.monitoring.performance');
-        $router->get('/performance/{period}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'performance'])->name('admin.monitoring.performance.period');
+        $router->get('/performance', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'performance'])->name('admin.monitoring.performance');
+        $router->get('/performance/{period}', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'performance'])->name('admin.monitoring.performance.period');
 
         // Usage
-        $router->get('/usage', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'usage'])->name('admin.monitoring.usage');
-        $router->get('/usage/{period}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'usage'])->name('admin.monitoring.usage.period');
+        $router->get('/usage', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'usage'])->name('admin.monitoring.usage');
+        $router->get('/usage/{period}', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'usage'])->name('admin.monitoring.usage.period');
 
         // Logs
-        $router->get('/logs', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'logs'])->name('admin.monitoring.logs');
-        $router->get('/logs/{type}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'logs'])->name('admin.monitoring.logs.type');
-        $router->post('/logs/clear', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'clearLogs'])->name('admin.monitoring.logs.clear');
-        $router->post('/logs/clear/{type}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'clearLogs'])->name('admin.monitoring.logs.clear.type');
+        $router->get('/logs', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'logs'])->name('admin.monitoring.logs');
+        $router->get('/logs/{type}', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'logs'])->name('admin.monitoring.logs.type');
+        $router->post('/logs/clear', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'clearLogs'])->name('admin.monitoring.logs.clear');
+        $router->post('/logs/clear/{type}', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'clearLogs'])->name('admin.monitoring.logs.clear.type');
 
         // Database Backup
-        $router->post('/backup-database', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'backupDatabase'])->name('admin.monitoring.backup-database');
+        $router->post('/backup-database', [\Drivejob\Controllers\Admin\SimpleMonitoringController::class, 'backupDatabase'])->name('admin.monitoring.backup-database');
     });
 });
 
