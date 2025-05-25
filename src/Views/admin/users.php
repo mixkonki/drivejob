@@ -3,6 +3,8 @@
 include ROOT_DIR . '/src/Views/partials/admin-header.php';
 ?>
 
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/admin-users.css">
+
 <div class="admin-container">
     <div class="admin-header">
         <h1>Διαχείριση Χρηστών</h1>

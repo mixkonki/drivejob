@@ -61,6 +61,8 @@ class AdminController extends BaseController
         $this->requireAdminAuth();
         $this->requirePermission('users', 'read');
 
+        // Έλεγχος αν υπάρχει type στο GET, αλλιώς χρήση του parameter
+        $type = $_GET['type'] ?? $type;
         $page = (int)($_GET['page'] ?? 1);
         $search = $_GET['search'] ?? '';
         $status = $_GET['status'] ?? 'all';

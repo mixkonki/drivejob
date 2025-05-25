@@ -84,7 +84,7 @@ class AdminModel extends BaseModel
                 d.last_name,
                 d.phone, 
                 d.is_verified, 
-                d.is_verified as is_active,
+                d.is_active,
                 d.created_at, 
                 d.profile_image,
                 'driver' as type 
@@ -98,9 +98,9 @@ class AdminModel extends BaseModel
                 '' as last_name,
                 c.phone, 
                 c.is_verified,
-                c.is_verified as is_active, 
+                c.is_active, 
                 c.created_at,
-                c.logo as profile_image,
+                c.company_logo as profile_image,
                 'company' as type 
                 FROM companies c";
 
