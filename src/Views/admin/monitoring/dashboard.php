@@ -1,5 +1,17 @@
 <?php
 // Admin System Monitoring Dashboard
+// Χρησιμοποιούμε τη βοηθητική συνάρτηση για τη μορφοποίηση των bytes
+use Drivejob\Helpers\MonitoringHelper;
+
+// Ορίζουμε τη συνάρτηση formatBytes για συμβατότητα με τον υπάρχοντα κώδικα
+if (!function_exists('formatBytes')) {
+    function formatBytes($bytes, $precision = 2)
+    {
+        return MonitoringHelper::formatBytes($bytes, $precision);
+    }
+}
+
+// Συμπεριλαμβάνουμε το header μετά τον ορισμό των συναρτήσεων
 include ROOT_DIR . '/src/Views/partials/admin-header.php';
 ?>
 
