@@ -80,23 +80,20 @@ class AuthModel
                 }
             }
 
-            // Έλεγχος αν ο χρήστης είναι διαχειριστής
-            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
-            /*
+            // Έλεγχος αν ο χρήστης είναι διαχειριστής (από τον πίνακα users)
             if ($role === 'admin' || $role === null) {
                 $admin = $this->authenticateAdmin($email, $password);
                 if ($admin) {
                     return [
                         'user_id' => $admin['id'],
                         'role' => 'admin',
-                        'email' => $admin['email'],
-                        'name' => $admin['name'],
+                        'email' => $admin['username'], // Χρησιμοποιούμε username ως email
+                        'name' => 'Administrator',
                         'is_verified' => 1,
                         'is_active' => 1
                     ];
                 }
             }
-            */
 
             return false;
         } catch (\Exception $e) {
@@ -186,27 +183,42 @@ class AuthModel
     /**
      * Αυθεντικοποίηση διαχειριστή
      *
-     * @param string $email Email του διαχειριστή
+     * @param string $email Email του διαχειριστή (χρησιμοποιούμε το username field)
      * @param string $password Κωδικός πρόσβασης
      * @return array|false Τα στοιχεία του διαχειριστή ή false σε περίπτωση αποτυχίας
      */
     private function authenticateAdmin($email, $password)
     {
-        // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
-        Logger::debug('authenticateAdmin method is disabled');
-        return false;
-
-        /*
         try {
-            $query = "SELECT * FROM admins WHERE email = ?";
+            Logger::debug('AuthModel::authenticateAdmin called', [
+                'username' => $email,
+                'session_id' => session_id()
+            ]);
+
+            // Χρησιμοποιούμε τον πίνακα users με το πεδίο username
+            $query = "SELECT * FROM users WHERE username = ? AND role = 'admin'";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([$email]);
             $admin = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-            if ($admin && password_verify($password, $admin['password'])) {
-                // Ενημέρωση της ημερομηνίας τελευταίας σύνδεσης
-                $this->updateLastLogin('admins', $admin['id']);
-                return $admin;
+            Logger::debug('Admin query result', [
+                'admin_found' => !empty($admin),
+                'admin_data' => $admin ? [
+                    'id' => $admin['id'],
+                    'username' => $admin['username'],
+                    'role' => $admin['role']
+                ] : null
+            ]);
+
+            if ($admin) {
+                $passwordVerified = password_verify($password, $admin['password']);
+                Logger::debug('Password verification result', [
+                    'password_verified' => $passwordVerified
+                ]);
+
+                if ($passwordVerified) {
+                    return $admin;
+                }
             }
 
             return false;
@@ -214,7 +226,6 @@ class AuthModel
             Logger::error('Error in authenticateAdmin: ' . $e->getMessage());
             return false;
         }
-        */
     }
 
     /**

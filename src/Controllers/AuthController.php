@@ -35,8 +35,10 @@ class AuthController extends BaseUserController
             $role = Session::get('role');
             if ($role === 'driver') {
                 $this->redirect(BASE_URL . 'drivers/profile');
-            } else {
+            } elseif ($role === 'company') {
                 $this->redirect(BASE_URL . 'companies/profile');
+            } elseif ($role === 'admin') {
+                $this->redirect(BASE_URL . 'admin/dashboard');
             }
         }
 
@@ -124,7 +126,7 @@ class AuthController extends BaseUserController
             // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
             $redirectUrl = Session::has('redirect_after_login')
                 ? Session::get('redirect_after_login')
-                : BASE_URL . ($user['role'] === 'driver' ? 'drivers/profile' : 'companies/profile');
+                : $this->getDefaultRedirectUrl($user['role']);
 
             Session::remove('redirect_after_login');
 
@@ -347,5 +349,25 @@ class AuthController extends BaseUserController
         }
 
         $this->redirect(BASE_URL . 'auth/verification-required');
+    }
+
+    /**
+     * Επιστρέφει το προεπιλεγμένο URL ανακατεύθυνσης βάσει του ρόλου
+     *
+     * @param string $role Ο ρόλος του χρήστη
+     * @return string Το URL ανακατεύθυνσης
+     */
+    private function getDefaultRedirectUrl($role)
+    {
+        switch ($role) {
+            case 'driver':
+                return BASE_URL . 'drivers/profile';
+            case 'company':
+                return BASE_URL . 'companies/profile';
+            case 'admin':
+                return BASE_URL . 'admin/dashboard';
+            default:
+                return BASE_URL;
+        }
     }
 }

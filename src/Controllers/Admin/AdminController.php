@@ -1,11 +1,11 @@
 <?php
 
-namespace Drivejob\Controllers;
+namespace Drivejob\Controllers\Admin;
 
-use Drivejob\Core\BaseController;
-use Drivejob\Models\AdminModel;
+use Drivejob\Controllers\BaseController;
+use Drivejob\Models\Admin\AdminModel;
 use Drivejob\Models\Driver\ProfileModel as DriverProfileModel;
-use Drivejob\Models\Company\ProfileModel as CompanyProfileModel;
+use Drivejob\Models\Company\CompaniesModel as CompanyProfileModel;
 use Drivejob\Services\AdminActivityLogger;
 
 /**
@@ -35,86 +35,6 @@ class AdminController extends BaseController
         $this->activityLogger = new AdminActivityLogger($pdo);
     }
 
-    /**
-     * Εμφάνιση της σελίδας login για admins
-     */
-    public function showLoginForm()
-    {
-        // Αν είναι ήδη συνδεδεμένος admin, redirect στο dashboard
-        if ($this->isAdminLoggedIn()) {
-            $this->redirect('/admin/dashboard');
-            return;
-        }
-
-        $this->view('admin/login', [
-            'title' => 'Admin Login - DriveJob',
-            'error' => $_SESSION['error_message'] ?? null
-        ]);
-
-        unset($_SESSION['error_message']);
-    }
-
-    /**
-     * Επεξεργασία login για admins
-     */
-    public function login()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('/admin/login');
-            return;
-        }
-
-        $email = $this->sanitizeEmail($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-
-        if (empty($email) || empty($password)) {
-            $_SESSION['error_message'] = 'Παρακαλώ συμπληρώστε όλα τα πεδία';
-            $this->redirect('/admin/login');
-            return;
-        }
-
-        $admin = $this->adminModel->authenticate($email, $password);
-
-        if ($admin) {
-            // Επιτυχής σύνδεση
-            $_SESSION['admin_id'] = $admin['id'];
-            $_SESSION['admin_email'] = $admin['email'];
-            $_SESSION['admin_name'] = $admin['first_name'] . ' ' . $admin['last_name'];
-            $_SESSION['admin_role'] = $admin['role_level'];
-            $_SESSION['admin_permissions'] = json_decode($admin['permissions'], true);
-
-            // Log της δραστηριότητας
-            $this->activityLogger->log($admin['id'], 'login', null, null, [
-                'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'
-            ]);
-
-            $this->redirect('/admin/dashboard');
-        } else {
-            $_SESSION['error_message'] = 'Λάθος email ή κωδικός πρόσβασης';
-            $this->redirect('/admin/login');
-        }
-    }
-
-    /**
-     * Logout για admins
-     */
-    public function logout()
-    {
-        if (isset($_SESSION['admin_id'])) {
-            $this->activityLogger->log($_SESSION['admin_id'], 'logout');
-        }
-
-        // Καθαρισμός admin session
-        unset($_SESSION['admin_id']);
-        unset($_SESSION['admin_email']);
-        unset($_SESSION['admin_name']);
-        unset($_SESSION['admin_role']);
-        unset($_SESSION['admin_permissions']);
-
-        $_SESSION['success_message'] = 'Αποσυνδεθήκατε επιτυχώς';
-        $this->redirect('/admin/login');
-    }
 
     /**
      * Admin Dashboard - Κεντρική σελίδα διαχείρισης
@@ -126,7 +46,7 @@ class AdminController extends BaseController
         // Συλλογή στατιστικών για το dashboard
         $stats = $this->getDashboardStats();
 
-        $this->view('admin/dashboard', [
+        $this->view('Admin/dashboard', [
             'title' => 'Admin Dashboard - DriveJob',
             'stats' => $stats,
             'admin' => $this->getCurrentAdmin()
@@ -147,7 +67,7 @@ class AdminController extends BaseController
 
         $users = $this->adminModel->getUsers($type, $page, 20, $search, $status);
 
-        $this->view('admin/users', [
+        $this->view('Admin/users', [
             'title' => 'Διαχείριση Χρηστών - Admin',
             'users' => $users,
             'type' => $type,
@@ -166,9 +86,9 @@ class AdminController extends BaseController
         $this->requirePermission('users', 'read');
 
         if ($userType === 'driver') {
-            $user = $this->driverModel->getDriverProfile($userId);
+            $user = $this->driverModel->getDriverById($userId);
         } elseif ($userType === 'company') {
-            $user = $this->companyModel->getCompanyProfile($userId);
+            $user = $this->companyModel->getCompanyById($userId);
         } else {
             $this->redirect('/admin/users');
             return;
@@ -180,7 +100,7 @@ class AdminController extends BaseController
             return;
         }
 
-        $this->view('admin/user-details', [
+        $this->view('Admin/user-details', [
             'title' => 'Λεπτομέρειες Χρήστη - Admin',
             'user' => $user,
             'userType' => $userType
@@ -203,7 +123,7 @@ class AdminController extends BaseController
         $success = $this->adminModel->toggleUserStatus($userId, $userType);
 
         if ($success) {
-            $this->activityLogger->log($_SESSION['admin_id'], 'toggle_user_status', $userType, $userId);
+            $this->activityLogger->log($_SESSION['user_id'], 'toggle_user_status', $userType, $userId);
             $_SESSION['success_message'] = 'Η κατάσταση του χρήστη ενημερώθηκε επιτυχώς';
         } else {
             $_SESSION['error_message'] = 'Σφάλμα κατά την ενημέρωση της κατάστασης';
@@ -226,7 +146,7 @@ class AdminController extends BaseController
 
         $listings = $this->adminModel->getJobListings($page, 20, $search, $status);
 
-        $this->view('admin/job-listings', [
+        $this->view('Admin/job-listings', [
             'title' => 'Διαχείριση Αγγελιών - Admin',
             'listings' => $listings,
             'search' => $search,
@@ -246,7 +166,7 @@ class AdminController extends BaseController
         $period = $_GET['period'] ?? '30days';
         $analytics = $this->adminModel->getAnalytics($period);
 
-        $this->view('admin/analytics', [
+        $this->view('Admin/analytics', [
             'title' => 'Στατιστικά & Analytics - Admin',
             'analytics' => $analytics,
             'period' => $period
@@ -268,7 +188,7 @@ class AdminController extends BaseController
 
         $settings = $this->adminModel->getSystemSettings();
 
-        $this->view('admin/settings', [
+        $this->view('Admin/settings', [
             'title' => 'Ρυθμίσεις Συστήματος - Admin',
             'settings' => $settings
         ]);
@@ -293,7 +213,7 @@ class AdminController extends BaseController
         $success = $this->adminModel->updateSystemSettings($settings);
 
         if ($success) {
-            $this->activityLogger->log($_SESSION['admin_id'], 'update_settings', 'system', null, $settings);
+            $this->activityLogger->log($_SESSION['user_id'], 'update_settings', 'system', null, $settings);
             $_SESSION['success_message'] = 'Οι ρυθμίσεις ενημερώθηκαν επιτυχώς';
         } else {
             $_SESSION['error_message'] = 'Σφάλμα κατά την ενημέρωση των ρυθμίσεων';
@@ -318,7 +238,7 @@ class AdminController extends BaseController
 
         $logs = $this->adminModel->getActivityLogs($page, 50, $adminId, $action, $dateFrom, $dateTo);
 
-        $this->view('admin/activity-logs', [
+        $this->view('Admin/activity-logs', [
             'title' => 'Logs Δραστηριότητας - Admin',
             'logs' => $logs,
             'filters' => [
@@ -336,7 +256,9 @@ class AdminController extends BaseController
      */
     private function isAdminLoggedIn()
     {
-        return isset($_SESSION['admin_id']) && !empty($_SESSION['admin_id']);
+        return isset($_SESSION['user_id']) &&
+            isset($_SESSION['role']) &&
+            $_SESSION['role'] === 'admin';
     }
 
     /**
@@ -346,7 +268,8 @@ class AdminController extends BaseController
     {
         if (!$this->isAdminLoggedIn()) {
             $_SESSION['error_message'] = 'Παρακαλώ συνδεθείτε ως διαχειριστής';
-            $this->redirect('/admin/login');
+            $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+            $this->redirect(BASE_URL . 'auth/login');
             exit;
         }
     }
@@ -356,13 +279,9 @@ class AdminController extends BaseController
      */
     private function requirePermission($resource, $action)
     {
-        $permissions = $_SESSION['admin_permissions'] ?? [];
-
-        if (!isset($permissions[$resource]) || !in_array($action, $permissions[$resource])) {
-            $_SESSION['error_message'] = 'Δεν έχετε δικαίωμα για αυτή την ενέργεια';
-            $this->redirect('/admin/dashboard');
-            exit;
-        }
+        // Προσωρινά επιτρέπουμε όλες τις ενέργειες για τους admins
+        // Μπορείτε να προσθέσετε πιο λεπτομερή έλεγχο δικαιωμάτων αργότερα
+        return true;
     }
 
     /**
@@ -375,11 +294,11 @@ class AdminController extends BaseController
         }
 
         return [
-            'id' => $_SESSION['admin_id'],
-            'email' => $_SESSION['admin_email'],
-            'name' => $_SESSION['admin_name'],
-            'role' => $_SESSION['admin_role'],
-            'permissions' => $_SESSION['admin_permissions']
+            'id' => $_SESSION['user_id'],
+            'email' => $_SESSION['user_email'] ?? '',
+            'name' => $_SESSION['user_name'] ?? 'Administrator',
+            'role' => 'super_admin',
+            'permissions' => ['all'] // Προσωρινά δίνουμε όλα τα δικαιώματα
         ];
     }
 

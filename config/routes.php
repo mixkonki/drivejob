@@ -190,53 +190,32 @@ $router->group(['prefix' => 'job-offers'], function ($router) {
 // Διαδρομές με ελληνικά ονόματα για SEO
 $router->get('/αγγελιες/οδηγος/{id}', [UnifiedJobListingController::class, 'driverListings'])->name('job-listings.driver.greek');
 
+// Ομαδοποίηση διαδρομών για το Admin Panel
+$router->group(['prefix' => 'admin'], function ($router) {
+    // Admin Dashboard
+    $router->get('/dashboard', [\Drivejob\Controllers\Admin\AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+    // User Management
+    $router->get('/users', [\Drivejob\Controllers\Admin\AdminController::class, 'users'])->name('admin.users');
+    $router->get('/users/{type}', [\Drivejob\Controllers\Admin\AdminController::class, 'users'])->name('admin.users.type');
+    $router->get('/user-details/{userId}/{userType}', [\Drivejob\Controllers\Admin\AdminController::class, 'userDetails'])->name('admin.user-details');
+    $router->post('/toggle-user-status/{userId}/{userType}', [\Drivejob\Controllers\Admin\AdminController::class, 'toggleUserStatus'])->name('admin.toggle-user-status');
+
+    // Job Listings Management
+    $router->get('/job-listings', [\Drivejob\Controllers\Admin\AdminController::class, 'jobListings'])->name('admin.job-listings');
+
+    // Analytics & Reports
+    $router->get('/analytics', [\Drivejob\Controllers\Admin\AdminController::class, 'analytics'])->name('admin.analytics');
+
+    // System Settings
+    $router->get('/settings', [\Drivejob\Controllers\Admin\AdminController::class, 'settings'])->name('admin.settings');
+    $router->post('/settings', [\Drivejob\Controllers\Admin\AdminController::class, 'settings']);
+
+    // Activity Logs
+    $router->get('/activity-logs', [\Drivejob\Controllers\Admin\AdminController::class, 'activityLogs'])->name('admin.activity-logs');
+});
+
 // Διαδρομή για 404 Not Found
 $router->notFound(function () {
     require_once ROOT_DIR . '/src/Views/errors/404.php';
-});
-
-
-// Ομαδοποίηση διαδρομών αυθεντικοποίησης
-$router->group(['prefix' => 'auth'], function ($router) {
-    $router->get('/login', [AuthController::class, 'showLoginForm'])->name('auth.login');
-    $router->post('/login', [AuthController::class, 'login']);
-    $router->get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
-    $router->get('/verify/{token}', [AuthController::class, 'verify'])->name('auth.verify');
-    $router->get('/password-reset', [AuthController::class, 'showPasswordResetForm'])->name('auth.password-reset');
-    $router->post('/password-reset', [AuthController::class, 'sendPasswordResetLink']);
-    $router->get('/password-reset/{token}', [AuthController::class, 'showResetPasswordForm'])->name('auth.password-reset.token');
-    $router->post('/password-reset/{token}', [AuthController::class, 'resetPassword']);
-    $router->get('/access-denied', [AuthController::class, 'accessDenied'])->name('auth.access-denied');
-    $router->get('/verification-required', [AuthController::class, 'verificationRequired'])->name('auth.verification-required');
-    $router->post('/resend-verification', [AuthController::class, 'resendVerification'])->name('auth.resend-verification');
-});
-
-// Ομαδοποίηση διαδρομών για το Admin Panel
-$router->group(['prefix' => 'admin'], function ($router) {
-    // Admin Authentication
-    $router->get('/login', [\Drivejob\Controllers\AdminController::class, 'showLoginForm'])->name('admin.login');
-    $router->post('/login', [\Drivejob\Controllers\AdminController::class, 'login']);
-    $router->get('/logout', [\Drivejob\Controllers\AdminController::class, 'logout'])->name('admin.logout');
-
-    // Admin Dashboard
-    $router->get('/dashboard', [\Drivejob\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
-
-    // User Management
-    $router->get('/users', [\Drivejob\Controllers\AdminController::class, 'users'])->name('admin.users');
-    $router->get('/users/{type}', [\Drivejob\Controllers\AdminController::class, 'users'])->name('admin.users.type');
-    $router->get('/user-details/{userId}/{userType}', [\Drivejob\Controllers\AdminController::class, 'userDetails'])->name('admin.user-details');
-    $router->post('/toggle-user-status/{userId}/{userType}', [\Drivejob\Controllers\AdminController::class, 'toggleUserStatus'])->name('admin.toggle-user-status');
-
-    // Job Listings Management
-    $router->get('/job-listings', [\Drivejob\Controllers\AdminController::class, 'jobListings'])->name('admin.job-listings');
-
-    // Analytics & Reports
-    $router->get('/analytics', [\Drivejob\Controllers\AdminController::class, 'analytics'])->name('admin.analytics');
-
-    // System Settings
-    $router->get('/settings', [\Drivejob\Controllers\AdminController::class, 'settings'])->name('admin.settings');
-    $router->post('/settings', [\Drivejob\Controllers\AdminController::class, 'settings']);
-
-    // Activity Logs
-    $router->get('/activity-logs', [\Drivejob\Controllers\AdminController::class, 'activityLogs'])->name('admin.activity-logs');
 });
