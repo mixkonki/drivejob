@@ -71,6 +71,74 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     // Δημιουργία ευρετηρίων για καλύτερη απόδοση
+    // Προσπάθεια διαγραφής των ευρετηρίων αν υπάρχουν
+    try {
+        $pdo->exec("ALTER TABLE error_logs DROP INDEX idx_error_logs_type");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος αν το ευρετήριο δεν υπάρχει
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE error_logs DROP INDEX idx_error_logs_created_at");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE error_logs DROP INDEX idx_error_logs_user_id");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE performance_logs DROP INDEX idx_performance_logs_created_at");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE performance_logs DROP INDEX idx_performance_logs_user_id");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE usage_logs DROP INDEX idx_usage_logs_user_id");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE usage_logs DROP INDEX idx_usage_logs_created_at");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE usage_logs DROP INDEX idx_usage_logs_page");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE system_logs DROP INDEX idx_system_logs_type");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE system_logs DROP INDEX idx_system_logs_created_at");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE system_logs DROP INDEX idx_system_logs_user_id");
+    } catch (PDOException $e) {
+        // Αγνόηση σφάλματος
+    }
+
+    // Δημιουργία των ευρετηρίων
     $pdo->exec("CREATE INDEX idx_error_logs_type ON error_logs (type)");
     $pdo->exec("CREATE INDEX idx_error_logs_created_at ON error_logs (created_at)");
     $pdo->exec("CREATE INDEX idx_error_logs_user_id ON error_logs (user_id)");
