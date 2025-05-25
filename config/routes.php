@@ -210,3 +210,33 @@ $router->group(['prefix' => 'auth'], function ($router) {
     $router->get('/verification-required', [AuthController::class, 'verificationRequired'])->name('auth.verification-required');
     $router->post('/resend-verification', [AuthController::class, 'resendVerification'])->name('auth.resend-verification');
 });
+
+// Ομαδοποίηση διαδρομών για το Admin Panel
+$router->group(['prefix' => 'admin'], function ($router) {
+    // Admin Authentication
+    $router->get('/login', [\Drivejob\Controllers\AdminController::class, 'showLoginForm'])->name('admin.login');
+    $router->post('/login', [\Drivejob\Controllers\AdminController::class, 'login']);
+    $router->get('/logout', [\Drivejob\Controllers\AdminController::class, 'logout'])->name('admin.logout');
+
+    // Admin Dashboard
+    $router->get('/dashboard', [\Drivejob\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+    // User Management
+    $router->get('/users', [\Drivejob\Controllers\AdminController::class, 'users'])->name('admin.users');
+    $router->get('/users/{type}', [\Drivejob\Controllers\AdminController::class, 'users'])->name('admin.users.type');
+    $router->get('/user-details/{userId}/{userType}', [\Drivejob\Controllers\AdminController::class, 'userDetails'])->name('admin.user-details');
+    $router->post('/toggle-user-status/{userId}/{userType}', [\Drivejob\Controllers\AdminController::class, 'toggleUserStatus'])->name('admin.toggle-user-status');
+
+    // Job Listings Management
+    $router->get('/job-listings', [\Drivejob\Controllers\AdminController::class, 'jobListings'])->name('admin.job-listings');
+
+    // Analytics & Reports
+    $router->get('/analytics', [\Drivejob\Controllers\AdminController::class, 'analytics'])->name('admin.analytics');
+
+    // System Settings
+    $router->get('/settings', [\Drivejob\Controllers\AdminController::class, 'settings'])->name('admin.settings');
+    $router->post('/settings', [\Drivejob\Controllers\AdminController::class, 'settings']);
+
+    // Activity Logs
+    $router->get('/activity-logs', [\Drivejob\Controllers\AdminController::class, 'activityLogs'])->name('admin.activity-logs');
+});
