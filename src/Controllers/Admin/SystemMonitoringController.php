@@ -4,6 +4,7 @@ namespace Drivejob\Controllers\Admin;
 
 use Drivejob\Core\Controller;
 use Drivejob\Models\Admin\SystemMonitoringModel;
+use Drivejob\Models\Admin\SystemMonitoringModelFactory;
 use Drivejob\Helpers\MonitoringHelper;
 
 class SystemMonitoringController extends Controller
@@ -13,7 +14,7 @@ class SystemMonitoringController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->model = new SystemMonitoringModel();
+        $this->model = SystemMonitoringModelFactory::create();
     }
 
     /**
