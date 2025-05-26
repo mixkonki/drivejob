@@ -70,7 +70,7 @@ class AuthMiddleware
         // Πρώτα ελέγχουμε αν ο χρήστης είναι συνδεδεμένος
         self::isLoggedIn();
 
-        $userRole = Session::get('role');
+        $userRole = Session::get('user_role');
 
         // Έλεγχος αν ο χρήστης έχει τον απαιτούμενο ρόλο
         if (is_array($role)) {
@@ -159,7 +159,7 @@ class AuthMiddleware
         // Λήψη του χρήστη από τη βάση δεδομένων
         $container = Container::getInstance();
         $pdo = $container->get('pdo');
-        $role = Session::get('role');
+        $role = Session::get('user_role');
         $userId = Session::get('user_id');
 
         if ($role === 'driver') {
@@ -212,6 +212,20 @@ class AuthMiddleware
             throw AuthException::sessionExpired();
         }
 
+        return true;
+    }
+
+    /**
+     * Έλεγχος αν ο χρήστης είναι admin
+     */
+    public static function isAdmin()
+    {
+        Session::start();
+        
+        if (!Session::has('user_id') || Session::get('user_role') !== 'admin') {
+            throw new ForbiddenException('Δεν έχετε δικαίωμα πρόσβασης σε αυτή τη σελίδα.');
+        }
+        
         return true;
     }
 }

@@ -14,5 +14,5 @@ if (!Session::has('user_id') || !Session::has('role') || Session::get('role') !=
 }
 
 // Δημιουργία του controller και κλήση της μεθόδου edit
-$controller = new \Drivejob\Controllers\CompaniesController($pdo);
+$controller = new \Drivejob\Controllers\Company\CompaniesController($pdo);
 $controller->edit();

@@ -77,7 +77,7 @@ class BaseUserController extends BaseController
         if ($user) {
             // Επιτυχής σύνδεση
             Session::set('user_id', $user['user_id']);
-            Session::set('role', $user['role']);
+            Session::set('user_role', $user['role']);
             Session::set('user_name', $user['name']);
 
             // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση

@@ -8,8 +8,150 @@ namespace Drivejob\Models\Admin;
  * Παρέχει δοκιμαστικά δεδομένα για το σύστημα παρακολούθησης
  * μέχρι να επιλυθούν τα προβλήματα με το κανονικό μοντέλο
  */
-class DummySystemMonitoringModel
+class DummySystemMonitoringModel implements SystemMonitoringModelInterface
 {
+    /**
+     * Λήψη τρέχουσας κατάστασης συστήματος
+     */
+    public function getSystemStatus()
+    {
+        return [
+            'status' => 'healthy',
+            'database' => [
+                'connected' => true,
+                'response_time' => 45,
+                'status' => 'good'
+            ],
+            'disk_space' => [
+                'total' => '100 GB',
+                'used' => '45 GB',
+                'free' => '55 GB',
+                'percentage' => 45,
+                'status' => 'good'
+            ],
+            'memory' => [
+                'current' => '128 MB',
+                'peak' => '256 MB',
+                'limit' => '512 MB',
+                'percentage' => 25,
+                'status' => 'good'
+            ],
+            'cpu' => [
+                'usage' => 35,
+                'status' => 'good'
+            ],
+            'logs' => [
+                'files' => [],
+                'total_size' => '15 MB',
+                'status' => 'good'
+            ],
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
+    }
+
+    /**
+     * Λήψη μετρικών απόδοσης
+     */
+    public function getPerformanceMetrics($period = '24h')
+    {
+        return [
+            'response_time' => [
+                'average' => 250,
+                'unit' => 'ms'
+            ],
+            'requests' => [
+                'total' => 5000,
+                'per_minute' => 83.33
+            ],
+            'error_rate' => 0.5,
+            'active_users' => 25,
+            'database' => [
+                'size' => '125 MB',
+                'tables' => 44,
+                'connections' => 10
+            ],
+            'period' => $period
+        ];
+    }
+
+    /**
+     * Λήψη πρόσφατων σφαλμάτων
+     */
+    public function getRecentErrors($limit = 50)
+    {
+        $errors = [];
+        for ($i = 0; $i < min($limit, 10); $i++) {
+            $errors[] = [
+                'id' => $i + 1,
+                'error_type' => ['warning', 'error', 'info'][rand(0, 2)],
+                'error_message' => 'Δοκιμαστικό σφάλμα #' . ($i + 1),
+                'stack_trace' => 'Stack trace here...',
+                'user_id' => rand(1, 100),
+                'created_at' => date('Y-m-d H:i:s', strtotime('-' . rand(1, 24) . ' hours'))
+            ];
+        }
+        return $errors;
+    }
+
+    /**
+     * Λήψη στατιστικών χρήσης
+     */
+    public function getUsageStatistics($period = '7d')
+    {
+        return [
+            'registrations' => [
+                ['date' => date('Y-m-d'), 'count' => 5, 'type' => 'driver'],
+                ['date' => date('Y-m-d'), 'count' => 2, 'type' => 'company']
+            ],
+            'logins' => [
+                ['date' => date('Y-m-d'), 'count' => 45]
+            ],
+            'popular_pages' => [
+                ['page_url' => '/drivers/profile', 'views' => 150, 'avg_load_time' => 250],
+                ['page_url' => '/companies/profile', 'views' => 120, 'avg_load_time' => 280],
+                ['page_url' => '/job-listings', 'views' => 100, 'avg_load_time' => 300]
+            ],
+            'user_types' => [
+                ['type' => 'drivers', 'total' => 11, 'active' => 8],
+                ['type' => 'companies', 'total' => 1, 'active' => 1]
+            ],
+            'period' => $period
+        ];
+    }
+
+    /**
+     * Λήψη δεδομένων για γραφήματα
+     */
+    public function getChartData($chartType, $period = '7d')
+    {
+        $data = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $data[] = [
+                'date' => date('Y-m-d', strtotime("-{$i} days")),
+                'value' => rand(50, 200)
+            ];
+        }
+        return $data;
+    }
+
+    /**
+     * Καταγραφή μετρικής απόδοσης
+     */
+    public function logPerformanceMetric($type, $value, $metadata = [])
+    {
+        // Προσομοίωση επιτυχίας
+        return true;
+    }
+
+    /**
+     * Καταγραφή σφάλματος συστήματος
+     */
+    public function logSystemError($errorType, $message, $stackTrace = '', $userId = null)
+    {
+        // Προσομοίωση επιτυχίας
+        return true;
+    }
+
     /**
      * Επιστρέφει δοκιμαστικά στατιστικά συστήματος
      * 

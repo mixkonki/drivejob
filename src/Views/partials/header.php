@@ -23,7 +23,7 @@ if (!function_exists('isCurrentPage')) {
 // Έλεγχος για συνδεδεμένο χρήστη
 $isLoggedIn = Session::has('user_id');
 $userName = Session::has('user_name') ? Session::get('user_name') : '';
-$userRole = Session::has('role') ? Session::get('role') : '';
+$userRole = Session::has('user_role') ? Session::get('user_role') : '';
 ?>
 <!DOCTYPE html>
 <html lang="el">
@@ -131,20 +131,24 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                             $pdo = $GLOBALS['pdo'] ?? null;
 
                             if ($pdo) {
-                                $query = "SELECT logo FROM companies WHERE id = ?";
+                                $query = "SELECT company_logo FROM companies WHERE id = ?";
                                 $stmt = $pdo->prepare($query);
                                 $stmt->execute([$companyId]);
                                 $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-                                if ($result && !empty($result['logo'])) {
-                                    $profileImage = BASE_URL . $result['logo'];
+                                if ($result && !empty($result['company_logo'])) {
+                                    $profileImage = BASE_URL . $result['company_logo'];
                                 }
                             }
                         }
 
                         // Αν δεν βρέθηκε εικόνα, χρησιμοποίησε την προεπιλεγμένη
                         if (empty($profileImage)) {
-                            $profileImage = BASE_URL . 'img/profile_placeholder.png';
+                            if ($userRole === 'company') {
+                                $profileImage = BASE_URL . 'img/default_company_logo.png';
+                            } else {
+                                $profileImage = BASE_URL . 'img/user_icon.png';
+                            }
                         }
                         ?>
                         <style>
@@ -163,21 +167,39 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                             <?php echo htmlspecialchars($userName ?: 'Χρήστης'); ?>
                         </div>
                         <!-- Επιλογές προφίλ, αποσύνδεσης -->
-                        <?php if ($userRole === 'company') :
-                        ?>
+                        <?php if ($userRole === 'admin') : ?>
+                            <a href="<?php echo BASE_URL; ?>admin/monitoring/dashboard">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Admin Dashboard
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>admin/users">
+                                <i class="fas fa-users"></i>
+                                Διαχείριση Χρηστών
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>admin/job-listings">
+                                <i class="fas fa-briefcase"></i>
+                                Διαχείριση Αγγελιών
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>admin/analytics">
+                                <i class="fas fa-chart-line"></i>
+                                Στατιστικά
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>admin/monitoring/dashboard">
+                                <i class="fas fa-server"></i>
+                                System Monitoring
+                            </a>
+                            <div class="dropdown-divider"></div>
+                        <?php elseif ($userRole === 'company') : ?>
                             <a href="<?php echo BASE_URL; ?>companies/profile">
                                 <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
                                 Προφίλ
                             </a>
-                        <?php
-                        else :
-                        ?>
+                        <?php else : ?>
                             <a href="<?php echo BASE_URL; ?>drivers/profile">
                                 <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
                                 Προφίλ
                             </a>
-                        <?php
-                        endif; ?>
+                        <?php endif; ?>
                         <a href="<?php echo BASE_URL; ?>logout.php">
                             <img src="<?php echo BASE_URL; ?>img/logout_icon.png" alt="Logout Icon" />
                             Αποσύνδεση

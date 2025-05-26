@@ -3,28 +3,23 @@
 namespace Drivejob\Models\Admin;
 
 use PDO;
-use Drivejob\Core\Database;
-use Drivejob\Models\Admin\SystemMonitoringModel;
 
 /**
- * SystemMonitoringModelFactory - Εργοστάσιο για τη δημιουργία του SystemMonitoringModel
- * 
- * Παρέχει μια στατική μέθοδο για τη δημιουργία του SystemMonitoringModel
- * χωρίς να απαιτείται η άμεση παροχή της σύνδεσης PDO
+ * Factory για τη δημιουργία του SystemMonitoringModel
  */
 class SystemMonitoringModelFactory
 {
     /**
-     * Δημιουργεί και επιστρέφει ένα νέο αντικείμενο SystemMonitoringModel
-     * 
-     * @return SystemMonitoringModel
+     * Δημιουργία instance του SystemMonitoringModel
      */
-    public static function create()
+    public static function create(): SystemMonitoringModel
     {
-        // Λήψη της σύνδεσης PDO από το Database singleton
-        $pdo = Database::getInstance()->getConnection();
-
-        // Δημιουργία και επιστροφή του μοντέλου
-        return new SystemMonitoringModel($pdo);
+        try {
+            $pdo = require ROOT_DIR . '/config/database.php';
+            return new SystemMonitoringModel($pdo);
+        } catch (\Exception $e) {
+            error_log("SystemMonitoringModelFactory Error: " . $e->getMessage());
+            throw $e;
+        }
     }
 }

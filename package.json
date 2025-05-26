@@ -1,26 +1,44 @@
 {
   "name": "drivejob",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "DriveJob - Modern Transport & Logistics Platform",
   "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack"
+    "dev": "webpack serve --mode development",
+    "build": "webpack --mode production",
+    "watch": "webpack --watch --mode development",
+    "lint": "eslint src/js/**/*.js",
+    "format": "prettier --write \"src/**/*.{js,css,php}\""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "tesseract.js": "^6.0.1"
-  },
+  "keywords": [
+    "transport",
+    "logistics",
+    "fleet-management",
+    "driver-management"
+  ],
+  "author": "DriveJob Team",
+  "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.26.10",
-    "@babel/preset-env": "^7.26.9",
-    "babel-loader": "^10.0.0",
-    "webpack": "^5.99.5",
-    "webpack-cli": "^6.0.1"
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "babel-loader": "^9.1.3",
+    "css-loader": "^6.8.1",
+    "eslint": "^8.51.0",
+    "mini-css-extract-plugin": "^2.7.6",
+    "postcss": "^8.4.31",
+    "postcss-loader": "^7.3.3",
+    "postcss-preset-env": "^9.2.0",
+    "prettier": "^3.0.3",
+    "style-loader": "^3.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
+  },
+  "dependencies": {
+    "alpinejs": "^3.13.0",
+    "chart.js": "^4.4.0",
+    "flatpickr": "^4.6.13",
+    "htmx.org": "^1.9.6",
+    "sweetalert2": "^11.7.32"
   }
 }

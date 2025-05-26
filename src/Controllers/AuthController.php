@@ -32,7 +32,7 @@ class AuthController extends BaseUserController
     {
         // Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
         if (Session::has('user_id')) {
-            $role = Session::get('role');
+            $role = Session::get('user_role');
             if ($role === 'driver') {
                 $this->redirect(BASE_URL . 'drivers/profile');
             } elseif ($role === 'company') {
@@ -114,7 +114,7 @@ class AuthController extends BaseUserController
         if ($user) {
             // Επιτυχής σύνδεση
             Session::set('user_id', $user['user_id']);
-            Session::set('role', $user['role']);
+            Session::set('user_role', $user['role']);
             Session::set('user_name', $user['name']);
 
             // Καταγραφή για αποσφαλμάτωση
@@ -365,7 +365,7 @@ class AuthController extends BaseUserController
             case 'company':
                 return BASE_URL . 'companies/profile';
             case 'admin':
-                return BASE_URL . 'admin/dashboard';
+                return BASE_URL . 'admin/monitoring/dashboard';
             default:
                 return BASE_URL;
         }

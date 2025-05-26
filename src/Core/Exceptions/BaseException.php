@@ -3,6 +3,7 @@
 namespace Drivejob\Core\Exceptions;
 
 use Exception;
+use Drivejob\Core\Logger;
 
 /**
  * Βασική κλάση εξαίρεσης
@@ -74,5 +75,27 @@ class BaseException extends Exception
     public function getContext(): ?array
     {
         return $this->context;
+    }
+
+    /**
+     * Καταγράφει την εξαίρεση στο log
+     *
+     * @return void
+     */
+    public function log(): void
+    {
+        $logData = [
+            'type' => $this->errorType,
+            'code' => $this->getCode(),
+            'file' => $this->getFile(),
+            'line' => $this->getLine(),
+            'trace' => $this->getTraceAsString()
+        ];
+
+        if ($this->context !== null) {
+            $logData['context'] = $this->context;
+        }
+
+        Logger::error($this->getMessage(), $logData);
     }
 }

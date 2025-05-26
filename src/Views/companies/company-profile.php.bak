@@ -9,9 +9,8 @@ if (session_status() === PHP_SESSION_NONE) {
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
-<!-- Σύνδεση με τα CSS αρχεία -->
+<!-- Σύνδεση με το CSS αρχείο του προφίλ εταιρείας -->
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/company-profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/company-components.css">
 
 
 <main>
@@ -128,27 +127,6 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <?php else : ?>
                         <p class="profile-empty">Δεν έχετε δημιουργήσει ακόμα αγγελίες. <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα αγγελία</a></p>
                     <?php endif; ?>
-                </section>
-
-                <!-- Νέα Sections με Components -->
-                <section class="profile-section">
-                    <h2>Λειτουργίες & Υπηρεσίες</h2>
-                    <div class="features-grid">
-                        <!-- Transport Types Component -->
-                        <?php include ROOT_DIR . '/src/Views/components/company/transport-types-card.php'; ?>
-
-                        <!-- Fleet Management Component -->
-                        <?php include ROOT_DIR . '/src/Views/components/company/fleet-management-card.php'; ?>
-
-                        <!-- Driver Management Component -->
-                        <?php include ROOT_DIR . '/src/Views/components/company/driver-management-card.php'; ?>
-
-                        <!-- Compliance Component -->
-                        <?php include ROOT_DIR . '/src/Views/components/company/compliance-card.php'; ?>
-
-                        <!-- Subscription Component -->
-                        <?php include ROOT_DIR . '/src/Views/components/company/subscription-card.php'; ?>
-                    </div>
                 </section>
             </div>
 

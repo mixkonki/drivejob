@@ -259,8 +259,8 @@ class AdminController extends BaseController
     private function isAdminLoggedIn()
     {
         return isset($_SESSION['user_id']) &&
-            isset($_SESSION['role']) &&
-            $_SESSION['role'] === 'admin';
+            isset($_SESSION['user_role']) &&
+            $_SESSION['user_role'] === 'admin';
     }
 
     /**

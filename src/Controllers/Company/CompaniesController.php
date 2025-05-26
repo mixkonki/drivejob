@@ -545,6 +545,38 @@ class CompaniesController extends BaseUserController
             'industry' => $this->sanitize($_POST['industry'] ?? null),
             'company_size' => $this->sanitize($_POST['company_size'] ?? null),
             'founded_year' => $this->sanitize($_POST['founded_year'] ?? null),
+            'vat_number' => $this->sanitize($_POST['vat_number'] ?? null),
+            'position' => $this->sanitize($_POST['position'] ?? null),
+            'foundation_year' => $this->sanitize($_POST['foundation_year'] ?? null),
+            'social_linkedin' => $this->sanitizeUrl($_POST['social_linkedin'] ?? null),
+            'social_facebook' => $this->sanitizeUrl($_POST['social_facebook'] ?? null),
+            'social_twitter' => $this->sanitizeUrl($_POST['social_twitter'] ?? null),
+
+            // Νέα πεδία για fleet management
+            'fleet_size' => intval($_POST['fleet_size'] ?? 0),
+            'active_drivers' => intval($_POST['active_drivers'] ?? 0),
+            'has_hr_system' => isset($_POST['has_hr_system']) ? 1 : 0,
+            'has_payroll_system' => isset($_POST['has_payroll_system']) ? 1 : 0,
+            'has_training_program' => isset($_POST['has_training_program']) ? 1 : 0,
+            'has_fleet_management' => isset($_POST['has_fleet_management']) ? 1 : 0,
+            'has_telematics' => isset($_POST['has_telematics']) ? 1 : 0,
+            'has_route_optimization' => isset($_POST['has_route_optimization']) ? 1 : 0,
+            'maintenance_provider' => $this->sanitize($_POST['maintenance_provider'] ?? null),
+            'average_hiring_time' => intval($_POST['average_hiring_time'] ?? 0),
+
+            // Compliance & Legal
+            'has_legal_support' => isset($_POST['has_legal_support']) ? 1 : 0,
+            'operates_internationally' => isset($_POST['operates_internationally']) ? 1 : 0,
+
+            // Subscription
+            'subscription_plan' => $this->sanitize($_POST['subscription_plan'] ?? 'basic'),
+
+            // JSON fields
+            'transport_types' => isset($_POST['transport_types']) ? json_encode($_POST['transport_types']) : '[]',
+            'operating_countries' => isset($_POST['operating_countries']) ? json_encode($_POST['operating_countries']) : '[]',
+            'specializations' => isset($_POST['specializations']) ? json_encode($_POST['specializations']) : '[]',
+            'enabled_modules' => isset($_POST['enabled_modules']) ? json_encode($_POST['enabled_modules']) : '[]',
+
             'updated_at' => date('Y-m-d H:i:s')
         ];
 
