@@ -604,6 +604,9 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     </div>
 
                     <div class="profile-sidebar">
+                        <!-- AI Matching Widget -->
+                        <?php include __DIR__ . '/partials/matching-widget.php'; ?>
+
                         <!-- Ενότητα Διαθεσιμότητας -->
                         <section class="profile-section availability-section">
                             <h3>Κατάσταση Διαθεσιμότητας</h3>

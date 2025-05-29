@@ -22,13 +22,14 @@ $router->post('/register', 'AuthController@register');
 $router->get('/verify', 'AuthController@verify');
 
 // Διαδρομές για οδηγούς
-$router->get('/drivers/register', 'DriversController@showRegisterForm');
-$router->post('/drivers/register', 'DriversController@register');
-$router->get('/drivers/profile', 'DriversController@profile', ['AuthMiddleware@isDriver']);
-$router->get('/drivers/edit-profile', 'DriversController@edit', ['AuthMiddleware@isDriver']);
-$router->post('/drivers/update-profile', 'DriversController@update', ['AuthMiddleware@isDriver']);
-$router->post('/drivers/toggle-availability', 'DriversController@toggleAvailability', ['AuthMiddleware@isDriver']);
-$router->post('/drivers/update-skills', 'DriversController@updateSkills', ['AuthMiddleware@isDriver']);
+$router->get('/drivers/register', 'Driver\DriversController@showRegisterForm');
+$router->post('/drivers/register', 'Driver\DriversController@register');
+$router->get('/drivers/profile', 'Driver\DriversController@profile', ['AuthMiddleware@isDriver']);
+$router->get('/drivers/edit-profile', 'Driver\DriversController@edit', ['AuthMiddleware@isDriver']);
+$router->post('/drivers/update-profile', 'Driver\DriversController@update', ['AuthMiddleware@isDriver']);
+$router->post('/drivers/toggle-availability', 'Driver\DriversController@toggleAvailability', ['AuthMiddleware@isDriver']);
+$router->post('/drivers/update-skills', 'Driver\DriversController@updateSkills', ['AuthMiddleware@isDriver']);
+$router->get('/drivers/job-matches', 'Driver\DriversController@jobMatches', ['AuthMiddleware@isDriver']);
 
 // Διαδρομές για εταιρείες
 $router->get('/companies/register', 'Company\CompaniesController@showRegisterForm');
@@ -65,26 +66,26 @@ $router->post('/drivers/save-incident', 'DriversController@saveIncident');
 $router->group('/admin', function ($router) {
     // Dashboard
     $router->get('/dashboard', 'Admin\\AdminController@dashboard', ['AuthMiddleware@isAdmin']);
-    
+
     // Users Management
     $router->get('/users', 'Admin\\AdminController@users', ['AuthMiddleware@isAdmin']);
     $router->get('/users/{type}', 'Admin\\AdminController@users', ['AuthMiddleware@isAdmin']);
     $router->get('/user-details/{userId}/{userType}', 'Admin\\AdminController@userDetails', ['AuthMiddleware@isAdmin']);
     $router->post('/toggle-user-status/{userId}/{userType}', 'Admin\\AdminController@toggleUserStatus', ['AuthMiddleware@isAdmin']);
-    
+
     // Job Listings Management
     $router->get('/job-listings', 'Admin\\AdminController@jobListings', ['AuthMiddleware@isAdmin']);
-    
+
     // Analytics
     $router->get('/analytics', 'Admin\\AdminController@analytics', ['AuthMiddleware@isAdmin']);
-    
+
     // Settings
     $router->get('/settings', 'Admin\\AdminController@settings', ['AuthMiddleware@isAdmin']);
     $router->post('/settings', 'Admin\\AdminController@settings', ['AuthMiddleware@isAdmin']);
-    
+
     // Activity Logs
     $router->get('/activity-logs', 'Admin\\AdminController@activityLogs', ['AuthMiddleware@isAdmin']);
-    
+
     // System Monitoring
     $router->get('/monitoring/dashboard', 'Admin\\SystemMonitoringController@dashboard', ['AuthMiddleware@isAdmin']);
     $router->get('/monitoring/errors', 'Admin\\SystemMonitoringController@errors', ['AuthMiddleware@isAdmin']);

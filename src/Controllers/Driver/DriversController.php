@@ -760,4 +760,30 @@ class DriversController extends BaseUserController
             exit();
         }
     }
+
+    /**
+     * Εμφανίζει τις προτεινόμενες θέσεις εργασίας με AI matching
+     */
+    public function jobMatches()
+    {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        AuthMiddleware::hasRole('driver');
+
+        // Λήψη των στοιχείων του οδηγού
+        $driverId = Session::get('user_id');
+
+        try {
+            // Φόρτωση του view
+            include ROOT_DIR . '/src/Views/drivers/job-matches.php';
+        } catch (\Exception $e) {
+            Logger::error('Error in job matches view', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την προβολή των προτεινόμενων θέσεων. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'drivers/profile');
+            exit();
+        }
+    }
 }

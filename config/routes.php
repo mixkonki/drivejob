@@ -135,6 +135,9 @@ $router->group(['prefix' => 'drivers'], function ($router) {
 
     // Διαδρομές για debugging
     $router->get('/debug-request', [DriversController::class, 'debugRequest'])->name('drivers.debug-request');
+
+    // AI Matching routes
+    $router->get('/job-matches', [DriversController::class, 'jobMatches'])->name('drivers.job-matches');
 });
 
 // Ομαδοποίηση διαδρομών για τις εταιρείες
@@ -241,6 +244,9 @@ $router->group(['prefix' => 'admin'], function ($router) {
         $router->post('/backup-database', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'backupDatabase'])->name('admin.monitoring.backup-database');
     });
 });
+
+// Include API routes
+require_once ROOT_DIR . '/routes/api.php';
 
 // Διαδρομή για 404 Not Found
 $router->notFound(function () {
