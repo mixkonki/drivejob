@@ -1,5 +1,37 @@
 # AI Matching System - Changelog
 
+## Version 2.2.0 - 30/5/2025
+
+### 🎯 Messaging System Implementation
+
+#### Features Added
+- ✅ Complete messaging system between companies and drivers
+- ✅ Message modal integrated in AI candidates widget
+- ✅ Pre-defined message templates for quick responses
+- ✅ Real-time notifications system
+- ✅ Conversation management with unread counts
+
+#### Database Changes
+- Added `conversations` table for managing chats
+- Added `messages` table for storing messages
+- Added `notifications` table for user alerts
+- Added `message_templates` table for quick responses
+
+#### Files Created
+- `src/Services/MessagingService.php` - Core messaging service
+- `public/api/messaging/send.php` - API endpoint for sending messages
+- `src/Views/companies/partials/candidates-widget-with-messaging.php` - Enhanced widget
+- `database/migrations/create_messaging_tables.php` - Database migration
+
+#### Technical Features
+- Session-based authentication for API
+- Transaction support for data integrity
+- Bootstrap modal integration
+- AJAX-based message sending
+- Auto-dismiss notifications
+
+---
+
 ## Version 2.1.0 - 30/5/2025
 
 ### 🎯 Company Dashboard AI Widget
