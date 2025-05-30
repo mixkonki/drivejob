@@ -154,7 +154,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
             <div class="profile-sidebar">
                 <!-- AI Candidates Widget -->
-                <?php include __DIR__ . '/partials/candidates-widget.php'; ?>
+                <?php include __DIR__ . '/partials/candidates-widget-final.php'; ?>
 
                 <section class="profile-section">
                     <h2>Στοιχεία Επικοινωνίας</h2>

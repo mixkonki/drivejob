@@ -120,13 +120,13 @@ class MatchingController extends Controller
      */
     public function getJobCandidates()
     {
-        Session::start();
-
-        // Check if user is logged in as company
-        if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'company') {
-            return JsonResponse::error('Unauthorized', 401);
+        // Έλεγχος authentication για εταιρείες
+        if (!ApiAuthMiddleware::check(['company'])) {
+            return; // Το middleware θα στείλει την απάντηση
         }
 
+        $user = ApiAuthMiddleware::getUser();
+        $companyId = $user['id'];
         $jobId = isset($_GET['job_id']) ? intval($_GET['job_id']) : 0;
         $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 20;
 
@@ -134,14 +134,79 @@ class MatchingController extends Controller
             return JsonResponse::error('Job ID is required', 400);
         }
 
-        // TODO: Verify that the job belongs to the logged-in company
-
         try {
-            $candidates = $this->matchingService->getTopCandidatesForJob($jobId, $limit);
+            // Έλεγχος ότι η αγγελία ανήκει στην εταιρεία
+            $pdo = \Drivejob\Core\Database::getInstance()->getConnection();
+            $stmt = $pdo->prepare("SELECT id FROM job_listings WHERE id = ? AND company_id = ? AND is_active = 1");
+            $stmt->execute([$jobId, $companyId]);
+
+            if (!$stmt->fetch()) {
+                return JsonResponse::error('Job not found or access denied', 404);
+            }
+
+            // Έλεγχος cache πρώτα
+            $cacheKey = $this->cacheService->getJobCandidatesKey($jobId, $limit);
+            $cachedCandidates = $this->cacheService->get($cacheKey);
+
+            if ($cachedCandidates !== null) {
+                return JsonResponse::success([
+                    'candidates' => $cachedCandidates,
+                    'count' => count($cachedCandidates),
+                    'cached' => true
+                ]);
+            }
+
+            // Cache miss - λήψη από database
+            $stmt = $pdo->prepare("
+                SELECT 
+                    ms.*,
+                    d.id as driver_id,
+                    u.first_name,
+                    u.last_name,
+                    u.email,
+                    d.city,
+                    d.experience_years,
+                    d.available_for_work,
+                    d.rating
+                FROM matching_scores ms
+                JOIN drivers d ON ms.driver_id = d.id
+                JOIN users u ON d.user_id = u.id
+                WHERE ms.job_id = ?
+                AND d.available_for_work = 1
+                ORDER BY ms.overall_score DESC
+                LIMIT ?
+            ");
+            $stmt->execute([$jobId, $limit]);
+            $candidates = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            // Μορφοποίηση των αποτελεσμάτων
+            $formattedCandidates = [];
+            foreach ($candidates as $candidate) {
+                $formattedCandidates[] = [
+                    'driver_id' => $candidate['driver_id'],
+                    'name' => $candidate['first_name'] . ' ' . $candidate['last_name'],
+                    'email' => $candidate['email'],
+                    'city' => $candidate['city'],
+                    'experience_years' => $candidate['experience_years'],
+                    'rating' => round($candidate['rating'], 1),
+                    'match_score' => round($candidate['overall_score'] * 100, 1),
+                    'recommendation' => $this->getRecommendation($candidate['overall_score']),
+                    'scores' => [
+                        'skill_match' => round($candidate['skill_match_score'] * 100, 1),
+                        'location_match' => round($candidate['location_match_score'] * 100, 1),
+                        'experience_match' => round($candidate['experience_match_score'] * 100, 1),
+                        'availability_match' => round($candidate['availability_match_score'] * 100, 1)
+                    ]
+                ];
+            }
+
+            // Αποθήκευση στο cache
+            $this->cacheService->set($cacheKey, $formattedCandidates);
 
             return JsonResponse::success([
-                'candidates' => $candidates,
-                'count' => count($candidates)
+                'candidates' => $formattedCandidates,
+                'count' => count($formattedCandidates),
+                'cached' => false
             ]);
         } catch (\Exception $e) {
             error_log("Error getting job candidates: " . $e->getMessage());
@@ -154,13 +219,12 @@ class MatchingController extends Controller
      */
     public function calculateMatch()
     {
-        Session::start();
-
-        // Allow both drivers and companies to calculate matches
-        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], ['driver', 'company'])) {
-            return JsonResponse::error('Unauthorized', 401);
+        // Έλεγχος authentication
+        if (!ApiAuthMiddleware::check(['driver', 'company'])) {
+            return; // Το middleware θα στείλει την απάντηση
         }
 
+        $user = ApiAuthMiddleware::getUser();
         $driverId = isset($_GET['driver_id']) ? intval($_GET['driver_id']) : 0;
         $jobId = isset($_GET['job_id']) ? intval($_GET['job_id']) : 0;
 
@@ -168,9 +232,20 @@ class MatchingController extends Controller
             return JsonResponse::error('Driver ID and Job ID are required', 400);
         }
 
-        // If user is a driver, they can only check their own matches
-        if ($_SESSION['user_role'] === 'driver' && $driverId != $_SESSION['user_id']) {
+        // Αν ο χρήστης είναι οδηγός, μπορεί να δει μόνο τα δικά του matches
+        if ($user['role'] === 'driver' && $driverId != $user['id']) {
             return JsonResponse::error('Unauthorized', 401);
+        }
+
+        // Αν ο χρήστης είναι εταιρεία, πρέπει να ελέγξουμε ότι η αγγελία της ανήκει
+        if ($user['role'] === 'company') {
+            $pdo = \Drivejob\Core\Database::getInstance()->getConnection();
+            $stmt = $pdo->prepare("SELECT id FROM job_listings WHERE id = ? AND company_id = ?");
+            $stmt->execute([$jobId, $user['id']]);
+
+            if (!$stmt->fetch()) {
+                return JsonResponse::error('Job not found or access denied', 404);
+            }
         }
 
         try {
@@ -192,17 +267,32 @@ class MatchingController extends Controller
      */
     public function getMatchInsights()
     {
-        Session::start();
-
-        if (!isset($_SESSION['user_id'])) {
-            return JsonResponse::error('Unauthorized', 401);
+        // Έλεγχος authentication
+        if (!ApiAuthMiddleware::check(['driver', 'company'])) {
+            return; // Το middleware θα στείλει την απάντηση
         }
 
+        $user = ApiAuthMiddleware::getUser();
         $driverId = isset($_GET['driver_id']) ? intval($_GET['driver_id']) : 0;
         $jobId = isset($_GET['job_id']) ? intval($_GET['job_id']) : 0;
 
         if (!$driverId || !$jobId) {
             return JsonResponse::error('Driver ID and Job ID are required', 400);
+        }
+
+        // Έλεγχοι πρόσβασης όπως στην calculateMatch
+        if ($user['role'] === 'driver' && $driverId != $user['id']) {
+            return JsonResponse::error('Unauthorized', 401);
+        }
+
+        if ($user['role'] === 'company') {
+            $pdo = \Drivejob\Core\Database::getInstance()->getConnection();
+            $stmt = $pdo->prepare("SELECT id FROM job_listings WHERE id = ? AND company_id = ?");
+            $stmt->execute([$jobId, $user['id']]);
+
+            if (!$stmt->fetch()) {
+                return JsonResponse::error('Job not found or access denied', 404);
+            }
         }
 
         try {
@@ -212,14 +302,14 @@ class MatchingController extends Controller
                 return JsonResponse::error($result['error'], 500);
             }
 
-            // Generate insights
-            $scoreCalculator = new \Drivejob\Services\AI\ScoreCalculator();
+            // Generate insights με τον Advanced Score Calculator
+            $advancedCalculator = new \Drivejob\Services\AI\AdvancedScoreCalculator();
             $featureExtractor = new \Drivejob\Services\AI\FeatureExtractor();
 
             $driverFeatures = $featureExtractor->extractDriverFeatures($driverId);
             $jobFeatures = $featureExtractor->extractJobFeatures($jobId);
 
-            $insights = $scoreCalculator->generateInsights(
+            $insights = $advancedCalculator->generateAdvancedInsights(
                 $result['scores'],
                 $driverFeatures,
                 $jobFeatures
@@ -234,6 +324,48 @@ class MatchingController extends Controller
         } catch (\Exception $e) {
             error_log("Error getting match insights: " . $e->getMessage());
             return JsonResponse::error('Failed to get insights', 500);
+        }
+    }
+
+    /**
+     * Trigger batch matching for all active jobs
+     * (Admin only)
+     */
+    public function triggerBatchMatching()
+    {
+        // Έλεγχος authentication για admin
+        if (!ApiAuthMiddleware::check(['admin'])) {
+            return; // Το middleware θα στείλει την απάντηση
+        }
+
+        try {
+            $pdo = \Drivejob\Core\Database::getInstance()->getConnection();
+
+            // Λήψη όλων των ενεργών αγγελιών
+            $stmt = $pdo->query("SELECT id FROM job_listings WHERE is_active = 1");
+            $jobs = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+            $totalMatches = 0;
+            $processedJobs = 0;
+
+            foreach ($jobs as $jobId) {
+                // Υπολογισμός matches για κάθε αγγελία
+                $matches = $this->matchingService->calculateMatchesForJob($jobId);
+                $totalMatches += $matches;
+                $processedJobs++;
+
+                // Invalidate cache για αυτή την αγγελία
+                $this->cacheService->invalidateJobCache($jobId);
+            }
+
+            return JsonResponse::success([
+                'message' => 'Batch matching completed',
+                'processed_jobs' => $processedJobs,
+                'total_matches' => $totalMatches
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error in batch matching: " . $e->getMessage());
+            return JsonResponse::error('Failed to complete batch matching', 500);
         }
     }
 }

@@ -1,5 +1,37 @@
 # AI Matching System - Changelog
 
+## Version 2.1.0 - 30/5/2025
+
+### 🎯 Company Dashboard AI Widget
+
+#### Features Added
+- ✅ Complete AI matching widget for company dashboard
+- ✅ Clean JSON API endpoint `/api/matching/job/candidates/get.php`
+- ✅ Real-time candidate matching with scoring algorithm
+- ✅ Interactive dropdown for job selection
+- ✅ Display top 5 matched candidates with scores
+
+#### Bug Fixes
+- ✅ Fixed JSON parsing error with clean API endpoint
+- ✅ Resolved session authentication issues
+- ✅ Fixed widget display in company profile
+
+#### Technical Improvements
+- Migrated from `index.php` to `get.php` for cleaner JSON output
+- Added comprehensive error handling in widget JavaScript
+- Implemented output buffer cleaning to prevent HTML contamination
+
+#### Files Created
+- `public/api/matching/job/candidates/get.php` - Clean API endpoint
+- `src/Views/companies/partials/candidates-widget-final.php` - Widget component
+
+#### Test Data
+- Company: test@thessdrive.gr / test123
+- Test Job: "Οδηγός Φορτηγού C+E" (ID: 18)
+- 5 drivers with match scores ranging from 74% to 95%
+
+---
+
 ## Version 2.0.0 - 28/5/2025
 
 ### 🎯 Major Enhancements

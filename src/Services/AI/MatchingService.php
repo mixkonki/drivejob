@@ -155,6 +155,39 @@ class MatchingService
     }
 
     /**
+     * Calculate matches for all available drivers for a specific job
+     * Used for batch processing
+     */
+    public function calculateMatchesForJob(int $jobId): int
+    {
+        try {
+            // Get all available drivers
+            $stmt = $this->pdo->prepare("
+                SELECT d.id 
+                FROM drivers d
+                JOIN users u ON d.user_id = u.id
+                WHERE d.available_for_work = 1
+                AND u.is_active = 1
+            ");
+            $stmt->execute();
+            $drivers = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+            $matchCount = 0;
+            foreach ($drivers as $driverId) {
+                $result = $this->calculateMatch($driverId, $jobId);
+                if ($result['success']) {
+                    $matchCount++;
+                }
+            }
+
+            return $matchCount;
+        } catch (\Exception $e) {
+            error_log("Error calculating matches for job: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
      * Calculate skill match score
      */
     private function calculateSkillMatch(array $driverFeatures, array $jobFeatures): float
