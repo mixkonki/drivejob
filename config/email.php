@@ -7,14 +7,14 @@
  */
 
 // SMTP Server Settings
-define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_HOST', 'smtp.thessdrive.gr');
 define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'your-email@gmail.com'); // Αντικαταστήστε με το email σας
-define('SMTP_PASSWORD', 'your-app-password'); // Αντικαταστήστε με το app password σας
+define('SMTP_USERNAME', 'info@thessdrive.gr');
+define('SMTP_PASSWORD', 'inf1q2w!Q@W');
 
 // Sender Information
-define('SMTP_FROM_EMAIL', 'noreply@drivejob.gr');
-define('SMTP_FROM_NAME', 'DriveJob Platform');
+define('SMTP_FROM_EMAIL', 'info@thessdrive.gr');
+define('SMTP_FROM_NAME', 'DriveJob Ειδοποιήσεις');
 
 // Email Settings
 define('EMAIL_DEBUG', false); // Ενεργοποίηση debug mode για emails
