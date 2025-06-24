@@ -27,3 +27,7 @@ Thumbs.db
 *.sql
 *.sqlite
 "@ | Out-File -FilePath ".gitignore" -Encoding utf8
+# Refactoring scripts
+/verify-refactoring.php
+/refactoring-phase*.php
+/migrate-*.php

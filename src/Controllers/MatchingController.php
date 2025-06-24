@@ -5,7 +5,7 @@ namespace Drivejob\Controllers;
 use Drivejob\Controllers\BaseController;
 use Drivejob\Core\Session;
 use Drivejob\Core\AuthMiddleware;
-use Drivejob\Services\Matching\MatchingService;
+use Drivejob\Services\AI\MatchingService;
 
 /**
  * Controller για το ταίριασμα αγγελιών και οδηγών
