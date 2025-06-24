@@ -1,18 +1,25 @@
 <?php
+/**
+ * Company Edit Profile Page
+ */
 
-// Αρχικοποίηση της εφαρμογής
-$container = require_once __DIR__ . '/../../src/bootstrap.php';
+require_once __DIR__ . '/../../src/bootstrap.php';
 
-// Λήψη του PDO από το container
-$pdo = $container->get('pdo');
-
+use Drivejob\Controllers\Company\CompaniesController;
 use Drivejob\Core\Session;
-// Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι εταιρεία
-if (!Session::has('user_id') || !Session::has('role') || Session::get('role') !== 'company') {
-    header('Location: ' . BASE_URL . 'login.php');
-    exit();
+
+Session::start();
+
+// Check authentication
+if (!Session::has('user_id') || Session::get('user_role') !== 'company') {
+    // Redirect to login with return URL
+    $returnUrl = '/drivejob/public/companies/edit-profile';
+    header('Location: /drivejob/public/login.php?redirect=' . urlencode($returnUrl));
+    exit;
 }
 
-// Δημιουργία του controller και κλήση της μεθόδου edit
-$controller = new \Drivejob\Controllers\Company\CompaniesController($pdo);
+// Initialize controller
+$controller = new CompaniesController();
+
+// Handle the request
 $controller->edit();

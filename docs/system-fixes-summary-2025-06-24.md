@@ -12,10 +12,13 @@
 - **Backup**: Όλα τα αρχεία που αφαιρέθηκαν έχουν backup στο `backup/refactoring-2025-06-24/`
 
 ### 2. Διόρθωση Προβλημάτων Πρόσβασης ✅
-- **Job Listings**: Δημιουργία `index.php` στο `/public/job-listings/` για διόρθωση του "Forbidden" error
+- **Job Listings**: 
+  - Δημιουργία `index.php` που εμφανίζει σελίδα αγγελιών αντί για redirect
+  - Δημιουργία `list.php` για εμφάνιση λίστας αγγελιών
 - **Routing Files**: Δημιουργία των παρακάτω αρχείων που έλειπαν:
   - `public/companies/profile.php`
   - `public/drivers/profile.php`
+- **Edit Profile**: Διόρθωση redirect σε login όταν δεν υπάρχει authentication
 
 ### 3. Διόρθωση Συστήματος Μηνυμάτων ✅
 - **Messages Table**: 
