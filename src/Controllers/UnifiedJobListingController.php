@@ -117,9 +117,9 @@ class UnifiedJobListingController extends BaseJobListingController
                 $isOwner = false;
 
                 if (Session::has('user_id')) {
-                    if (Session::get('role') === 'company' && !empty($listing['company_id']) && Session::get('user_id') == $listing['company_id']) {
+                    if (Session::get('user_role') === 'company' && !empty($listing['company_id']) && Session::get('user_id') == $listing['company_id']) {
                         $isOwner = true;
-                    } elseif (Session::get('role') === 'driver' && !empty($listing['driver_id']) && Session::get('user_id') == $listing['driver_id']) {
+                    } elseif (Session::get('user_role') === 'driver' && !empty($listing['driver_id']) && Session::get('user_id') == $listing['driver_id']) {
                         $isOwner = true;
                     }
                 }
@@ -163,7 +163,7 @@ class UnifiedJobListingController extends BaseJobListingController
 
             // Έλεγχος αν ο χρήστης έχει ήδη υποβάλει αίτηση (για αγγελίες εταιρειών)
             $hasApplied = false;
-            if (Session::has('user_id') && Session::get('role') === 'driver' && !empty($listing['company_id'])) {
+            if (Session::has('user_id') && Session::get('user_role') === 'driver' && !empty($listing['company_id'])) {
                 // Έλεγχος αν υπάρχει αίτηση από τον οδηγό για αυτή την αγγελία
                 // Προσωρινά απενεργοποιημένο μέχρι να υλοποιηθεί η μέθοδος hasApplied
                 // $hasApplied = $this->jobApplicationRepository->hasApplied(Session::get('user_id'), $id);
@@ -281,13 +281,13 @@ class UnifiedJobListingController extends BaseJobListingController
     public function create()
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        if (!Session::has('user_id') || !Session::has('role')) {
+        if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να δημιουργήσετε αγγελία.');
-            header('Location: ' . BASE_URL . 'auth/login');
+            header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
 
-        $userRole = Session::get('role');
+        $userRole = Session::get('user_role');
         $userId = Session::get('user_id');
 
         try {
@@ -377,9 +377,9 @@ class UnifiedJobListingController extends BaseJobListingController
     public function store()
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        if (!Session::has('user_id') || !Session::has('role')) {
+        if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να δημιουργήσετε αγγελία.');
-            header('Location: ' . BASE_URL . 'auth/login');
+            header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
 
@@ -391,7 +391,7 @@ class UnifiedJobListingController extends BaseJobListingController
             exit();
         }
 
-        $userRole = Session::get('role');
+        $userRole = Session::get('user_role');
         $userId = Session::get('user_id');
 
         try {
@@ -555,13 +555,13 @@ class UnifiedJobListingController extends BaseJobListingController
     public function edit($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        if (!Session::has('user_id') || !Session::has('role')) {
+        if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να επεξεργαστείτε αγγελία.');
-            header('Location: ' . BASE_URL . 'auth/login');
+            header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
 
-        $userRole = Session::get('role');
+        $userRole = Session::get('user_role');
         $userId = Session::get('user_id');
 
         try {
@@ -623,9 +623,9 @@ class UnifiedJobListingController extends BaseJobListingController
     public function update($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        if (!Session::has('user_id') || !Session::has('role')) {
+        if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να επεξεργαστείτε αγγελία.');
-            header('Location: ' . BASE_URL . 'auth/login');
+            header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
 
@@ -637,7 +637,7 @@ class UnifiedJobListingController extends BaseJobListingController
             exit();
         }
 
-        $userRole = Session::get('role');
+        $userRole = Session::get('user_role');
         $userId = Session::get('user_id');
 
         try {
@@ -770,13 +770,13 @@ class UnifiedJobListingController extends BaseJobListingController
     public function delete($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        if (!Session::has('user_id') || !Session::has('role')) {
+        if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να διαγράψετε αγγελία.');
-            header('Location: ' . BASE_URL . 'auth/login');
+            header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
 
-        $userRole = Session::get('role');
+        $userRole = Session::get('user_role');
         $userId = Session::get('user_id');
 
         try {
@@ -838,9 +838,9 @@ class UnifiedJobListingController extends BaseJobListingController
     public function destroy($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        if (!Session::has('user_id') || !Session::has('role')) {
+        if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να διαγράψετε αγγελία.');
-            header('Location: ' . BASE_URL . 'auth/login');
+            header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
 
@@ -852,7 +852,7 @@ class UnifiedJobListingController extends BaseJobListingController
             exit();
         }
 
-        $userRole = Session::get('role');
+        $userRole = Session::get('user_role');
         $userId = Session::get('user_id');
 
         try {
@@ -946,8 +946,8 @@ class UnifiedJobListingController extends BaseJobListingController
     public function myListings()
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-        if (!Session::has('user_id') || !Session::has('role')) {
-            header('Location: ' . BASE_URL . 'auth/login');
+        if (!Session::has('user_id') || !Session::has('user_role')) {
+            header('Location: ' . BASE_URL . 'login.php');
             exit();
         }
 

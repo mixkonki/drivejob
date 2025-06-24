@@ -1,17 +1,16 @@
 <?php
+require_once __DIR__ . '/../../src/bootstrap.php';
 
-// Αρχικοποίηση της εφαρμογής
-$container = require_once __DIR__ . '/../../src/bootstrap.php';
+use Drivejob\Middleware\AuthenticationMiddleware;
+use Drivejob\Controllers\Driver\DriversController;
+use Drivejob\Core\Database;
 
-// Λήψη του PDO από το container
-$pdo = $container->get('pdo');
+// Require driver role
+AuthenticationMiddleware::requireRole('driver');
 
-// Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι οδηγός
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'driver') {
-    header('Location: ' . BASE_URL . 'login.php');
-    exit();
-}
+// Get PDO instance
+$pdo = Database::getInstance()->getConnection();
 
-// Δημιουργία του controller και κλήση της μεθόδου profile
-$controller = new \Drivejob\Controllers\Driver\DriversController($pdo);
+// Initialize controller and show profile
+$controller = new DriversController($pdo);
 $controller->profile();

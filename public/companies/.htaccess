@@ -1,0 +1,19 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Handle various registration URLs
+    RewriteRule ^registration/?$ company-registration.php [L]
+    RewriteRule ^register/?$ company-registration.php [L]
+    RewriteRule ^company-registration/?$ company-registration.php [L]
+    
+    # Handle profile route
+    RewriteRule ^profile/?$ company-profile.php [L]
+    
+    # Handle conversation route with ID
+    RewriteRule ^conversation/([0-9]+)/?$ conversation.php?id=$1 [L,QSA]
+    
+    # Handle other routes
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ $1.php [L]
+</IfModule>

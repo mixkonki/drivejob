@@ -132,22 +132,23 @@
         let html = '';
 
         matches.forEach(match => {
-            const score = match.match_score / 100;
+            const score = match.score;
             const scoreClass = score >= 0.7 ? 'high' : score >= 0.5 ? 'medium' : 'low';
+            const scorePercent = Math.round(score * 100);
 
             html += `
             <div class="match-item">
-                <div class="match-score ${scoreClass}">${match.match_score}%</div>
+                <div class="match-score ${scoreClass}">${scorePercent}%</div>
                 <div class="match-title">
-                    <a href="<?php echo BASE_URL; ?>job-listings/show/${match.job_id}">
-                        ${match.title || 'Αγγελία #' + match.job_id}
+                    <a href="<?php echo BASE_URL; ?>job-listings/show/${match.job.id}">
+                        ${match.job.title || 'Αγγελία #' + match.job.id}
                     </a>
                 </div>
                 <div class="match-company">
-                    <i class="fas fa-building"></i> ${match.company || 'Ιδιώτης'}
+                    <i class="fas fa-building"></i> ${match.job.company_name || 'Ιδιώτης'}
                 </div>
                 <div class="match-location">
-                    <i class="fas fa-map-marker-alt"></i> ${match.location || 'Δεν έχει οριστεί'}
+                    <i class="fas fa-map-marker-alt"></i> ${match.job.location || match.job.company_city || 'Δεν έχει οριστεί'}
                 </div>
             </div>
         `;

@@ -18,11 +18,11 @@ include ROOT_DIR . '/src/Views/partials/header.php';
     </section>
 
     <section class="buttons">
-        <a href="./drivers/drivers-registration.php" class="btn-secondary" aria-label="Εγγραφή Οδηγού">
+        <a href="<?php echo BASE_URL; ?>drivers/register" class="btn-secondary" aria-label="Εγγραφή Οδηγού">
             <img src="<?php echo BASE_URL; ?>img/driver_icon.png" alt="Εικονίδιο Οδηγού">
             Εγγραφή Οδηγού
         </a>
-        <a href="./companies/company-registration.php" class="btn-secondary" aria-label="Εγγραφή Επιχείρησης">
+        <a href="<?php echo BASE_URL; ?>companies/register" class="btn-secondary" aria-label="Εγγραφή Επιχείρησης">
             <img src="<?php echo BASE_URL; ?>img/company_icon.png" alt="Εικονίδιο Επιχείρησης">
             Εγγραφή Επιχείρησης
         </a>

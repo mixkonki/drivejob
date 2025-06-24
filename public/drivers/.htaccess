@@ -1,0 +1,17 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Handle various registration URLs
+    RewriteRule ^registration/?$ driver-registration.php [L]
+    RewriteRule ^register/?$ driver-registration.php [L]
+    RewriteRule ^drivers-registration/?$ driver-registration.php [L]
+    
+    # Handle profile routes
+    RewriteRule ^profile/?$ driver-profile.php [L]
+    RewriteRule ^profile/([0-9]+)/?$ public-profile.php?id=$1 [L,QSA]
+    
+    # Handle other routes
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ $1.php [L]
+</IfModule>

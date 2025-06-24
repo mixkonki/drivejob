@@ -17,7 +17,7 @@ class Auth
      */
     public static function isLoggedIn()
     {
-        return Session::has('user_id') && Session::has('role');
+        return Session::has('user_id') && Session::has('user_role');
     }
 
     /**
@@ -28,7 +28,7 @@ class Auth
      */
     public static function hasRole($role)
     {
-        return self::isLoggedIn() && Session::get('role') === $role;
+        return self::isLoggedIn() && Session::get('user_role') === $role;
     }
 
     /**
@@ -39,7 +39,7 @@ class Auth
      */
     public static function hasAnyRole(array $roles)
     {
-        return self::isLoggedIn() && in_array(Session::get('role'), $roles);
+        return self::isLoggedIn() && in_array(Session::get('user_role'), $roles);
     }
 
     /**
@@ -65,7 +65,7 @@ class Auth
             return false;
         }
 
-        $role = Session::get('role');
+        $role = Session::get('user_role');
         $userId = Session::get('user_id');
 
         if ($role === 'driver') {
@@ -90,7 +90,7 @@ class Auth
     public static function login($userId, $role, $userName)
     {
         Session::set('user_id', $userId);
-        Session::set('role', $role);
+        Session::set('user_role', $role);
         Session::set('user_name', $userName);
         Session::set('last_activity', time());
     }

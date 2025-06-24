@@ -786,4 +786,53 @@ class DriversController extends BaseUserController
             exit();
         }
     }
+
+    /**
+     * Search for drivers
+     */
+    public function search()
+    {
+        // Get search parameters
+        $criteria = [
+            'city' => $_GET['city'] ?? null,
+            'license_type' => $_GET['license_type'] ?? null,
+            'available_for_work' => isset($_GET['available_for_work']) ? 1 : null,
+            'experience_years' => $_GET['experience_years'] ?? null
+        ];
+        
+        // Remove empty criteria
+        $criteria = array_filter($criteria);
+        
+        // Get drivers
+        $query = "SELECT d.*, u.email 
+                  FROM drivers d 
+                  JOIN users u ON d.user_id = u.id 
+                  WHERE d.is_active = 1";
+        
+        $params = [];
+        
+        if (!empty($criteria['city'])) {
+            $query .= " AND d.city LIKE ?";
+            $params[] = '%' . $criteria['city'] . '%';
+        }
+        
+        if (!empty($criteria['available_for_work'])) {
+            $query .= " AND d.available_for_work = 1";
+        }
+        
+        if (!empty($criteria['experience_years'])) {
+            $query .= " AND d.experience_years >= ?";
+            $params[] = $criteria['experience_years'];
+        }
+        
+        $query .= " ORDER BY d.created_at DESC LIMIT 20";
+        
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute($params);
+        $drivers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        
+        // Load view
+        include ROOT_DIR . '/src/Views/drivers/search.php';
+    }
+
 }
