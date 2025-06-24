@@ -207,13 +207,13 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <?php endif; ?>
 
                     <div class="profile-actions">
-                        <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn btn-primary">
+                        <a href="/drivejob/public/companies/edit-profile" class="btn btn-primary">
                             <i class="fas fa-edit"></i> Επεξεργασία Προφίλ
                         </a>
                         <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn btn-secondary">
                             <i class="fas fa-plus"></i> Νέα Αγγελία
                         </a>
-                        <a href="<?php echo BASE_URL; ?>companies/messages" class="btn btn-secondary">
+                        <a href="/drivejob/public/companies/messages" class="btn btn-secondary">
                             <i class="fas fa-envelope"></i> Μηνύματα
                         </a>
                     </div>
@@ -280,7 +280,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                     <?php if (isset($companyData['description']) && $companyData['description']) : ?>
                                         <?php echo nl2br(htmlspecialchars($companyData['description'])); ?>
                                     <?php else : ?>
-                                        <p class="text-muted">Δεν έχετε προσθέσει περιγραφή για την εταιρεία σας. <a href="<?php echo BASE_URL; ?>companies/edit-profile">Προσθέστε τώρα!</a></p>
+                                        <p class="text-muted">Δεν έχετε προσθέσει περιγραφή για την εταιρεία σας. <a href="/drivejob/public/companies/edit-profile" class="btn btn-primary">Προσθέστε τώρα!</a></p>
                                     <?php endif; ?>
                                 </div>
                             </section>
@@ -397,7 +397,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                 <div class="sidebar-section">
                     <h3><i class="fas fa-envelope"></i> Μηνύματα</h3>
                     <p class="text-muted mb-3">Έχετε <strong>3</strong> νέα μηνύματα</p>
-                    <a href="<?php echo BASE_URL; ?>companies/messages" class="btn btn-primary btn-block w-100">
+                    <a href="/drivejob/public/companies/messages" class="btn btn-secondary">
                         Προβολή Μηνυμάτων
                     </a>
                 </div>
@@ -433,7 +433,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         <a href="<?php echo BASE_URL; ?>drivers/search" class="btn btn-outline-primary">
                             <i class="fas fa-search"></i> Αναζήτηση Οδηγών
                         </a>
-                        <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn btn-outline-secondary">
+                        <a href="/drivejob/public/companies/edit-profile" class="btn btn-primary">
                             <i class="fas fa-cog"></i> Ρυθμίσεις
                         </a>
                     </div>
