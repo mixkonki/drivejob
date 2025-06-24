@@ -26,6 +26,9 @@ $stmt = $pdo->query("
 
 $jobListings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Set the variable name that the view expects
+$listings = $jobListings;
+
 // Include view
 if (file_exists(__DIR__ . '/../../src/Views/job-listings/index.php')) {
     require_once __DIR__ . '/../../src/Views/job-listings/index.php';
