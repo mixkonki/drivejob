@@ -943,4 +943,32 @@ class MatchingService
             return false;
         }
     }
+
+    /**
+     * Wrapper method για backward compatibility με test scripts
+     * Βρίσκει αγγελίες εταιρειών που ταιριάζουν με έναν οδηγό
+     * 
+     * @param int $driverId Το ID του οδηγού
+     * @param int $page Η σελίδα
+     * @param int $limit Ο αριθμός αποτελεσμάτων ανά σελίδα
+     * @return array Τα αποτελέσματα και οι πληροφορίες σελιδοποίησης
+     */
+    public function findJobsForDriver($driverId, $page = 1, $limit = 10)
+    {
+        return $this->findMatchingJobsForDriver($driverId, [], $page, $limit);
+    }
+
+    /**
+     * Wrapper method για backward compatibility με test scripts
+     * Βρίσκει οδηγούς που ταιριάζουν με μια αγγελία εταιρείας
+     * 
+     * @param int $jobListingId Το ID της αγγελίας
+     * @param int $page Η σελίδα
+     * @param int $limit Ο αριθμός αποτελεσμάτων ανά σελίδα
+     * @return array Τα αποτελέσματα και οι πληροφορίες σελιδοποίησης
+     */
+    public function findDriversForJob($jobListingId, $page = 1, $limit = 10)
+    {
+        return $this->findMatchingDriversForCompanyListing($jobListingId, [], $page, $limit);
+    }
 }
