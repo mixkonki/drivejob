@@ -51,7 +51,7 @@ $container = \Drivejob\Core\Container::getInstance();
 // Καταχώρηση των βασικών υπηρεσιών
 $container->set('pdo', function () {
     // Σύνδεση με τη βάση δεδομένων
-    require_once ROOT_DIR . '/config/database.php';
+    $pdo = require_once ROOT_DIR . '/config/database.php';
     return $pdo;
 });
 

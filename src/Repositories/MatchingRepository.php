@@ -734,8 +734,8 @@ class MatchingRepository extends BaseRepository implements MatchingRepositoryInt
     {
         try {
             $query = "SELECT jm.*, jl.title, jl.description, jl.location, jl.job_type, jl.vehicle_type,
-                      jl.salary_min, jl.salary_max, jl.salary_period, jl.created_at as listing_created_at,
-                      c.company_name, c.logo, c.city, c.country
+                      jl.salary_min, jl.salary_max, jl.created_at as listing_created_at,
+                      c.company_name, c.city, c.country
                       FROM {$this->table} jm
                       JOIN job_listings jl ON jm.company_listing_id = jl.id
                       JOIN companies c ON jl.company_id = c.id

@@ -352,8 +352,8 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         <!-- Candidates Tab -->
                         <div class="tab-pane" id="candidates">
                             <h2>Προτεινόμενοι Υποψήφιοι</h2>
-                            <!-- AI Candidates Widget -->
-                            <?php include __DIR__ . '/partials/candidates-widget-with-messaging.php'; ?>
+                            <!-- AI Matching Widget -->
+                            <?php include __DIR__ . '/partials/ai-matching-widget.php'; ?>
                         </div>
 
                         <!-- Fleet & Drivers Tab -->

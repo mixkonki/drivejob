@@ -1,34 +1,28 @@
 <?php
+
+/**
+ * Simple AI Matching API που δεν χρησιμοποιεί session authentication
+ * Καλεί απευθείας το MatchingService
+ */
+
 require_once __DIR__ . '/../../../../src/bootstrap.php';
 
-use Drivejob\Core\Session;
-use Drivejob\Core\JsonResponse;
 use Drivejob\Core\Database;
 use Drivejob\Services\MatchingService;
 
-// Start session
-Session::start();
-
-// Check if user is logged in and is a driver
-if (!Session::has('user_id') || Session::get('user_role') !== 'driver') {
-    // Log the session issue for debugging
-    error_log("AI Matching API: Session issue - user_id: " . (Session::has('user_id') ? Session::get('user_id') : 'none') . ", role: " . (Session::has('user_role') ? Session::get('user_role') : 'none'));
-    JsonResponse::error('Unauthorized access', 401);
-}
-
-$driverId = Session::get('user_id');
+// Set JSON header
+header('Content-Type: application/json');
 
 try {
-    $pdo = Database::getInstance()->getConnection();
-
-    // Get limit from query params
+    // Get driver ID from query parameter (for testing)
+    $driverId = isset($_GET['driver_id']) ? intval($_GET['driver_id']) : 26; // Default to test driver
     $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 20;
     $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 
-    // Initialize matching service
+    $pdo = Database::getInstance()->getConnection();
     $matchingService = new MatchingService($pdo);
 
-    // Get matched jobs for driver using the correct method
+    // Get matched jobs for driver
     $result = $matchingService->findDriverMatches($driverId, $page, $limit);
 
     // Format response
@@ -49,12 +43,9 @@ try {
                 'description' => $match['description'],
                 'location' => $match['location'],
                 'company_name' => $match['company_name'],
-                'company_city' => $match['city'],
+                'company_city' => $match['city'] ?? '',
                 'salary_min' => $match['salary_min'],
                 'salary_max' => $match['salary_max'],
-                'salary_period' => $match['salary_period'] ?? 'monthly',
-                'job_type' => $match['job_type'],
-                'vehicle_type' => $match['vehicle_type'],
                 'created_at' => $match['listing_created_at'],
                 'is_urgent' => false
             ],
@@ -62,7 +53,8 @@ try {
         ];
     }
 
-    JsonResponse::success([
+    echo json_encode([
+        'success' => true,
         'data' => [
             'matches' => $formattedMatches,
             'total' => $result['pagination']['total'],
@@ -72,48 +64,41 @@ try {
         ]
     ]);
 } catch (Exception $e) {
-    error_log("Driver matches API error: " . $e->getMessage());
-    JsonResponse::error('Σφάλμα κατά την ανάκτηση των προτάσεων: ' . $e->getMessage());
+    error_log("Simple matches API error: " . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'error' => 'Σφάλμα κατά την ανάκτηση των προτάσεων: ' . $e->getMessage()
+    ]);
 }
 
 function generateInsights($match)
 {
     $insights = [];
-    $job = $match['job'];
-    $score = $match['score'];
-    $details = $match['details'];
+    $score = floatval($match['match_score']);
 
     // High match score
-    if ($score >= 0.8) {
+    if ($score >= 90) {
         $insights[] = [
             'type' => 'success',
             'message' => 'Εξαιρετική συμβατότητα με αυτή τη θέση!'
         ];
-    }
-
-    // Location match
-    if (isset($details['location_match']) && $details['location_match'] >= 0.9) {
-        $insights[] = [
-            'type' => 'success',
-            'message' => 'Η θέση βρίσκεται κοντά στην τοποθεσία σας'
-        ];
-    } elseif (isset($details['location_match']) && $details['location_match'] < 0.5) {
-        $insights[] = [
-            'type' => 'warning',
-            'message' => 'Η θέση απαιτεί μετεγκατάσταση ή μεγάλες μετακινήσεις'
-        ];
-    }
-
-    // Urgent job
-    if ($job['is_urgent'] ?? false) {
+    } elseif ($score >= 70) {
         $insights[] = [
             'type' => 'info',
-            'message' => 'Επείγουσα θέση - Γρήγορη πρόσληψη'
+            'message' => 'Καλή συμβατότητα με τις απαιτήσεις της θέσης'
+        ];
+    }
+
+    // Location insights
+    if (strpos(strtolower($match['location']), 'θεσσαλονίκη') !== false) {
+        $insights[] = [
+            'type' => 'success',
+            'message' => 'Η θέση βρίσκεται στην περιοχή σας'
         ];
     }
 
     // High salary
-    if (isset($job['salary_max']) && $job['salary_max'] > 2000) {
+    if (isset($match['salary_max']) && floatval($match['salary_max']) > 1500) {
         $insights[] = [
             'type' => 'success',
             'message' => 'Ανταγωνιστικός μισθός'

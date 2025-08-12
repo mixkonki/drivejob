@@ -605,8 +605,8 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                     <div class="profile-sidebar">
                         <!-- AI Matching Widget -->
-                        <?php include __DIR__ . '/partials/matching-widget.php'; ?>
-                        
+                        <?php include __DIR__ . '/partials/ai-matching-widget.php'; ?>
+
                         <!-- Messages Widget -->
                         <?php include __DIR__ . '/partials/messages-widget.php'; ?>
 
@@ -1396,30 +1396,50 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <h2>Προτεινόμενες Θέσεις Εργασίας</h2>
 
                     <?php
-                    // Αν υπάρχουν ταιριάσματα από τον MatchingModel
-                    if (isset($matchedListings) && !empty($matchedListings['results'])) :
+                    // Χρήση του MatchingService για να πάρουμε τα matches
+                    try {
+                        require_once ROOT_DIR . '/src/Services/MatchingService.php';
+                        $pdo = \Drivejob\Core\Database::getInstance()->getConnection();
+                        $matchingService = new \Drivejob\Services\MatchingService($pdo);
+                        $matchResult = $matchingService->findDriverMatches($_SESSION['user_id'], 1, 10);
+                        $matches = $matchResult['results'] ?? [];
+                    } catch (Exception $e) {
+                        $matches = [];
+                        error_log("Job matches tab error: " . $e->getMessage());
+                    }
+
+                    if (!empty($matches)) :
                     ?>
                         <div class="matched-listings">
-                            <?php foreach ($matchedListings['results'] as $listing) : ?>
+                            <?php foreach ($matches as $match) : ?>
                                 <div class="job-match-card">
-                                    <div class="match-percentage">
-                                        <?php echo $listing['match_percentage']; ?>% ταίριασμα
+                                    <div class="match-percentage <?php echo $match['match_score'] >= 90 ? 'high' : ($match['match_score'] >= 70 ? 'medium' : 'low'); ?>">
+                                        <?php echo round($match['match_score']); ?>% ταίριασμα
                                     </div>
                                     <div class="match-details">
-                                        <h3><a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>"><?php echo htmlspecialchars($listing['title']); ?></a></h3>
+                                        <h3><a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $match['company_listing_id']; ?>"><?php echo htmlspecialchars($match['title']); ?></a></h3>
                                         <div class="match-meta">
-                                            <span class="job-type"><?php echo $jobTypes[$listing['job_type']] ?? $listing['job_type']; ?></span>
-                                            <span class="location"><?php echo htmlspecialchars($listing['location']); ?></span>
+                                            <span class="company"><i class="fas fa-building"></i> <?php echo htmlspecialchars($match['company_name']); ?></span>
+                                            <span class="location"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($match['location']); ?></span>
                                         </div>
-                                        <p class="match-description"><?php echo substr(htmlspecialchars($listing['description']), 0, 150) . '...'; ?></p>
-                                        <a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>" class="btn-primary">Προβολή</a>
+                                        <p class="match-description"><?php echo substr(htmlspecialchars($match['description']), 0, 200) . '...'; ?></p>
+                                        <div class="match-actions">
+                                            <a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $match['company_listing_id']; ?>" class="btn-primary">Προβολή Λεπτομερειών</a>
+                                        </div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
+
+                        <div class="text-center mt-4">
+                            <a href="<?php echo BASE_URL; ?>drivers/job-matches" class="btn-secondary">
+                                <i class="fas fa-eye"></i> Δείτε Όλες τις Προτάσεις (<?php echo $matchResult['pagination']['total']; ?>)
+                            </a>
+                        </div>
                     <?php else : ?>
                         <div class="no-matches">
-                            <p>Δεν βρέθηκαν ταιριάσματα με το προφίλ σας.</p>
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <p>Δεν βρέθηκαν ταιριάσματα με το προφίλ σας αυτή τη στιγμή.</p>
                             <p>Συμπληρώστε περισσότερες πληροφορίες στο προφίλ σας για καλύτερα αποτελέσματα.</p>
                             <a href="<?php echo BASE_URL; ?>drivers/edit-profile" class="btn-primary">Ενημέρωση Προφίλ</a>
                         </div>

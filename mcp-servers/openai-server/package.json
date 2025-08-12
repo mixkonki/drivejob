@@ -1,0 +1,19 @@
+{
+  "name": "drivejob-openai-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server για OpenAI integration στο DriveJob",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": ["mcp", "openai", "drivejob", "ai", "matching"],
+  "author": "DriveJob Team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "openai": "^4.28.0",
+    "dotenv": "^16.3.1"
+  }
+}

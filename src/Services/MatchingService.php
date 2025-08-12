@@ -955,7 +955,7 @@ class MatchingService
      */
     public function findJobsForDriver($driverId, $page = 1, $limit = 10)
     {
-        return $this->findMatchingJobsForDriver($driverId, [], $page, $limit);
+        return $this->findDriverMatches($driverId, $page, $limit);
     }
 
     /**
