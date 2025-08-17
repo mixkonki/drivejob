@@ -1396,16 +1396,36 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <h2>Προτεινόμενες Θέσεις Εργασίας</h2>
 
                     <?php
-                    // Χρήση του MatchingService για να πάρουμε τα matches
+                    // Χρήση του EnhancedMatchingService για να πάρουμε τα matches
                     try {
-                        require_once ROOT_DIR . '/src/Services/MatchingService.php';
-                        $pdo = \Drivejob\Core\Database::getInstance()->getConnection();
-                        $matchingService = new \Drivejob\Services\MatchingService($pdo);
-                        $matchResult = $matchingService->findDriverMatches($_SESSION['user_id'], 1, 10);
-                        $matches = $matchResult['results'] ?? [];
+                        require_once ROOT_DIR . '/src/Services/EnhancedMatchingService.php';
+                        $enhancedService = new \Drivejob\Services\EnhancedMatchingService();
+                        $enhancedMatches = $enhancedService->getTopMatchesForDriver($_SESSION['user_id'], 10);
+
+                        // Convert to expected format
+                        $matches = [];
+                        foreach ($enhancedMatches as $match) {
+                            $matches[] = [
+                                'company_listing_id' => $match['id'],
+                                'title' => $match['title'],
+                                'description' => $match['description'] ?? '',
+                                'location' => $match['location'] ?? $match['company_city'],
+                                'company_name' => $match['company_name'],
+                                'match_score' => $match['overall_score'] ?? 0,
+                                'created_at' => $match['created_at'] ?? date('Y-m-d H:i:s')
+                            ];
+                        }
+
+                        $matchResult = [
+                            'results' => $matches,
+                            'pagination' => [
+                                'total' => count($matches)
+                            ]
+                        ];
                     } catch (Exception $e) {
                         $matches = [];
-                        error_log("Job matches tab error: " . $e->getMessage());
+                        $matchResult = ['results' => [], 'pagination' => ['total' => 0]];
+                        error_log("Enhanced Job matches tab error: " . $e->getMessage());
                     }
 
                     if (!empty($matches)) :

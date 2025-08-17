@@ -19,6 +19,7 @@ use Drivejob\Services\FileService;
 use Drivejob\Helpers\JsonHelper;
 use Drivejob\Models\Driver\IncidentModel;
 use Drivejob\Models\Driver\AssessmentModel;
+use Drivejob\Services\EventHookService;
 
 /**
  * Controller για τους οδηγούς
@@ -328,12 +329,23 @@ class DriversController extends BaseUserController
         Logger::info('Collected form data for update', ['data_keys' => array_keys($data)]);
 
         try {
+            // Λήψη παλιών δεδομένων για σύγκριση
+            $oldData = $this->driverProfileService->getDriverProfile($driverId);
+
             // Ενημέρωση του προφίλ με τη νέα υπηρεσία, συμπεριλαμβανομένων των αρχείων
             $updateResult = $this->driverProfileService->updateProfileWithFiles($driverId, $data, $_FILES);
 
             if ($updateResult) {
                 Logger::info('Profile update successful');
                 Session::set('success_message', 'Το προφίλ σας ενημερώθηκε με επιτυχία.');
+
+                // Trigger event hook για profile update
+                try {
+                    $eventHookService = new EventHookService($this->container->get('pdo'));
+                    $eventHookService->onDriverProfileUpdate($driverId, $oldData, $data);
+                } catch (\Exception $hookError) {
+                    Logger::warning('Event hook failed but profile update succeeded: ' . $hookError->getMessage());
+                }
             } else {
                 Logger::error('Profile update failed', [
                     'driver_id' => $driverId,
@@ -799,40 +811,39 @@ class DriversController extends BaseUserController
             'available_for_work' => isset($_GET['available_for_work']) ? 1 : null,
             'experience_years' => $_GET['experience_years'] ?? null
         ];
-        
+
         // Remove empty criteria
         $criteria = array_filter($criteria);
-        
+
         // Get drivers
         $query = "SELECT d.*, u.email 
                   FROM drivers d 
                   JOIN users u ON d.user_id = u.id 
                   WHERE d.is_active = 1";
-        
+
         $params = [];
-        
+
         if (!empty($criteria['city'])) {
             $query .= " AND d.city LIKE ?";
             $params[] = '%' . $criteria['city'] . '%';
         }
-        
+
         if (!empty($criteria['available_for_work'])) {
             $query .= " AND d.available_for_work = 1";
         }
-        
+
         if (!empty($criteria['experience_years'])) {
             $query .= " AND d.experience_years >= ?";
             $params[] = $criteria['experience_years'];
         }
-        
+
         $query .= " ORDER BY d.created_at DESC LIMIT 20";
-        
+
         $stmt = $this->pdo->prepare($query);
         $stmt->execute($params);
         $drivers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        
+
         // Load view
         include ROOT_DIR . '/src/Views/drivers/search.php';
     }
-
 }

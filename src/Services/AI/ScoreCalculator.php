@@ -2,12 +2,18 @@
 
 namespace Drivejob\Services\AI;
 
+use Drivejob\Core\Logger;
+
+/**
+ * Score Calculator για AI Matching
+ * Υπολογίζει συνολικά scores από individual matching scores
+ */
 class ScoreCalculator
 {
     /**
-     * Weights for different matching factors
+     * Βάρη για τα διάφορα κριτήρια ταιριάσματος
      */
-    private const WEIGHTS = [
+    private array $weights = [
         'skill_match' => 0.35,
         'location_match' => 0.25,
         'experience_match' => 0.25,
@@ -15,214 +21,313 @@ class ScoreCalculator
     ];
 
     /**
-     * Calculate overall score from individual scores
+     * Υπολογίζει το συνολικό σκορ από individual scores
      */
     public function calculateOverallScore(array $scores): float
     {
-        $weightedSum = 0;
-        $totalWeight = 0;
+        try {
+            $totalScore = 0.0;
+            $totalWeight = 0.0;
 
-        foreach (self::WEIGHTS as $factor => $weight) {
-            if (isset($scores[$factor])) {
-                $weightedSum += $scores[$factor] * $weight;
-                $totalWeight += $weight;
+            foreach ($this->weights as $criterion => $weight) {
+                if (isset($scores[$criterion])) {
+                    $totalScore += $scores[$criterion] * $weight;
+                    $totalWeight += $weight;
+                }
             }
-        }
 
-        // Normalize if not all factors are present
-        if ($totalWeight > 0 && $totalWeight < 1) {
-            return $weightedSum / $totalWeight;
-        }
+            // Κανονικοποίηση σε κλίμακα 0-100
+            $normalizedScore = $totalWeight > 0 ? ($totalScore / $totalWeight) * 100 : 0.0;
 
-        return $weightedSum;
+            // Εφαρμογή bonus/penalty factors
+            $finalScore = $this->applyBonusFactors($normalizedScore, $scores);
+
+            return min(100.0, max(0.0, $finalScore));
+        } catch (\Exception $e) {
+            Logger::error('Error calculating overall score: ' . $e->getMessage());
+            return 0.0;
+        }
     }
 
     /**
-     * Apply business rules to adjust score
+     * Εφαρμόζει bonus/penalty factors στο σκορ
      */
-    public function applyBusinessRules(float $baseScore, array $driverFeatures, array $jobFeatures): float
+    private function applyBonusFactors(float $baseScore, array $scores): float
     {
         $adjustedScore = $baseScore;
 
-        // Boost for exact license match
-        if ($this->hasExactLicenseMatch($driverFeatures, $jobFeatures)) {
-            $adjustedScore *= 1.1;
+        // Bonus για υψηλό skill match
+        if (($scores['skill_match'] ?? 0) >= 0.9) {
+            $adjustedScore *= 1.1; // 10% bonus
         }
 
-        // Penalty for overqualification
-        if ($this->isOverqualified($driverFeatures, $jobFeatures)) {
-            $adjustedScore *= 0.9;
+        // Bonus για τέλεια location match
+        if (($scores['location_match'] ?? 0) >= 0.95) {
+            $adjustedScore *= 1.05; // 5% bonus
         }
 
-        // Boost for high-rated drivers
-        if (($driverFeatures['avg_rating'] ?? 0) >= 4.5) {
-            $adjustedScore *= 1.05;
+        // Penalty για πολύ χαμηλό experience match
+        if (($scores['experience_match'] ?? 0) < 0.3) {
+            $adjustedScore *= 0.9; // 10% penalty
         }
 
-        // Penalty for salary mismatch
-        if ($this->hasSalaryMismatch($driverFeatures, $jobFeatures)) {
-            $adjustedScore *= 0.85;
+        // Bonus για άμεση διαθεσιμότητα
+        if (($scores['availability_match'] ?? 0) >= 0.95) {
+            $adjustedScore *= 1.03; // 3% bonus
         }
 
-        // Ensure score stays within bounds
-        return max(0, min(1, $adjustedScore));
+        return $adjustedScore;
     }
 
     /**
-     * Calculate confidence score for the match
+     * Υπολογίζει confidence level για το matching
      */
-    public function calculateConfidence(array $driverFeatures, array $jobFeatures): float
+    public function calculateConfidence(array $scores): float
     {
-        $confidence = 1.0;
+        try {
+            $confidenceFactors = [];
 
-        // Reduce confidence for incomplete profiles
-        $driverCompleteness = $this->calculateProfileCompleteness($driverFeatures);
-        $jobCompleteness = $this->calculateJobCompleteness($jobFeatures);
+            // Consistency check - όλα τα scores είναι παρόμοια
+            $scoreValues = array_values($scores);
+            $avgScore = array_sum($scoreValues) / count($scoreValues);
+            $variance = 0;
 
-        $confidence *= ($driverCompleteness + $jobCompleteness) / 2;
+            foreach ($scoreValues as $score) {
+                $variance += pow($score - $avgScore, 2);
+            }
+            $variance /= count($scoreValues);
+            $standardDeviation = sqrt($variance);
 
-        // Reduce confidence for new users
-        if (($driverFeatures['review_count'] ?? 0) < 3) {
-            $confidence *= 0.8;
+            // Χαμηλή διακύμανση = υψηλή εμπιστοσύνη
+            $consistencyFactor = max(0, 1 - ($standardDeviation * 2));
+            $confidenceFactors[] = $consistencyFactor;
+
+            // Completeness check - πόσα scores έχουμε
+            $completeness = count($scores) / 4; // Αναμένουμε 4 scores
+            $confidenceFactors[] = $completeness;
+
+            // Quality check - μέσος όρος των scores
+            $qualityFactor = $avgScore;
+            $confidenceFactors[] = $qualityFactor;
+
+            // Συνολικό confidence
+            $overallConfidence = array_sum($confidenceFactors) / count($confidenceFactors);
+
+            return min(1.0, max(0.0, $overallConfidence));
+        } catch (\Exception $e) {
+            Logger::error('Error calculating confidence: ' . $e->getMessage());
+            return 0.5; // Default confidence
         }
-
-        // Reduce confidence for vague job requirements
-        if (empty($jobFeatures['required_certifications']) && empty($jobFeatures['vehicle_type'])) {
-            $confidence *= 0.7;
-        }
-
-        return $confidence;
     }
 
     /**
-     * Check for exact license match
+     * Παρέχει detailed breakdown του scoring
      */
-    private function hasExactLicenseMatch(array $driverFeatures, array $jobFeatures): bool
+    public function getScoreBreakdown(array $scores): array
     {
-        $driverLicenses = $driverFeatures['licenses'] ?? [];
-        $requiredLicense = $jobFeatures['required_license'] ?? '';
-
-        return !empty($requiredLicense) && in_array($requiredLicense, $driverLicenses);
-    }
-
-    /**
-     * Check if driver is overqualified
-     */
-    private function isOverqualified(array $driverFeatures, array $jobFeatures): bool
-    {
-        $driverExperience = $driverFeatures['years_experience'] ?? 0;
-        $requiredExperience = $jobFeatures['min_experience'] ?? 0;
-
-        // Consider overqualified if driver has 10+ years more than required
-        return ($driverExperience - $requiredExperience) > 10;
-    }
-
-    /**
-     * Check for salary mismatch
-     */
-    private function hasSalaryMismatch(array $driverFeatures, array $jobFeatures): bool
-    {
-        $driverMinSalary = $driverFeatures['min_salary'] ?? 0;
-        $jobMaxSalary = $jobFeatures['salary_range']['max'] ?? PHP_INT_MAX;
-
-        return $driverMinSalary > $jobMaxSalary;
-    }
-
-    /**
-     * Calculate driver profile completeness
-     */
-    private function calculateProfileCompleteness(array $features): float
-    {
-        $requiredFields = [
-            'years_experience',
-            'licenses',
-            'location',
-            'available_immediately',
-            'preferred_schedule'
+        $breakdown = [
+            'individual_scores' => $scores,
+            'weights' => $this->weights,
+            'weighted_scores' => [],
+            'overall_score' => $this->calculateOverallScore($scores),
+            'confidence' => $this->calculateConfidence($scores),
+            'recommendations' => []
         ];
 
-        $completedFields = 0;
-        foreach ($requiredFields as $field) {
-            if (!empty($features[$field])) {
-                $completedFields++;
+        // Υπολογισμός weighted scores
+        foreach ($this->weights as $criterion => $weight) {
+            if (isset($scores[$criterion])) {
+                $breakdown['weighted_scores'][$criterion] = $scores[$criterion] * $weight;
             }
         }
 
-        return $completedFields / count($requiredFields);
+        // Προτάσεις βελτίωσης
+        $breakdown['recommendations'] = $this->generateRecommendations($scores);
+
+        return $breakdown;
     }
 
     /**
-     * Calculate job listing completeness
+     * Δημιουργεί προτάσεις βελτίωσης με βάση τα scores
      */
-    private function calculateJobCompleteness(array $features): float
+    private function generateRecommendations(array $scores): array
     {
-        $requiredFields = [
-            'required_license',
-            'min_experience',
-            'location',
-            'salary_range',
-            'schedule_type'
-        ];
+        $recommendations = [];
 
-        $completedFields = 0;
-        foreach ($requiredFields as $field) {
-            if (!empty($features[$field])) {
-                $completedFields++;
-            }
-        }
-
-        return $completedFields / count($requiredFields);
-    }
-
-    /**
-     * Generate match insights
-     */
-    public function generateInsights(array $scores, array $driverFeatures, array $jobFeatures): array
-    {
-        $insights = [];
-
-        // Skill match insights
-        if ($scores['skill_match'] < 0.5) {
-            $insights[] = [
-                'type' => 'warning',
+        // Skill match recommendations
+        if (($scores['skill_match'] ?? 0) < 0.5) {
+            $recommendations[] = [
                 'category' => 'skills',
-                'message' => 'Οι δεξιότητες του οδηγού δεν ταιριάζουν πλήρως με τις απαιτήσεις'
-            ];
-        } elseif ($scores['skill_match'] > 0.9) {
-            $insights[] = [
-                'type' => 'success',
-                'category' => 'skills',
-                'message' => 'Εξαιρετική αντιστοιχία δεξιοτήτων!'
+                'priority' => 'high',
+                'message' => 'Χαμηλό skill match - εξετάστε πρόσθετες πιστοποιήσεις ή εκπαίδευση'
             ];
         }
 
-        // Location insights
-        if ($scores['location_match'] < 0.6) {
-            $insights[] = [
-                'type' => 'info',
+        // Location match recommendations
+        if (($scores['location_match'] ?? 0) < 0.4) {
+            $recommendations[] = [
                 'category' => 'location',
-                'message' => 'Η απόσταση μπορεί να είναι πρόκληση'
+                'priority' => 'medium',
+                'message' => 'Μεγάλη απόσταση - εξετάστε remote work ή relocation options'
             ];
         }
 
-        // Experience insights
-        if ($scores['experience_match'] > 0.95) {
-            $insights[] = [
-                'type' => 'success',
+        // Experience match recommendations
+        if (($scores['experience_match'] ?? 0) < 0.6) {
+            $recommendations[] = [
                 'category' => 'experience',
-                'message' => 'Ιδανική εμπειρία για τη θέση'
+                'priority' => 'medium',
+                'message' => 'Ανεπαρκής εμπειρία - εξετάστε training programs ή mentoring'
             ];
         }
 
-        // Availability insights
-        if ($scores['availability_match'] < 0.5) {
-            $insights[] = [
-                'type' => 'warning',
+        // Availability match recommendations
+        if (($scores['availability_match'] ?? 0) < 0.7) {
+            $recommendations[] = [
                 'category' => 'availability',
-                'message' => 'Πιθανή ασυμβατότητα προγράμματος'
+                'priority' => 'low',
+                'message' => 'Ασυμβατότητα ωραρίου - εξετάστε flexible scheduling options'
             ];
         }
 
-        return $insights;
+        return $recommendations;
+    }
+
+    /**
+     * Ενημερώνει τα βάρη των κριτηρίων
+     */
+    public function updateWeights(array $newWeights): void
+    {
+        foreach ($newWeights as $criterion => $weight) {
+            if (isset($this->weights[$criterion]) && $weight >= 0 && $weight <= 1) {
+                $this->weights[$criterion] = $weight;
+            }
+        }
+
+        // Κανονικοποίηση των βαρών ώστε το άθροισμα να είναι 1
+        $totalWeight = array_sum($this->weights);
+        if ($totalWeight > 0) {
+            foreach ($this->weights as $criterion => $weight) {
+                $this->weights[$criterion] = $weight / $totalWeight;
+            }
+        }
+    }
+
+    /**
+     * Επιστρέφει τα τρέχοντα βάρη
+     */
+    public function getWeights(): array
+    {
+        return $this->weights;
+    }
+
+    /**
+     * Υπολογίζει similarity score μεταξύ δύο feature vectors
+     */
+    public function calculateSimilarity(array $features1, array $features2): float
+    {
+        try {
+            $similarities = [];
+
+            // Cosine similarity για numeric features
+            $numericFeatures1 = $this->extractNumericFeatures($features1);
+            $numericFeatures2 = $this->extractNumericFeatures($features2);
+
+            if (!empty($numericFeatures1) && !empty($numericFeatures2)) {
+                $similarities[] = $this->cosineSimilarity($numericFeatures1, $numericFeatures2);
+            }
+
+            // Jaccard similarity για categorical features
+            $categoricalFeatures1 = $this->extractCategoricalFeatures($features1);
+            $categoricalFeatures2 = $this->extractCategoricalFeatures($features2);
+
+            if (!empty($categoricalFeatures1) && !empty($categoricalFeatures2)) {
+                $similarities[] = $this->jaccardSimilarity($categoricalFeatures1, $categoricalFeatures2);
+            }
+
+            return !empty($similarities) ? array_sum($similarities) / count($similarities) : 0.0;
+        } catch (\Exception $e) {
+            Logger::error('Error calculating similarity: ' . $e->getMessage());
+            return 0.0;
+        }
+    }
+
+    /**
+     * Εξάγει numeric features από feature vector
+     */
+    private function extractNumericFeatures(array $features): array
+    {
+        $numeric = [];
+
+        foreach ($features as $key => $value) {
+            if (is_numeric($value)) {
+                $numeric[$key] = (float)$value;
+            }
+        }
+
+        return $numeric;
+    }
+
+    /**
+     * Εξάγει categorical features από feature vector
+     */
+    private function extractCategoricalFeatures(array $features): array
+    {
+        $categorical = [];
+
+        foreach ($features as $key => $value) {
+            if (is_array($value)) {
+                $categorical = array_merge($categorical, $value);
+            } elseif (is_string($value) && !is_numeric($value)) {
+                $categorical[] = $value;
+            }
+        }
+
+        return array_unique($categorical);
+    }
+
+    /**
+     * Υπολογίζει cosine similarity
+     */
+    private function cosineSimilarity(array $vector1, array $vector2): float
+    {
+        $dotProduct = 0;
+        $magnitude1 = 0;
+        $magnitude2 = 0;
+
+        $allKeys = array_unique(array_merge(array_keys($vector1), array_keys($vector2)));
+
+        foreach ($allKeys as $key) {
+            $val1 = $vector1[$key] ?? 0;
+            $val2 = $vector2[$key] ?? 0;
+
+            $dotProduct += $val1 * $val2;
+            $magnitude1 += $val1 * $val1;
+            $magnitude2 += $val2 * $val2;
+        }
+
+        $magnitude1 = sqrt($magnitude1);
+        $magnitude2 = sqrt($magnitude2);
+
+        if ($magnitude1 == 0 || $magnitude2 == 0) {
+            return 0.0;
+        }
+
+        return $dotProduct / ($magnitude1 * $magnitude2);
+    }
+
+    /**
+     * Υπολογίζει Jaccard similarity
+     */
+    private function jaccardSimilarity(array $set1, array $set2): float
+    {
+        $intersection = array_intersect($set1, $set2);
+        $union = array_unique(array_merge($set1, $set2));
+
+        if (empty($union)) {
+            return 0.0;
+        }
+
+        return count($intersection) / count($union);
     }
 }
