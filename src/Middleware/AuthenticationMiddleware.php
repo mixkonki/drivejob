@@ -105,6 +105,13 @@ class AuthenticationMiddleware
             return false;
         }
 
+        // ✅ Shortcut: Αν ο ρόλος από Session/JWT ταιριάζει, επιτρέπουμε άμεσα
+        $rolesArr    = is_array($roles) ? $roles : [$roles];
+        $currentRole = \Drivejob\Core\Session::get('user_role');
+        if ($currentRole && in_array($currentRole, $rolesArr, true)) {
+            return true;
+        }
+
         $userId = Session::get('user_id');
         $roleManager = self::getRoleManager();
 
