@@ -40,8 +40,26 @@ class AuthenticationMiddleware
 
         // 🆕 Bearer token → hydrate session if valid
         if (!Session::has('user_id')) {
+            // Robust Authorization header extraction
             $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-            if (preg_match('/^Bearer\s+(.+)$/i', $auth, $m)) {
+            $auth = $auth ?: ($_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
+
+            if (!$auth && function_exists('getallheaders')) {
+                $h = getallheaders();
+                if (isset($h['Authorization'])) {
+                    $auth = $h['Authorization'];
+                }
+                if (!$auth) {
+                    foreach ($h as $k => $v) {
+                        if (strtolower($k) === 'authorization') {
+                            $auth = $v;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ($auth && preg_match('/^Bearer\s+(.+)$/i', $auth, $m)) {
                 $token = $m[1];
                 try {
                     if (class_exists('\\Drivejob\\Core\\Jwt')) {
