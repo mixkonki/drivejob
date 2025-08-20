@@ -7,7 +7,7 @@ use Drivejob\Core\Database;
 
 // Require admin role
 if (!Auth::requireAdmin(true)) {
-    return;
+    exit;
 }
 
 // Set JSON content type
@@ -86,8 +86,6 @@ try {
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "Failed to fetch users",
-        "error"   => $e->getMessage(),
-        "trace"   => $e->getTraceAsString()
+        "message" => "Failed to fetch users"
     ]);
 }
