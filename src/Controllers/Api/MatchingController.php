@@ -7,7 +7,7 @@ use Drivejob\Core\JsonResponse;
 use Drivejob\Core\Session;
 use Drivejob\Services\AI\MatchingService;
 use Drivejob\Services\AI\MatchingCacheService;
-use Drivejob\Middleware\ApiAuthMiddleware;
+use Drivejob\Middleware\AuthenticationMiddleware as Auth;
 
 class MatchingController extends Controller
 {
@@ -26,11 +26,11 @@ class MatchingController extends Controller
     public function getDriverMatches()
     {
         // Έλεγχος authentication
-        if (!ApiAuthMiddleware::check(['driver'])) {
+        if (!Auth::requireDriver(true)) {
             return; // Το middleware θα στείλει την απάντηση
         }
 
-        $user = ApiAuthMiddleware::getUser();
+        $user = Auth::getCurrentUser();
         $driverId = $user['id'];
         $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
 
@@ -121,11 +121,11 @@ class MatchingController extends Controller
     public function getJobCandidates()
     {
         // Έλεγχος authentication για εταιρείες
-        if (!ApiAuthMiddleware::check(['company'])) {
+        if (!Auth::requireCompany(true)) {
             return; // Το middleware θα στείλει την απάντηση
         }
 
-        $user = ApiAuthMiddleware::getUser();
+        $user = Auth::getCurrentUser();
         $companyId = $user['id'];
         $jobId = isset($_GET['job_id']) ? intval($_GET['job_id']) : 0;
         $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 20;
@@ -220,11 +220,11 @@ class MatchingController extends Controller
     public function calculateMatch()
     {
         // Έλεγχος authentication
-        if (!ApiAuthMiddleware::check(['driver', 'company'])) {
+        if (!Auth::requireDriverOrCompany(true)) {
             return; // Το middleware θα στείλει την απάντηση
         }
 
-        $user = ApiAuthMiddleware::getUser();
+        $user = Auth::getCurrentUser();
         $driverId = isset($_GET['driver_id']) ? intval($_GET['driver_id']) : 0;
         $jobId = isset($_GET['job_id']) ? intval($_GET['job_id']) : 0;
 
@@ -268,11 +268,11 @@ class MatchingController extends Controller
     public function getMatchInsights()
     {
         // Έλεγχος authentication
-        if (!ApiAuthMiddleware::check(['driver', 'company'])) {
+        if (!Auth::requireDriverOrCompany(true)) {
             return; // Το middleware θα στείλει την απάντηση
         }
 
-        $user = ApiAuthMiddleware::getUser();
+        $user = Auth::getCurrentUser();
         $driverId = isset($_GET['driver_id']) ? intval($_GET['driver_id']) : 0;
         $jobId = isset($_GET['job_id']) ? intval($_GET['job_id']) : 0;
 
@@ -334,7 +334,7 @@ class MatchingController extends Controller
     public function triggerBatchMatching()
     {
         // Έλεγχος authentication για admin
-        if (!ApiAuthMiddleware::check(['admin'])) {
+        if (!Auth::requireAdmin(true)) {
             return; // Το middleware θα στείλει την απάντηση
         }
 

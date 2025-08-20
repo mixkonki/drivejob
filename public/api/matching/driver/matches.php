@@ -1,22 +1,18 @@
 <?php
 require_once __DIR__ . '/../../../../src/bootstrap.php';
 
-use Drivejob\Core\Session;
+use Drivejob\Middleware\AuthenticationMiddleware as Auth;
 use Drivejob\Core\JsonResponse;
 use Drivejob\Core\Database;
 use Drivejob\Services\MatchingService;
 
-// Start session
-Session::start();
-
-// Check if user is logged in and is a driver
-if (!Session::has('user_id') || Session::get('user_role') !== 'driver') {
-    // Log the session issue for debugging
-    error_log("AI Matching API: Session issue - user_id: " . (Session::has('user_id') ? Session::get('user_id') : 'none') . ", role: " . (Session::has('user_role') ? Session::get('user_role') : 'none'));
-    JsonResponse::error('Unauthorized access', 401);
+// Require driver role
+if (!Auth::requireDriver(true)) {
+    return;
 }
 
-$driverId = Session::get('user_id');
+$user = Auth::getCurrentUser();
+$driverId = $user['id'];
 
 try {
     $pdo = Database::getInstance()->getConnection();

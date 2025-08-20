@@ -1,0 +1,2862 @@
+[
+  {
+    "path": ".gitignore",
+    "size": 594
+  },
+  {
+    "path": ".htaccess",
+    "size": 916
+  },
+  {
+    "path": "AI-SYSTEM-GUIDE.md",
+    "size": 4875
+  },
+  {
+    "path": "composer.json",
+    "size": 1441
+  },
+  {
+    "path": "composer.lock",
+    "size": 204855
+  },
+  {
+    "path": "package-lock.json",
+    "size": 130648
+  },
+  {
+    "path": "package.json",
+    "size": 1211
+  },
+  {
+    "path": "phpcs.xml",
+    "size": 1211
+  },
+  {
+    "path": "phpunit.xml",
+    "size": 916
+  },
+  {
+    "path": "phpunit.xml.dist",
+    "size": 1105
+  },
+  {
+    "path": "psalm.xml",
+    "size": 561
+  },
+  {
+    "path": "REFACTORING-CHECKLIST.md",
+    "size": 1565
+  },
+  {
+    "path": "update-github.sh",
+    "size": 1260
+  },
+  {
+    "path": "webpack.config.js",
+    "size": 749
+  },
+  {
+    "path": ".github/ISSUE_TEMPLATE/bug_report.md",
+    "size": 1449
+  },
+  {
+    "path": ".github/ISSUE_TEMPLATE/feature_request.md",
+    "size": 1152
+  },
+  {
+    "path": ".github/workflows/code-quality.yml",
+    "size": 1105
+  },
+  {
+    "path": ".github/workflows/php-lint.yml",
+    "size": 491
+  },
+  {
+    "path": ".vscode/settings.json",
+    "size": 47
+  },
+  {
+    "path": "backup/public/api/matching/job/candidates/index-original.php",
+    "size": 3110
+  },
+  {
+    "path": "backup/public/companies/companies_register_process.php",
+    "size": 261
+  },
+  {
+    "path": "backup/public/companies/company_profile.php",
+    "size": 766
+  },
+  {
+    "path": "backup/public/companies/company_registration.php",
+    "size": 261
+  },
+  {
+    "path": "backup/public/companies/edit_profile.php",
+    "size": 696
+  },
+  {
+    "path": "backup/public/companies/update_profile.php",
+    "size": 5149
+  },
+  {
+    "path": "backup/public/drivers/driver_profile.php",
+    "size": 679
+  },
+  {
+    "path": "backup/public/drivers/drivers_register_process.php",
+    "size": 257
+  },
+  {
+    "path": "backup/public/drivers/drivers_registration.php",
+    "size": 257
+  },
+  {
+    "path": "backup/public/drivers/edit_profile.php",
+    "size": 673
+  },
+  {
+    "path": "backup/public/drivers/update_certifications.php",
+    "size": 8125
+  },
+  {
+    "path": "backup/public/drivers/update_rating.php",
+    "size": 11511
+  },
+  {
+    "path": "backup/public/drivers/update_vehicle_experience.php",
+    "size": 9205
+  },
+  {
+    "path": "backup/public/drivers/vehicle_experience.php",
+    "size": 4801
+  },
+  {
+    "path": "backup/public/root/check_cookies.php",
+    "size": 3587
+  },
+  {
+    "path": "backup/public/root/login_process.php",
+    "size": 242
+  },
+  {
+    "path": "backup/public/root/process_ocr.php",
+    "size": 4296
+  },
+  {
+    "path": "backup/public/root/test_controller.php",
+    "size": 637
+  },
+  {
+    "path": "backup/public/root/test_index.php",
+    "size": 680
+  },
+  {
+    "path": "backup/public/root/test_match.php",
+    "size": 3622
+  },
+  {
+    "path": "backup/public/root/test_route.php",
+    "size": 316
+  },
+  {
+    "path": "backup/public/root/test_routes.php",
+    "size": 409
+  },
+  {
+    "path": "backup/public/test-files/api-test-endpoint.php",
+    "size": 1191
+  },
+  {
+    "path": "backup/public/test-files/check-companies.php",
+    "size": 1438
+  },
+  {
+    "path": "backup/public/test-files/check-job-listings-structure.php",
+    "size": 867
+  },
+  {
+    "path": "backup/public/test-files/create-test-company-user.php",
+    "size": 1570
+  },
+  {
+    "path": "backup/public/test-files/create-test-job-fixed.php",
+    "size": 2891
+  },
+  {
+    "path": "backup/public/test-files/create-test-job.php",
+    "size": 2377
+  },
+  {
+    "path": "backup/public/test-files/final-test.php",
+    "size": 5200
+  },
+  {
+    "path": "backup/public/test-files/populate-test-data.php",
+    "size": 3068
+  },
+  {
+    "path": "backup/public/test-files/test-api-direct.php",
+    "size": 1997
+  },
+  {
+    "path": "backup/public/test-files/test-api-raw.php",
+    "size": 1358
+  },
+  {
+    "path": "backup/public/test-files/test-api-simple.php",
+    "size": 1491
+  },
+  {
+    "path": "backup/public/test-files/test-session-info.php",
+    "size": 990
+  },
+  {
+    "path": "backup/public/test-files/test-widget-debug.php",
+    "size": 1534
+  },
+  {
+    "path": "backup/public/test-messaging/check-notifications-table.php",
+    "size": 1645
+  },
+  {
+    "path": "backup/public/test-messaging/check-table-structure.php",
+    "size": 1517
+  },
+  {
+    "path": "backup/public/test-messaging/fix-notifications-table.php",
+    "size": 1780
+  },
+  {
+    "path": "backup/public/test-messaging/test-messaging-api.php",
+    "size": 4194
+  },
+  {
+    "path": "backup/public/test-messaging/test-messaging-direct.php",
+    "size": 2382
+  },
+  {
+    "path": "backup/public/test-messaging/test-messaging-simple.php",
+    "size": 4281
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/check-auth-system.php",
+    "size": 4665
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/check-driver-conversations.php",
+    "size": 2566
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/check-driver-matches.php",
+    "size": 3471
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/check-matching-consistency.php",
+    "size": 9307
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/check-messaging-tables.php",
+    "size": 5014
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/cleanup-test-files.php",
+    "size": 3874
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/create-driver-conversation.php",
+    "size": 7655
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/create-test-matches.php",
+    "size": 6247
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/final-check-all-issues.php",
+    "size": 6265
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/final-system-check.php",
+    "size": 8472
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/final-system-status.php",
+    "size": 4756
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/fix-all-issues.php",
+    "size": 5836
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/fix-auth-and-messages.php",
+    "size": 7815
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/fix-driver-profile-widgets.php",
+    "size": 2915
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/fix-driver-widgets.php",
+    "size": 6595
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/fix-drivers-messages.php",
+    "size": 1220
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/fix-final-issues.php",
+    "size": 11934
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/fix-final-routing-issues.php",
+    "size": 10282
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/fix-messages-display.php",
+    "size": 7035
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/fix-remaining-issues.php",
+    "size": 16041
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/fix-system-issues.php",
+    "size": 8895
+  },
+  {
+    "path": "backup/public/test-scripts-2025-06-01/test-messaging-with-email.php",
+    "size": 5849
+  },
+  {
+    "path": "backup/refactoring-2025-06-24/check-driver-columns.php",
+    "size": 721
+  },
+  {
+    "path": "backup/refactoring-2025-06-24/fix-driver-profile-only.php",
+    "size": 15380
+  },
+  {
+    "path": "backup/refactoring-2025-06-24/fix-driver-profile-routing-and-create-mcp.php",
+    "size": 25681
+  },
+  {
+    "path": "backup/refactoring-2025-06-24/MatchingService-from-Matching.php",
+    "size": 41211
+  },
+  {
+    "path": "backup/refactoring-2025-06-24/MatchingService.php",
+    "size": 41552
+  },
+  {
+    "path": "backup/refactoring-2025-06-24/css/driver-incidents.css",
+    "size": 6832
+  },
+  {
+    "path": "backup/refactoring-2025-06-24/css/range-slider.css",
+    "size": 3110
+  },
+  {
+    "path": "backup/refactoring-phase1-20251208/AI-MatchingService-original.php",
+    "size": 13098
+  },
+  {
+    "path": "backup/refactoring-phase1-20251208/JobListingRepository-original.php",
+    "size": 18690
+  },
+  {
+    "path": "backup/refactoring-phase1-20251208/JobListingsRepository-original.php",
+    "size": 8800
+  },
+  {
+    "path": "backup/refactoring-phase1-20251208/MatchingService-original.php",
+    "size": 42933
+  },
+  {
+    "path": "backup/src/Services/DriverCertificationService.php",
+    "size": 11372
+  },
+  {
+    "path": "backup/src/Services/DriverLicenseService.php",
+    "size": 13438
+  },
+  {
+    "path": "backup/src/Services/DriverProfileService.php",
+    "size": 26971
+  },
+  {
+    "path": "backup/src/Services/DriverRatingService.php",
+    "size": 18911
+  },
+  {
+    "path": "backup/src/Services/FileUploadService.php",
+    "size": 6566
+  },
+  {
+    "path": "backup/src/Views/companies/company-profile-old.php",
+    "size": 19285
+  },
+  {
+    "path": "backup/src/Views/companies/company-profile-original.php",
+    "size": 13853
+  },
+  {
+    "path": "backup/src/Views/companies/partials/candidates-widget-v2.php",
+    "size": 9484
+  },
+  {
+    "path": "backup/src/Views/companies/partials/candidates-widget-v3.php",
+    "size": 10527
+  },
+  {
+    "path": "backup/src/Views/companies/partials/candidates-widget-v4.php",
+    "size": 10352
+  },
+  {
+    "path": "backup/src/Views/companies/partials/candidates-widget.php",
+    "size": 7872
+  },
+  {
+    "path": "backup/src/Views/drivers/certification_form.php",
+    "size": 10202
+  },
+  {
+    "path": "backup/src/Views/drivers/drivers_registration.php",
+    "size": 7388
+  },
+  {
+    "path": "backup/src/Views/drivers/edit_profile.php.bak",
+    "size": 125055
+  },
+  {
+    "path": "backup/src/Views/drivers/vehicle_experience_summary.php",
+    "size": 5790
+  },
+  {
+    "path": "backup/src/Views/drivers/vehicle_experience.php",
+    "size": 8401
+  },
+  {
+    "path": "config/.env",
+    "size": 104
+  },
+  {
+    "path": "config/config.php",
+    "size": 2067
+  },
+  {
+    "path": "config/database.php",
+    "size": 728
+  },
+  {
+    "path": "config/db.php",
+    "size": 215
+  },
+  {
+    "path": "config/email.php",
+    "size": 1080
+  },
+  {
+    "path": "config/notifications.php",
+    "size": 2991
+  },
+  {
+    "path": "config/openai.php",
+    "size": 5538
+  },
+  {
+    "path": "config/routes.php",
+    "size": 16697
+  },
+  {
+    "path": "config/services.php",
+    "size": 1224
+  },
+  {
+    "path": "database/migrations/add_admin_role_to_users.php",
+    "size": 2365
+  },
+  {
+    "path": "database/migrations/add_ai_matching_fields.php",
+    "size": 3664
+  },
+  {
+    "path": "database/migrations/add_certificate_file_to_certifications.php",
+    "size": 2690
+  },
+  {
+    "path": "database/migrations/add_detailed_ratings_to_reviews.php",
+    "size": 3787
+  },
+  {
+    "path": "database/migrations/add_driver_fields.php",
+    "size": 2990
+  },
+  {
+    "path": "database/migrations/add_fleet_management_fields_safe.php",
+    "size": 11065
+  },
+  {
+    "path": "database/migrations/add_fleet_management_fields_to_companies.php",
+    "size": 8119
+  },
+  {
+    "path": "database/migrations/add_is_active_to_users.php",
+    "size": 1409
+  },
+  {
+    "path": "database/migrations/add_is_active_to_users.sql",
+    "size": 354
+  },
+  {
+    "path": "database/migrations/add_missing_fields_to_vehicle_experience.php",
+    "size": 3833
+  },
+  {
+    "path": "database/migrations/add_missing_status_fields.php",
+    "size": 2513
+  },
+  {
+    "path": "database/migrations/add_new_skills_columns.sql",
+    "size": 1478
+  },
+  {
+    "path": "database/migrations/add_role_id_to_users_tables.php",
+    "size": 5400
+  },
+  {
+    "path": "database/migrations/add_test_data_to_monitoring_tables.php",
+    "size": 6705
+  },
+  {
+    "path": "database/migrations/check_and_update_users_table.php",
+    "size": 3108
+  },
+  {
+    "path": "database/migrations/check_companies_table.php",
+    "size": 910
+  },
+  {
+    "path": "database/migrations/check_driver_vehicle_experience_table.php",
+    "size": 5961
+  },
+  {
+    "path": "database/migrations/check_users_data.php",
+    "size": 3326
+  },
+  {
+    "path": "database/migrations/check_users_table.php",
+    "size": 609
+  },
+  {
+    "path": "database/migrations/create_admin_user.php",
+    "size": 4167
+  },
+  {
+    "path": "database/migrations/create_admins_table.php",
+    "size": 6382
+  },
+  {
+    "path": "database/migrations/create_ai_matching_results_table.php",
+    "size": 8681
+  },
+  {
+    "path": "database/migrations/create_ai_matching_tables.php",
+    "size": 6352
+  },
+  {
+    "path": "database/migrations/create_company_reviews_table.php",
+    "size": 4066
+  },
+  {
+    "path": "database/migrations/create_driver_certifications_table.php",
+    "size": 3582
+  },
+  {
+    "path": "database/migrations/create_driver_incidents_and_assessments_tables.php",
+    "size": 3424
+  },
+  {
+    "path": "database/migrations/create_driver_vehicle_experience_table.php",
+    "size": 2881
+  },
+  {
+    "path": "database/migrations/create_match_history_table.php",
+    "size": 2034
+  },
+  {
+    "path": "database/migrations/create_match_preferences_table.php",
+    "size": 1963
+  },
+  {
+    "path": "database/migrations/create_messaging_tables.php",
+    "size": 5131
+  },
+  {
+    "path": "database/migrations/create_permissions_table.php",
+    "size": 10873
+  },
+  {
+    "path": "database/migrations/create_role_permissions_table.php",
+    "size": 5410
+  },
+  {
+    "path": "database/migrations/create_roles_table.php",
+    "size": 3479
+  },
+  {
+    "path": "database/migrations/create_sessions_table.php",
+    "size": 3574
+  },
+  {
+    "path": "database/migrations/create_system_monitoring_tables.php",
+    "size": 6223
+  },
+  {
+    "path": "database/migrations/create_user_roles_table.php",
+    "size": 4075
+  },
+  {
+    "path": "database/migrations/execute_detailed_ratings_migration.php",
+    "size": 445
+  },
+  {
+    "path": "database/migrations/execute_incidents_assessments_migration.php",
+    "size": 740
+  },
+  {
+    "path": "database/migrations/execute_matching_migrations.php",
+    "size": 909
+  },
+  {
+    "path": "database/migrations/execute_migration.php",
+    "size": 1347
+  },
+  {
+    "path": "database/migrations/execute_role_migrations.php",
+    "size": 2371
+  },
+  {
+    "path": "database/migrations/execute_system_monitoring_migration.php",
+    "size": 7204
+  },
+  {
+    "path": "database/migrations/fix_ai_matching_schema.php",
+    "size": 17466
+  },
+  {
+    "path": "database/migrations/fix_messaging_tables.php",
+    "size": 5862
+  },
+  {
+    "path": "database/migrations/reset_admin_password.php",
+    "size": 1861
+  },
+  {
+    "path": "database/migrations/run_ai_migration.php",
+    "size": 15366
+  },
+  {
+    "path": "docs/advanced-ai-matching-system-2025.md",
+    "size": 11282
+  },
+  {
+    "path": "docs/authentication-system-complete-analysis.md",
+    "size": 5792
+  },
+  {
+    "path": "docs/documentation-reorganization-summary-2025.md",
+    "size": 6398
+  },
+  {
+    "path": "docs/matching-system-analysis-2025.md",
+    "size": 9835
+  },
+  {
+    "path": "docs/matching-system-frontend-analysis-2025.md",
+    "size": 13888
+  },
+  {
+    "path": "docs/project-cleanup-summary-2025.md",
+    "size": 3256
+  },
+  {
+    "path": "docs/README.md",
+    "size": 5351
+  },
+  {
+    "path": "docs/refactoring-optimization-summary-2025.md",
+    "size": 7814
+  },
+  {
+    "path": "docs/refactoring-phase1-summary.md",
+    "size": 5538
+  },
+  {
+    "path": "docs/user-authentication-system-analysis.md",
+    "size": 6847
+  },
+  {
+    "path": "docs/architecture/project-structure-analysis-2025.md",
+    "size": 9530
+  },
+  {
+    "path": "docs/architecture/README.md",
+    "size": 3091
+  },
+  {
+    "path": "docs/archive/README.md",
+    "size": 1105
+  },
+  {
+    "path": "docs/development-plan/README.md",
+    "size": 2055
+  },
+  {
+    "path": "docs/development-plan/technical-fixes-roadmap-2025.md",
+    "size": 10712
+  },
+  {
+    "path": "docs/implementation/ai-widget-implementation-complete.md",
+    "size": 2648
+  },
+  {
+    "path": "docs/implementation/messaging-system-implementation.md",
+    "size": 6006
+  },
+  {
+    "path": "docs/implementation/README.md",
+    "size": 3525
+  },
+  {
+    "path": "logs/app.log",
+    "size": 3715067
+  },
+  {
+    "path": "logs/php_errors.log",
+    "size": 1957159
+  },
+  {
+    "path": "logs/SessionLogger.php",
+    "size": 5333
+  },
+  {
+    "path": "mcp-servers/openai-server/.env",
+    "size": 181
+  },
+  {
+    "path": "mcp-servers/openai-server/index.js",
+    "size": 16091
+  },
+  {
+    "path": "mcp-servers/openai-server/package.json",
+    "size": 513
+  },
+  {
+    "path": "mcp-servers/openai-server/README.md",
+    "size": 5175
+  },
+  {
+    "path": "public/.htaccess",
+    "size": 659
+  },
+  {
+    "path": "public/about.php",
+    "size": 1588
+  },
+  {
+    "path": "public/access-denied.php",
+    "size": 258
+  },
+  {
+    "path": "public/contact.php",
+    "size": 2294
+  },
+  {
+    "path": "public/index.php",
+    "size": 950
+  },
+  {
+    "path": "public/index.view.php",
+    "size": 2050
+  },
+  {
+    "path": "public/login-process.php",
+    "size": 240
+  },
+  {
+    "path": "public/login.php",
+    "size": 242
+  },
+  {
+    "path": "public/logout.php",
+    "size": 244
+  },
+  {
+    "path": "public/process-ocr.php",
+    "size": 4296
+  },
+  {
+    "path": "public/test-routes.html",
+    "size": 4196
+  },
+  {
+    "path": "public/verification-required.php",
+    "size": 274
+  },
+  {
+    "path": "public/verify.php",
+    "size": 372
+  },
+  {
+    "path": "public/admin/ai-settings.php",
+    "size": 18394
+  },
+  {
+    "path": "public/admin/debug-session.php",
+    "size": 339
+  },
+  {
+    "path": "public/admin/matching-dashboard.php",
+    "size": 20001
+  },
+  {
+    "path": "public/admin/openai-settings.php",
+    "size": 15500
+  },
+  {
+    "path": "public/admin/settings.php",
+    "size": 19096
+  },
+  {
+    "path": "public/admin/temp-login.php",
+    "size": 3307
+  },
+  {
+    "path": "public/admin/test-connection.php",
+    "size": 4495
+  },
+  {
+    "path": "public/api/matching/driver/ai-matches.php",
+    "size": 7497
+  },
+  {
+    "path": "public/api/matching/driver/matches-simple.php",
+    "size": 6154
+  },
+  {
+    "path": "public/api/matching/driver/matches.php",
+    "size": 4466
+  },
+  {
+    "path": "public/api/matching/job/candidates.php",
+    "size": 305
+  },
+  {
+    "path": "public/api/matching/job/candidates/get.php",
+    "size": 3923
+  },
+  {
+    "path": "public/api/matching/job/candidates/index.php",
+    "size": 4231
+  },
+  {
+    "path": "public/api/messages/send.php",
+    "size": 1369
+  },
+  {
+    "path": "public/api/messaging/send.php",
+    "size": 6991
+  },
+  {
+    "path": "public/companies/.htaccess",
+    "size": 656
+  },
+  {
+    "path": "public/companies/companies-register-process.php",
+    "size": 261
+  },
+  {
+    "path": "public/companies/company-profile.php",
+    "size": 790
+  },
+  {
+    "path": "public/companies/company-registration.php",
+    "size": 509
+  },
+  {
+    "path": "public/companies/conversation-modern.php",
+    "size": 11157
+  },
+  {
+    "path": "public/companies/conversation.php",
+    "size": 10362
+  },
+  {
+    "path": "public/companies/edit-profile.php",
+    "size": 629
+  },
+  {
+    "path": "public/companies/messages.php",
+    "size": 8808
+  },
+  {
+    "path": "public/companies/profile.php",
+    "size": 99
+  },
+  {
+    "path": "public/companies/register.php",
+    "size": 509
+  },
+  {
+    "path": "public/companies/registration.php",
+    "size": 71
+  },
+  {
+    "path": "public/companies/update-profile.php",
+    "size": 429
+  },
+  {
+    "path": "public/cron/check_expiring_licenses.php",
+    "size": 13223
+  },
+  {
+    "path": "public/cron/check_licenses_simple.php",
+    "size": 10954
+  },
+  {
+    "path": "public/cron/update-matching-scores.php",
+    "size": 8543
+  },
+  {
+    "path": "public/css/admin-users.css",
+    "size": 6336
+  },
+  {
+    "path": "public/css/admin.css",
+    "size": 6911
+  },
+  {
+    "path": "public/css/certifications.css",
+    "size": 5682
+  },
+  {
+    "path": "public/css/company-components.css",
+    "size": 9357
+  },
+  {
+    "path": "public/css/company-profile.css",
+    "size": 8012
+  },
+  {
+    "path": "public/css/company-registration.css",
+    "size": 10156
+  },
+  {
+    "path": "public/css/driver-assessment.css",
+    "size": 2119
+  },
+  {
+    "path": "public/css/driver-edit-profile.css",
+    "size": 12737
+  },
+  {
+    "path": "public/css/driver-profile.css",
+    "size": 26093
+  },
+  {
+    "path": "public/css/driver-rating-profile.css",
+    "size": 11511
+  },
+  {
+    "path": "public/css/driver-rating.css",
+    "size": 17822
+  },
+  {
+    "path": "public/css/driver-skills.css",
+    "size": 6505
+  },
+  {
+    "path": "public/css/drivers-registration.css",
+    "size": 6978
+  },
+  {
+    "path": "public/css/edit-skills.css",
+    "size": 4169
+  },
+  {
+    "path": "public/css/expiring-licenses.css",
+    "size": 2469
+  },
+  {
+    "path": "public/css/form-buttons-fix.css",
+    "size": 3856
+  },
+  {
+    "path": "public/css/job-listing-form.css",
+    "size": 14583
+  },
+  {
+    "path": "public/css/job-listings.css",
+    "size": 8979
+  },
+  {
+    "path": "public/css/messaging-modern.css",
+    "size": 8748
+  },
+  {
+    "path": "public/css/styles.css",
+    "size": 11107
+  },
+  {
+    "path": "public/css/toggle-switch.css",
+    "size": 2557
+  },
+  {
+    "path": "public/css/vehicle-experience.css",
+    "size": 6411
+  },
+  {
+    "path": "public/drivers/.htaccess",
+    "size": 603
+  },
+  {
+    "path": "public/drivers/certifications.php",
+    "size": 4025
+  },
+  {
+    "path": "public/drivers/conversation-modern.php",
+    "size": 11157
+  },
+  {
+    "path": "public/drivers/conversation.php",
+    "size": 8261
+  },
+  {
+    "path": "public/drivers/driver-profile.php",
+    "size": 456
+  },
+  {
+    "path": "public/drivers/driver-rating.php",
+    "size": 2842
+  },
+  {
+    "path": "public/drivers/driver-registration.php",
+    "size": 502
+  },
+  {
+    "path": "public/drivers/drivers-register-process.php",
+    "size": 257
+  },
+  {
+    "path": "public/drivers/drivers-registration.php",
+    "size": 257
+  },
+  {
+    "path": "public/drivers/edit-profile.php",
+    "size": 673
+  },
+  {
+    "path": "public/drivers/edit-skills.php",
+    "size": 36191
+  },
+  {
+    "path": "public/drivers/job-matches.php",
+    "size": 229
+  },
+  {
+    "path": "public/drivers/messages.php",
+    "size": 8752
+  },
+  {
+    "path": "public/drivers/profile.php",
+    "size": 97
+  },
+  {
+    "path": "public/drivers/public-profile.php",
+    "size": 12033
+  },
+  {
+    "path": "public/drivers/register.php",
+    "size": 502
+  },
+  {
+    "path": "public/drivers/registration.php",
+    "size": 71
+  },
+  {
+    "path": "public/drivers/update-assessment.php",
+    "size": 40394
+  },
+  {
+    "path": "public/drivers/update-certifications.php",
+    "size": 8125
+  },
+  {
+    "path": "public/drivers/update-rating.php",
+    "size": 11511
+  },
+  {
+    "path": "public/drivers/update-vehicle-experience.php",
+    "size": 9205
+  },
+  {
+    "path": "public/drivers/vehicle-experience.php",
+    "size": 4801
+  },
+  {
+    "path": "public/img/adr_icon.png",
+    "size": 82716
+  },
+  {
+    "path": "public/img/application_icon.png",
+    "size": 1255
+  },
+  {
+    "path": "public/img/car_icon.png",
+    "size": 25043
+  },
+  {
+    "path": "public/img/company_icon.png",
+    "size": 3823
+  },
+  {
+    "path": "public/img/date_icon.png",
+    "size": 11585
+  },
+  {
+    "path": "public/img/default_company_logo.png",
+    "size": 45230
+  },
+  {
+    "path": "public/img/drivejobs.jpg",
+    "size": 59117
+  },
+  {
+    "path": "public/img/drivejobs.png",
+    "size": 138806
+  },
+  {
+    "path": "public/img/driver_icon.png",
+    "size": 48168
+  },
+  {
+    "path": "public/img/driving_skills_icon.png",
+    "size": 33076
+  },
+  {
+    "path": "public/img/email_icon.png",
+    "size": 33006
+  },
+  {
+    "path": "public/img/experience_icon.png",
+    "size": 24329
+  },
+  {
+    "path": "public/img/expiry_icon.png",
+    "size": 10813
+  },
+  {
+    "path": "public/img/facebook-icon.png",
+    "size": 1353
+  },
+  {
+    "path": "public/img/favicon.ico",
+    "size": 8655
+  },
+  {
+    "path": "public/img/favicon.png",
+    "size": 25579
+  },
+  {
+    "path": "public/img/google_icon.png",
+    "size": 4356
+  },
+  {
+    "path": "public/img/landline_icon.png",
+    "size": 3353
+  },
+  {
+    "path": "public/img/license_icon.png",
+    "size": 11906
+  },
+  {
+    "path": "public/img/linkedin-icon.png",
+    "size": 5823
+  },
+  {
+    "path": "public/img/location_icon.png",
+    "size": 17001
+  },
+  {
+    "path": "public/img/location_icon.svg",
+    "size": 313
+  },
+  {
+    "path": "public/img/logo.png",
+    "size": 138806
+  },
+  {
+    "path": "public/img/logout_icon.png",
+    "size": 55724
+  },
+  {
+    "path": "public/img/match_icon.png",
+    "size": 2077
+  },
+  {
+    "path": "public/img/morning_icon.png",
+    "size": 8441
+  },
+  {
+    "path": "public/img/operator_icon.png",
+    "size": 48112
+  },
+  {
+    "path": "public/img/pei_icon.png",
+    "size": 5371
+  },
+  {
+    "path": "public/img/phone_icon.png",
+    "size": 827
+  },
+  {
+    "path": "public/img/professionalism_icon.png",
+    "size": 13591
+  },
+  {
+    "path": "public/img/profile_icon.png",
+    "size": 37401
+  },
+  {
+    "path": "public/img/safety_icon.png",
+    "size": 2598
+  },
+  {
+    "path": "public/img/salary_icon.png",
+    "size": 14189
+  },
+  {
+    "path": "public/img/scan_icon.png",
+    "size": 4251
+  },
+  {
+    "path": "public/img/Screenshot 2025-04-21 at 13-36-36 DriveJob - Καλώς Ήρθατε.png",
+    "size": 547803
+  },
+  {
+    "path": "public/img/star-empty.png",
+    "size": 2723
+  },
+  {
+    "path": "public/img/star-full.png",
+    "size": 9434
+  },
+  {
+    "path": "public/img/star-half.png",
+    "size": 12914
+  },
+  {
+    "path": "public/img/tachograph_icon.png",
+    "size": 103688
+  },
+  {
+    "path": "public/img/technical_icon.png",
+    "size": 2420
+  },
+  {
+    "path": "public/img/training_icon.png.png",
+    "size": 6005
+  },
+  {
+    "path": "public/img/twitter_icon.png",
+    "size": 33244
+  },
+  {
+    "path": "public/img/user_icon.png",
+    "size": 10604
+  },
+  {
+    "path": "public/img/van_icon.png",
+    "size": 11078
+  },
+  {
+    "path": "public/img/vehicle_icon.png",
+    "size": 5491
+  },
+  {
+    "path": "public/img/view_icon.png",
+    "size": 2357
+  },
+  {
+    "path": "public/img/website_icon.png",
+    "size": 48236
+  },
+  {
+    "path": "public/img/license_icons/a.png",
+    "size": 1307
+  },
+  {
+    "path": "public/img/license_icons/a1.png",
+    "size": 1444
+  },
+  {
+    "path": "public/img/license_icons/a2.png",
+    "size": 1743
+  },
+  {
+    "path": "public/img/license_icons/am.png",
+    "size": 1721
+  },
+  {
+    "path": "public/img/license_icons/b.png",
+    "size": 1225
+  },
+  {
+    "path": "public/img/license_icons/be.png",
+    "size": 1314
+  },
+  {
+    "path": "public/img/license_icons/c.png",
+    "size": 1373
+  },
+  {
+    "path": "public/img/license_icons/c1.png",
+    "size": 1542
+  },
+  {
+    "path": "public/img/license_icons/c1e.png",
+    "size": 1620
+  },
+  {
+    "path": "public/img/license_icons/ce.png",
+    "size": 1467
+  },
+  {
+    "path": "public/img/license_icons/d.png",
+    "size": 1173
+  },
+  {
+    "path": "public/img/license_icons/d1.png",
+    "size": 1337
+  },
+  {
+    "path": "public/img/license_icons/d1e.png",
+    "size": 1401
+  },
+  {
+    "path": "public/img/license_icons/de.png",
+    "size": 1280
+  },
+  {
+    "path": "public/job-listings/create.php",
+    "size": 386
+  },
+  {
+    "path": "public/job-listings/index.php",
+    "size": 182
+  },
+  {
+    "path": "public/job-listings/list.php",
+    "size": 3012
+  },
+  {
+    "path": "public/job-listings/store.php",
+    "size": 191
+  },
+  {
+    "path": "public/job-listings/test-listings.php",
+    "size": 3216
+  },
+  {
+    "path": "public/js/app.js",
+    "size": 1476
+  },
+  {
+    "path": "public/js/certifications.js",
+    "size": 26244
+  },
+  {
+    "path": "public/js/company_registration.js",
+    "size": 1202
+  },
+  {
+    "path": "public/js/company-features.js",
+    "size": 10672
+  },
+  {
+    "path": "public/js/console-display.js",
+    "size": 8320
+  },
+  {
+    "path": "public/js/country-phone-codes.js",
+    "size": 4540
+  },
+  {
+    "path": "public/js/criminal-record-toggle.js",
+    "size": 6738
+  },
+  {
+    "path": "public/js/debug-vehicle-experience.js",
+    "size": 14123
+  },
+  {
+    "path": "public/js/driver_edit_profile.js",
+    "size": 11911
+  },
+  {
+    "path": "public/js/driver_profile.js",
+    "size": 24943
+  },
+  {
+    "path": "public/js/driver-profile.js",
+    "size": 8250
+  },
+  {
+    "path": "public/js/driver-rating-fix.js",
+    "size": 27573
+  },
+  {
+    "path": "public/js/driver-rating-update.js",
+    "size": 30281
+  },
+  {
+    "path": "public/js/drivers_registration.js",
+    "size": 1279
+  },
+  {
+    "path": "public/js/error-logger.js",
+    "size": 820
+  },
+  {
+    "path": "public/js/fix-vehicle-experience.js",
+    "size": 25567
+  },
+  {
+    "path": "public/js/header.js",
+    "size": 1131
+  },
+  {
+    "path": "public/js/job-listings.js",
+    "size": 23830
+  },
+  {
+    "path": "public/js/license-validation.js",
+    "size": 19160
+  },
+  {
+    "path": "public/js/tesseract-fallback.js",
+    "size": 4792
+  },
+  {
+    "path": "public/js/tesseract-simple.js",
+    "size": 2038
+  },
+  {
+    "path": "public/js/update-profile-experience.js",
+    "size": 4215
+  },
+  {
+    "path": "public/js/vehicle-experience-init.js",
+    "size": 23553
+  },
+  {
+    "path": "public/js/vehicle-experience.js",
+    "size": 28643
+  },
+  {
+    "path": "public/js/tesseract/tesseract.min.js",
+    "size": 66695
+  },
+  {
+    "path": "public/uploads/adr_images/26_adr_back_image_1744812566_ADR2.png",
+    "size": 749497
+  },
+  {
+    "path": "public/uploads/adr_images/26_adr_front_image_1744812566_ADR1.png",
+    "size": 588684
+  },
+  {
+    "path": "public/uploads/company_logos/2_1744264679_t_180x180.png",
+    "size": 2365
+  },
+  {
+    "path": "public/uploads/criminal_records/criminal_record_26_6820b9a73f9e5.pdf",
+    "size": 82592
+  },
+  {
+    "path": "public/uploads/criminal_records/criminal_record_26_6820ba3bb7404.pdf",
+    "size": 82592
+  },
+  {
+    "path": "public/uploads/criminal_records/README.txt",
+    "size": 670
+  },
+  {
+    "path": "public/uploads/criminal_records/sample_criminal_record.pdf",
+    "size": 1261
+  },
+  {
+    "path": "public/uploads/criminal_records/sample_criminal_record.txt",
+    "size": 1036
+  },
+  {
+    "path": "public/uploads/license_images/26_license_back_image_1744633703_IMG_3273.JPG",
+    "size": 811123
+  },
+  {
+    "path": "public/uploads/license_images/26_license_back_image_1744640092_IMG_3273.JPG",
+    "size": 811123
+  },
+  {
+    "path": "public/uploads/license_images/26_license_back_image_1744641398_IMG_3273.JPG",
+    "size": 811123
+  },
+  {
+    "path": "public/uploads/license_images/26_license_back_image_1744641411_IMG_3273.JPG",
+    "size": 811123
+  },
+  {
+    "path": "public/uploads/license_images/26_license_front_image_1744633703_IMG_3272.JPG",
+    "size": 659968
+  },
+  {
+    "path": "public/uploads/profile_images/26_1744562989_pngwing.com (2).png",
+    "size": 28663
+  },
+  {
+    "path": "public/uploads/resumes/26_resume_1745235965_Dimension-Guide.pdf",
+    "size": 331550
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745760633.pdf",
+    "size": 172090
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745761396.pdf",
+    "size": 172090
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745761519.pdf",
+    "size": 172090
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745761534.pdf",
+    "size": 172090
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745762703.pdf",
+    "size": 232953
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745762717.pdf",
+    "size": 232953
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745765286.pdf",
+    "size": 390402
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745765972.pdf",
+    "size": 389625
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766035.pdf",
+    "size": 389619
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766058.pdf",
+    "size": 390402
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766112.pdf",
+    "size": 390402
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766369.pdf",
+    "size": 390143
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766530.pdf",
+    "size": 390150
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766554.pdf",
+    "size": 390147
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766581.pdf",
+    "size": 390155
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766612.pdf",
+    "size": 390149
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766633.pdf",
+    "size": 390150
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766655.pdf",
+    "size": 390145
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766711.pdf",
+    "size": 390139
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745766909.pdf",
+    "size": 390970
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745767032.pdf",
+    "size": 390143
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745767201.pdf",
+    "size": 390139
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745767365.pdf",
+    "size": 390139
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1745767445.pdf",
+    "size": 390173
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1746019729.pdf",
+    "size": 390063
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1746681500.pdf",
+    "size": 390068
+  },
+  {
+    "path": "public/uploads/resumes/drivejob_resume_26_1747522272.pdf",
+    "size": 390616
+  },
+  {
+    "path": "public/uploads/tachograph_images/26_tachograph_back_image_1744813550_ADR2.png",
+    "size": 749497
+  },
+  {
+    "path": "public/uploads/tachograph_images/26_tachograph_front_image_1744813550_ADR1.png",
+    "size": 588684
+  },
+  {
+    "path": "routes/api.php",
+    "size": 1807
+  },
+  {
+    "path": "routes/web.php",
+    "size": 6526
+  },
+  {
+    "path": "src/bootstrap.php",
+    "size": 4124
+  },
+  {
+    "path": "src/container_bindings.php",
+    "size": 1295
+  },
+  {
+    "path": "src/helpers.php",
+    "size": 2657
+  },
+  {
+    "path": "src/Api/CompaniesApi.php",
+    "size": 0
+  },
+  {
+    "path": "src/Api/DriversApi.php",
+    "size": 0
+  },
+  {
+    "path": "src/Api/MatchingApi.php",
+    "size": 0
+  },
+  {
+    "path": "src/Controllers/AuthController.php",
+    "size": 14717
+  },
+  {
+    "path": "src/Controllers/BaseController.php",
+    "size": 9333
+  },
+  {
+    "path": "src/Controllers/BaseJobApplicationController.php",
+    "size": 8003
+  },
+  {
+    "path": "src/Controllers/BaseJobListingController.php",
+    "size": 36764
+  },
+  {
+    "path": "src/Controllers/BaseUserController.php",
+    "size": 23608
+  },
+  {
+    "path": "src/Controllers/HomeController.php",
+    "size": 1405
+  },
+  {
+    "path": "src/Controllers/MatchingController.php",
+    "size": 10364
+  },
+  {
+    "path": "src/Controllers/UnifiedJobListingController.php",
+    "size": 50006
+  },
+  {
+    "path": "src/Controllers/Admin/AdminController.php",
+    "size": 10787
+  },
+  {
+    "path": "src/Controllers/Admin/SimpleMonitoringController.php",
+    "size": 5460
+  },
+  {
+    "path": "src/Controllers/Admin/SystemMonitoringController.php",
+    "size": 7623
+  },
+  {
+    "path": "src/Controllers/Api/CompanyFeaturesController.php",
+    "size": 10270
+  },
+  {
+    "path": "src/Controllers/Api/MatchingController.php",
+    "size": 15052
+  },
+  {
+    "path": "src/Controllers/Company/CompaniesController.php",
+    "size": 29134
+  },
+  {
+    "path": "src/Controllers/Company/JobApplicationController.php",
+    "size": 19450
+  },
+  {
+    "path": "src/Controllers/Company/JobListingController.php",
+    "size": 50785
+  },
+  {
+    "path": "src/Controllers/Driver/DriverResumeController.php",
+    "size": 14798
+  },
+  {
+    "path": "src/Controllers/Driver/DriversController.php",
+    "size": 38739
+  },
+  {
+    "path": "src/Controllers/Driver/JobApplicationController.php",
+    "size": 22197
+  },
+  {
+    "path": "src/Controllers/Driver/JobListingController.php",
+    "size": 29678
+  },
+  {
+    "path": "src/Controllers/Driver/JobOfferController.php",
+    "size": 29738
+  },
+  {
+    "path": "src/Core/App.php",
+    "size": 3193
+  },
+  {
+    "path": "src/Core/Auth.php",
+    "size": 4488
+  },
+  {
+    "path": "src/Core/AuthControllerTest.php",
+    "size": 6543
+  },
+  {
+    "path": "src/Core/AuthMiddleware.php",
+    "size": 9496
+  },
+  {
+    "path": "src/Core/Container.php",
+    "size": 4543
+  },
+  {
+    "path": "src/Core/Controller.php",
+    "size": 3228
+  },
+  {
+    "path": "src/Core/CSRF.php",
+    "size": 4216
+  },
+  {
+    "path": "src/Core/CSRF.php.fixed",
+    "size": 3754
+  },
+  {
+    "path": "src/Core/CSRFMiddleware.php",
+    "size": 839
+  },
+  {
+    "path": "src/Core/Database.php",
+    "size": 2942
+  },
+  {
+    "path": "src/Core/DatabaseSessionHandler.php",
+    "size": 3767
+  },
+  {
+    "path": "src/Core/Debug.php",
+    "size": 1231
+  },
+  {
+    "path": "src/Core/ErrorHandler.php",
+    "size": 16192
+  },
+  {
+    "path": "src/Core/ExceptionHandler.php",
+    "size": 14187
+  },
+  {
+    "path": "src/Core/FrontController.php",
+    "size": 2626
+  },
+  {
+    "path": "src/Core/JsonResponse.php",
+    "size": 1883
+  },
+  {
+    "path": "src/Core/Logger.php",
+    "size": 5791
+  },
+  {
+    "path": "src/Core/Model.php",
+    "size": 6261
+  },
+  {
+    "path": "src/Core/RateLimiter.php",
+    "size": 3006
+  },
+  {
+    "path": "src/Core/RoleManager.php",
+    "size": 20157
+  },
+  {
+    "path": "src/Core/Router.php",
+    "size": 20419
+  },
+  {
+    "path": "src/Core/Session.php",
+    "size": 9701
+  },
+  {
+    "path": "src/Core/Session.php.fixed",
+    "size": 9693
+  },
+  {
+    "path": "src/Core/Validator.php",
+    "size": 6789
+  },
+  {
+    "path": "src/Core/View.php",
+    "size": 4936
+  },
+  {
+    "path": "src/Core/Exceptions/ApiException.php",
+    "size": 522
+  },
+  {
+    "path": "src/Core/Exceptions/AuthException.php",
+    "size": 1518
+  },
+  {
+    "path": "src/Core/Exceptions/BadRequestException.php",
+    "size": 519
+  },
+  {
+    "path": "src/Core/Exceptions/BaseException.php",
+    "size": 2590
+  },
+  {
+    "path": "src/Core/Exceptions/DatabaseException.php",
+    "size": 1463
+  },
+  {
+    "path": "src/Core/Exceptions/FileException.php",
+    "size": 518
+  },
+  {
+    "path": "src/Core/Exceptions/ForbiddenException.php",
+    "size": 1828
+  },
+  {
+    "path": "src/Core/Exceptions/NotFoundException.php",
+    "size": 490
+  },
+  {
+    "path": "src/Core/Exceptions/ServerErrorException.php",
+    "size": 558
+  },
+  {
+    "path": "src/Core/Exceptions/ValidationException.php",
+    "size": 518
+  },
+  {
+    "path": "src/Helpers/email_helper.php",
+    "size": 1707
+  },
+  {
+    "path": "src/Helpers/form_helpers.php",
+    "size": 446
+  },
+  {
+    "path": "src/Helpers/JsonHelper.php",
+    "size": 2710
+  },
+  {
+    "path": "src/Helpers/MonitoringHelper.php",
+    "size": 10095
+  },
+  {
+    "path": "src/Helpers/session_helper.php",
+    "size": 1531
+  },
+  {
+    "path": "src/Helpers/utils.php",
+    "size": 0
+  },
+  {
+    "path": "src/I18n/Translator.php",
+    "size": 0
+  },
+  {
+    "path": "src/I18n/Locales/el.php",
+    "size": 0
+  },
+  {
+    "path": "src/I18n/Locales/en.php",
+    "size": 0
+  },
+  {
+    "path": "src/js/tesseract-wrapper.js",
+    "size": 4236
+  },
+  {
+    "path": "src/js/modules/company-features.js",
+    "size": 8054
+  },
+  {
+    "path": "src/Middleware/ApiAuthMiddleware.php",
+    "size": 2463
+  },
+  {
+    "path": "src/Middleware/AuthenticationMiddleware.php",
+    "size": 1752
+  },
+  {
+    "path": "src/Models/AuthModel.php",
+    "size": 36934
+  },
+  {
+    "path": "src/Models/BaseModel.php",
+    "size": 13559
+  },
+  {
+    "path": "src/Models/BaseModelExtended.php",
+    "size": 26670
+  },
+  {
+    "path": "src/Models/DriversAssessmentModel.php",
+    "size": 728
+  },
+  {
+    "path": "src/Models/MatchingModel.php",
+    "size": 21679
+  },
+  {
+    "path": "src/Models/NotificationModel.php",
+    "size": 0
+  },
+  {
+    "path": "src/Models/ProfileModel.php",
+    "size": 699
+  },
+  {
+    "path": "src/Models/UserModel.php",
+    "size": 0
+  },
+  {
+    "path": "src/Models/Admin/AdminModel.php",
+    "size": 20108
+  },
+  {
+    "path": "src/Models/Admin/DummySystemMonitoringModel.php",
+    "size": 14252
+  },
+  {
+    "path": "src/Models/Admin/DummySystemMonitoringModelFactory.php",
+    "size": 648
+  },
+  {
+    "path": "src/Models/Admin/SystemMonitoringModel.php",
+    "size": 30529
+  },
+  {
+    "path": "src/Models/Admin/SystemMonitoringModelFactory.php",
+    "size": 625
+  },
+  {
+    "path": "src/Models/Admin/SystemMonitoringModelInterface.php",
+    "size": 1151
+  },
+  {
+    "path": "src/Models/Company/CompaniesModel.php",
+    "size": 10613
+  },
+  {
+    "path": "src/Models/Company/CompanyRatingModel.php",
+    "size": 12162
+  },
+  {
+    "path": "src/Models/Company/JobListingModel.php",
+    "size": 23328
+  },
+  {
+    "path": "src/Models/Company/JobTagModel.php",
+    "size": 16081
+  },
+  {
+    "path": "src/Models/Driver/AssessmentModel.php",
+    "size": 9045
+  },
+  {
+    "path": "src/Models/Driver/CertificationModel.php",
+    "size": 49172
+  },
+  {
+    "path": "src/Models/Driver/IncidentModel.php",
+    "size": 8536
+  },
+  {
+    "path": "src/Models/Driver/LicenseModel.php",
+    "size": 9507
+  },
+  {
+    "path": "src/Models/Driver/ProfileModel.php",
+    "size": 17441
+  },
+  {
+    "path": "src/Models/Driver/RatingModel.php",
+    "size": 21162
+  },
+  {
+    "path": "src/Models/Driver/SkillModel.php",
+    "size": 22526
+  },
+  {
+    "path": "src/Repositories/AuthRepository.php",
+    "size": 27351
+  },
+  {
+    "path": "src/Repositories/AuthRepositoryInterface.php",
+    "size": 3359
+  },
+  {
+    "path": "src/Repositories/BaseRepository.php",
+    "size": 12600
+  },
+  {
+    "path": "src/Repositories/CompaniesRepository.php",
+    "size": 16169
+  },
+  {
+    "path": "src/Repositories/CompaniesRepositoryInterface.php",
+    "size": 3123
+  },
+  {
+    "path": "src/Repositories/DriverADRRepository.php",
+    "size": 7151
+  },
+  {
+    "path": "src/Repositories/DriverLicenseRepository.php",
+    "size": 7384
+  },
+  {
+    "path": "src/Repositories/DriverOperatorLicenseRepository.php",
+    "size": 7600
+  },
+  {
+    "path": "src/Repositories/DriverRatingRepository.php",
+    "size": 13127
+  },
+  {
+    "path": "src/Repositories/DriverSkillsRepository.php",
+    "size": 6518
+  },
+  {
+    "path": "src/Repositories/DriversRepository.php",
+    "size": 17664
+  },
+  {
+    "path": "src/Repositories/DriversRepositoryInterface.php",
+    "size": 3441
+  },
+  {
+    "path": "src/Repositories/DriverTachographRepository.php",
+    "size": 6997
+  },
+  {
+    "path": "src/Repositories/JobApplicationRepository.php",
+    "size": 13324
+  },
+  {
+    "path": "src/Repositories/JobApplicationRepositoryInterface.php",
+    "size": 4428
+  },
+  {
+    "path": "src/Repositories/JobListingRepository.php",
+    "size": 18690
+  },
+  {
+    "path": "src/Repositories/JobListingRepositoryInterface.php",
+    "size": 3707
+  },
+  {
+    "path": "src/Repositories/JobListingsRepository.php",
+    "size": 8800
+  },
+  {
+    "path": "src/Repositories/JobOfferRepository.php",
+    "size": 23461
+  },
+  {
+    "path": "src/Repositories/JobOfferRepositoryInterface.php",
+    "size": 3574
+  },
+  {
+    "path": "src/Repositories/JobTagRepository.php",
+    "size": 2940
+  },
+  {
+    "path": "src/Repositories/MatchingRepository.php",
+    "size": 35390
+  },
+  {
+    "path": "src/Repositories/MatchingRepositoryInterface.php",
+    "size": 4967
+  },
+  {
+    "path": "src/Repositories/NotificationRepository.php",
+    "size": 15320
+  },
+  {
+    "path": "src/Repositories/NotificationRepositoryInterface.php",
+    "size": 2809
+  },
+  {
+    "path": "src/Repositories/RepositoryInterface.php",
+    "size": 2581
+  },
+  {
+    "path": "src/Repositories/UserRepository.php",
+    "size": 10294
+  },
+  {
+    "path": "src/Repositories/UserRepositoryInterface.php",
+    "size": 3169
+  },
+  {
+    "path": "src/Services/AdminActivityLogger.php",
+    "size": 1776
+  },
+  {
+    "path": "src/Services/AIMatchingService.php",
+    "size": 25864
+  },
+  {
+    "path": "src/Services/AiService.php",
+    "size": 0
+  },
+  {
+    "path": "src/Services/EmailService.php",
+    "size": 10430
+  },
+  {
+    "path": "src/Services/EnhancedMatchingService.php",
+    "size": 35322
+  },
+  {
+    "path": "src/Services/EnterpriseAIService.php",
+    "size": 20752
+  },
+  {
+    "path": "src/Services/EventHookService.php",
+    "size": 20820
+  },
+  {
+    "path": "src/Services/FileService.php",
+    "size": 12203
+  },
+  {
+    "path": "src/Services/GeoLocationService.php",
+    "size": 10406
+  },
+  {
+    "path": "src/Services/LicenseExpiryNotificationService.php",
+    "size": 109143
+  },
+  {
+    "path": "src/Services/MachineLearningService.php",
+    "size": 38731
+  },
+  {
+    "path": "src/Services/MatchingService.php",
+    "size": 42933
+  },
+  {
+    "path": "src/Services/MessagingService.php",
+    "size": 10951
+  },
+  {
+    "path": "src/Services/NotificationServices.php",
+    "size": 29848
+  },
+  {
+    "path": "src/Services/OpenAIService.php",
+    "size": 11174
+  },
+  {
+    "path": "src/Services/RealTimeMatchingService.php",
+    "size": 25394
+  },
+  {
+    "path": "src/Services/SmsService.php",
+    "size": 5935
+  },
+  {
+    "path": "src/Services/AI/AdvancedScoreCalculator.php",
+    "size": 14910
+  },
+  {
+    "path": "src/Services/AI/FeatureExtractor.php",
+    "size": 12734
+  },
+  {
+    "path": "src/Services/AI/MatchingCacheService.php",
+    "size": 7865
+  },
+  {
+    "path": "src/Services/AI/MatchingService.php",
+    "size": 13098
+  },
+  {
+    "path": "src/Services/AI/OpenAIMatchingService.php",
+    "size": 16757
+  },
+  {
+    "path": "src/Services/AI/ScoreCalculator.php",
+    "size": 11231
+  },
+  {
+    "path": "src/Services/Driver/DriverCertificationService.php",
+    "size": 11379
+  },
+  {
+    "path": "src/Services/Driver/DriverLicenseService.php",
+    "size": 13493
+  },
+  {
+    "path": "src/Services/Driver/DriverProfileService.php",
+    "size": 27287
+  },
+  {
+    "path": "src/Services/Driver/DriverProfileServiceInterface.php",
+    "size": 6853
+  },
+  {
+    "path": "src/Services/Driver/DriverRatingService.php",
+    "size": 19402
+  },
+  {
+    "path": "src/Services/JobListing/JobListingService.php",
+    "size": 11319
+  },
+  {
+    "path": "src/Services/JobListing/JobListingServiceInterface.php",
+    "size": 4017
+  },
+  {
+    "path": "src/Services/Matching/MatchingServiceInterface.php",
+    "size": 4880
+  },
+  {
+    "path": "src/Services/Rating/RatingService.php",
+    "size": 20501
+  },
+  {
+    "path": "src/Services/Rating/RatingServiceInterface.php",
+    "size": 5999
+  },
+  {
+    "path": "src/Utils/DriverResumePDF.php",
+    "size": 30139
+  },
+  {
+    "path": "src/Views/404.php",
+    "size": 1098
+  },
+  {
+    "path": "src/Views/csrf_error.php",
+    "size": 2462
+  },
+  {
+    "path": "src/Views/login.php",
+    "size": 2875
+  },
+  {
+    "path": "src/Views/admin/dashboard.php",
+    "size": 10950
+  },
+  {
+    "path": "src/Views/admin/login.php",
+    "size": 9895
+  },
+  {
+    "path": "src/Views/admin/settings.php",
+    "size": 18674
+  },
+  {
+    "path": "src/Views/admin/users.php",
+    "size": 11381
+  },
+  {
+    "path": "src/Views/admin/monitoring/dashboard.php",
+    "size": 20308
+  },
+  {
+    "path": "src/Views/admin/monitoring/dashboard.php.bak",
+    "size": 23006
+  },
+  {
+    "path": "src/Views/auth/access-denied.php",
+    "size": 1879
+  },
+  {
+    "path": "src/Views/auth/login.php",
+    "size": 2474
+  },
+  {
+    "path": "src/Views/auth/password-reset-token.php",
+    "size": 2875
+  },
+  {
+    "path": "src/Views/auth/password-reset.php",
+    "size": 2368
+  },
+  {
+    "path": "src/Views/auth/verification-required.php",
+    "size": 2732
+  },
+  {
+    "path": "src/Views/companies/company-profile-new-layout.php",
+    "size": 22141
+  },
+  {
+    "path": "src/Views/companies/company-profile-with-tabs.php",
+    "size": 19285
+  },
+  {
+    "path": "src/Views/companies/company-profile.php",
+    "size": 22095
+  },
+  {
+    "path": "src/Views/companies/company-profile.php.bak",
+    "size": 12524
+  },
+  {
+    "path": "src/Views/companies/company-registration.php",
+    "size": 7225
+  },
+  {
+    "path": "src/Views/companies/conversation-view.php",
+    "size": 4577
+  },
+  {
+    "path": "src/Views/companies/edit-profile.php",
+    "size": 35189
+  },
+  {
+    "path": "src/Views/companies/edit-profile.php.bak",
+    "size": 15795
+  },
+  {
+    "path": "src/Views/companies/public-profile.php",
+    "size": 42095
+  },
+  {
+    "path": "src/Views/companies/partials/ai-matching-widget.php",
+    "size": 19402
+  },
+  {
+    "path": "src/Views/companies/partials/candidates-widget-final.php",
+    "size": 10500
+  },
+  {
+    "path": "src/Views/companies/partials/candidates-widget-with-messaging.php",
+    "size": 6584
+  },
+  {
+    "path": "src/Views/components/driver-profile-qualifications.php",
+    "size": 31990
+  },
+  {
+    "path": "src/Views/components/driver-ratings-display.php",
+    "size": 12440
+  },
+  {
+    "path": "src/Views/components/driver-visual-resume.php",
+    "size": 20927
+  },
+  {
+    "path": "src/Views/components/company/compliance-card.php",
+    "size": 5271
+  },
+  {
+    "path": "src/Views/components/company/driver-management-card.php",
+    "size": 3928
+  },
+  {
+    "path": "src/Views/components/company/fleet-management-card.php",
+    "size": 3973
+  },
+  {
+    "path": "src/Views/components/company/subscription-card.php",
+    "size": 5208
+  },
+  {
+    "path": "src/Views/components/company/transport-types-card.php",
+    "size": 4212
+  },
+  {
+    "path": "src/Views/components/driver/matching-widget.php",
+    "size": 5959
+  },
+  {
+    "path": "src/Views/drivers/certification-form.php",
+    "size": 10202
+  },
+  {
+    "path": "src/Views/drivers/driver-profile.php",
+    "size": 109873
+  },
+  {
+    "path": "src/Views/drivers/driver-rating.php",
+    "size": 33174
+  },
+  {
+    "path": "src/Views/drivers/drivers-registration.php",
+    "size": 7388
+  },
+  {
+    "path": "src/Views/drivers/edit-profile.php",
+    "size": 125052
+  },
+  {
+    "path": "src/Views/drivers/edit-profile.php.bak",
+    "size": 125055
+  },
+  {
+    "path": "src/Views/drivers/edit-resume.php",
+    "size": 4157
+  },
+  {
+    "path": "src/Views/drivers/form_buttons.php",
+    "size": 1146
+  },
+  {
+    "path": "src/Views/drivers/incident-history.php",
+    "size": 6520
+  },
+  {
+    "path": "src/Views/drivers/job-matches.php",
+    "size": 22257
+  },
+  {
+    "path": "src/Views/drivers/public-profile.php",
+    "size": 46362
+  },
+  {
+    "path": "src/Views/drivers/report-incident.php",
+    "size": 8972
+  },
+  {
+    "path": "src/Views/drivers/search.php",
+    "size": 2787
+  },
+  {
+    "path": "src/Views/drivers/update-assessment.php",
+    "size": 16402
+  },
+  {
+    "path": "src/Views/drivers/vehicle-experience-summary.php",
+    "size": 5790
+  },
+  {
+    "path": "src/Views/drivers/vehicle-experience.php",
+    "size": 8401
+  },
+  {
+    "path": "src/Views/drivers/partials/ai-matching-widget.php",
+    "size": 21306
+  },
+  {
+    "path": "src/Views/drivers/partials/matching-widget-simple.php",
+    "size": 5767
+  },
+  {
+    "path": "src/Views/drivers/partials/matching-widget.php",
+    "size": 5704
+  },
+  {
+    "path": "src/Views/drivers/partials/messages-widget.php",
+    "size": 5507
+  },
+  {
+    "path": "src/Views/errors/403.php",
+    "size": 922
+  },
+  {
+    "path": "src/Views/errors/404.php",
+    "size": 983
+  },
+  {
+    "path": "src/Views/errors/500.php",
+    "size": 1122
+  },
+  {
+    "path": "src/Views/errors/error.php",
+    "size": 2429
+  },
+  {
+    "path": "src/Views/job-listings/create.php",
+    "size": 1023
+  },
+  {
+    "path": "src/Views/job-listings/delete.php",
+    "size": 3069
+  },
+  {
+    "path": "src/Views/job-listings/edit.php",
+    "size": 1692
+  },
+  {
+    "path": "src/Views/job-listings/index.php",
+    "size": 16723
+  },
+  {
+    "path": "src/Views/job-listings/my-listings.php",
+    "size": 9075
+  },
+  {
+    "path": "src/Views/job-listings/show.php",
+    "size": 23233
+  },
+  {
+    "path": "src/Views/job-listings/Company/create.php",
+    "size": 52382
+  },
+  {
+    "path": "src/Views/job-listings/Company/create.php.bak",
+    "size": 27894
+  },
+  {
+    "path": "src/Views/job-listings/Company/edit.php",
+    "size": 29093
+  },
+  {
+    "path": "src/Views/job-listings/Company/listings.php",
+    "size": 13323
+  },
+  {
+    "path": "src/Views/job-listings/Company/matches.php",
+    "size": 21355
+  },
+  {
+    "path": "src/Views/job-listings/Company/my-listings.php",
+    "size": 7123
+  },
+  {
+    "path": "src/Views/job-listings/Company/show.php",
+    "size": 0
+  },
+  {
+    "path": "src/Views/job-listings/Driver/create.php",
+    "size": 31134
+  },
+  {
+    "path": "src/Views/job-listings/Driver/delete.php",
+    "size": 1835
+  },
+  {
+    "path": "src/Views/job-listings/Driver/edit.php",
+    "size": 25662
+  },
+  {
+    "path": "src/Views/job-listings/Driver/listings.php",
+    "size": 11435
+  },
+  {
+    "path": "src/Views/job-listings/Driver/matches.php",
+    "size": 19133
+  },
+  {
+    "path": "src/Views/job-listings/Driver/my-listings.php",
+    "size": 7123
+  },
+  {
+    "path": "src/Views/job-listings/Driver/show.php",
+    "size": 40074
+  },
+  {
+    "path": "src/Views/job-listings/Operator/create.php",
+    "size": 51154
+  },
+  {
+    "path": "src/Views/matching/company-matches.php",
+    "size": 5048
+  },
+  {
+    "path": "src/Views/matching/driver-listing-matches.php",
+    "size": 5193
+  },
+  {
+    "path": "src/Views/matching/driver-matches.php",
+    "size": 7572
+  },
+  {
+    "path": "src/Views/matching/job-listing-matches.php",
+    "size": 7502
+  },
+  {
+    "path": "src/Views/matching/preferences.php",
+    "size": 9978
+  },
+  {
+    "path": "src/Views/matching/search-results.php",
+    "size": 13612
+  },
+  {
+    "path": "src/Views/partials/admin-footer.php",
+    "size": 1672
+  },
+  {
+    "path": "src/Views/partials/admin-header.php",
+    "size": 5917
+  },
+  {
+    "path": "src/Views/partials/alerts.php",
+    "size": 3437
+  },
+  {
+    "path": "src/Views/partials/footer.php",
+    "size": 883
+  },
+  {
+    "path": "src/Views/partials/header.php",
+    "size": 11542
+  },
+  {
+    "path": "src/Views/widgets/driver-matching-widget.php",
+    "size": 4859
+  },
+  {
+    "path": "temp-tests/analyze-matching-system.php",
+    "size": 6373
+  },
+  {
+    "path": "temp-tests/check-companies-structure.php",
+    "size": 3018
+  },
+  {
+    "path": "temp-tests/check-drivers-table.php",
+    "size": 1519
+  },
+  {
+    "path": "temp-tests/check-matching-scores.php",
+    "size": 5277
+  },
+  {
+    "path": "temp-tests/check-matching-table.php",
+    "size": 3614
+  },
+  {
+    "path": "temp-tests/check-table-structure.php",
+    "size": 2855
+  },
+  {
+    "path": "temp-tests/debug-company-matches.php",
+    "size": 3671
+  },
+  {
+    "path": "temp-tests/debug-enhanced-service.php",
+    "size": 3284
+  },
+  {
+    "path": "temp-tests/debug-matching-issue.php",
+    "size": 7205
+  },
+  {
+    "path": "temp-tests/debug-matching-scores.php",
+    "size": 6207
+  },
+  {
+    "path": "temp-tests/debug-query.php",
+    "size": 2937
+  },
+  {
+    "path": "temp-tests/debug-score-calculation.php",
+    "size": 3699
+  },
+  {
+    "path": "temp-tests/fix-company-matching.php",
+    "size": 5538
+  },
+  {
+    "path": "temp-tests/fix-matching-scores-table.php",
+    "size": 3270
+  },
+  {
+    "path": "temp-tests/fix-matching-scores.php",
+    "size": 10536
+  },
+  {
+    "path": "temp-tests/generate-matching-scores.php",
+    "size": 2523
+  },
+  {
+    "path": "temp-tests/generate-remaining-scores.php",
+    "size": 1581
+  },
+  {
+    "path": "temp-tests/matching-system-fix-summary.php",
+    "size": 6425
+  },
+  {
+    "path": "temp-tests/README-Phase1-Testing.md",
+    "size": 6395
+  },
+  {
+    "path": "temp-tests/README.md",
+    "size": 966
+  },
+  {
+    "path": "temp-tests/recalculate-all-scores.php",
+    "size": 4443
+  },
+  {
+    "path": "temp-tests/regenerate-matching-scores.php",
+    "size": 3890
+  },
+  {
+    "path": "temp-tests/simple-debug-scores.php",
+    "size": 7087
+  },
+  {
+    "path": "temp-tests/test-location-fix.php",
+    "size": 2395
+  },
+  {
+    "path": "temp-tests/test-location-simple.php",
+    "size": 1544
+  },
+  {
+    "path": "temp-tests/test-openai-matching.php",
+    "size": 5210
+  },
+  {
+    "path": "temp-tests/test-phase1-fixes.php",
+    "size": 7466
+  },
+  {
+    "path": "templates/email_template.php",
+    "size": 966
+  },
+  {
+    "path": "templates/emails/license_expiry_adr_certificate.php",
+    "size": 3423
+  },
+  {
+    "path": "templates/emails/license_expiry_driving_license.php",
+    "size": 3420
+  },
+  {
+    "path": "templates/emails/license_expiry_general.php",
+    "size": 3429
+  },
+  {
+    "path": "templates/emails/license_expiry_pei.php",
+    "size": 3423
+  },
+  {
+    "path": "templates/emails/license_expiry_tachograph_card.php",
+    "size": 3471
+  },
+  {
+    "path": "templates/emails/license_expiry.html",
+    "size": 4009
+  },
+  {
+    "path": "tests/bootstrap.php",
+    "size": 1471
+  },
+  {
+    "path": "tests/Core/DatabaseSessionHandler.php",
+    "size": 4514
+  },
+  {
+    "path": "tests/Core/DatabaseSessionHandlerTest.php",
+    "size": 4987
+  },
+  {
+    "path": "tests/Core/SessionLogger.php",
+    "size": 5778
+  },
+  {
+    "path": "tests/Core/SessionTest.php",
+    "size": 3036
+  },
+  {
+    "path": "tests/Functional/UserRegistrationCest.php",
+    "size": 3286
+  },
+  {
+    "path": "tests/Helpers/HeaderMock.php",
+    "size": 3153
+  },
+  {
+    "path": "tests/Mocks/MockSession.php",
+    "size": 2476
+  },
+  {
+    "path": "tests/Unit/MatchingServiceTest.php",
+    "size": 19579
+  },
+  {
+    "path": "tests/Unit/Services/MatchingServiceTest.php",
+    "size": 1947
+  },
+  {
+    "path": "tmp/sessions/sess_bfvfrdnjjtj4ia25fgfl7i2bur",
+    "size": 146
+  },
+  {
+    "path": "uploads/certificates/cert_26_1747406045_Άρθρο 5 Νόμος 3887_2010.pdf",
+    "size": 17609
+  },
+  {
+    "path": "_docs/deep-plan/00-inventory.md",
+    "size": 6776
+  },
+  {
+    "path": "_reports/inventory/files.json",
+    "size": 0
+  }
+]

@@ -1,0 +1,198 @@
+{
+  "info": {
+    "name": "DriveJob RBAC",
+    "_postman_id": "rbac-collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Admin Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/api/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"email\": \"{{ADMIN_EMAIL}}\", \"password\": \"{{ADMIN_PASSWORD}}\" }"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "(() => {",
+              "  pm.test(\"Status is 200/401/403\", () => pm.expect([200,401,403]).to.include(pm.response.code));",
+              "  let body={}; try{ body = pm.response.json(); } catch(e){ body = {}; }",
+              "  const token = body.token || body.access_token || (body.data && body.data.token) || \"\";",
+              "  if (pm.response.code === 200 && token) {",
+              "    pm.environment.set(\"ADMIN_TOKEN\", token);",
+              "  } else {",
+              "    pm.environment.unset(\"ADMIN_TOKEN\");",
+              "    console.log(\"Admin login failed. Body:\", pm.response.text());",
+              "  }",
+              "})();"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Company Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/api/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"email\": \"{{COMPANY_EMAIL}}\", \"password\": \"{{COMPANY_PASSWORD}}\" }"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "(() => {",
+              "  pm.test(\"Status is 200/401/403\", () => pm.expect([200,401,403]).to.include(pm.response.code));",
+              "  let body={}; try{ body = pm.response.json(); } catch(e){ body = {}; }",
+              "  const token = body.token || body.access_token || (body.data && body.data.token) || \"\";",
+              "  if (pm.response.code === 200 && token) {",
+              "    pm.environment.set(\"COMPANY_TOKEN\", token);",
+              "  } else {",
+              "    pm.environment.unset(\"COMPANY_TOKEN\");",
+              "    console.log(\"Company login failed. Body:\", pm.response.text());",
+              "  }",
+              "})();"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Driver Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/api/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"email\": \"{{DRIVER_EMAIL}}\", \"password\": \"{{DRIVER_PASSWORD}}\" }"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "(() => {",
+              "  pm.test(\"Status is 200/401/403\", () => pm.expect([200,401,403]).to.include(pm.response.code));",
+              "  let body={}; try{ body = pm.response.json(); } catch(e){ body = {}; }",
+              "  const token = body.token || body.access_token || (body.data && body.data.token) || \"\";",
+              "  if (pm.response.code === 200 && token) {",
+              "    pm.environment.set(\"DRIVER_TOKEN\", token);",
+              "  } else {",
+              "    pm.environment.unset(\"DRIVER_TOKEN\");",
+              "    console.log(\"Driver login failed. Body:\", pm.response.text());",
+              "  }",
+              "})();"
+            ]
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Admin Get Users (OK with Admin token)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }
+        ],
+        "url": "{{base_url}}/api/admin/users"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": [ "pm.test(\"Admin can access users\", () => pm.response.to.have.status(200));" ] }
+        }
+      ]
+    },
+    {
+      "name": "Company Profile (OK with Company token)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{COMPANY_TOKEN}}" }
+        ],
+        "url": "{{base_url}}/api/companies/profile"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": [ "pm.test(\"Company can access profile\", () => pm.response.to.have.status(200));" ] }
+        }
+      ]
+    },
+    {
+      "name": "Driver Profile (OK with Driver token)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{DRIVER_TOKEN}}" }
+        ],
+        "url": "{{base_url}}/api/drivers/profile"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": [ "pm.test(\"Driver can access profile\", () => pm.response.to.have.status(200));" ] }
+        }
+      ]
+    },
+
+    {
+      "name": "NEGATIVE: Admin users without token → 401",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": "{{base_url}}/api/admin/users"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": [ "pm.test(\"Should be 401 without token\", () => pm.response.to.have.status(401));" ] }
+        }
+      ]
+    },
+    {
+      "name": "NEGATIVE: Admin users with Company token → 403",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{COMPANY_TOKEN}}" }
+        ],
+        "url": "{{base_url}}/api/admin/users"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": [ "pm.test(\"Should be 403 with wrong role\", () => pm.response.to.have.status(403));" ] }
+        }
+      ]
+    }
+  ]
+}
