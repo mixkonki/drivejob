@@ -47,34 +47,32 @@ try {
     Session::set('user_email', $email);
     Session::set('is_verified', $user['is_verified'] ?? true);
 
-    // Generate JWT token if JWT class exists
-    $token = null;
-    if (class_exists('\\Drivejob\\Core\\Jwt')) {
-        $payload = [
-            'sub' => $user['user_id'],
-            'role' => $user['role'],
-            'name' => $user['name'],
-            'email' => $email,
-            'is_verified' => $user['is_verified'] ?? true,
-            'iat' => time(),
-            'exp' => time() + (24 * 60 * 60) // 24 hours
-        ];
+    // Generate JWT token
+    $payload = [
+        'sub' => $user['user_id'],
+        'role' => $user['role'],
+        'email' => $email,
+        'name' => $user['name'] ?? '',
+        'is_verified' => (bool)($user['is_verified'] ?? false),
+        'iat' => time(),
+        'exp' => time() + 86400 // 1 day
+    ];
 
-        try {
-            $token = \Drivejob\Core\Jwt::encode($payload);
-        } catch (\Exception $e) {
-            // JWT generation failed, continue without token
-            error_log("JWT generation failed: " . $e->getMessage());
-        }
+    $token = null;
+    try {
+        $token = \Drivejob\Core\Jwt::encode($payload);
+    } catch (\Exception $e) {
+        // JWT generation failed, continue without token
+        error_log("JWT generation failed: " . $e->getMessage());
     }
 
     $response = [
+        'success' => true,
         'user' => [
             'id' => $user['user_id'],
             'role' => $user['role'],
-            'name' => $user['name'],
             'email' => $email,
-            'is_verified' => $user['is_verified'] ?? true
+            'name' => $user['name'] ?? ''
         ]
     ];
 
