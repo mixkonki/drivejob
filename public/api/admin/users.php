@@ -76,5 +76,11 @@ try {
     ]);
 } catch (\Exception $e) {
     error_log("Admin users API error: " . $e->getMessage());
-    JsonResponse::error('Failed to fetch users', 500);
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "message" => "Failed to fetch users",
+        "error"   => $e->getMessage(),
+        "trace"   => $e->getTraceAsString()
+    ]);
 }
