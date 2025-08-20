@@ -45,14 +45,21 @@ try {
             u.is_active,
             u.is_verified,
             u.created_at,
+            c.id   AS company_id,
+            c.company_name,
+            c.phone AS company_phone,
+            d.id   AS driver_id,
+            d.first_name,
+            d.last_name,
+            d.phone AS driver_phone,
             CASE 
                 WHEN u.role = 'driver' THEN CONCAT(d.first_name, ' ', d.last_name)
                 WHEN u.role = 'company' THEN c.company_name
                 ELSE u.email
             END as name
         FROM users u
-        LEFT JOIN drivers d ON u.id = d.user_id AND u.role = 'driver'
-        LEFT JOIN companies c ON u.id = c.user_id AND u.role = 'company'
+        LEFT JOIN companies c ON c.user_id = u.id
+        LEFT JOIN drivers d ON d.user_id = u.id
         $whereClause
         ORDER BY u.created_at DESC
         LIMIT ? OFFSET ?
