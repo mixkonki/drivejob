@@ -7,33 +7,43 @@ use PDO;
 
 final class Jobs
 {
-    /** true αν ο χρήστης είναι ιδιοκτήτης της αγγελίας (ελέγχει company_id και driver_id). */
+    /**
+     * true αν ο χρήστης είναι ιδιοκτήτης της αγγελίας.
+     * Υποστηρίζει σχήματα:
+     *  - job_listings(company_id) -> companies(user_id)
+     *  - job_listings(user_id) (fallback)
+     *  - jobs(employer_id) (εναλλακτικό σχήμα)
+     */
     public static function isOwner(int $userId, int $jobId): bool
     {
         $pdo = DB::pdo();
 
-        // 1) Έλεγχος αν ο χρήστης είναι company που δημιούργησε την αγγελία
+        // job_listings.company_id -> companies.user_id
         try {
             $st = $pdo->prepare("
-                SELECT 1 FROM job_listings jl 
-                JOIN companies c ON c.id = jl.company_id 
-                WHERE jl.id = :jid AND c.user_id = :uid 
+                SELECT 1
+                FROM job_listings jl
+                JOIN companies c ON c.id = jl.company_id
+                WHERE jl.id = :jid AND c.user_id = :uid
                 LIMIT 1
             ");
-            $st->execute([":jid" => $jobId, ":uid" => $userId]);
+            $st->execute([':jid' => $jobId, ':uid' => $userId]);
             if ($st->fetchColumn()) return true;
         } catch (\Throwable $e) {
         }
 
-        // 2) Έλεγχος αν ο χρήστης είναι driver που δημιούργησε την αγγελία
+        // job_listings.user_id (fallback)
         try {
-            $st = $pdo->prepare("
-                SELECT 1 FROM job_listings jl 
-                JOIN drivers d ON d.id = jl.driver_id 
-                WHERE jl.id = :jid AND d.user_id = :uid 
-                LIMIT 1
-            ");
-            $st->execute([":jid" => $jobId, ":uid" => $userId]);
+            $st = $pdo->prepare("SELECT 1 FROM job_listings WHERE id=:jid AND user_id=:uid LIMIT 1");
+            $st->execute([':jid' => $jobId, ':uid' => $userId]);
+            if ($st->fetchColumn()) return true;
+        } catch (\Throwable $e) {
+        }
+
+        // jobs.employer_id (εναλλακτικό)
+        try {
+            $st = $pdo->prepare("SELECT 1 FROM jobs WHERE id=:jid AND employer_id=:uid LIMIT 1");
+            $st->execute([':jid' => $jobId, ':uid' => $userId]);
             if ($st->fetchColumn()) return true;
         } catch (\Throwable $e) {
         }

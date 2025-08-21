@@ -2,6 +2,9 @@
 // Minimal bootstrap for endpoints that need RBAC checks.
 require_once __DIR__ . "/../../src/RBAC/DB.php";
 require_once __DIR__ . "/../../src/RBAC/RBAC.php";
+require_once __DIR__ . "/../../src/RBAC/Logger.php";
+require_once __DIR__ . "/../../src/RBAC/Util/Http.php";
+require_once __DIR__ . "/../../src/RBAC/Middleware/Guard.php";
 
 use DriveJob\RBAC\RBAC;
 
