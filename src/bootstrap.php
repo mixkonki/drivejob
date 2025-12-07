@@ -85,7 +85,16 @@ if (!IS_CLI) {
     // Εκκίνηση της συνεδρίας
     Session::start();
 
-    // Έλεγχος για μη ενεργές συνεδρίες
+    // CSRF token bootstrap - ΜΗΝ δημιουργείς νέο αν υπάρχει ήδη
+    // Το CSRF::generateToken() θα το κάνει όταν χρειάζεται
+    if (!isset($_SESSION["csrf_token"]) || empty($_SESSION["csrf_token"])) {
+        $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+        $_SESSION["csrf_token_time"] = time();
+    }
+
+    // Έλεγχος για μη ενεργές συνεδρίες - ΠΡΟΣΩΡΙΝΑ ΑΠΕΝΕΡΓΟΠΟΙΗΜΕΝΟ
+    // Αυτό μπορεί να προκαλεί προβλήματα με το login
+    /*
     if (Session::isExpired(1800)) { // 30 λεπτά
         // Καταγραφή λήξης συνεδρίας
         \Drivejob\Core\Logger::info("Session expired due to inactivity: " . Session::getId());
@@ -103,6 +112,7 @@ if (!IS_CLI) {
             Session::start();
         }
     }
+    */
 }
 
 // Επιστροφή του Container

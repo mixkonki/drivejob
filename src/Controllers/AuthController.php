@@ -20,7 +20,7 @@ class AuthController extends BaseUserController
     public function __construct($pdo = null)
     {
         // Κλήση του constructor της γονικής κλάσης
-        parent::__construct($pdo);
+        parent::__construct();
     }
 
     /**
@@ -30,19 +30,8 @@ class AuthController extends BaseUserController
      */
     public function showLoginForm()
     {
-        // Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
-        if (Session::has('user_id')) {
-            $role = Session::get('user_role');
-            if ($role === 'driver') {
-                $this->redirect(BASE_URL . 'drivers/profile');
-            } elseif ($role === 'company') {
-                $this->redirect(BASE_URL . 'companies/profile');
-            } elseif ($role === 'admin') {
-                $this->redirect(BASE_URL . 'admin/dashboard');
-            }
-        }
-
-        // Φόρτωση της σελίδας σύνδεσης
+        // Ο έλεγχος για ήδη συνδεδεμένο χρήστη γίνεται στο login.php
+        // Εδώ απλά φορτώνουμε το view
         $this->view('auth/login');
     }
 
@@ -55,7 +44,7 @@ class AuthController extends BaseUserController
     {
         // Έλεγχος αν το αίτημα είναι POST
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect(BASE_URL . 'auth/login');
+            $this->redirect(BASE_URL . 'login');
         }
 
         // Καταγραφή για αποσφαλμάτωση
@@ -68,27 +57,14 @@ class AuthController extends BaseUserController
         ]);
 
         // Έλεγχος CSRF token
-        if (!isset($_POST['csrf_token'])) {
-            Logger::warning('CSRF token missing during login');
-            Session::set('error_message', 'Άκυρο αίτημα. Το CSRF token λείπει. Παρακαλώ δοκιμάστε ξανά.');
-            $this->redirect(BASE_URL . 'auth/login');
+        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+            Logger::warning('CSRF validation failed during login', [
+                'has_token' => isset($_POST['csrf_token']),
+                'session_id' => session_id()
+            ]);
+            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            $this->redirect(BASE_URL . 'login.php');
         }
-
-        // Καταγραφή για αποσφαλμάτωση
-        Logger::debug('CSRF token validation', [
-            'provided_token' => $_POST['csrf_token'],
-            'session_token' => Session::get('csrf_token'),
-            'session_id' => session_id()
-        ]);
-
-        // Προσωρινή απενεργοποίηση του ελέγχου CSRF για αποσφαλμάτωση
-        /*
-        if (!CSRF::validateToken($_POST['csrf_token'])) {
-            Logger::warning('CSRF validation failed during login');
-            Session::set('error_message', 'Άκυρο αίτημα. Το CSRF token δεν είναι έγκυρο. Παρακαλώ δοκιμάστε ξανά.');
-            $this->redirect(BASE_URL . 'auth/login');
-        }
-        */
 
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
@@ -100,7 +76,14 @@ class AuthController extends BaseUserController
         ]);
 
         // Αυθεντικοποίηση χρήστη
+        error_log("=== CALLING AUTHENTICATE ===");
+        error_log("Email: $email");
+        error_log("Password length: " . strlen($password));
+
         $user = $this->authModel->authenticate($email, $password);
+
+        error_log("=== AUTHENTICATE RESULT ===");
+        error_log("User: " . ($user ? json_encode($user) : 'FALSE'));
 
         Logger::debug('Authentication result', [
             'success' => $user ? true : false,
@@ -112,15 +95,23 @@ class AuthController extends BaseUserController
         ]);
 
         if ($user) {
-            // Επιτυχής σύνδεση
+            // Επιτυχής σύνδεση - Αναγέννηση του session ID για ασφάλεια
+            Session::regenerate(true);
+
+            // Αποθήκευση των στοιχείων χρήστη στο session
             Session::set('user_id', $user['user_id']);
             Session::set('user_role', $user['role']);
+            Session::set('role', $user['role']); // Για συμβατότητα με υπάρχον κώδικα
             Session::set('user_name', $user['name']);
 
+            // Δημιουργία νέου CSRF token μετά το login
+            CSRF::generateToken();
+
             // Καταγραφή για αποσφαλμάτωση
-            Logger::debug('Session after login', [
-                'session_id' => session_id(),
-                'session_data' => $_SESSION
+            Logger::info('User logged in successfully', [
+                'user_id' => $user['user_id'],
+                'role' => $user['role'],
+                'session_id' => session_id()
             ]);
 
             // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
@@ -130,11 +121,7 @@ class AuthController extends BaseUserController
 
             Session::remove('redirect_after_login');
 
-            // Καταγραφή για αποσφαλμάτωση
-            Logger::debug('Redirecting after successful login', [
-                'redirect_url' => $redirectUrl
-            ]);
-
+            // Ανακατεύθυνση με πλήρη διαδρομή
             $this->redirect($redirectUrl);
         }
 
@@ -144,7 +131,7 @@ class AuthController extends BaseUserController
         ]);
 
         Session::set('error_message', 'Εσφαλμένο email ή συνθηματικό.');
-        $this->redirect(BASE_URL . 'auth/login');
+        $this->redirect(BASE_URL . 'login.php');
     }
 
 
@@ -155,11 +142,29 @@ class AuthController extends BaseUserController
      */
     public function logout()
     {
-        // Καθαρισμός του session
+        // Καταγραφή για αποσφαλμάτωση
+        Logger::debug('Logout initiated', [
+            'user_id' => Session::get('user_id'),
+            'session_id' => session_id()
+        ]);
+
+        // Καθαρισμός όλων των δεδομένων session
+        Session::clear();
+
+        // Καταστροφή του session
         Session::destroy();
 
-        // Ανακατεύθυνση στην αρχική σελίδα
-        $this->redirect(BASE_URL);
+        // Δημιουργία νέου session για το CSRF token
+        Session::start();
+
+        // Αποστολή headers για αποτροπή caching
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+        header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+
+        // Ανακατεύθυνση στη σελίδα login
+        $this->redirect(BASE_URL . 'login.php');
     }
 
     /**
@@ -182,7 +187,7 @@ class AuthController extends BaseUserController
     {
         // Έλεγχος αν το αίτημα είναι POST
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect(BASE_URL . 'auth/password-reset');
+            $this->redirect(BASE_URL . 'auth/login');
         }
 
         // Έλεγχος CSRF token
@@ -359,13 +364,14 @@ class AuthController extends BaseUserController
      */
     private function getDefaultRedirectUrl($role)
     {
+        // Χρήση του BASE_URL που έχει ήδη οριστεί στο config
         switch ($role) {
             case 'driver':
-                return BASE_URL . 'drivers/profile';
+                return BASE_URL . 'drivers/driver-profile.php';
             case 'company':
-                return BASE_URL . 'companies/profile';
+                return BASE_URL . 'companies/profile.php';
             case 'admin':
-                return BASE_URL . 'admin/monitoring/dashboard';
+                return BASE_URL . 'admin/dashboard.php';
             default:
                 return BASE_URL;
         }

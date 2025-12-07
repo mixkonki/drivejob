@@ -12,6 +12,7 @@ require_once __DIR__ . "/../../src/RBAC/Middleware/HttpGuard.php";
 use DriveJob\RBAC\RBAC;
 use DriveJob\RBAC\Util\Http;
 use DriveJob\RBAC\Util\Security;
+use DriveJob\RBAC\DB;
 
 // Start session (CSRF), apply security headers
 if (session_status() !== PHP_SESSION_ACTIVE) @session_start();
@@ -32,12 +33,25 @@ set_error_handler(function ($severity, $message, $file, $line) {
     exit;
 });
 
-/** Replace με πραγματικό auth/session. Για dev: ?uid=1 ή υπαρκτό id. */
+/** Check session first, then GET parameter for dev. */
 function currentUserId(): ?int
 {
-    if (isset($_GET["uid"])) return max(1, (int)$_GET["uid"]);
-    return 1; // default admin για dev
+    // Check session first (normal login)
+    if (isset($_SESSION['user_id'])) {
+        return (int) $_SESSION['user_id'];
+    }
+
+    // Development fallback: check GET parameter
+    if (isset($_GET["uid"])) {
+        return max(1, (int)$_GET["uid"]);
+    }
+
+    // No user ID found
+    return null;
 }
 
 // Προφόρτωση permissions για το τρέχον request
 RBAC::primePermissions((int) (currentUserId() ?? 0));
+
+// set actor for audit triggers
+DB::pdo()->prepare("SET @rbac_actor_user_id = :uid")->execute([':uid' => (int)(currentUserId() ?? 0)]);

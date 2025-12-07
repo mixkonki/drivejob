@@ -48,11 +48,11 @@ class Session
             // Ρύθμιση των cookies που χρησιμοποιούνται για τις συνεδρίες
             session_set_cookie_params([
                 'lifetime' => 86400, // 24 ώρες
-                'path' => '/',
+                'path' => '/', // Root path για να λειτουργεί σε όλο το site
                 'domain' => '',     // Άδειο σημαίνει το τρέχον domain
                 'secure' => false,  // Θέστε το σε true σε παραγωγικό περιβάλλον με HTTPS
                 'httponly' => true, // Προστασία από XSS
-                'samesite' => 'Lax' // Αλλαγή σε 'Lax' για να αποφύγουμε προβλήματα με τα cookies
+                'samesite' => 'Lax' // Lax για καλύτερη συμβατότητα
             ]);
 
             // Έναρξη συνεδρίας
@@ -83,32 +83,14 @@ class Session
      */
     private static function checkSessionSecurity()
     {
-        // Έλεγχος αλλαγής IP (προαιρετικό, μπορεί να προκαλέσει προβλήματα με δυναμικές IP)
-        if (isset($_SESSION['_user_ip']) && $_SESSION['_user_ip'] !== $_SERVER['REMOTE_ADDR']) {
-            // Ύποπτη αλλαγή IP - Καταγραφή για αποσφαλμάτωση και πιθανή αναγέννηση συνεδρίας
-            Logger::warning("Suspicious session activity: IP change", [
-                'old_ip' => $_SESSION['_user_ip'],
-                'new_ip' => $_SERVER['REMOTE_ADDR'],
-                'session_id' => session_id()
-            ]);
-            // self::regenerate(true); // Αν θέλετε πιο αυστηρό έλεγχο, ανανεώστε τη συνεδρία
-        }
-
-        // Έλεγχος αλλαγής User Agent
-        if (isset($_SESSION['_user_agent']) && $_SESSION['_user_agent'] !== ($_SERVER['HTTP_USER_AGENT'] ?? '')) {
-            // Ύποπτη αλλαγή User Agent - Καταγραφή και αναγέννηση συνεδρίας
-            Logger::warning("Suspicious session activity: User Agent change", [
-                'old_user_agent' => $_SESSION['_user_agent'],
-                'new_user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-                'session_id' => session_id()
-            ]);
-            // Απενεργοποίηση της αναγέννησης συνεδρίας για να αποφύγουμε προβλήματα με το CSRF token
-            // self::regenerate(true);
-        }
-
         // Αποθήκευση των τρεχόντων στοιχείων για μελλοντικούς ελέγχους
-        $_SESSION['_user_ip'] = $_SERVER['REMOTE_ADDR'] ?? '';
-        $_SESSION['_user_agent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        // Απενεργοποίηση των αυστηρών ελέγχων IP/User Agent που μπορεί να προκαλούν προβλήματα
+        if (!isset($_SESSION['_user_ip'])) {
+            $_SESSION['_user_ip'] = $_SERVER['REMOTE_ADDR'] ?? '';
+        }
+        if (!isset($_SESSION['_user_agent'])) {
+            $_SESSION['_user_agent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        }
         $_SESSION['_last_activity'] = time();
     }
 
@@ -166,20 +148,48 @@ class Session
     public static function destroy()
     {
         if (self::isStarted() || session_status() === PHP_SESSION_ACTIVE) {
+            // Αποθήκευση του session id για logging
+            $oldSessionId = session_id();
+
             // Καθαρισμός όλων των μεταβλητών συνεδρίας
             $_SESSION = [];
 
+            // Καθαρισμός των superglobals
+            if (isset($_SESSION)) {
+                foreach ($_SESSION as $key => $value) {
+                    unset($_SESSION[$key]);
+                }
+            }
+
             // Έλεγχος για headers στο περιβάλλον testing
             if ((!defined('TESTING') || constant('TESTING') !== true) && !headers_sent()) {
-                // Διαγραφή του cookie συνεδρίας
+                // Διαγραφή του cookie συνεδρίας με πιο επιθετικές ρυθμίσεις
                 if (ini_get("session.use_cookies")) {
                     $params = session_get_cookie_params();
-                    setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+                    // Διαγραφή με διάφορες παραλλαγές του path
+                    setcookie(session_name(), '', 1, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+                    setcookie(session_name(), '', 1, '/', $params["domain"], $params["secure"], $params["httponly"]);
+                    setcookie(session_name(), '', 1, '/drivejob/', $params["domain"], $params["secure"], $params["httponly"]);
+                    setcookie(session_name(), '', 1, '/drivejob/public/', $params["domain"], $params["secure"], $params["httponly"]);
+
+                    // Επίσης διαγραφή του PHPSESSID cookie αν υπάρχει
+                    setcookie('PHPSESSID', '', 1, '/');
+                    setcookie('DRIVEJOBSESSION', '', 1, '/');
                 }
             }
 
             // Καταστροφή της συνεδρίας
-            session_destroy();
+            @session_destroy();
+
+            // Unset του session id
+            @session_unset();
+
+            // Καταγραφή για αποσφαλμάτωση
+            Logger::debug('Session destroyed completely', [
+                'old_session_id' => $oldSessionId,
+                'new_status' => session_status()
+            ]);
+
             self::$started = false;
             return true;
         }
@@ -192,11 +202,17 @@ class Session
     public static function regenerate($deleteOldSession = true)
     {
         self::start();
+
+        // Αποθήκευση του παλιού session ID
+        $oldSessionId = session_id();
+
+        // Αναγέννηση του session ID
         $result = session_regenerate_id($deleteOldSession);
 
         // Καταγραφή για αποσφαλμάτωση
         Logger::debug('Session regenerated', [
-            'old_session_id' => session_id(),
+            'old_session_id' => $oldSessionId,
+            'new_session_id' => session_id(),
             'result' => $result,
             'delete_old_session' => $deleteOldSession
         ]);

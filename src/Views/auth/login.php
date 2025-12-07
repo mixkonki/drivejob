@@ -27,9 +27,9 @@ echo '<main>'; // Έναρξη του main
             </div>
         <?php endif; ?>
 
-        <form class="login-form" action="<?= BASE_URL ?>auth/login" method="POST">
+        <form class="login-form" action="<?= BASE_URL ?>login-process.php" method="POST">
             <!-- CSRF token -->
-            <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
+            <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\Session::get('csrf_token') ?>">
 
             <!-- Πεδίο Email -->
             <div>

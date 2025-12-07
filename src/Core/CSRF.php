@@ -2,6 +2,9 @@
 
 namespace Drivejob\Core;
 
+use Drivejob\Core\Session;
+use Drivejob\Core\Logger;
+
 class CSRF
 {
     /**
@@ -34,7 +37,7 @@ class CSRF
             'session_data' => $_SESSION,
             'has_csrf_token' => Session::has('csrf_token')
         ]);
-        
+
         if (!Session::has('csrf_token')) {
             Logger::warning('CSRF token not found in session', [
                 'session_id' => session_id(),
@@ -71,11 +74,11 @@ class CSRF
     public static function tokenField()
     {
         Session::start();
-        
+
         // Έλεγχος αν υπάρχει ήδη token
         if (Session::has('csrf_token')) {
             $token = Session::get('csrf_token');
-            
+
             // Έλεγχος αν το token έχει λήξει
             if (Session::has('csrf_token_time')) {
                 $tokenTime = Session::get('csrf_token_time');
@@ -88,13 +91,13 @@ class CSRF
             // Δεν υπάρχει token, δημιουργία νέου
             $token = self::generateToken();
         }
-        
+
         // Καταγραφή για αποσφαλμάτωση
         Logger::debug('CSRF token field generated', [
             'token' => $token,
             'session_id' => Session::getId()
         ]);
-        
+
         return '<input type="hidden" name="csrf_token" value="' . $token . '">';
     }
 

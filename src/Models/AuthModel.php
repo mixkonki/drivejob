@@ -4,8 +4,7 @@ namespace Drivejob\Models;
 
 use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
-use Drivejob\Models\Driver\ProfileModel;
-use Drivejob\Models\Company\CompaniesModel;
+use Drivejob\Services\EmailService;
 
 /**
  * Μοντέλο για τη διαχείριση της αυθεντικοποίησης και εξουσιοδότησης
@@ -13,8 +12,7 @@ use Drivejob\Models\Company\CompaniesModel;
 class AuthModel
 {
     private $pdo;
-    private $profileModel;
-    private $companiesModel;
+    private $emailService;
 
     /**
      * Κατασκευαστής του μοντέλου
@@ -22,8 +20,19 @@ class AuthModel
     public function __construct($pdo)
     {
         $this->pdo = $pdo;
-        $this->profileModel = new ProfileModel($pdo);
-        $this->companiesModel = new CompaniesModel($pdo);
+
+        // Initialize EmailService
+        if (defined('SMTP_HOST') && defined('SMTP_PORT')) {
+            $this->emailService = new EmailService(
+                SMTP_HOST,
+                SMTP_PORT,
+                SMTP_USERNAME,
+                SMTP_PASSWORD,
+                SMTP_FROM_EMAIL,
+                SMTP_FROM_NAME,
+                EMAIL_DEBUG ?? false
+            );
+        }
     }
 
     /**
@@ -86,8 +95,8 @@ class AuthModel
                 if ($admin) {
                     return [
                         'user_id' => $admin['id'],
-                        'role' => 'admin',
-                        'email' => $admin['username'], // Χρησιμοποιούμε username ως email
+                        'role' => $admin['role'], // Χρησιμοποιούμε το role από τη βάση
+                        'email' => $admin['email'], // Χρησιμοποιούμε το email από τη βάση
                         'name' => 'Administrator',
                         'is_verified' => 1,
                         'is_active' => 1
@@ -183,7 +192,7 @@ class AuthModel
     /**
      * Αυθεντικοποίηση διαχειριστή
      *
-     * @param string $email Email του διαχειριστή (χρησιμοποιούμε το username field)
+     * @param string $email Email του διαχειριστή
      * @param string $password Κωδικός πρόσβασης
      * @return array|false Τα στοιχεία του διαχειριστή ή false σε περίπτωση αποτυχίας
      */
@@ -191,20 +200,22 @@ class AuthModel
     {
         try {
             Logger::debug('AuthModel::authenticateAdmin called', [
-                'username' => $email,
+                'email' => $email,
                 'session_id' => session_id()
             ]);
 
-            // Χρησιμοποιούμε τον πίνακα users με το πεδίο username
-            $query = "SELECT * FROM users WHERE username = ? AND role = 'admin'";
+            // Χρησιμοποιούμε τον πίνακα users και ελέγχουμε και email και username
+            // Επίσης απαιτούμε role = 'admin'
+            $query = "SELECT * FROM users WHERE (email = ? OR username = ?) AND role = 'admin'";
             $stmt = $this->pdo->prepare($query);
-            $stmt->execute([$email]);
+            $stmt->execute([$email, $email]);
             $admin = $stmt->fetch(\PDO::FETCH_ASSOC);
 
             Logger::debug('Admin query result', [
                 'admin_found' => !empty($admin),
                 'admin_data' => $admin ? [
                     'id' => $admin['id'],
+                    'email' => $admin['email'],
                     'username' => $admin['username'],
                     'role' => $admin['role']
                 ] : null
@@ -217,6 +228,11 @@ class AuthModel
                 ]);
 
                 if ($passwordVerified) {
+                    // Ενημέρωση last_login
+                    $updateQuery = "UPDATE users SET last_login = NOW() WHERE id = ?";
+                    $updateStmt = $this->pdo->prepare($updateQuery);
+                    $updateStmt->execute([$admin['id']]);
+
                     return $admin;
                 }
             }
@@ -408,10 +424,71 @@ class AuthModel
      */
     private function sendVerificationEmail($email, $code, $role)
     {
-        // Σε πραγματικό περιβάλλον, εδώ θα υπήρχε κώδικας για την αποστολή email
-        // Για τους σκοπούς του refactoring, απλά καταγράφουμε το γεγονός
-        Logger::info("Verification email sent to $email with code $code for role $role");
-        return true;
+        try {
+            // Αν δεν υπάρχει EmailService, κάνε logging και επέστρεψε true
+            if (!$this->emailService) {
+                Logger::info("Verification email sent to $email with code $code for role $role (EmailService not available)");
+                return true;
+            }
+
+            $verifyLink = BASE_URL . 'auth/verify/' . $code;
+            $roleText = $role === 'driver' ? 'Οδηγός' : 'Εταιρεία';
+
+            $subject = 'Επαλήθευση Λογαριασμού - DriveJob';
+
+            $message = "
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset='UTF-8'>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background-color: #c62828; color: white; padding: 20px; text-align: center; }
+                    .content { background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; }
+                    .button { display: inline-block; padding: 12px 30px; background-color: #c62828; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='header'>
+                        <h1>DriveJob</h1>
+                    </div>
+                    <div class='content'>
+                        <h2>Καλώς ήρθατε στο DriveJob!</h2>
+                        <p>Ευχαριστούμε για την εγγραφή σας ως <strong>$roleText</strong>.</p>
+                        <p>Για να ολοκληρώσετε την εγγραφή σας, παρακαλούμε επαληθεύστε τη διεύθυνση email σας.</p>
+                        <p style='text-align: center;'>
+                            <a href='$verifyLink' class='button'>Επαλήθευση Email</a>
+                        </p>
+                        <p>Ή αντιγράψτε και επικολλήστε αυτόν τον σύνδεσμο στον browser σας:</p>
+                        <p style='word-break: break-all;'><a href='$verifyLink'>$verifyLink</a></p>
+                        <p><strong>Σημαντικό:</strong> Ο σύνδεσμος θα λήξει σε 24 ώρες.</p>
+                        <p>Αν δεν δημιουργήσατε λογαριασμό στο DriveJob, αγνοήστε αυτό το email.</p>
+                    </div>
+                    <div class='footer'>
+                        <p>&copy; 2025 DriveJob. Όλα τα δικαιώματα κατοχυρωμένα.</p>
+                        <p>Αυτό είναι ένα αυτοματοποιημένο email. Παρακαλούμε μην απαντήσετε.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            ";
+
+            $result = $this->emailService->send($email, $subject, $message);
+
+            if ($result) {
+                Logger::info("Verification email sent successfully to $email for role $role");
+            } else {
+                Logger::error("Failed to send verification email to $email");
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            Logger::error('Error sending verification email: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -662,10 +739,70 @@ class AuthModel
      */
     private function sendResetEmail($email, $resetCode)
     {
-        // Σε πραγματικό περιβάλλον, εδώ θα υπήρχε κώδικας για την αποστολή email
-        // Για τους σκοπούς του refactoring, απλά καταγράφουμε το γεγονός
-        Logger::info("Password reset email sent to $email with code $resetCode");
-        return true;
+        try {
+            // Αν δεν υπάρχει EmailService, κάνε logging και επέστρεψε true
+            if (!$this->emailService) {
+                Logger::info("Password reset email sent to $email with code $resetCode (EmailService not available)");
+                return true;
+            }
+
+            $resetLink = BASE_URL . 'auth/reset-password/' . $resetCode;
+
+            $subject = 'Επαναφορά Κωδικού Πρόσβασης - DriveJob';
+
+            $message = "
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset='UTF-8'>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background-color: #c62828; color: white; padding: 20px; text-align: center; }
+                    .content { background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; }
+                    .button { display: inline-block; padding: 12px 30px; background-color: #c62828; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='header'>
+                        <h1>DriveJob</h1>
+                    </div>
+                    <div class='content'>
+                        <h2>Επαναφορά Κωδικού Πρόσβασης</h2>
+                        <p>Λάβαμε αίτημα για επαναφορά του κωδικού πρόσβασής σας.</p>
+                        <p>Κάντε κλικ στο παρακάτω κουμπί για να επαναφέρετε τον κωδικό σας:</p>
+                        <p style='text-align: center;'>
+                            <a href='$resetLink' class='button'>Επαναφορά Κωδικού</a>
+                        </p>
+                        <p>Ή αντιγράψτε και επικολλήστε αυτόν τον σύνδεσμο στον browser σας:</p>
+                        <p style='word-break: break-all;'><a href='$resetLink'>$resetLink</a></p>
+                        <p><strong>Σημαντικό:</strong> Ο σύνδεσμος θα λήξει σε 1 ώρα.</p>
+                        <p>Αν δεν ζητήσατε επαναφορά κωδικού, αγνοήστε αυτό το email. Ο λογαριασμός σας παραμένει ασφαλής.</p>
+                    </div>
+                    <div class='footer'>
+                        <p>&copy; 2025 DriveJob. Όλα τα δικαιώματα κατοχυρωμένα.</p>
+                        <p>Αυτό είναι ένα αυτοματοποιημένο email. Παρακαλούμε μην απαντήσετε.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            ";
+
+            $result = $this->emailService->send($email, $subject, $message);
+
+            if ($result) {
+                Logger::info("Password reset email sent successfully to $email");
+            } else {
+                Logger::error("Failed to send password reset email to $email");
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            Logger::error('Error sending reset email: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**

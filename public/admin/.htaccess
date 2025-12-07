@@ -1,0 +1,5 @@
+RewriteEngine On
+# Force legacy admin entrypoints to the new dashboard
+RewriteRule ^menu\.php$ index.php [R=301,L]
+RewriteRule ^rbac_dashboard\.php$ index.php [R=301,L]
+RewriteRule ^legacy_dashboard\.php$ index.php [R=301,L]
