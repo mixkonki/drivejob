@@ -8,7 +8,7 @@ $container = \Drivejob\Core\Container::getInstance();
 $pdo = $container->get('pdo');
 
 // Φόρτωση του SQL script
-$sqlFile = __DIR__ . '/add_new_skills_columns.sql';
+$sqlFile = __DIR__ . '/add_is_active_to_users.sql';
 $sql = file_get_contents($sqlFile);
 
 // Διαχωρισμός των εντολών SQL

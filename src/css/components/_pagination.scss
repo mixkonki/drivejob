@@ -1,0 +1,424 @@
+/* Pagination Styles */
+
+// Base pagination
+.pagination {
+  display: flex;
+  padding-left: 0;
+  list-style: none;
+  border-radius: $border-radius;
+  
+  .page-item {
+    &:first-child {
+      .page-link {
+        margin-left: 0;
+        border-top-left-radius: $border-radius;
+        border-bottom-left-radius: $border-radius;
+      }
+    }
+    
+    &:last-child {
+      .page-link {
+        border-top-right-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
+      }
+    }
+    
+    &.active .page-link {
+      z-index: 3;
+      color: $light-color;
+      background-color: $primary-color;
+      border-color: $primary-color;
+    }
+    
+    &.disabled .page-link {
+      color: $gray-500;
+      pointer-events: none;
+      cursor: auto;
+      background-color: $light-color;
+      border-color: $border-color;
+    }
+  }
+  
+  .page-link {
+    position: relative;
+    display: block;
+    padding: $spacing-xs $spacing-sm;
+    margin-left: -$border-width;
+    line-height: 1.25;
+    color: $primary-color;
+    text-decoration: none;
+    background-color: $light-color;
+    border: $border-width solid $border-color;
+    transition: $transition-base;
+    
+    &:hover {
+      z-index: 2;
+      color: darken($primary-color, 15%);
+      text-decoration: none;
+      background-color: $gray-200;
+      border-color: $border-color;
+    }
+    
+    &:focus {
+      z-index: 3;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+    }
+  }
+}
+
+// Pagination sizes
+.pagination-lg {
+  .page-link {
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-lg;
+    line-height: 1.5;
+  }
+  
+  .page-item {
+    &:first-child {
+      .page-link {
+        border-top-left-radius: $border-radius-lg;
+        border-bottom-left-radius: $border-radius-lg;
+      }
+    }
+    
+    &:last-child {
+      .page-link {
+        border-top-right-radius: $border-radius-lg;
+        border-bottom-right-radius: $border-radius-lg;
+      }
+    }
+  }
+}
+
+.pagination-sm {
+  .page-link {
+    padding: calc(#{$spacing-xs} / 2) $spacing-xs;
+    font-size: $font-size-sm;
+    line-height: 1.5;
+  }
+  
+  .page-item {
+    &:first-child {
+      .page-link {
+        border-top-left-radius: $border-radius-sm;
+        border-bottom-left-radius: $border-radius-sm;
+      }
+    }
+    
+    &:last-child {
+      .page-link {
+        border-top-right-radius: $border-radius-sm;
+        border-bottom-right-radius: $border-radius-sm;
+      }
+    }
+  }
+}
+
+// Pagination variants
+.pagination-primary {
+  .page-link {
+    color: $primary-color;
+    
+    &:hover {
+      color: darken($primary-color, 15%);
+    }
+  }
+  
+  .page-item.active .page-link {
+    background-color: $primary-color;
+    border-color: $primary-color;
+  }
+}
+
+.pagination-secondary {
+  .page-link {
+    color: $secondary-color;
+    
+    &:hover {
+      color: darken($secondary-color, 15%);
+    }
+  }
+  
+  .page-item.active .page-link {
+    background-color: $secondary-color;
+    border-color: $secondary-color;
+  }
+}
+
+.pagination-success {
+  .page-link {
+    color: $success-color;
+    
+    &:hover {
+      color: darken($success-color, 15%);
+    }
+  }
+  
+  .page-item.active .page-link {
+    background-color: $success-color;
+    border-color: $success-color;
+  }
+}
+
+.pagination-danger {
+  .page-link {
+    color: $danger-color;
+    
+    &:hover {
+      color: darken($danger-color, 15%);
+    }
+  }
+  
+  .page-item.active .page-link {
+    background-color: $danger-color;
+    border-color: $danger-color;
+  }
+}
+
+.pagination-warning {
+  .page-link {
+    color: $warning-color;
+    
+    &:hover {
+      color: darken($warning-color, 15%);
+    }
+  }
+  
+  .page-item.active .page-link {
+    background-color: $warning-color;
+    border-color: $warning-color;
+  }
+}
+
+.pagination-info {
+  .page-link {
+    color: $info-color;
+    
+    &:hover {
+      color: darken($info-color, 15%);
+    }
+  }
+  
+  .page-item.active .page-link {
+    background-color: $info-color;
+    border-color: $info-color;
+  }
+}
+
+.pagination-dark {
+  .page-link {
+    color: $dark-color;
+    
+    &:hover {
+      color: darken($dark-color, 15%);
+    }
+  }
+  
+  .page-item.active .page-link {
+    background-color: $dark-color;
+    border-color: $dark-color;
+  }
+}
+
+// Pagination with rounded corners
+.pagination-rounded {
+  .page-link {
+    border-radius: $border-radius;
+    margin: 0 2px;
+  }
+  
+  .page-item {
+    &:first-child,
+    &:last-child {
+      .page-link {
+        border-radius: $border-radius;
+      }
+    }
+  }
+}
+
+// Pagination with circle style
+.pagination-circle {
+  .page-link {
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0 3px;
+  }
+}
+
+// Pagination without borders
+.pagination-borderless {
+  .page-link {
+    border: none;
+    background-color: transparent;
+    
+    &:hover {
+      background-color: $gray-200;
+    }
+  }
+  
+  .page-item.active .page-link {
+    background-color: $primary-color;
+  }
+}
+
+// Pagination with icons
+.pagination-icons {
+  .page-link {
+    font-size: 0;
+    
+    &::before {
+      font-size: $font-size-md;
+      line-height: 1;
+    }
+  }
+  
+  .page-item:first-child .page-link::before {
+    content: "«";
+    font-size: $font-size-md;
+  }
+  
+  .page-item:last-child .page-link::before {
+    content: "»";
+    font-size: $font-size-md;
+  }
+  
+  .page-item.prev .page-link::before {
+    content: "‹";
+    font-size: $font-size-md;
+  }
+  
+  .page-item.next .page-link::before {
+    content: "›";
+    font-size: $font-size-md;
+  }
+}
+
+// Pagination with gap indicators
+.pagination-gap {
+  .page-item.gap {
+    .page-link {
+      background-color: transparent;
+      border: none;
+      color: $gray-600;
+      padding-left: $spacing-xs;
+      padding-right: $spacing-xs;
+      cursor: default;
+      
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+}
+
+// Pagination with current page indicator
+.pagination-current {
+  display: flex;
+  align-items: center;
+  
+  .pagination {
+    margin-right: $spacing-md;
+  }
+  
+  .current-page-info {
+    color: $gray-600;
+    font-size: $font-size-sm;
+  }
+}
+
+// Pagination with goto page
+.pagination-goto {
+  display: flex;
+  align-items: center;
+  
+  .pagination {
+    margin-right: $spacing-md;
+  }
+  
+  .goto-page-form {
+    display: flex;
+    align-items: center;
+    
+    label {
+      margin-right: $spacing-xs;
+      margin-bottom: 0;
+      color: $gray-600;
+      font-size: $font-size-sm;
+    }
+    
+    .form-control {
+      width: 60px;
+      padding: $spacing-xs;
+      margin-right: $spacing-xs;
+      text-align: center;
+    }
+    
+    .btn {
+      padding: $spacing-xs $spacing-sm;
+      font-size: $font-size-sm;
+    }
+  }
+}
+
+// Pagination with items per page selector
+.pagination-per-page {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  .pagination-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .per-page-selector {
+    display: flex;
+    align-items: center;
+    
+    label {
+      margin-right: $spacing-xs;
+      margin-bottom: 0;
+      color: $gray-600;
+      font-size: $font-size-sm;
+    }
+    
+    .form-control {
+      width: 70px;
+      padding: $spacing-xs;
+    }
+  }
+}
+
+// Pagination with responsive behavior
+@include media-breakpoint-down(sm) {
+  .pagination-responsive {
+    .page-item {
+      &:not(.active):not(:first-child):not(:last-child):not(.prev):not(.next) {
+        display: none;
+      }
+    }
+  }
+}
+
+// Pagination with animation
+.pagination-animated {
+  .page-link {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-3px);
+    }
+  }
+  
+  .page-item.active .page-link {
+    transform: translateY(-3px);
+  }
+}

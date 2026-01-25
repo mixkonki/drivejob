@@ -9,6 +9,12 @@
  * - Βοηθός χειριστή μηχανημάτων έργου
  */
 
+// Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
+    header('Location: ' . BASE_URL . 'auth/login');
+    exit();
+}
+
 // Ορισμός του τίτλου της σελίδας
 $pageTitle = 'Δημιουργία Αγγελίας Προσφοράς Εργασίας';
 
@@ -35,7 +41,7 @@ $hasTachograph = $_SESSION['driver_has_tachograph'] ?? false;
 
             <div class="card">
                 <div class="card-body">
-                    <form action="<?= BASE_URL ?>job-listings/store-company" method="post" id="job-listing-form">
+                    <form action="<?= BASE_URL ?>job-listings/store" method="post" id="job-listing-form">
                         <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::generateToken() ?>">
                         <input type="hidden" name="listing_type" value="job_offer">
 

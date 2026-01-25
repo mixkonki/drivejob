@@ -1,19 +1,47 @@
 <?php
-// tests/bootstrap.php
-ob_start(); // Έναρξη output buffering
 
-// Βεβαιωθείτε ότι δεν έχουν ξεκινήσει οι headers πριν τις δοκιμές
-if (headers_sent()) {
-    echo "Προσοχή: Οι headers έχουν ήδη σταλεί πριν από την εκτέλεση των δοκιμών, αυτό θα προκαλέσει προβλήματα με τη διαχείριση συνεδριών.\n";
-    exit(1);
+/**
+ * Bootstrap αρχείο για τις δοκιμές PHPUnit
+ * 
+ * Αυτό το αρχείο φορτώνεται πριν από την εκτέλεση των δοκιμών
+ * και ρυθμίζει το περιβάλλον δοκιμών
+ */
+
+// Ορισμός του ROOT_DIR
+define('ROOT_DIR', dirname(__DIR__));
+
+// Φόρτωση του autoloader του Composer
+require_once ROOT_DIR . '/vendor/autoload.php';
+
+// Ορισμός της σταθεράς BASE_URL για το περιβάλλον δοκιμών
+if (!defined('BASE_URL')) {
+    define('BASE_URL', 'http://localhost/');
 }
 
-// Βεβαιωθείτε ότι δεν έχει ξεκινήσει η συνεδρία
-if (session_status() === PHP_SESSION_ACTIVE) {
-    session_write_close();
+// Δημιουργία mock για τη βάση δεδομένων για τις δοκιμές
+class MockPDO extends PDO
+{
+    public function __construct()
+    {
+        // Κενός constructor για να αποφύγουμε τη σύνδεση με τη βάση δεδομένων
+    }
 }
 
-require __DIR__ . '/../vendor/autoload.php';
-define('ENVIRONMENT', 'testing');
-define('ROOT_DIR', __DIR__ . '/..');
-define('BASE_URL', 'http://localhost/drivejob/public/');
+// Συνάρτηση για τη δημιουργία mock PDO για τις δοκιμές
+function createMockPDO()
+{
+    return new MockPDO();
+}
+
+// Ρύθμιση του error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+
+// Ρύθμιση της ζώνης ώρας
+date_default_timezone_set('Europe/Athens');
+
+// Ρύθμιση της κωδικοποίησης
+mb_internal_encoding('UTF-8');
+
+echo "PHPUnit bootstrap file loaded successfully.\n";

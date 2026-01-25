@@ -1,0 +1,117 @@
+.assessment-form {
+  margin: $spacing-md 0;
+  padding: $spacing-md;
+  background-color: $gray-100;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+}
+
+.assessment-section {
+  margin-bottom: $spacing-lg;
+  padding-bottom: $spacing-md;
+  border-bottom: 1px solid $gray-300;
+  
+  h2 {
+    margin-bottom: $spacing-md;
+    color: $dark-color;
+    font-size: $font-size-lg;
+  }
+}
+
+.assessment-item {
+  margin-bottom: $spacing-md;
+  
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.rating {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 300px;
+  margin-bottom: $spacing-xs;
+  
+  input[type="radio"] {
+    display: none;
+    
+    &:checked + label {
+      background-color: $primary-color;
+      color: $light-color;
+    }
+  }
+  
+  label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background-color: $gray-300;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: $transition-base;
+    
+    &:hover {
+      background-color: $gray-400;
+    }
+  }
+}
+
+.rating-description {
+  display: flex;
+  justify-content: space-between;
+  width: 300px;
+  font-size: $font-size-sm;
+  color: $gray-600;
+  
+  span {
+    &:first-child {
+      margin-left: $spacing-xs;
+    }
+    
+    &:last-child {
+      margin-right: $spacing-xs;
+    }
+  }
+}
+
+.form-actions {
+  margin-top: $spacing-lg;
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.btn-primary {
+  padding: $spacing-xs $spacing-md;
+  background-color: $primary-color;
+  color: $light-color;
+  border: none;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: $font-size-md;
+  transition: $transition-base;
+  
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+}
+
+.btn-secondary {
+  padding: $spacing-xs $spacing-md;
+  background-color: $gray-200;
+  color: $dark-color;
+  border: 1px solid $gray-400;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: $font-size-md;
+  text-decoration: none;
+  transition: $transition-base;
+  
+  &:hover {
+    background-color: $gray-300;
+  }
+}

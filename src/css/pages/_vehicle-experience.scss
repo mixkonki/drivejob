@@ -1,0 +1,277 @@
+/* Στυλ για την ενότητα προϋπηρεσίας σε οχήματα */
+.vehicle-experience-container {
+  margin-bottom: $spacing-xl;
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+  }
+
+  .col-md-6 {
+    position: relative;
+    width: 50%;
+    padding-right: 15px;
+    padding-left: 15px;
+    box-sizing: border-box;
+  }
+
+  h4 {
+    margin-top: 0;
+    margin-bottom: $spacing-lg;
+    color: $gray-800;
+    font-size: $font-size-lg;
+    border-bottom: 1px solid $gray-300;
+    padding-bottom: $spacing-sm;
+  }
+
+  .form-group {
+    margin-bottom: $spacing-md;
+  }
+
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: $font-weight-medium;
+    color: $gray-700;
+  }
+
+  .form-control {
+    display: block;
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    line-height: $line-height-base;
+    color: $gray-700;
+    background-color: $white;
+    background-image: none;
+    border: 1px solid $gray-400;
+    border-radius: $border-radius;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    transition: $transition-base;
+  }
+
+  .date-range {
+    display: flex;
+    align-items: center;
+
+    input {
+      flex: 1;
+    }
+
+    span {
+      margin: 0 $spacing-sm;
+      color: $gray-600;
+    }
+  }
+
+  .btn-primary {
+    color: $white;
+    background-color: $primary-color;
+    border-color: $primary-color-dark;
+    display: inline-block;
+    margin-bottom: 0;
+    font-weight: $font-weight-normal;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    background-image: none;
+    border: 1px solid transparent;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    line-height: $line-height-base;
+    border-radius: $border-radius;
+    user-select: none;
+    width: 100%;
+    margin-top: $spacing-sm;
+
+    &:hover {
+      color: $white;
+      background-color: $primary-color-dark;
+      border-color: darken($primary-color-dark, 10%);
+    }
+  }
+
+  table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: $spacing-lg;
+    border-collapse: collapse;
+    border-spacing: 0;
+
+    th, td {
+      padding: $spacing-sm;
+      line-height: $line-height-base;
+      vertical-align: top;
+      border-top: 1px solid $gray-300;
+      text-align: left;
+    }
+
+    th {
+      font-weight: $font-weight-bold;
+      background-color: $gray-200;
+    }
+  }
+
+  .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: $gray-100;
+  }
+
+  .summary-row {
+    font-weight: $font-weight-medium;
+    background-color: $gray-200;
+  }
+
+  .total-summary {
+    font-weight: $font-weight-bold;
+    background-color: $info-light;
+  }
+
+  .btn-delete-experience {
+    background-color: $danger-color;
+    color: $white;
+    border: none;
+    border-radius: $border-radius-sm;
+    padding: 3px $spacing-sm;
+    font-size: $font-size-xs;
+    cursor: pointer;
+
+    &:hover {
+      background-color: darken($danger-color, 10%);
+    }
+  }
+}
+
+.vehicle-experience-form {
+  background-color: $gray-100;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius;
+  padding: $spacing-lg;
+  height: 100%;
+}
+
+.vehicle-experience-table {
+  background-color: $white;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius;
+  padding: $spacing-lg;
+  height: 100%;
+}
+
+/* Προσαρμογή για μικρότερες οθόνες */
+@media (max-width: map-get($grid-breakpoints, md)) {
+  .vehicle-experience-container .col-md-6 {
+    width: 100%;
+    margin-bottom: $spacing-lg;
+  }
+}
+
+/* Στυλ για το μήνυμα υπενθύμισης αποθήκευσης */
+.save-reminder {
+  margin-top: $spacing-md;
+  padding: $spacing-sm;
+  background-color: #ffffd0;
+  border: 1px solid #e6e600;
+  border-radius: $border-radius;
+  font-size: $font-size-sm;
+  line-height: 1.4;
+  color: $gray-800;
+
+  strong {
+    color: $danger-color;
+  }
+}
+
+/* Στυλ για το τονισμένο κουμπί αποθήκευσης */
+.highlight-save-button {
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.7) !important;
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+/* Animation για το κουμπί αποθήκευσης */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+/* Στυλ για τα κουμπιά αποθήκευσης */
+.form-actions {
+  background-color: $gray-100;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius;
+  padding: $spacing-md;
+  margin: $spacing-lg 0;
+  display: flex;
+  justify-content: flex-end;
+
+  .form-buttons {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  .btn-save {
+    font-weight: $font-weight-bold;
+    font-size: $font-size-md;
+    padding: $spacing-sm $spacing-lg;
+    background-color: $info-color;
+    color: $white;
+    border: none;
+    border-radius: $border-radius;
+    cursor: pointer;
+    transition: $transition-base;
+
+    &:hover {
+      background-color: darken($info-color, 10%);
+    }
+
+    &.highlight-save-button {
+      animation: pulse 1.5s infinite;
+      background-color: $success-color;
+      border-color: $success-color;
+      transform: scale(1.05);
+    }
+  }
+
+  .btn-secondary {
+    font-weight: $font-weight-bold;
+    font-size: $font-size-md;
+    padding: $spacing-sm $spacing-lg;
+    background-color: $gray-600;
+    color: $white;
+    border: none;
+    border-radius: $border-radius;
+    text-decoration: none;
+    cursor: pointer;
+    transition: $transition-base;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background-color: darken($gray-600, 10%);
+    }
+  }
+}
+
+.top-actions {
+  margin-bottom: $spacing-xl;
+  background-color: $success-light;
+  border-color: $success-color;
+}
+
+.bottom-actions {
+  margin-top: $spacing-xl;
+  background-color: $success-light;
+  border-color: $success-color;
+}

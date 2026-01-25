@@ -7,44 +7,74 @@ use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
 use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
-use Drivejob\Core\Container;
 use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
-use Drivejob\Repositories\JobListingRepository;
-use Drivejob\Repositories\DriversRepository;
+use Drivejob\Core\Exceptions\AuthException;
+use Drivejob\Helpers\JsonHelper;
+use Drivejob\Services\FileService;
+use Drivejob\Services\JobListing\JobListingService;
+use Drivejob\Services\JobListing\JobListingServiceInterface;
+use Drivejob\Controllers\BaseJobListingController;
 
 /**
- * Controller για τις αγγελίες εργασίας από οδηγούς
+ * Controller για τις αγγελίες οδηγών
  */
-class JobListingController
+class JobListingController extends BaseJobListingController
 {
     /**
-     * @var JobListingRepository Το repository για τις αγγελίες εργασίας
+     * @var \Drivejob\Repositories\DriverLicenseRepositoryInterface
      */
-    private $jobListingRepository;
+    protected $driverLicenseRepository;
 
     /**
-     * @var DriversRepository Το repository για τους οδηγούς
+     * @var \Drivejob\Repositories\DriverOperatorLicenseRepositoryInterface
      */
-    private $driversRepository;
+    protected $driverOperatorLicenseRepository;
 
     /**
-     * @var Container Το container για τις εξαρτήσεις
+     * @var \Drivejob\Repositories\DriverADRRepositoryInterface
      */
-    private $container;
+    protected $driverADRRepository;
+
+    /**
+     * @var \Drivejob\Repositories\DriverTachographRepositoryInterface
+     */
+    protected $driverTachographRepository;
+
+    /**
+     * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
+     */
+    private $fileService;
+
+    /**
+     * @var JobListingServiceInterface Η υπηρεσία για τη διαχείριση αγγελιών
+     */
+    private $jobListingService;
 
     /**
      * Constructor
+     *
+     * @param PDO|null $pdo Η σύνδεση με τη βάση δεδομένων
      */
-    public function __construct()
+    public function __construct($pdo = null)
     {
-        // Λήψη του container
-        $this->container = Container::getInstance();
-        $pdo = $this->container->get('pdo');
+        // Κλήση του constructor της γονικής κλάσης
+        parent::__construct($pdo);
 
         // Αρχικοποίηση των repositories
-        $this->jobListingRepository = new JobListingRepository($pdo);
-        $this->driversRepository = new DriversRepository($pdo);
+        $container = \Drivejob\Core\Container::getInstance();
+        $this->driverLicenseRepository = $container->get('DriverLicenseRepository');
+        $this->driverOperatorLicenseRepository = $container->get('DriverOperatorLicenseRepository');
+        $this->driverADRRepository = $container->get('DriverADRRepository');
+        $this->driverTachographRepository = $container->get('DriverTachographRepository');
+
+        // Αρχικοποίηση του FileService
+        $this->fileService = new FileService();
+
+        // Αρχικοποίηση του JobListingService
+        $this->jobListingService = new JobListingService(
+            $this->jobListingRepository
+        );
     }
 
     /**
@@ -52,106 +82,213 @@ class JobListingController
      */
     public function create()
     {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως οδηγός
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι οδηγός
         AuthMiddleware::hasRole('driver');
 
-        // Λήψη των στοιχείων του οδηγού
-        $driverId = Session::get('user_id');
-        $driverData = $this->driversRepository->find($driverId);
+        $userId = Session::get('user_id');
 
-        if (!$driverData) {
-            Session::set('error_message', 'Τα στοιχεία του οδηγού δεν βρέθηκαν.');
+        try {
+            // Λήψη των στοιχείων του οδηγού
+            $driverData = $this->driversRepository->find($userId);
+
+            if (!$driverData) {
+                Session::set('error_message', 'Τα στοιχεία του οδηγού δεν βρέθηκαν.');
+                header('Location: ' . BASE_URL . 'drivers/profile');
+                exit();
+            }
+
+            // Λήψη των αδειών οδήγησης του οδηγού
+            $driverLicenses = $this->driverLicenseRepository->findByDriver($userId);
+            $_SESSION['driver_licenses'] = $driverLicenses;
+
+            // Λήψη των αδειών χειριστή μηχανημάτων έργου του οδηγού
+            $driverOperatorLicenses = $this->driverOperatorLicenseRepository->findByDriver($userId);
+            $_SESSION['driver_operator_licenses'] = $driverOperatorLicenses;
+
+            // Έλεγχος αν ο οδηγός έχει ΠΕΙ
+            $hasPEI = false;
+            foreach ($driverLicenses as $license) {
+                if (isset($license['has_pei']) && $license['has_pei']) {
+                    $hasPEI = true;
+                    break;
+                }
+            }
+            $_SESSION['driver_has_pei'] = $hasPEI;
+
+            // Έλεγχος αν ο οδηγός έχει ADR
+            $hasADR = $this->driverADRRepository->findByDriver($userId) ? true : false;
+            $_SESSION['driver_has_adr'] = $hasADR;
+
+            // Έλεγχος αν ο οδηγός έχει κάρτα ταχογράφου
+            $hasTachograph = $this->driverTachographRepository->findByDriver($userId) ? true : false;
+            $_SESSION['driver_has_tachograph'] = $hasTachograph;
+
+            // Φόρτωση του view για οδηγούς
+            include ROOT_DIR . '/src/Views/job-listings/Driver/create.php';
+        } catch (DatabaseException $e) {
+            Logger::error('Database exception in driver job listing create', [
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'drivers/profile');
+            exit();
+        } catch (\Exception $e) {
+            Logger::error('Exception in driver job listing create', [
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'drivers/profile');
             exit();
         }
-
-        // Φόρτωση του view
-        include ROOT_DIR . '/src/Views/job-listings/Driver/create.php';
     }
 
     /**
-     * Αποθηκεύει μια νέα αγγελία από οδηγό
+     * Αποθηκεύει μια νέα αγγελία οδηγού
      */
     public function store()
     {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως οδηγός
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι οδηγός
         AuthMiddleware::hasRole('driver');
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in driver job listing store');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/Driver/create');
             exit();
         }
 
-        // Επικύρωση βασικών δεδομένων
-        $validator = new Validator($_POST);
-        $validator->required('title', 'Ο τίτλος είναι υποχρεωτικός.')
-            ->required('description', 'Η περιγραφή είναι υποχρεωτική.')
-            ->required('location', 'Η τοποθεσία είναι υποχρεωτική.')
-            ->required('job_type', 'Ο τύπος εργασίας είναι υποχρεωτικός.');
-
-        if (!$validator->isValid()) {
-            Logger::error('Validation failed in driver job listing store', [
-                'errors' => $validator->getErrors(),
-                'post_data' => $_POST
-            ]);
-            Session::set('errors', $validator->getErrors());
-            Session::set('old_input', $_POST);
-            header('Location: ' . BASE_URL . 'job-listings/Driver/create');
-            exit();
-        }
-
-        // Συλλογή των δεδομένων από τη φόρμα
-        $data = $this->collectFormData();
-        $data['created_at'] = date('Y-m-d H:i:s');
-        $data['updated_at'] = date('Y-m-d H:i:s');
-        $data['views_count'] = 0;
-        $data['applications_count'] = 0;
-        $data['is_active'] = isset($_POST['is_active']) ? 1 : 0;
-        $data['is_approved'] = 1; // Αυτόματη έγκριση για τώρα
-        $data['listing_type'] = 'job_search'; // Τύπος αγγελίας: αναζήτηση εργασίας
-
-        // Προσθήκη του ID του οδηγού
-        $driverId = Session::get('user_id');
-        $data['driver_id'] = $driverId;
-        $data['company_id'] = null;
-
-        Logger::info('Starting driver job listing creation', ['driver_id' => $driverId]);
+        $userId = Session::get('user_id');
 
         try {
-            // Δημιουργία της αγγελίας
-            $listingId = $this->jobListingRepository->create($data);
+            // Επικύρωση βασικών δεδομένων
+            $validator = new Validator($_POST);
+            $validator->required('title', 'Ο τίτλος είναι υποχρεωτικός.')
+                ->required('description', 'Η περιγραφή είναι υποχρεωτική.')
+                ->required('location', 'Η τοποθεσία είναι υποχρεωτική.')
+                ->required('job_type', 'Ο τύπος εργασίας είναι υποχρεωτικός.');
 
-            if ($listingId) {
-                // Αποθήκευση των τύπων οχημάτων στα μεταδεδομένα της αγγελίας
-                if (isset($_POST['vehicle_types']) && is_array($_POST['vehicle_types'])) {
-                    $vehicleTypes = implode(',', $_POST['vehicle_types']);
-                    $this->jobListingRepository->update($listingId, ['vehicle_types' => $vehicleTypes]);
-                }
-
-                Logger::info('Driver job listing creation successful', ['listing_id' => $listingId]);
-                Session::set('success_message', 'Η αγγελία δημιουργήθηκε με επιτυχία.');
-                header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-                exit();
-            } else {
-                Logger::error('Driver job listing creation failed', [
-                    'driver_id' => $driverId,
-                    'data' => $data
+            if (!$validator->isValid()) {
+                Logger::error('Validation failed in driver job listing store', [
+                    'errors' => $validator->getErrors(),
+                    'post_data' => $_POST
                 ]);
-                Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά τη δημιουργία της αγγελίας. Παρακαλώ δοκιμάστε ξανά.');
+                Session::set('errors', $validator->getErrors());
+                Session::set('old_input', $_POST);
+
                 header('Location: ' . BASE_URL . 'job-listings/Driver/create');
                 exit();
             }
+
+            // Συλλογή των δεδομένων από τη φόρμα
+            $data = $this->collectFormData();
+            $data['created_at'] = date('Y-m-d H:i:s');
+            $data['updated_at'] = date('Y-m-d H:i:s');
+            $data['views_count'] = 0;
+            $data['applications_count'] = 0;
+            $data['is_active'] = isset($_POST['is_active']) ? 1 : 0;
+            $data['is_approved'] = 1; // Αυτόματη έγκριση για τώρα
+
+            // Αγγελία αναζήτησης εργασίας από οδηγό
+            $data['driver_id'] = $userId;
+            $data['company_id'] = null;
+            $data['listing_type'] = 'job_search';
+
+            // Λήψη των αδειών οδήγησης του οδηγού
+            $driverLicenses = $this->driverLicenseRepository->findByDriver($userId);
+            $data['driver_licenses'] = !empty($driverLicenses) ? JsonHelper::encode($driverLicenses) : null;
+
+            // Λήψη των αδειών χειριστή μηχανημάτων έργου του οδηγού
+            $operatorLicenses = $this->driverOperatorLicenseRepository->findByDriver($userId);
+            $data['operator_licenses'] = !empty($operatorLicenses) ? JsonHelper::encode($operatorLicenses) : null;
+
+            // Έλεγχος αν ο οδηγός έχει ΠΕΙ
+            $hasPEI = false;
+            foreach ($driverLicenses as $license) {
+                if (isset($license['has_pei']) && $license['has_pei']) {
+                    $hasPEI = true;
+                    break;
+                }
+            }
+            $data['has_pei'] = $hasPEI ? 1 : 0;
+
+            // Έλεγχος αν ο οδηγός έχει ADR
+            $hasADR = $this->driverADRRepository->findByDriver($userId) ? true : false;
+            $data['has_adr'] = $hasADR ? 1 : 0;
+
+            // Έλεγχος αν ο οδηγός έχει κάρτα ταχογράφου
+            $hasTachograph = $this->driverTachographRepository->findByDriver($userId) ? true : false;
+            $data['has_tachograph'] = $hasTachograph ? 1 : 0;
+
+            Logger::info('Starting driver job listing creation', ['driver_id' => $userId]);
+
+            // Επεξεργασία των τύπων οχημάτων
+            if (isset($_POST['vehicle_types']) && is_array($_POST['vehicle_types'])) {
+                $data['vehicle_types'] = implode(',', $_POST['vehicle_types']);
+            }
+
+            Logger::info('Collected form data for driver job listing', ['data_keys' => array_keys($data)]);
+
+            // Δημιουργία της αγγελίας με το service
+            try {
+                $listingId = $this->jobListingService->createJobListing($data);
+
+                Logger::info('Driver job listing creation successful', ['listing_id' => $listingId]);
+                Session::set('success_message', 'Η αγγελία δημιουργήθηκε με επιτυχία.');
+                header('Location: ' . BASE_URL . 'job-listings/show/' . $listingId);
+                exit();
+            } catch (ValidationException $e) {
+                Logger::error('Validation exception in driver job listing creation', [
+                    'user_id' => $userId,
+                    'errors' => $e->getErrors()
+                ]);
+
+                Session::set('errors', $e->getErrors());
+                Session::set('old_input', $_POST);
+                header('Location: ' . BASE_URL . 'job-listings/Driver/create');
+                exit();
+            }
+        } catch (DatabaseException $e) {
+            Logger::error('Database exception in driver job listing store', [
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+                'context' => $e->getContext(),
+                'data' => $data ?? [],
+                'post_data' => $_POST
+            ]);
+
+            // Αποθήκευση του σφάλματος στο session για αποσφαλμάτωση
+            Session::set('debug_error', [
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            exit();
         } catch (\Exception $e) {
             Logger::error('Exception in driver job listing store', [
-                'driver_id' => $driverId,
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $data ?? [],
+                'post_data' => $_POST
+            ]);
+
+            // Αποθήκευση του σφάλματος στο session για αποσφαλμάτωση
+            Session::set('debug_error', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings/Driver/create');
+            header('Location: ' . BASE_URL . 'debug_job_listing.php');
             exit();
         }
     }
@@ -163,51 +300,77 @@ class JobListingController
      */
     public function edit($id)
     {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως οδηγός
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι οδηγός
         AuthMiddleware::hasRole('driver');
 
-        // Έλεγχος αν το ID είναι έγκυρο
-        if (!$id || !is_numeric($id)) {
-            Session::set('error_message', 'Μη έγκυρο αναγνωριστικό αγγελίας');
-            header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-            exit;
-        }
+        $userId = Session::get('user_id');
 
         try {
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($id);
+            // Ανάκτηση της αγγελίας με το service
+            $listing = $this->jobListingService->findJobListing($id);
 
             if (!$listing) {
-                Session::set('error_message', 'Η αγγελία δεν βρέθηκε');
-                header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-                exit;
+                Session::set('error_message', 'Η αγγελία δεν βρέθηκε.');
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit();
             }
 
             // Έλεγχος αν ο χρήστης είναι ο ιδιοκτήτης της αγγελίας
-            if ($listing['driver_id'] != Session::get('user_id')) {
-                Session::set('error_message', 'Δεν έχετε δικαίωμα επεξεργασίας αυτής της αγγελίας');
-                header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-                exit;
+            if (empty($listing['driver_id']) || $userId != $listing['driver_id']) {
+                Session::set('error_message', 'Δεν έχετε δικαίωμα επεξεργασίας αυτής της αγγελίας.');
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit();
             }
 
-            // Επεξεργασία των τύπων οχημάτων της αγγελίας
-            if (isset($listing['vehicle_types'])) {
-                $listing['vehicle_types'] = explode(',', $listing['vehicle_types']);
-            } else {
-                $listing['vehicle_types'] = [];
+            // Λήψη των αδειών οδήγησης του οδηγού
+            $driverLicenses = $this->driverLicenseRepository->findByDriver($userId);
+            $_SESSION['driver_licenses'] = $driverLicenses;
+
+            // Λήψη των αδειών χειριστή μηχανημάτων έργου του οδηγού
+            $driverOperatorLicenses = $this->driverOperatorLicenseRepository->findByDriver($userId);
+            $_SESSION['driver_operator_licenses'] = $driverOperatorLicenses;
+
+            // Έλεγχος αν ο οδηγός έχει ΠΕΙ
+            $hasPEI = false;
+            foreach ($driverLicenses as $license) {
+                if (isset($license['has_pei']) && $license['has_pei']) {
+                    $hasPEI = true;
+                    break;
+                }
             }
+            $_SESSION['driver_has_pei'] = $hasPEI;
+
+            // Έλεγχος αν ο οδηγός έχει ADR
+            $hasADR = $this->driverADRRepository->findByDriver($userId) ? true : false;
+            $_SESSION['driver_has_adr'] = $hasADR;
+
+            // Έλεγχος αν ο οδηγός έχει κάρτα ταχογράφου
+            $hasTachograph = $this->driverTachographRepository->findByDriver($userId) ? true : false;
+            $_SESSION['driver_has_tachograph'] = $hasTachograph;
 
             // Φόρτωση του view
-            include ROOT_DIR . '/src/Views/job-listings/edit-driver.php';
+            include ROOT_DIR . '/src/Views/job-listings/Driver/edit.php';
+        } catch (DatabaseException $e) {
+            Logger::error('Database exception in driver job listing edit', [
+                'id' => $id,
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'job-listings');
+            exit();
         } catch (\Exception $e) {
             Logger::error('Exception in driver job listing edit', [
                 'id' => $id,
+                'user_id' => $userId,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         }
     }
@@ -219,39 +382,34 @@ class JobListingController
      */
     public function update($id)
     {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως οδηγός
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι οδηγός
         AuthMiddleware::hasRole('driver');
 
-        // Έλεγχος αν το ID είναι έγκυρο
-        if (!$id || !is_numeric($id)) {
-            Session::set('error_message', 'Μη έγκυρο αναγνωριστικό αγγελίας');
-            header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-            exit;
-        }
-
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in driver job listing update');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/edit-driver/' . $id);
             exit();
         }
 
+        $userId = Session::get('user_id');
+
         try {
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($id);
+            // Ανάκτηση της αγγελίας με το service
+            $listing = $this->jobListingService->findJobListing($id);
 
             if (!$listing) {
-                Session::set('error_message', 'Η αγγελία δεν βρέθηκε');
-                header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-                exit;
+                Session::set('error_message', 'Η αγγελία δεν βρέθηκε.');
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit();
             }
 
             // Έλεγχος αν ο χρήστης είναι ο ιδιοκτήτης της αγγελίας
-            if ($listing['driver_id'] != Session::get('user_id')) {
-                Session::set('error_message', 'Δεν έχετε δικαίωμα επεξεργασίας αυτής της αγγελίας');
-                header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-                exit;
+            if (empty($listing['driver_id']) || $userId != $listing['driver_id']) {
+                Session::set('error_message', 'Δεν έχετε δικαίωμα επεξεργασίας αυτής της αγγελίας.');
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit();
             }
 
             // Επικύρωση βασικών δεδομένων
@@ -263,12 +421,12 @@ class JobListingController
 
             if (!$validator->isValid()) {
                 Logger::error('Validation failed in driver job listing update', [
-                    'id' => $id,
                     'errors' => $validator->getErrors(),
                     'post_data' => $_POST
                 ]);
                 Session::set('errors', $validator->getErrors());
                 Session::set('old_input', $_POST);
+
                 header('Location: ' . BASE_URL . 'job-listings/edit-driver/' . $id);
                 exit();
             }
@@ -278,44 +436,119 @@ class JobListingController
             $data['updated_at'] = date('Y-m-d H:i:s');
             $data['is_active'] = isset($_POST['is_active']) ? 1 : 0;
 
-            Logger::info('Collected form data for driver job listing update', [
-                'id' => $id,
-                'data_keys' => array_keys($data)
-            ]);
+            // Επεξεργασία των τύπων οχημάτων
+            if (isset($_POST['vehicle_types']) && is_array($_POST['vehicle_types'])) {
+                $data['vehicle_types'] = implode(',', $_POST['vehicle_types']);
+            }
 
-            // Ενημέρωση της αγγελίας
-            $updateResult = $this->jobListingRepository->update($id, $data);
+            // Ενημέρωση της αγγελίας με το service
+            try {
+                $success = $this->jobListingService->updateJobListing($id, $data);
 
-            if ($updateResult) {
-                // Ενημέρωση των τύπων οχημάτων
-                if (isset($_POST['vehicle_types']) && is_array($_POST['vehicle_types'])) {
-                    $vehicleTypes = implode(',', $_POST['vehicle_types']);
-                    $this->jobListingRepository->update($id, ['vehicle_types' => $vehicleTypes]);
-                } else {
-                    $this->jobListingRepository->update($id, ['vehicle_types' => null]);
-                }
-
-                Logger::info('Driver job listing update successful', ['id' => $id]);
                 Session::set('success_message', 'Η αγγελία ενημερώθηκε με επιτυχία.');
-                header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
+                header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
                 exit();
-            } else {
-                Logger::error('Driver job listing update failed', [
+            } catch (ValidationException $e) {
+                Logger::error('Validation exception in driver job listing update', [
                     'id' => $id,
-                    'data' => $data
+                    'user_id' => $userId,
+                    'errors' => $e->getErrors()
                 ]);
-                Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την ενημέρωση της αγγελίας. Παρακαλώ δοκιμάστε ξανά.');
+
+                Session::set('errors', $e->getErrors());
+                Session::set('old_input', $_POST);
                 header('Location: ' . BASE_URL . 'job-listings/edit-driver/' . $id);
                 exit();
             }
+        } catch (DatabaseException $e) {
+            Logger::error('Database exception in driver job listing update', [
+                'id' => $id,
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+
+            // Αποθήκευση του σφάλματος στο session για αποσφαλμάτωση
+            Session::set('debug_error', [
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            exit();
         } catch (\Exception $e) {
             Logger::error('Exception in driver job listing update', [
                 'id' => $id,
+                'user_id' => $userId,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
+            // Αποθήκευση του σφάλματος στο session για αποσφαλμάτωση
+            Session::set('debug_error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings/edit-driver/' . $id);
+            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            exit();
+        }
+    }
+
+    /**
+     * Εμφανίζει τη σελίδα επιβεβαίωσης διαγραφής αγγελίας οδηγού
+     * 
+     * @param int $id Το ID της αγγελίας
+     */
+    public function delete($id)
+    {
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι οδηγός
+        AuthMiddleware::hasRole('driver');
+
+        $userId = Session::get('user_id');
+
+        try {
+            // Ανάκτηση της αγγελίας με το service
+            $listing = $this->jobListingService->findJobListing($id);
+
+            if (!$listing) {
+                Session::set('error_message', 'Η αγγελία δεν βρέθηκε.');
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit();
+            }
+
+            // Έλεγχος αν ο χρήστης είναι ο ιδιοκτήτης της αγγελίας
+            if (empty($listing['driver_id']) || $userId != $listing['driver_id']) {
+                Session::set('error_message', 'Δεν έχετε δικαίωμα διαγραφής αυτής της αγγελίας.');
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit();
+            }
+
+            // Φόρτωση του view
+            include ROOT_DIR . '/src/Views/job-listings/Driver/delete.php';
+        } catch (DatabaseException $e) {
+            Logger::error('Database exception in driver job listing delete', [
+                'id' => $id,
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'job-listings');
+            exit();
+        } catch (\Exception $e) {
+            Logger::error('Exception in driver job listing delete', [
+                'id' => $id,
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         }
     }
@@ -325,94 +558,90 @@ class JobListingController
      * 
      * @param int $id Το ID της αγγελίας
      */
-    public function delete($id)
+    public function destroy($id)
     {
-        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως οδηγός
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος και είναι οδηγός
         AuthMiddleware::hasRole('driver');
 
-        // Έλεγχος αν το ID είναι έγκυρο
-        if (!$id || !is_numeric($id)) {
-            Session::set('error_message', 'Μη έγκυρο αναγνωριστικό αγγελίας');
-            header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-            exit;
-        }
-
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
-            Logger::error('CSRF token validation failed in driver job listing delete');
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            Logger::error('CSRF token validation failed in driver job listing destroy');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
+            header('Location: ' . BASE_URL . 'job-listings/delete-driver/' . $id);
             exit();
         }
 
+        $userId = Session::get('user_id');
+
         try {
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($id);
+            // Ανάκτηση της αγγελίας με το service
+            $listing = $this->jobListingService->findJobListing($id);
 
             if (!$listing) {
-                Session::set('error_message', 'Η αγγελία δεν βρέθηκε');
-                header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-                exit;
+                Session::set('error_message', 'Η αγγελία δεν βρέθηκε.');
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit();
             }
 
             // Έλεγχος αν ο χρήστης είναι ο ιδιοκτήτης της αγγελίας
-            if ($listing['driver_id'] != Session::get('user_id')) {
-                Session::set('error_message', 'Δεν έχετε δικαίωμα διαγραφής αυτής της αγγελίας');
-                header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-                exit;
+            if (empty($listing['driver_id']) || $userId != $listing['driver_id']) {
+                Session::set('error_message', 'Δεν έχετε δικαίωμα διαγραφής αυτής της αγγελίας.');
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit();
             }
 
-            // Διαγραφή της αγγελίας
-            $deleteResult = $this->jobListingRepository->delete($id);
+            // Διαγραφή της αγγελίας με το service
+            try {
+                $success = $this->jobListingService->deleteJobListing($id);
 
-            if ($deleteResult) {
-                Logger::info('Driver job listing delete successful', ['id' => $id]);
                 Session::set('success_message', 'Η αγγελία διαγράφηκε με επιτυχία.');
-            } else {
-                Logger::error('Driver job listing delete failed', ['id' => $id]);
+                header('Location: ' . BASE_URL . 'drivers/profile');
+                exit();
+            } catch (\Exception $e) {
+                Logger::error('Exception in driver job listing deletion', [
+                    'id' => $id,
+                    'user_id' => $userId,
+                    'message' => $e->getMessage()
+                ]);
+
                 Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά τη διαγραφή της αγγελίας. Παρακαλώ δοκιμάστε ξανά.');
+                header('Location: ' . BASE_URL . 'job-listings/delete-driver/' . $id);
+                exit();
             }
-        } catch (\Exception $e) {
-            Logger::error('Exception in driver job listing delete', [
+        } catch (DatabaseException $e) {
+            Logger::error('Database exception in driver job listing destroy', [
                 'id' => $id,
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+
+            // Αποθήκευση του σφάλματος στο session για αποσφαλμάτωση
+            Session::set('debug_error', [
+                'message' => $e->getMessage(),
+                'context' => $e->getContext()
+            ]);
+
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            exit();
+        } catch (\Exception $e) {
+            Logger::error('Exception in driver job listing destroy', [
+                'id' => $id,
+                'user_id' => $userId,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
+            // Αποθήκευση του σφάλματος στο session για αποσφαλμάτωση
+            Session::set('debug_error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            exit();
         }
-
-        header('Location: ' . BASE_URL . 'drivers/profile#my-listings');
-        exit();
-    }
-
-    /**
-     * Συλλέγει τα δεδομένα από τη φόρμα
-     * 
-     * @return array Τα δεδομένα της φόρμας
-     */
-    private function collectFormData()
-    {
-        $data = [
-            'title' => $this->sanitize($_POST['title'] ?? ''),
-            'description' => $this->sanitize($_POST['description'] ?? ''),
-            'location' => $this->sanitize($_POST['location'] ?? ''),
-            'job_type' => $this->sanitize($_POST['job_type'] ?? ''),
-            'salary_range' => $this->sanitize($_POST['salary_range'] ?? ''),
-            'availability' => $this->sanitize($_POST['availability'] ?? ''),
-            'additional_info' => $this->sanitize($_POST['additional_info'] ?? '')
-        ];
-
-        return $data;
-    }
-
-    /**
-     * Καθαρίζει μια τιμή εισόδου
-     * 
-     * @param string $input Η τιμή εισόδου
-     * @return string Η καθαρισμένη τιμή
-     */
-    private function sanitize($input)
-    {
-        return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
     }
 }

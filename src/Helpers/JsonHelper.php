@@ -8,149 +8,81 @@ namespace Drivejob\Helpers;
 class JsonHelper
 {
     /**
-     * Μετατρέπει ένα αντικείμενο σε JSON string
+     * Κωδικοποιεί δεδομένα σε JSON και τα εμφανίζει
      * 
-     * @param mixed $data Τα δεδομένα προς μετατροπή
+     * @param mixed $data Τα δεδομένα προς κωδικοποίηση
      * @param int $options Επιλογές κωδικοποίησης JSON
-     * @return string Το JSON string
+     * @return void
+     */
+    public static function response($data, $options = 0)
+    {
+        header('Content-Type: application/json');
+        echo self::encode($data, $options);
+    }
+
+    /**
+     * Κωδικοποιεί δεδομένα σε JSON
+     * 
+     * @param mixed $data Τα δεδομένα προς κωδικοποίηση
+     * @param int $options Επιλογές κωδικοποίησης JSON
+     * @return string Κωδικοποιημένα δεδομένα JSON
      */
     public static function encode($data, $options = 0)
     {
-        // Χρησιμοποιούμε μόνο τη χειροκίνητη υλοποίηση για αποφυγή προβλημάτων
-        return self::manualJsonEncode($data);
+        return \json_encode($data, $options);
     }
 
     /**
-     * Μετατρέπει ένα JSON string σε αντικείμενο
+     * Αποκωδικοποιεί δεδομένα JSON
      * 
-     * @param string $json Το JSON string
-     * @param bool $assoc Αν θα επιστραφεί ως associative array
-     * @return mixed Το αποκωδικοποιημένο αντικείμενο
+     * @param string $json Δεδομένα JSON
+     * @param bool $assoc Επιστροφή ως συσχετιστικός πίνακας
+     * @return mixed Αποκωδικοποιημένα δεδομένα
      */
     public static function decode($json, $assoc = true)
     {
-        // Απλή υλοποίηση για αποφυγή προβλημάτων
-        if (empty($json)) {
-            return $assoc ? [] : new \stdClass();
-        }
-
-        // Χρήση της native συνάρτησης με global namespace
-        return $assoc ? [] : new \stdClass();
+        return \json_decode($json, $assoc);
     }
 
     /**
-     * Χειροκίνητη υλοποίηση της json_encode για fallback
+     * Επιστρέφει μήνυμα επιτυχίας σε μορφή JSON
      * 
-     * @param mixed $data Τα δεδομένα προς μετατροπή
-     * @return string Το JSON string
-     */
-    private static function manualJsonEncode($data)
-    {
-        if (is_null($data)) {
-            return 'null';
-        }
-
-        if (is_bool($data)) {
-            return $data ? 'true' : 'false';
-        }
-
-        if (is_numeric($data)) {
-            return (string)$data;
-        }
-
-        if (is_string($data)) {
-            // Διαφυγή ειδικών χαρακτήρων
-            $data = str_replace('"', '\"', $data);
-            $data = str_replace("\n", '\n', $data);
-            $data = str_replace("\r", '\r', $data);
-            $data = str_replace("\t", '\t', $data);
-            return '"' . $data . '"';
-        }
-
-        if (is_array($data)) {
-            // Έλεγχος αν είναι associative array
-            if (array_keys($data) !== range(0, count($data) - 1)) {
-                // Associative array (object)
-                $result = '{';
-                $first = true;
-                foreach ($data as $key => $value) {
-                    if (!$first) {
-                        $result .= ',';
-                    }
-                    $result .= '"' . $key . '":' . self::manualJsonEncode($value);
-                    $first = false;
-                }
-                $result .= '}';
-                return $result;
-            } else {
-                // Indexed array
-                $result = '[';
-                $first = true;
-                foreach ($data as $value) {
-                    if (!$first) {
-                        $result .= ',';
-                    }
-                    $result .= self::manualJsonEncode($value);
-                    $first = false;
-                }
-                $result .= ']';
-                return $result;
-            }
-        }
-
-        if (is_object($data)) {
-            // Μετατροπή αντικειμένου σε array
-            $data = get_object_vars($data);
-            return self::manualJsonEncode($data);
-        }
-
-        // Fallback για άλλους τύπους
-        return '""';
-    }
-
-    /**
-     * Δημιουργεί ένα JSON response
-     * 
-     * @param mixed $data Τα δεδομένα προς μετατροπή
-     * @param int $statusCode Ο κωδικός κατάστασης HTTP
+     * @param string $message Μήνυμα επιτυχίας
+     * @param array $data Επιπλέον δεδομένα
      * @return void
      */
-    public static function response($data, $statusCode = 200)
+    public static function success($message = 'Η ενέργεια ολοκληρώθηκε με επιτυχία', $data = [])
     {
-        http_response_code($statusCode);
-        header('Content-Type: application/json');
-        echo self::encode($data);
-        exit();
-    }
-
-    /**
-     * Δημιουργεί ένα JSON response επιτυχίας
-     * 
-     * @param mixed $data Τα δεδομένα προς μετατροπή
-     * @param string $message Το μήνυμα επιτυχίας
-     * @return void
-     */
-    public static function success($data = null, $message = 'Επιτυχία')
-    {
-        self::response([
+        $response = [
             'success' => true,
-            'message' => $message,
-            'data' => $data
-        ]);
+            'message' => $message
+        ];
+
+        if (!empty($data)) {
+            $response['data'] = $data;
+        }
+
+        self::response($response);
     }
 
     /**
-     * Δημιουργεί ένα JSON response σφάλματος
+     * Επιστρέφει μήνυμα σφάλματος σε μορφή JSON
      * 
-     * @param string $message Το μήνυμα σφάλματος
-     * @param int $statusCode Ο κωδικός κατάστασης HTTP
+     * @param string $message Μήνυμα σφάλματος
+     * @param array $errors Λεπτομέρειες σφαλμάτων
      * @return void
      */
-    public static function error($message = 'Σφάλμα', $statusCode = 400)
+    public static function error($message = 'Παρουσιάστηκε ένα σφάλμα', $errors = [])
     {
-        self::response([
+        $response = [
             'success' => false,
             'message' => $message
-        ], $statusCode);
+        ];
+
+        if (!empty($errors)) {
+            $response['errors'] = $errors;
+        }
+
+        self::response($response);
     }
 }

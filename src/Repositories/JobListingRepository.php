@@ -8,7 +8,7 @@ use Drivejob\Core\Exceptions\DatabaseException;
 /**
  * Repository για τις αγγελίες εργασίας
  */
-class JobListingRepository extends BaseRepository
+class JobListingRepository extends BaseRepository implements JobListingRepositoryInterface
 {
     /**
      * @var string Το όνομα του πίνακα

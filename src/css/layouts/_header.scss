@@ -1,0 +1,133 @@
+/* Header Styles */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: $primary-color;
+  padding: 10px 20px;
+
+  .logo {
+    display: flex;
+    align-items: center;
+
+    img {
+      height: 80px;
+      margin-right: 80px;
+      object-fit: contain;
+    }
+  }
+
+  .nav-menu {
+    flex: 1;
+
+    ul {
+      display: flex;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      justify-content: flex-start;
+
+      li {
+        margin: 0 15px;
+
+        a {
+          color: $light-color;
+          text-decoration: none;
+          font-size: $font-size-lg;
+          font-weight: $font-weight-bold;
+          padding-bottom: 5px;
+          position: relative;
+          transition: color 0.3s ease;
+
+          &:hover {
+            color: #ffcccc; // Ανοιχτό κόκκινο στο hover
+          }
+
+          &.active {
+            position: relative;
+
+            &::after {
+              content: '';
+              position: absolute;
+              left: 0;
+              bottom: -2px;
+              width: 100%;
+              height: 2px;
+              background-color: $light-color;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .user-actions {
+    display: flex;
+    gap: 20px; // Αυξημένο gap για καλύτερο διαχωρισμό
+
+    a {
+      display: flex;
+      align-items: center;
+      justify-content: left; // Για καλύτερο κεντράρισμα
+      text-align: left !important;
+      background-color: $gray-200;
+      color: $gray-900;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: $border-radius;
+      font-size: $font-size-md;
+      font-weight: $font-weight-bold;
+      transition: $transition-base;
+      min-width: 200px; // Ίδιο ελάχιστο πλάτος με τα κουμπιά εγγραφής
+      width: auto;
+      box-sizing: border-box;
+
+      &.btn-dark {
+        background-color: $light-color;
+        color: $gray-900;
+      }
+
+      &.btn-primary {
+        background-color: $light-color;
+        color: $gray-900;
+      }
+
+      &:hover {
+        transform: scale(1.05); // Εφέ μεγέθυνσης στο hover
+        opacity: 0.9; // Ελαφρώς διαφανές στο hover
+      }
+
+      img {
+        margin-right: 10px;
+        height: 20px;
+        transition: $transition-base;
+        flex-shrink: 0; // Να μη συμπιέζεται η εικόνα
+        filter: brightness(1) invert(0); // Για λευκά εικονίδια στα σκούρα κουμπιά
+      }
+
+      &.btn-light img {
+        filter: none; // Αφαιρούμε το φίλτρο για τα σκούρα εικονίδια σε φωτεινό φόντο
+      }
+    }
+  }
+}
+
+/* Responsive Styles */
+@include media-breakpoint-down(md) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .user-actions {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .header {
+    padding: 40px 60px;
+  }
+}

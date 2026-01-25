@@ -1,0 +1,459 @@
+/* Table Styles */
+
+.table {
+  width: 100%;
+  margin-bottom: $spacing-md;
+  color: $dark-color;
+  border-collapse: collapse;
+  
+  th,
+  td {
+    padding: $spacing-sm;
+    vertical-align: top;
+    border-top: $border-width solid $border-color;
+  }
+  
+  thead th {
+    vertical-align: bottom;
+    border-bottom: (2 * $border-width) solid $border-color;
+    font-weight: $font-weight-bold;
+    text-align: left;
+  }
+  
+  tbody + tbody {
+    border-top: (2 * $border-width) solid $border-color;
+  }
+  
+  // Responsive tables
+  @include media-breakpoint-down(md) {
+    &.table-responsive {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}
+
+// Table variants
+.table-sm {
+  th,
+  td {
+    padding: $spacing-xs;
+  }
+}
+
+.table-bordered {
+  border: $border-width solid $border-color;
+  
+  th,
+  td {
+    border: $border-width solid $border-color;
+  }
+  
+  thead {
+    th,
+    td {
+      border-bottom-width: 2 * $border-width;
+    }
+  }
+}
+
+.table-borderless {
+  th,
+  td,
+  thead th,
+  tbody + tbody {
+    border: 0;
+  }
+}
+
+.table-striped {
+  tbody tr:nth-of-type(#{2}n+1) {
+    background-color: rgba($dark-color, 0.05);
+  }
+}
+
+.table-hover {
+  tbody tr {
+    &:hover {
+      color: $dark-color;
+      background-color: rgba($dark-color, 0.075);
+    }
+  }
+}
+
+// Table row states
+@each $color, $value in (
+  "primary": $primary-color,
+  "secondary": $secondary-color,
+  "success": $success-color,
+  "danger": $danger-color,
+  "warning": $warning-color,
+  "info": $info-color,
+  "light": $light-color,
+  "dark": $dark-color
+) {
+  .table-#{$color} {
+    &,
+    > th,
+    > td {
+      background-color: lighten($value, 35%);
+    }
+    
+    th,
+    td,
+    thead th,
+    tbody + tbody {
+      border-color: lighten($value, 20%);
+    }
+  }
+  
+  .table-hover {
+    .table-#{$color}:hover {
+      &,
+      > th,
+      > td {
+        background-color: lighten($value, 30%);
+      }
+    }
+  }
+}
+
+// Table with dark header
+.table-dark-header {
+  thead th {
+    background-color: $dark-color;
+    color: $light-color;
+    border-color: lighten($dark-color, 10%);
+  }
+}
+
+// Table with sticky header
+.table-sticky-header {
+  thead th {
+    position: sticky;
+    top: 0;
+    background-color: $light-color;
+    z-index: 1;
+  }
+  
+  &.table-dark-header {
+    thead th {
+      background-color: $dark-color;
+    }
+  }
+}
+
+// Table with vertical borders
+.table-bordered-vertical {
+  th,
+  td {
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-right: $border-width solid $border-color;
+    
+    &:last-child {
+      border-right: 0;
+    }
+  }
+}
+
+// Table with horizontal borders only
+.table-bordered-horizontal {
+  th,
+  td {
+    border-left: 0;
+    border-right: 0;
+  }
+}
+
+// Table with rounded corners
+.table-rounded {
+  border-radius: $border-radius;
+  overflow: hidden;
+  
+  thead th {
+    &:first-child {
+      border-top-left-radius: $border-radius;
+    }
+    
+    &:last-child {
+      border-top-right-radius: $border-radius;
+    }
+  }
+  
+  tbody tr:last-child {
+    td:first-child {
+      border-bottom-left-radius: $border-radius;
+    }
+    
+    td:last-child {
+      border-bottom-right-radius: $border-radius;
+    }
+  }
+}
+
+// Table with card style
+.table-card {
+  box-shadow: $box-shadow-sm;
+  border-radius: $border-radius;
+  overflow: hidden;
+  
+  .table {
+    margin-bottom: 0;
+  }
+}
+
+// Table with actions
+.table-actions {
+  th:last-child,
+  td:last-child {
+    text-align: right;
+    white-space: nowrap;
+    width: 1%;
+  }
+  
+  .btn-action {
+    padding: $spacing-xs;
+    margin-left: $spacing-xs;
+    
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+}
+
+// Table with checkboxes
+.table-checkable {
+  th:first-child,
+  td:first-child {
+    width: 1%;
+    padding-right: 0;
+  }
+}
+
+// Table with fixed layout
+.table-fixed {
+  table-layout: fixed;
+  
+  th,
+  td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// Table with row details
+.table-row-details {
+  .row-detail-trigger {
+    cursor: pointer;
+    
+    &.expanded {
+      background-color: rgba($primary-color, 0.1);
+    }
+  }
+  
+  .row-detail-content {
+    display: none;
+    background-color: $gray-100;
+    
+    &.show {
+      display: table-row;
+    }
+    
+    > td {
+      padding: $spacing-md;
+    }
+  }
+}
+
+// Table with sorting
+.table-sortable {
+  th {
+    cursor: pointer;
+    position: relative;
+    padding-right: $spacing-md;
+    
+    &::after {
+      content: "↕";
+      position: absolute;
+      right: $spacing-xs;
+      color: $gray-500;
+    }
+    
+    &.sort-asc::after {
+      content: "↑";
+      color: $dark-color;
+    }
+    
+    &.sort-desc::after {
+      content: "↓";
+      color: $dark-color;
+    }
+  }
+}
+
+// Table with pagination
+.table-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $spacing-md;
+  
+  .pagination-info {
+    color: $gray-600;
+  }
+  
+  .pagination {
+    margin-bottom: 0;
+  }
+}
+
+// Table with filters
+.table-filters {
+  margin-bottom: $spacing-md;
+  padding: $spacing-sm;
+  background-color: $gray-100;
+  border-radius: $border-radius;
+  
+  .form-row {
+    margin-bottom: 0;
+  }
+}
+
+// Table with responsive behavior
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  
+  &-sm {
+    @include media-breakpoint-down(sm) {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+  
+  &-md {
+    @include media-breakpoint-down(md) {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+  
+  &-lg {
+    @include media-breakpoint-down(lg) {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+  
+  &-xl {
+    @include media-breakpoint-down(xl) {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}
+
+// Table with custom scrollbar
+.table-scrollable {
+  max-height: 400px;
+  overflow-y: auto;
+  
+  @include custom-scrollbar(6px, $gray-200, $gray-400);
+  
+  table {
+    margin-bottom: 0;
+  }
+}
+
+// Table with row selection
+.table-selectable {
+  tbody tr {
+    cursor: pointer;
+    
+    &.selected {
+      background-color: rgba($primary-color, 0.1);
+    }
+  }
+}
+
+// Table with row highlighting
+.table-highlight {
+  tbody tr {
+    transition: $transition-base;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+      position: relative;
+    }
+  }
+}
+
+// Table with row expansion
+.table-expandable {
+  .expand-icon {
+    cursor: pointer;
+    transition: $transition-base;
+    
+    &.expanded {
+      transform: rotate(90deg);
+    }
+  }
+  
+  .expandable-content {
+    display: none;
+    padding: $spacing-md;
+    background-color: $gray-100;
+    
+    &.show {
+      display: table-row;
+    }
+  }
+}
+
+// Table with cell status indicators
+.table-status {
+  .status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: $spacing-xs;
+    
+    &.status-success {
+      background-color: $success-color;
+    }
+    
+    &.status-warning {
+      background-color: $warning-color;
+    }
+    
+    &.status-danger {
+      background-color: $danger-color;
+    }
+    
+    &.status-info {
+      background-color: $info-color;
+    }
+    
+    &.status-primary {
+      background-color: $primary-color;
+    }
+  }
+}

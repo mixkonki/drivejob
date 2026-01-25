@@ -23,7 +23,7 @@ $driverProfile = $driverProfileService->getDriverProfile($driverId);
 
 if (!$driverProfile) {
     $_SESSION['error_message'] = 'Δεν βρέθηκε το προφίλ του οδηγού.';
-    header('Location: ' . BASE_URL . 'drivers/edit_profile.php');
+    header('Location: ' . BASE_URL . 'drivers/edit-profile.php');
     exit();
 }
 
@@ -34,8 +34,6 @@ $driverCertifications = $driverProfile['certifications'] ?? [];
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/certifications.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/form-buttons-fix.css">
 <script src="<?php echo BASE_URL; ?>js/certifications.js"></script>
 
 <main>
@@ -60,17 +58,17 @@ include ROOT_DIR . '/src/Views/partials/header.php';
             <p>Σε αυτή τη σελίδα μπορείτε να διαχειριστείτε τα πιστοποιητικά εκπαίδευσης και τα σεμινάρια που έχετε παρακολουθήσει. Τα πιστοποιητικά αυτά θα εμφανίζονται στο προφίλ σας και θα είναι ορατά στους εργοδότες.</p>
         </div>
 
-        <form action="<?php echo BASE_URL; ?>drivers/update_certifications.php" method="POST" id="certificationsForm" enctype="multipart/form-data">
+        <form action="<?php echo BASE_URL; ?>drivers/update-certifications.php" method="POST" id="certificationsForm" enctype="multipart/form-data">
             <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
 
             <!-- Φόρμα πιστοποιητικών -->
-            <?php include ROOT_DIR . '/src/Views/drivers/certification_form.php'; ?>
+            <?php include ROOT_DIR . '/src/Views/drivers/certification-form.php'; ?>
 
             <!-- Κουμπιά αποθήκευσης και ακύρωσης -->
             <div class="form-actions">
                 <div class="form-buttons">
                     <button type="submit" class="btn-primary btn-save">Αποθήκευση Αλλαγών</button>
-                    <a href="<?php echo BASE_URL; ?>drivers/edit_profile.php" class="btn-secondary">Επιστροφή στο Προφίλ</a>
+                    <a href="<?php echo BASE_URL; ?>drivers/edit-profile.php" class="btn-secondary">Επιστροφή στο Προφίλ</a>
                 </div>
             </div>
         </form>

@@ -1,0 +1,303 @@
+/* Card Styles */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: $light-color;
+  background-clip: border-box;
+  border: $border-width solid $border-color;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $box-shadow;
+  }
+
+  > hr {
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  > .list-group {
+    border-top: inherit;
+    border-bottom: inherit;
+
+    &:first-child {
+      border-top-width: 0;
+      border-top-left-radius: $border-radius - $border-width;
+      border-top-right-radius: $border-radius - $border-width;
+    }
+
+    &:last-child {
+      border-bottom-width: 0;
+      border-bottom-right-radius: $border-radius - $border-width;
+      border-bottom-left-radius: $border-radius - $border-width;
+    }
+  }
+}
+
+.card-body {
+  flex: 1 1 auto;
+  min-height: 1px;
+  padding: $spacing-md;
+}
+
+.card-title {
+  margin-bottom: $spacing-sm;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $dark-color;
+}
+
+.card-subtitle {
+  margin-top: -($spacing-xs);
+  margin-bottom: 0;
+  font-size: $font-size-md;
+  color: $gray-600;
+}
+
+.card-text {
+  margin-bottom: $spacing-md;
+  font-size: $font-size-md;
+  color: $gray-700;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.card-link {
+  color: $primary-color;
+  text-decoration: none;
+  transition: $transition-base;
+
+  &:hover {
+    color: darken($primary-color, 15%);
+    text-decoration: underline;
+  }
+
+  + .card-link {
+    margin-left: $spacing-md;
+  }
+}
+
+.card-header {
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: 0;
+  background-color: $gray-100;
+  border-bottom: $border-width solid $border-color;
+
+  &:first-child {
+    border-radius: calc(#{$border-radius} - #{$border-width}) calc(#{$border-radius} - #{$border-width}) 0 0;
+  }
+}
+
+.card-footer {
+  padding: $spacing-sm $spacing-md;
+  background-color: $gray-100;
+  border-top: $border-width solid $border-color;
+
+  &:last-child {
+    border-radius: 0 0 calc(#{$border-radius} - #{$border-width}) calc(#{$border-radius} - #{$border-width});
+  }
+}
+
+.card-header-tabs {
+  margin-right: -($spacing-sm);
+  margin-bottom: -$spacing-sm;
+  margin-left: -($spacing-sm);
+  border-bottom: 0;
+}
+
+.card-header-pills {
+  margin-right: -($spacing-sm);
+  margin-left: -($spacing-sm);
+}
+
+.card-img-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: $spacing-md;
+  border-radius: $border-radius;
+}
+
+.card-img,
+.card-img-top,
+.card-img-bottom {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.card-img,
+.card-img-top {
+  border-top-left-radius: $border-radius - $border-width;
+  border-top-right-radius: $border-radius - $border-width;
+}
+
+.card-img,
+.card-img-bottom {
+  border-bottom-right-radius: $border-radius - $border-width;
+  border-bottom-left-radius: $border-radius - $border-width;
+}
+
+.card-deck {
+  display: flex;
+  flex-direction: column;
+
+  .card {
+    margin-bottom: $spacing-md;
+  }
+
+  @include media-breakpoint-up(sm) {
+    flex-flow: row wrap;
+    margin-right: -$spacing-md;
+    margin-left: -$spacing-md;
+
+    .card {
+      flex: 1 0 0%;
+      margin-right: $spacing-md;
+      margin-bottom: 0;
+      margin-left: $spacing-md;
+    }
+  }
+}
+
+.card-group {
+  display: flex;
+  flex-direction: column;
+
+  > .card {
+    margin-bottom: $spacing-md;
+  }
+
+  @include media-breakpoint-up(sm) {
+    flex-flow: row wrap;
+
+    > .card {
+      flex: 1 0 0%;
+      margin-bottom: 0;
+
+      + .card {
+        margin-left: 0;
+        border-left: 0;
+      }
+
+      &:not(:last-child) {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+
+        .card-img-top,
+        .card-header {
+          border-top-right-radius: 0;
+        }
+
+        .card-img-bottom,
+        .card-footer {
+          border-bottom-right-radius: 0;
+        }
+      }
+
+      &:not(:first-child) {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+
+        .card-img-top,
+        .card-header {
+          border-top-left-radius: 0;
+        }
+
+        .card-img-bottom,
+        .card-footer {
+          border-bottom-left-radius: 0;
+        }
+      }
+    }
+  }
+}
+
+.card-columns {
+  .card {
+    margin-bottom: $spacing-md;
+  }
+
+  @include media-breakpoint-up(sm) {
+    column-count: 3;
+    column-gap: $spacing-lg;
+    orphans: 1;
+    widows: 1;
+
+    .card {
+      display: inline-block;
+      width: 100%;
+    }
+  }
+}
+
+// Card variants
+.card-primary {
+  background-color: $primary-color;
+  color: $light-color;
+
+  .card-header, .card-footer {
+    background-color: darken($primary-color, 10%);
+    color: $light-color;
+    border-color: darken($primary-color, 15%);
+  }
+
+  .card-title, .card-subtitle, .card-text {
+    color: $light-color;
+  }
+
+  .card-link {
+    color: $light-color;
+    text-decoration: underline;
+
+    &:hover {
+      color: darken($light-color, 10%);
+    }
+  }
+}
+
+.card-secondary {
+  background-color: $secondary-color;
+  color: $light-color;
+
+  .card-header, .card-footer {
+    background-color: darken($secondary-color, 10%);
+    color: $light-color;
+    border-color: darken($secondary-color, 15%);
+  }
+
+  .card-title, .card-subtitle, .card-text {
+    color: $light-color;
+  }
+
+  .card-link {
+    color: $light-color;
+    text-decoration: underline;
+
+    &:hover {
+      color: darken($light-color, 10%);
+    }
+  }
+}
+
+// Card with image overlay
+.card-img-overlay {
+  @include overlay($dark-color, 0.5);
+  border-radius: $border-radius;
+  padding: $spacing-md;
+  
+  .card-title, .card-text {
+    color: $light-color;
+    position: relative;
+    z-index: 2;
+  }
+}

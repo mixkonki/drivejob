@@ -12,4 +12,6 @@ try {
 } catch (PDOException $e) {
     die("Σφάλμα σύνδεσης: " . $e->getMessage());
 }
-?>
+
+// Επιστροφή του PDO
+return $pdo;

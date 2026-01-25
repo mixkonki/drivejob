@@ -3,7 +3,7 @@
 namespace Drivejob\Core;
 
 use Drivejob\Models\Driver\ProfileModel;
-use Drivejob\Models\CompaniesModel;
+use Drivejob\Models\Company\CompaniesModel;
 
 /**
  * Κλάση για τη διαχείριση της αυθεντικοποίησης χρηστών

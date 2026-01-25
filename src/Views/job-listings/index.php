@@ -106,9 +106,9 @@ Session::remove('old_input');
         <!-- Επικεφαλίδα αγγελιών -->
         <div class="job-listings-header">
             <h2>Αποτελέσματα Αναζήτησης</h2>
-            <?php if (isset($_SESSION['user_id'])) : ?>
-                <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα Αγγελία</a>
-            <?php endif; ?>
+                <?php if (!isset($_SESSION['user_id'])) : ?>
+                <a href="<?php echo BASE_URL; ?>auth/login" class="btn-primary">Συνδεθείτε για να δημιουργήσετε αγγελία</a>
+                <?php endif; ?>
         </div>
 
         <!-- Λίστα Αγγελιών -->
@@ -168,7 +168,7 @@ Session::remove('old_input');
                                                 break;
                                         }
                                     }
-                                    // Έλεγχος αν υπάρχει το νέο πεδίο vehicle_types (πίνακας)
+                                    // Έλεγχος αν υπάρχει το νέο πεδίο vehicle_types
                                     elseif (isset($listing['vehicle_types']) && !empty($listing['vehicle_types'])) {
                                         $vehicleTypeLabels = [
                                             'car' => 'Αυτοκίνητο',
@@ -178,13 +178,20 @@ Session::remove('old_input');
                                             'machinery' => 'Μηχάνημα Έργου'
                                         ];
 
-                                        // Εμφάνιση του πρώτου τύπου οχήματος
-                                        $firstType = $listing['vehicle_types'][0];
-                                        echo isset($vehicleTypeLabels[$firstType]) ? $vehicleTypeLabels[$firstType] : $firstType;
+                                        // Ελέγχουμε αν το vehicle_types είναι string και το μετατρέπουμε σε array
+                                        $vehicleTypes = $listing['vehicle_types'];
+                                        if (is_string($vehicleTypes)) {
+                                            // Αν είναι string, το εμφανίζουμε απευθείας
+                                            echo isset($vehicleTypeLabels[$vehicleTypes]) ? $vehicleTypeLabels[$vehicleTypes] : $vehicleTypes;
+                                        } else if (is_array($vehicleTypes)) {
+                                            // Αν είναι array, εμφανίζουμε τον πρώτο τύπο
+                                            $firstType = $vehicleTypes[0];
+                                            echo isset($vehicleTypeLabels[$firstType]) ? $vehicleTypeLabels[$firstType] : $firstType;
 
-                                        // Προαιρετικά: εμφάνιση περισσότερων τύπων αν υπάρχουν
-                                        if (count($listing['vehicle_types']) > 1) {
-                                            echo ' +' . (count($listing['vehicle_types']) - 1) . ' ακόμα';
+                                            // Προαιρετικά: εμφάνιση περισσότερων τύπων αν υπάρχουν
+                                            if (count($vehicleTypes) > 1) {
+                                                echo ' +' . (count($vehicleTypes) - 1) . ' ακόμα';
+                                            }
                                         }
                                     } else {
                                         echo 'Δεν καθορίστηκε';

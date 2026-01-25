@@ -1,0 +1,455 @@
+/* Progress Bar Styles */
+
+// Base progress
+.progress {
+  display: flex;
+  height: 1rem;
+  overflow: hidden;
+  font-size: $font-size-sm;
+  background-color: $gray-200;
+  border-radius: $border-radius;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  color: $light-color;
+  text-align: center;
+  white-space: nowrap;
+  background-color: $primary-color;
+  transition: width 0.6s ease;
+}
+
+// Progress bar with label
+.progress-bar-label {
+  position: relative;
+  
+  .progress-label {
+    position: absolute;
+    right: $spacing-sm;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+  }
+}
+
+// Progress bar with text
+.progress-bar-text {
+  .progress-bar {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+  }
+}
+
+// Progress bar sizes
+.progress-sm {
+  height: 0.5rem;
+  
+  .progress-bar {
+    font-size: $font-size-xs;
+  }
+}
+
+.progress-lg {
+  height: 1.5rem;
+  
+  .progress-bar {
+    font-size: $font-size-md;
+  }
+}
+
+// Progress bar variants
+.progress-bar-primary {
+  background-color: $primary-color;
+}
+
+.progress-bar-secondary {
+  background-color: $secondary-color;
+}
+
+.progress-bar-success {
+  background-color: $success-color;
+}
+
+.progress-bar-danger {
+  background-color: $danger-color;
+}
+
+.progress-bar-warning {
+  background-color: $warning-color;
+}
+
+.progress-bar-info {
+  background-color: $info-color;
+}
+
+.progress-bar-light {
+  background-color: $light-color;
+  color: $dark-color;
+}
+
+.progress-bar-dark {
+  background-color: $dark-color;
+}
+
+// Progress bar with stripes
+.progress-bar-striped {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+}
+
+// Progress bar with animation
+.progress-bar-animated {
+  animation: progress-bar-stripes 1s linear infinite;
+}
+
+@keyframes progress-bar-stripes {
+  from {
+    background-position: 1rem 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+// Progress bar with gradient
+.progress-bar-gradient {
+  background-image: linear-gradient(to right, $primary-color, $secondary-color);
+}
+
+// Progress bar with multiple bars
+.progress-multiple {
+  .progress-bar {
+    &:not(:last-child) {
+      border-right: 1px solid $gray-200;
+    }
+  }
+}
+
+// Progress bar with rounded corners
+.progress-rounded {
+  border-radius: 1rem;
+  
+  .progress-bar {
+    border-radius: 1rem;
+  }
+}
+
+// Progress bar with shadow
+.progress-shadow {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+// Progress bar with border
+.progress-bordered {
+  border: $border-width solid $border-color;
+}
+
+// Progress bar with steps
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+  
+  .progress-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: $gray-300;
+      z-index: 1;
+    }
+    
+    &:first-child::before {
+      left: 50%;
+    }
+    
+    &:last-child::before {
+      right: 50%;
+    }
+    
+    .step-indicator {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: $light-color;
+      border: 2px solid $gray-300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto $spacing-xs;
+      position: relative;
+      z-index: 2;
+      font-weight: $font-weight-bold;
+      color: $gray-600;
+      transition: $transition-base;
+    }
+    
+    .step-label {
+      font-size: $font-size-sm;
+      color: $gray-600;
+      transition: $transition-base;
+    }
+    
+    &.active {
+      .step-indicator {
+        background-color: $primary-color;
+        border-color: $primary-color;
+        color: $light-color;
+      }
+      
+      .step-label {
+        color: $dark-color;
+        font-weight: $font-weight-bold;
+      }
+      
+      &::before {
+        background-color: $primary-color;
+      }
+    }
+    
+    &.completed {
+      .step-indicator {
+        background-color: $success-color;
+        border-color: $success-color;
+        color: $light-color;
+      }
+      
+      &::before {
+        background-color: $success-color;
+      }
+    }
+  }
+}
+
+// Progress bar with vertical orientation
+.progress-vertical {
+  display: inline-flex;
+  flex-direction: column;
+  height: 200px;
+  width: 1.5rem;
+  
+  .progress-bar {
+    width: 100%;
+    height: auto;
+  }
+}
+
+// Progress bar with tooltip
+.progress-tooltip {
+  position: relative;
+  
+  .progress-tooltip-value {
+    position: absolute;
+    top: -30px;
+    transform: translateX(-50%);
+    background-color: $dark-color;
+    color: $light-color;
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $border-radius;
+    font-size: $font-size-xs;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 5px;
+      border-style: solid;
+      border-color: $dark-color transparent transparent transparent;
+    }
+  }
+}
+
+// Progress bar with animation on hover
+.progress-hover {
+  .progress-bar {
+    transition: width 0.3s ease, background-color 0.3s ease;
+    
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+// Progress bar with custom animation
+.progress-custom-animation {
+  .progress-bar {
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, 0.2) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.2) 75%,
+        transparent 75%,
+        transparent
+      );
+      background-size: 50px 50px;
+      animation: progress-custom-animation 2s linear infinite;
+      z-index: 1;
+    }
+  }
+}
+
+@keyframes progress-custom-animation {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
+}
+
+// Progress bar with indeterminate state
+.progress-indeterminate {
+  .progress-bar {
+    width: 100%;
+    background-color: $primary-color;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background-image: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      animation: progress-indeterminate 1.5s infinite;
+    }
+  }
+}
+
+@keyframes progress-indeterminate {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+// Progress bar with label inside
+.progress-label-inside {
+  height: 1.5rem;
+  
+  .progress-bar {
+    position: relative;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    
+    .progress-value {
+      position: absolute;
+      right: $spacing-sm;
+      color: $light-color;
+    }
+  }
+  
+  .progress-text {
+    position: absolute;
+    left: $spacing-sm;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $dark-color;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    z-index: 1;
+  }
+}
+
+// Progress bar with counter animation
+.progress-counter {
+  margin-bottom: $spacing-sm;
+  
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: $spacing-xs;
+    
+    .progress-title {
+      font-weight: $font-weight-bold;
+    }
+    
+    .progress-value {
+      font-weight: $font-weight-bold;
+    }
+  }
+}
+
+// Progress bar with circular shape
+.progress-circular {
+  position: relative;
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  
+  svg {
+    transform: rotate(-90deg);
+    
+    circle {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      
+      &.progress-bg {
+        stroke: $gray-200;
+      }
+      
+      &.progress-value {
+        stroke: $primary-color;
+        stroke-dasharray: 283;
+        stroke-dashoffset: 283;
+        transition: stroke-dashoffset 1s ease;
+      }
+    }
+  }
+  
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+  }
+}

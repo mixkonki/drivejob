@@ -1,0 +1,365 @@
+/* Modal Styles */
+
+// Modal
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: $z-index-modal;
+  display: none;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  outline: 0;
+
+  &.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: translate(0, -50px);
+  }
+
+  &.show .modal-dialog {
+    transform: none;
+  }
+
+  &.modal-static .modal-dialog {
+    transform: scale(1.02);
+  }
+}
+
+.modal-open {
+  overflow: hidden;
+
+  .modal {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}
+
+.modal-dialog {
+  position: relative;
+  width: auto;
+  margin: $spacing-md;
+  pointer-events: none;
+}
+
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: auto;
+  background-color: $light-color;
+  background-clip: padding-box;
+  border: $border-width solid rgba($dark-color, 0.2);
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-lg;
+  outline: 0;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: $z-index-modal-backdrop;
+  width: 100vw;
+  height: 100vh;
+  background-color: $dark-color;
+
+  &.fade {
+    opacity: 0;
+  }
+
+  &.show {
+    opacity: 0.5;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: $spacing-md;
+  border-bottom: $border-width solid $border-color;
+  border-top-left-radius: $border-radius-lg - $border-width;
+  border-top-right-radius: $border-radius-lg - $border-width;
+
+  .close {
+    padding: $spacing-md;
+    margin: -$spacing-md -$spacing-md -$spacing-md auto;
+    background-color: transparent;
+    border: 0;
+    font-size: $font-size-xl * 1.5;
+    font-weight: $font-weight-bold;
+    line-height: 1;
+    color: $dark-color;
+    text-shadow: 0 1px 0 $light-color;
+    opacity: 0.5;
+    cursor: pointer;
+    transition: $transition-base;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.modal-title {
+  margin-bottom: 0;
+  line-height: $line-height-base;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $dark-color;
+}
+
+.modal-body {
+  position: relative;
+  flex: 1 1 auto;
+  padding: $spacing-md;
+}
+
+.modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  padding: $spacing-sm $spacing-md;
+  border-top: $border-width solid $border-color;
+  border-bottom-right-radius: $border-radius-lg - $border-width;
+  border-bottom-left-radius: $border-radius-lg - $border-width;
+
+  > * {
+    margin: $spacing-xs;
+  }
+}
+
+.modal-scrollbar-measure {
+  position: absolute;
+  top: -9999px;
+  width: 50px;
+  height: 50px;
+  overflow: scroll;
+}
+
+// Modal sizes
+.modal-dialog-scrollable {
+  display: flex;
+  max-height: calc(100% - #{$spacing-md * 2});
+
+  .modal-content {
+    max-height: calc(100vh - #{$spacing-md * 2});
+    overflow: hidden;
+  }
+
+  .modal-header,
+  .modal-footer {
+    flex-shrink: 0;
+  }
+
+  .modal-body {
+    overflow-y: auto;
+  }
+}
+
+.modal-dialog-centered {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - #{$spacing-md * 2});
+
+  &::before {
+    display: block;
+    height: calc(100vh - #{$spacing-md * 2});
+    content: "";
+  }
+
+  &.modal-dialog-scrollable {
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+
+    .modal-content {
+      max-height: none;
+    }
+
+    &::before {
+      content: none;
+    }
+  }
+}
+
+.modal-sm {
+  max-width: 300px;
+}
+
+.modal-lg {
+  max-width: 800px;
+}
+
+.modal-xl {
+  max-width: 1140px;
+}
+
+@include media-breakpoint-up(sm) {
+  .modal-dialog {
+    max-width: 500px;
+    margin: $spacing-lg auto;
+  }
+
+  .modal-dialog-scrollable {
+    max-height: calc(100% - #{$spacing-lg * 2});
+  }
+
+  .modal-dialog-centered {
+    min-height: calc(100% - #{$spacing-lg * 2});
+
+    &::before {
+      height: calc(100vh - #{$spacing-lg * 2});
+    }
+  }
+
+  .modal-content {
+    box-shadow: $box-shadow-lg;
+  }
+
+  .modal-sm {
+    max-width: 300px;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .modal-lg,
+  .modal-xl {
+    max-width: 800px;
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .modal-xl {
+    max-width: 1140px;
+  }
+}
+
+// Modal animations
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-slide-in {
+  from {
+    transform: translateY(-50px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-scale-in {
+  from {
+    transform: scale(0.9);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.modal-fade {
+  &.fade .modal-dialog {
+    animation-name: modal-fade-in;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+  }
+}
+
+.modal-slide {
+  &.fade .modal-dialog {
+    animation-name: modal-slide-in;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+  }
+}
+
+.modal-scale {
+  &.fade .modal-dialog {
+    animation-name: modal-scale-in;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+  }
+}
+
+// Modal themes
+.modal-primary {
+  .modal-header {
+    background-color: $primary-color;
+    color: $light-color;
+    border-bottom-color: darken($primary-color, 10%);
+
+    .modal-title {
+      color: $light-color;
+    }
+
+    .close {
+      color: $light-color;
+      text-shadow: 0 1px 0 $dark-color;
+    }
+  }
+}
+
+.modal-danger {
+  .modal-header {
+    background-color: $danger-color;
+    color: $light-color;
+    border-bottom-color: darken($danger-color, 10%);
+
+    .modal-title {
+      color: $light-color;
+    }
+
+    .close {
+      color: $light-color;
+      text-shadow: 0 1px 0 $dark-color;
+    }
+  }
+}
+
+.modal-success {
+  .modal-header {
+    background-color: $success-color;
+    color: $light-color;
+    border-bottom-color: darken($success-color, 10%);
+
+    .modal-title {
+      color: $light-color;
+    }
+
+    .close {
+      color: $light-color;
+      text-shadow: 0 1px 0 $dark-color;
+    }
+  }
+}
+
+// Specific modal styles from styles.css
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  background-color: $light-color;
+  padding: $spacing-sm;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: $border-radius;
+
+  &.show {
+    display: block;
+  }
+}
+
+.dropdown-header {
+  padding: $spacing-sm;
+  font-size: 1.1em;
+  color: $dark-color;
+  border-bottom: 1px solid $gray-300;
+  margin-bottom: $spacing-xs;
+}

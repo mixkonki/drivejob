@@ -2,128 +2,254 @@
 
 namespace Drivejob\Models\Driver;
 
-use PDO;
-use PDOException;
+use Drivejob\Core\Database;
 use Drivejob\Core\Logger;
+use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Models\BaseModel;
 
 /**
- * Μοντέλο για τη διαχείριση των αξιολογήσεων των οδηγών
+ * Μοντέλο για την αυτοαξιολόγηση οδηγών
  */
 class AssessmentModel extends BaseModel
 {
     /**
+     * Ο πίνακας της βάσης δεδομένων
+     *
+     * @var string
+     */
+    protected $table = 'driver_assessments';
+
+    /**
+     * Τα πεδία που μπορούν να συμπληρωθούν
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'driver_id',
+        'driving_skills',
+        'vehicle_knowledge',
+        'safety_awareness',
+        'time_management',
+        'customer_service',
+        'stress_handling',
+        'comments',
+        'created_at',
+        'updated_at'
+    ];
+
+    /**
      * Constructor
      *
-     * @param PDO $pdo Η σύνδεση με τη βάση δεδομένων
+     * @param \PDO|null $pdo Η σύνδεση με τη βάση δεδομένων
      */
-    public function __construct(PDO $pdo)
+    public function __construct($pdo = null)
     {
-        parent::__construct($pdo, 'driver_assessments');
+        parent::__construct($pdo);
     }
 
     /**
-     * Επιστρέφει τα στοιχεία αξιολόγησης ενός οδηγού
+     * Προσθέτει μια νέα αυτοαξιολόγηση
      *
-     * @param int $driverId ID του οδηγού
-     * @return array|false Τα στοιχεία αξιολόγησης ή false αν δεν βρέθηκαν
+     * @param array $data Τα δεδομένα της αυτοαξιολόγησης
+     * @return int|bool Το ID της νέας αυτοαξιολόγησης ή false σε περίπτωση αποτυχίας
      */
-    public function getDriverAssessment($driverId)
+    public function addAssessment(array $data)
     {
+        // Προσθήκη των timestamps
+        $data['created_at'] = date('Y-m-d H:i:s');
+        $data['updated_at'] = date('Y-m-d H:i:s');
+
         try {
-            $assessment = $this->selectOne(['driver_id' => $driverId]);
+            // Δημιουργία νέας αυτοαξιολόγησης
+            $columns = implode(', ', array_keys($data));
+            $placeholders = implode(', ', array_fill(0, count($data), '?'));
 
-            // Αν δεν υπάρχει αξιολόγηση, επιστρέφουμε ένα κενό πίνακα
-            if (!$assessment) {
-                return [];
-            }
+            $sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$placeholders})";
 
-            // Λήψη των δεδομένων τηλεματικής αν υπάρχουν
-            $telemetryQuery = "SELECT * FROM driver_telemetry WHERE driver_id = ? ORDER BY created_at DESC LIMIT 1";
-            $telemetry = $this->queryOne($telemetryQuery, [$driverId]);
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute(array_values($data));
 
-            if ($telemetry) {
-                $assessment['telemetry_data'] = [
-                    'avg_speed' => $telemetry['avg_speed'],
-                    'harsh_braking' => $telemetry['harsh_braking'],
-                    'harsh_acceleration' => $telemetry['harsh_acceleration'],
-                    'harsh_cornering' => $telemetry['harsh_cornering'],
-                    'fuel_consumption' => $telemetry['fuel_consumption'],
-                    'total_distance' => $telemetry['total_distance'],
-                    'score' => $telemetry['score'],
-                    'updated_at' => $telemetry['created_at']
-                ];
-            }
+            return $this->pdo->lastInsertId();
+        } catch (\PDOException $e) {
+            Logger::error('Σφάλμα κατά τη δημιουργία αυτοαξιολόγησης', [
+                'message' => $e->getMessage(),
+                'data' => $data
+            ]);
 
-            return $assessment;
-        } catch (PDOException $e) {
-            Logger::error('Error in getDriverAssessment: ' . $e->getMessage());
-            return false;
+            throw new DatabaseException('Σφάλμα κατά τη δημιουργία αυτοαξιολόγησης', [
+                'message' => $e->getMessage(),
+                'data' => $data
+            ]);
         }
     }
 
     /**
-     * Ενημερώνει την αξιολόγηση ενός οδηγού
+     * Ενημερώνει μια υπάρχουσα αυτοαξιολόγηση
      *
-     * @param int $driverId ID του οδηγού
-     * @param array $data Δεδομένα αξιολόγησης
-     * @return bool Επιτυχία/αποτυχία
+     * @param int $driverId Το ID του οδηγού
+     * @param array $data Τα νέα δεδομένα
+     * @return bool Επιτυχία ή αποτυχία
      */
-    public function updateDriverAssessment($driverId, $data)
+    public function updateAssessment($driverId, array $data)
+    {
+        // Προσθήκη του timestamp ενημέρωσης
+        $data['updated_at'] = date('Y-m-d H:i:s');
+
+        try {
+            $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
+
+            $sql = "UPDATE {$this->table} SET {$setClause} WHERE driver_id = ?";
+
+            $values = array_values($data);
+            $values[] = $driverId;
+
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute($values);
+        } catch (\PDOException $e) {
+            Logger::error('Σφάλμα κατά την ενημέρωση αυτοαξιολόγησης', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'data' => $data
+            ]);
+
+            throw new DatabaseException('Σφάλμα κατά την ενημέρωση αυτοαξιολόγησης', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'data' => $data
+            ]);
+        }
+    }
+
+    /**
+     * Βρίσκει την αυτοαξιολόγηση ενός οδηγού
+     *
+     * @param int $driverId Το ID του οδηγού
+     * @return array|null Τα δεδομένα της αυτοαξιολόγησης ή null αν δεν βρέθηκε
+     */
+    public function getDriverAssessment($driverId)
     {
         try {
-            // Έλεγχος αν υπάρχει ήδη αξιολόγηση για τον οδηγό
-            $exists = $this->selectOne(['driver_id' => $driverId]) !== null;
+            $sql = "SELECT * FROM {$this->table} WHERE driver_id = ?";
 
-            // Προετοιμασία των δεδομένων
-            $assessmentData = [
-                'punctuality' => $data['punctuality'] ?? null,
-                'customer_interaction' => $data['customer_interaction'] ?? null,
-                'appearance' => $data['appearance'] ?? null,
-                'documentation' => $data['documentation'] ?? null,
-                'vehicle_maintenance' => $data['vehicle_maintenance'] ?? null,
-                'troubleshooting' => $data['troubleshooting'] ?? null,
-                'navigation_skills' => $data['navigation_skills'] ?? null,
-                'technical_knowledge' => $data['technical_knowledge'] ?? null,
-                'driving_experience' => $data['driving_experience'] ?? null,
-                'annual_kilometers' => $data['annual_kilometers'] ?? null,
-                'driving_conditions' => $data['driving_conditions'] ?? null,
-                'eco_driving_rating' => $data['eco_driving_rating'] ?? null,
-                'night_driving' => $data['night_driving'] ?? null,
-                'accidents' => $data['accidents'] ?? null,
-                'traffic_violations' => $data['traffic_violations'] ?? null,
-                'tachograph_compliance' => $data['tachograph_compliance'] ?? null,
-                'safety_check' => $data['safety_check'] ?? null,
-                'load_securing' => $data['load_securing'] ?? null,
-                'comments' => $data['comments'] ?? null,
-                'updated_at' => date('Y-m-d H:i:s')
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$driverId]);
+
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            return $result ?: null;
+        } catch (\PDOException $e) {
+            Logger::error('Σφάλμα κατά την αναζήτηση αυτοαξιολόγησης οδηγού', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage()
+            ]);
+
+            throw new DatabaseException('Σφάλμα κατά την αναζήτηση αυτοαξιολόγησης οδηγού', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Διαγράφει την αυτοαξιολόγηση ενός οδηγού
+     *
+     * @param int $driverId Το ID του οδηγού
+     * @return bool Επιτυχία ή αποτυχία
+     */
+    public function deleteAssessment($driverId)
+    {
+        try {
+            $sql = "DELETE FROM {$this->table} WHERE driver_id = ?";
+
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$driverId]);
+        } catch (\PDOException $e) {
+            Logger::error('Σφάλμα κατά τη διαγραφή αυτοαξιολόγησης οδηγού', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage()
+            ]);
+
+            throw new DatabaseException('Σφάλμα κατά τη διαγραφή αυτοαξιολόγησης οδηγού', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Βρίσκει τις κορυφαίες αυτοαξιολογήσεις
+     *
+     * @param int $limit Ο μέγιστος αριθμός αποτελεσμάτων
+     * @return array Οι κορυφαίες αυτοαξιολογήσεις
+     */
+    public function getTopRatedDrivers($limit = 10)
+    {
+        try {
+            $sql = "SELECT a.*, d.first_name, d.last_name, d.profile_image,
+                    (a.driving_skills + a.vehicle_knowledge + a.safety_awareness + 
+                     a.time_management + a.customer_service + a.stress_handling) / 6 as average_rating
+                    FROM {$this->table} a
+                    JOIN drivers d ON a.driver_id = d.id
+                    ORDER BY average_rating DESC
+                    LIMIT ?";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$limit]);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            Logger::error('Σφάλμα κατά την αναζήτηση κορυφαίων αυτοαξιολογήσεων', [
+                'message' => $e->getMessage()
+            ]);
+
+            throw new DatabaseException('Σφάλμα κατά την αναζήτηση κορυφαίων αυτοαξιολογήσεων', [
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Υπολογίζει τον μέσο όρο αυτοαξιολόγησης για έναν οδηγό
+     *
+     * @param int $driverId Το ID του οδηγού
+     * @return float|null Ο μέσος όρος αυτοαξιολόγησης ή null αν δεν βρέθηκε
+     */
+    public function calculateAverageRating($driverId)
+    {
+        try {
+            $assessment = $this->getDriverAssessment($driverId);
+
+            if (!$assessment) {
+                return null;
+            }
+
+            $ratingFields = [
+                'driving_skills',
+                'vehicle_knowledge',
+                'safety_awareness',
+                'time_management',
+                'customer_service',
+                'stress_handling'
             ];
 
-            // Υπολογισμός του συνολικού σκορ
-            $totalScore = 0;
-            $scoreCount = 0;
+            $sum = 0;
+            $count = 0;
 
-            foreach ($assessmentData as $key => $value) {
-                if (is_numeric($value) && $key !== 'driver_id' && $key !== 'updated_at' && $key !== 'comments') {
-                    $totalScore += (int)$value;
-                    $scoreCount++;
+            foreach ($ratingFields as $field) {
+                if (isset($assessment[$field]) && is_numeric($assessment[$field])) {
+                    $sum += $assessment[$field];
+                    $count++;
                 }
             }
 
-            $assessmentData['overall_score'] = $scoreCount > 0 ? round($totalScore / $scoreCount * 20) : 0;
+            return $count > 0 ? $sum / $count : null;
+        } catch (\Exception $e) {
+            Logger::error('Σφάλμα κατά τον υπολογισμό μέσου όρου αυτοαξιολόγησης', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage()
+            ]);
 
-            if ($exists) {
-                // Ενημέρωση υπάρχουσας αξιολόγησης
-                return $this->update($assessmentData, ['driver_id' => $driverId]);
-            } else {
-                // Δημιουργία νέας αξιολόγησης
-                $assessmentData['driver_id'] = $driverId;
-                $assessmentData['created_at'] = date('Y-m-d H:i:s');
-                return $this->insert($assessmentData);
-            }
-        } catch (PDOException $e) {
-            Logger::error('Error in updateDriverAssessment: ' . $e->getMessage());
-            return false;
+            return null;
         }
     }
 }

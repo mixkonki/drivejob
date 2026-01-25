@@ -1,0 +1,196 @@
+/* Διορθώσεις για τα κουμπιά της φόρμας */
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  margin-top: $spacing-lg;
+  padding: $spacing-md;
+  background-color: $gray-100;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+}
+
+.availability-toggle-container {
+  margin-bottom: $spacing-md;
+}
+
+.form-buttons {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.btn-primary, .btn-secondary {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $border-radius-sm;
+  font-weight: $font-weight-bold;
+  cursor: pointer;
+  transition: $transition-base;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+}
+
+.btn-primary {
+  background-color: $primary-color;
+  color: $light-color;
+  border: none;
+  
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+}
+
+.btn-secondary {
+  background-color: $secondary-color;
+  color: $light-color;
+  border: none;
+  
+  &:hover {
+    background-color: darken($secondary-color, 10%);
+  }
+}
+
+/* Διορθώσεις για τη διαθεσιμότητα */
+.toggle-switch-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.toggle-label-text {
+  margin-right: $spacing-xs;
+  font-weight: $font-weight-bold;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.toggle-switch-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  
+  &:checked + .toggle-switch-slider {
+    background-color: $primary-color;
+    
+    &:before {
+      transform: translateX(26px);
+    }
+  }
+}
+
+.toggle-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: $gray-400;
+  transition: $transition-base;
+  border-radius: 34px;
+  
+  &:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: $light-color;
+    transition: $transition-base;
+    border-radius: 50%;
+  }
+}
+
+.toggle-switch-text {
+  margin-left: $spacing-xs;
+}
+
+/* Διορθώσεις για τις στήλες εγγράφων */
+.documents-row {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+}
+
+.document-column {
+  flex: 1 !important;
+  max-width: 33.33% !important;
+}
+
+/* Διορθώσεις για τα κουμπιά στην καρτέλα προσόντων */
+.vehicle-experience-link {
+  margin-top: $spacing-md;
+  
+  a {
+    display: inline-block;
+    padding: $spacing-xs $spacing-md;
+    background-color: $primary-color;
+    color: $light-color;
+    text-decoration: none;
+    border-radius: $border-radius-sm;
+    font-weight: $font-weight-bold;
+    
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+/* Διορθώσεις για τον πίνακα προϋπηρεσίας */
+.vehicle-experience-table {
+  margin-top: $spacing-sm;
+  margin-bottom: $spacing-sm;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th, td {
+    padding: $spacing-xs;
+    border: 1px solid $gray-300;
+    text-align: left;
+  }
+  
+  th {
+    background-color: $gray-200;
+    font-weight: $font-weight-bold;
+  }
+  
+  &-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  &-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.075);
+  }
+}
+
+/* Responsive διορθώσεις */
+@include media-breakpoint-down(md) {
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-buttons {
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+  
+  .documents-row {
+    flex-wrap: wrap !important;
+  }
+  
+  .document-column {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    margin-bottom: $spacing-md;
+  }
+}

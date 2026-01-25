@@ -1,15 +1,18 @@
 const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   mode: 'production',
   entry: {
-    'tesseract-bundle': './src/js/tesseract-wrapper.js'
+    'tesseract-bundle': './src/js/tesseract-wrapper.js',
+    'main': './src/js/main.js',
+    'styles': './src/css/main.scss'
   },
   output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname, 'public/js/vendor'),
+    filename: 'js/[name].js',
+    path: path.resolve(__dirname, 'public'),
     library: {
-      name: 'TesseractWrapper',
+      name: '[name]',
       type: 'window',
       export: 'default'
     }
@@ -25,9 +28,22 @@ module.exports = {
             presets: ['@babel/preset-env']
           }
         }
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'sass-loader'
+        ]
       }
     ]
   },
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: 'css/[name].css'
+    })
+  ],
   resolve: {
     fallback: {
       "fs": false,

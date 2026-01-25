@@ -1,0 +1,187 @@
+<?php
+
+namespace Drivejob\Controllers;
+
+use Drivejob\Core\Session;
+use Drivejob\Core\CSRF;
+
+/**
+ * Controller για την αυθεντικοποίηση χρηστών
+ * 
+ * Επεκτείνει τον BaseUserController και χρησιμοποιεί τις κοινές λειτουργίες
+ * για τη διαχείριση χρηστών (login, logout, κλπ.)
+ */
+class AuthController extends BaseUserController
+{
+    /**
+     * Constructor
+     */
+    public function __construct($pdo = null)
+    {
+        // Κλήση του constructor της γονικής κλάσης
+        parent::__construct($pdo);
+    }
+
+    /**
+     * Εμφανίζει τη φόρμα σύνδεσης
+     *
+     * @return void
+     */
+    public function showLoginForm()
+    {
+        // Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
+        if (Session::has('user_id')) {
+            $role = Session::get('role');
+            if ($role === 'driver') {
+                $this->redirect(BASE_URL . 'drivers/profile');
+            } else {
+                $this->redirect(BASE_URL . 'companies/profile');
+            }
+        }
+
+        // Φόρτωση της σελίδας σύνδεσης
+        $this->view('login');
+    }
+
+    /**
+     * Επεξεργάζεται το αίτημα σύνδεσης
+     *
+     * @return void
+     */
+    public function login()
+    {
+        // Έλεγχος αν το αίτημα είναι POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect(BASE_URL . 'auth/login');
+        }
+
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+
+        // Αυθεντικοποίηση χρήστη
+        $user = $this->authModel->authenticate($email, $password);
+
+        if ($user) {
+            // Επιτυχής σύνδεση
+            Session::set('user_id', $user['user_id']);
+            Session::set('role', $user['role']);
+            Session::set('user_name', $user['name']);
+
+            // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
+            $redirectUrl = Session::has('redirect_after_login')
+                ? Session::get('redirect_after_login')
+                : BASE_URL . ($user['role'] === 'driver' ? 'drivers/profile' : 'companies/profile');
+
+            Session::remove('redirect_after_login');
+            $this->redirect($redirectUrl);
+        }
+
+        // Αποτυχία σύνδεσης
+        Session::set('error_message', 'Εσφαλμένο email ή συνθηματικό.');
+        $this->redirect(BASE_URL . 'auth/login');
+    }
+
+    /**
+     * Επεξεργάζεται το αίτημα σύνδεσης από το login.php
+     * 
+     * @return void
+     */
+    public function processLogin()
+    {
+        // Έλεγχος αν το αίτημα είναι POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'login.php');
+            exit();
+        }
+
+        // Έλεγχος CSRF token
+        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+            Session::set('login_error', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'login.php');
+            exit();
+        }
+
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+
+        // Αυθεντικοποίηση χρήστη
+        $user = $this->authModel->authenticate($email, $password);
+
+        if ($user) {
+            // Επιτυχής σύνδεση
+            Session::set('user_id', $user['user_id']);
+            Session::set('role', $user['role']);
+            Session::set('user_name', $user['name']);
+
+            // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
+            $redirectUrl = Session::has('redirect_after_login')
+                ? Session::get('redirect_after_login')
+                : BASE_URL . ($user['role'] === 'driver' ? 'drivers/profile' : 'companies/profile');
+
+            Session::remove('redirect_after_login');
+            header('Location: ' . $redirectUrl);
+            exit();
+        }
+
+        // Αποτυχία σύνδεσης
+        Session::set('login_error', 'Εσφαλμένο email ή συνθηματικό.');
+        header('Location: ' . BASE_URL . 'login.php');
+        exit();
+    }
+
+    /**
+     * Αποσυνδέει τον χρήστη
+     *
+     * @return void
+     */
+    public function logout()
+    {
+        // Καθαρισμός του session
+        Session::destroy();
+
+        // Ανακατεύθυνση στην αρχική σελίδα
+        $this->redirect(BASE_URL);
+    }
+
+    /**
+     * Εμφανίζει τη σελίδα άρνησης πρόσβασης
+     *
+     * @return void
+     */
+    public function accessDenied()
+    {
+        // Φόρτωση της σελίδας άρνησης πρόσβασης
+        $this->view('access-denied');
+    }
+
+    /**
+     * Εμφανίζει τη σελίδα που απαιτεί επαλήθευση
+     *
+     * @return void
+     */
+    public function verificationRequired()
+    {
+        // Φόρτωση της σελίδας που απαιτεί επαλήθευση
+        $this->view('verification-required');
+    }
+
+    /**
+     * Επαληθεύει τον λογαριασμό του χρήστη
+     *
+     * @param string $token Το token επαλήθευσης
+     * @return void
+     */
+    public function verify($token)
+    {
+        // Επαλήθευση του λογαριασμού
+        $result = $this->authModel->verifyAccount($token);
+
+        if ($result) {
+            Session::set('success_message', 'Ο λογαριασμός σας επαληθεύτηκε με επιτυχία. Μπορείτε τώρα να συνδεθείτε.');
+            $this->redirect(BASE_URL . 'auth/login');
+        } else {
+            Session::set('error_message', 'Το token επαλήθευσης είναι άκυρο ή έχει λήξει.');
+            $this->redirect(BASE_URL . 'auth/login');
+        }
+    }
+}

@@ -9,27 +9,45 @@ use Drivejob\Core\Exceptions\DatabaseException;
 /**
  * Repository για τις προσφορές εργασίας
  */
-class JobOfferRepository
+class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInterface
 {
-    /**
-     * @var PDO Η σύνδεση με τη βάση δεδομένων
-     */
-    private $pdo;
-
     /**
      * @var string Το όνομα του πίνακα
      */
-    private $table = 'job_offers';
+    protected $table = 'job_offers';
 
     /**
-     * Constructor
-     *
-     * @param PDO $pdo Η σύνδεση με τη βάση δεδομένων
+     * @var array Τα πεδία που μπορούν να ενημερωθούν
      */
-    public function __construct(PDO $pdo)
-    {
-        $this->pdo = $pdo;
-    }
+    protected $fillable = [
+        'company_id',
+        'driver_id',
+        'title',
+        'description',
+        'location',
+        'job_type',
+        'vehicle_type',
+        'salary_min',
+        'salary_max',
+        'salary_period',
+        'benefits',
+        'start_date',
+        'status',
+        'document_path',
+        'contract_template_path',
+        'job_description_path',
+        'company_brochure_path',
+        'created_at',
+        'updated_at'
+    ];
+
+    /**
+     * @var array Τα πεδία που δεν μπορούν να ενημερωθούν
+     */
+    protected $guarded = [
+        'id',
+        'created_at'
+    ];
 
     /**
      * Δημιουργεί μια νέα προσφορά εργασίας
@@ -361,6 +379,224 @@ class JobOfferRepository
                 'id' => $id,
                 'status' => $status
             ]);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function searchOffers(array $criteria = [], $page = 1, $limit = 10)
+    {
+        try {
+            // Υπολογισμός του offset
+            $offset = ($page - 1) * $limit;
+
+            // Δημιουργία του βασικού SQL ερωτήματος
+            $sql = "SELECT o.*, c.company_name, c.logo as company_logo, d.first_name, d.last_name, d.profile_image
+                    FROM {$this->table} o
+                    LEFT JOIN companies c ON o.company_id = c.id
+                    LEFT JOIN drivers d ON o.driver_id = d.id
+                    WHERE 1=1";
+            $params = [];
+            $conditions = [];
+
+            // Προσθήκη των κριτηρίων
+            if (isset($criteria['company_id']) && $criteria['company_id']) {
+                $conditions[] = "o.company_id = :company_id";
+                $params['company_id'] = $criteria['company_id'];
+            }
+
+            if (isset($criteria['driver_id']) && $criteria['driver_id']) {
+                $conditions[] = "o.driver_id = :driver_id";
+                $params['driver_id'] = $criteria['driver_id'];
+            }
+
+            if (isset($criteria['status']) && $criteria['status']) {
+                $conditions[] = "o.status = :status";
+                $params['status'] = $criteria['status'];
+            }
+
+            if (isset($criteria['location']) && $criteria['location']) {
+                $conditions[] = "o.location LIKE :location";
+                $params['location'] = '%' . $criteria['location'] . '%';
+            }
+
+            if (isset($criteria['job_type']) && $criteria['job_type']) {
+                $conditions[] = "o.job_type = :job_type";
+                $params['job_type'] = $criteria['job_type'];
+            }
+
+            if (isset($criteria['vehicle_type']) && $criteria['vehicle_type']) {
+                $conditions[] = "o.vehicle_type = :vehicle_type";
+                $params['vehicle_type'] = $criteria['vehicle_type'];
+            }
+
+            if (isset($criteria['min_salary']) && $criteria['min_salary']) {
+                $conditions[] = "o.salary_min >= :min_salary";
+                $params['min_salary'] = $criteria['min_salary'];
+            }
+
+            if (isset($criteria['max_salary']) && $criteria['max_salary']) {
+                $conditions[] = "o.salary_max <= :max_salary";
+                $params['max_salary'] = $criteria['max_salary'];
+            }
+
+            if (isset($criteria['start_date_from']) && $criteria['start_date_from']) {
+                $conditions[] = "o.start_date >= :start_date_from";
+                $params['start_date_from'] = $criteria['start_date_from'];
+            }
+
+            if (isset($criteria['start_date_to']) && $criteria['start_date_to']) {
+                $conditions[] = "o.start_date <= :start_date_to";
+                $params['start_date_to'] = $criteria['start_date_to'];
+            }
+
+            // Προσθήκη των συνθηκών στο ερώτημα
+            if (!empty($conditions)) {
+                $sql .= " AND " . implode(" AND ", $conditions);
+            }
+
+            // Προσθήκη της ταξινόμησης
+            if (isset($criteria['sort_by']) && $criteria['sort_by']) {
+                $sortField = $criteria['sort_by'];
+                $sortDirection = isset($criteria['sort_direction']) && strtoupper($criteria['sort_direction']) === 'DESC' ? 'DESC' : 'ASC';
+
+                // Έλεγχος για έγκυρο πεδίο ταξινόμησης
+                $validSortFields = ['created_at', 'updated_at', 'salary_min', 'salary_max', 'start_date'];
+                if (in_array($sortField, $validSortFields)) {
+                    $sql .= " ORDER BY o.$sortField $sortDirection";
+                } else {
+                    $sql .= " ORDER BY o.created_at DESC";
+                }
+            } else {
+                $sql .= " ORDER BY o.created_at DESC";
+            }
+
+            // Μέτρηση του συνολικού αριθμού προσφορών
+            $countSql = "SELECT COUNT(*) FROM ({$sql}) as count_table";
+            $countStmt = $this->pdo->prepare($countSql);
+            foreach ($params as $key => $value) {
+                $countStmt->bindValue(":$key", $value);
+            }
+            $countStmt->execute();
+            $totalCount = $countStmt->fetchColumn();
+
+            // Προσθήκη του LIMIT και OFFSET
+            $sql .= " LIMIT :limit OFFSET :offset";
+            $params['limit'] = $limit;
+            $params['offset'] = $offset;
+
+            // Εκτέλεση του ερωτήματος
+            $stmt = $this->pdo->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue(":$key", $value);
+            }
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Υπολογισμός του συνολικού αριθμού σελίδων
+            $totalPages = ceil($totalCount / $limit);
+
+            return [
+                'results' => $results,
+                'pagination' => [
+                    'total' => $totalCount,
+                    'per_page' => $limit,
+                    'current_page' => $page,
+                    'last_page' => $totalPages,
+                    'from' => $offset + 1,
+                    'to' => min($offset + $limit, $totalCount)
+                ]
+            ];
+        } catch (\PDOException $e) {
+            Logger::error('PDO exception in searchOffers', [
+                'message' => $e->getMessage(),
+                'criteria' => $criteria,
+                'page' => $page,
+                'limit' => $limit
+            ]);
+            throw new DatabaseException('Failed to search job offers', (int)$e->getCode(), $e, [
+                'criteria' => $criteria,
+                'page' => $page,
+                'limit' => $limit
+            ]);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function acceptOffer($id)
+    {
+        return $this->updateStatus($id, 'accepted');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rejectOffer($id)
+    {
+        return $this->updateStatus($id, 'rejected');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function cancelOffer($id)
+    {
+        return $this->updateStatus($id, 'cancelled');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getExpiringOffers($days = 7)
+    {
+        try {
+            $sql = "SELECT o.*, c.company_name, c.logo as company_logo, d.first_name, d.last_name, d.profile_image
+                    FROM {$this->table} o
+                    LEFT JOIN companies c ON o.company_id = c.id
+                    LEFT JOIN drivers d ON o.driver_id = d.id
+                    WHERE o.status = 'pending'
+                    AND o.start_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL :days DAY)
+                    ORDER BY o.start_date ASC";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindValue(':days', $days, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            Logger::error('PDO exception in getExpiringOffers', [
+                'message' => $e->getMessage(),
+                'days' => $days
+            ]);
+            throw new DatabaseException('Failed to get expiring job offers', (int)$e->getCode(), $e, ['days' => $days]);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRecentOffers($limit = 10)
+    {
+        try {
+            $sql = "SELECT o.*, c.company_name, c.logo as company_logo, d.first_name, d.last_name, d.profile_image
+                    FROM {$this->table} o
+                    LEFT JOIN companies c ON o.company_id = c.id
+                    LEFT JOIN drivers d ON o.driver_id = d.id
+                    ORDER BY o.created_at DESC
+                    LIMIT :limit";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            Logger::error('PDO exception in getRecentOffers', [
+                'message' => $e->getMessage(),
+                'limit' => $limit
+            ]);
+            throw new DatabaseException('Failed to get recent job offers', (int)$e->getCode(), $e, ['limit' => $limit]);
         }
     }
 }

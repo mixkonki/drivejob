@@ -2,8 +2,6 @@
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
-
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-profile.css">
 <!-- Προσθήκη του Font Awesome για τα εικονίδια -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 

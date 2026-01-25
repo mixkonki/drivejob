@@ -1,0 +1,620 @@
+/* Στυλ για τη σελίδα επεξεργασίας προφίλ οδηγού */
+
+.edit-profile-form {
+  margin-bottom: $spacing-lg;
+  position: relative; // Για να λειτουργήσει σωστά το position: absolute των κουμπιών
+}
+
+.form-tabs {
+  margin-top: $spacing-md;
+}
+
+.tabs-nav {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid $gray-300;
+  margin-bottom: $spacing-md;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: $spacing-sm $spacing-md;
+  margin-right: $spacing-xs;
+  cursor: pointer;
+  border-radius: $border-radius $border-radius 0 0;
+  font-weight: $font-weight-medium;
+  color: $gray-600;
+  transition: $transition-base;
+  
+  &:hover {
+    background-color: $gray-200;
+  }
+  
+  &.active {
+    background-color: $primary-color;
+    color: $light-color;
+  }
+}
+
+.tab-pane {
+  display: none;
+  padding: $spacing-md;
+  border: 1px solid $gray-300;
+  border-top: none;
+  border-radius: 0 0 $border-radius $border-radius;
+  margin-bottom: 70px; // Χώρος για τα κουμπιά στο κάτω μέρος
+  
+  &.active {
+    display: block;
+  }
+  
+  // Διασφάλιση ότι τα κουμπιά εμφανίζονται σε όλες τις καρτέλες
+  position: relative;
+  padding-bottom: 70px; // Χώρος για τα κουμπιά
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.form-group {
+  margin-bottom: $spacing-md;
+  padding-right: 15px;
+  padding-left: 15px;
+  flex: 1;
+  
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: $font-weight-medium;
+  }
+  
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  input[type="url"],
+  input[type="password"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid $gray-300;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-sm;
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+}
+
+.form-hint {
+  font-size: $font-size-xs;
+  color: $gray-600;
+  margin-top: $spacing-xs;
+}
+
+.form-buttons {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.btn-primary {
+  background-color: $primary-color;
+  color: $light-color;
+  border: none;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-weight: $font-weight-medium;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+}
+
+.btn-secondary {
+  background-color: $gray-600;
+  color: $light-color;
+  border: none;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: darken($gray-600, 10%);
+  }
+}
+
+.btn-scan {
+  background-color: $success-color;
+  color: $light-color;
+  border: none;
+  padding: 5px 10px;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: $font-size-xs;
+  display: flex;
+  align-items: center;
+  margin-top: $spacing-xs;
+  
+  &:hover {
+    background-color: darken($success-color, 10%);
+  }
+}
+
+.scan-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: $spacing-xs;
+}
+
+.current-image {
+  margin-bottom: $spacing-sm;
+  
+  img {
+    max-width: 200px;
+    max-height: 150px;
+    border: 1px solid $gray-300;
+    border-radius: $border-radius-sm;
+    padding: $spacing-xs;
+  }
+}
+
+.current-file {
+  margin-bottom: $spacing-sm;
+  
+  a {
+    color: $link-color;
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.section-divider {
+  margin: $spacing-lg 0;
+  border: 0;
+  border-top: 1px solid $gray-200;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 0;
+  
+  input[type="checkbox"] {
+    margin-right: $spacing-sm;
+  }
+}
+
+.license-details-tab {
+  margin-top: $spacing-md;
+  padding: $spacing-md;
+  background-color: $gray-100;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius;
+  
+  &.hidden {
+    display: none;
+  }
+}
+
+// Στυλ για τις εικόνες αδειών - τροποποιημένο
+.license-visual {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+  margin-bottom: $spacing-md;
+  
+  .form-group {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding-right: 15px;
+    padding-left: 15px;
+    box-sizing: border-box;
+  }
+  
+  // Responsive για μικρές οθόνες
+  @include media-breakpoint-down(md) {
+    .form-group {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+.license-basic-info {
+  margin-bottom: $spacing-md;
+}
+
+.license-categories-table {
+  margin-top: $spacing-md;
+  margin-bottom: $spacing-md;
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    padding: 8px;
+    border: 1px solid $gray-300;
+    text-align: left;
+  }
+  
+  th {
+    background-color: $gray-200;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.license-type-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background-color: $primary-color;
+  color: $light-color;
+  border-radius: 50%;
+  font-weight: $font-weight-bold;
+}
+
+.category-header {
+  background-color: $gray-200;
+}
+
+.pei-field {
+  display: flex;
+  align-items: center;
+  
+  input[type="checkbox"] {
+    margin-right: $spacing-sm;
+  }
+}
+
+.pei-expiry-date {
+  width: 150px;
+}
+
+.expiry-reminder {
+  margin-top: $spacing-md;
+  padding: 15px;
+  background-color: $gray-100;
+  border-left: 4px solid $info-color;
+  border-radius: $border-radius-sm;
+  
+  h4 {
+    margin-top: 0;
+    color: $info-color;
+  }
+}
+
+.adr-categories {
+  margin-top: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: $spacing-sm;
+  
+  input[type="radio"] {
+    margin-right: $spacing-sm;
+  }
+}
+
+.sub-specialities {
+  margin-top: $spacing-sm;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius-sm;
+}
+
+.selected-subspecialities {
+  margin-top: $spacing-md;
+}
+
+.speciality-group {
+  margin-bottom: 15px;
+  
+  h6 {
+    margin-top: 0;
+    margin-bottom: $spacing-xs;
+    color: $primary-color;
+  }
+}
+
+.selected-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  
+  li {
+    padding: $spacing-xs $spacing-sm;
+    background-color: $gray-100;
+    border: 1px solid $gray-300;
+    border-radius: $border-radius-sm;
+    margin-bottom: $spacing-xs;
+    display: flex;
+    justify-content: space-between;
+    
+    &.no-items {
+      color: $gray-600;
+      font-style: italic;
+    }
+  }
+}
+
+.subspeciality-id {
+  font-weight: $font-weight-bold;
+  margin-right: $spacing-sm;
+}
+
+.subspeciality-name {
+  flex: 1;
+}
+
+.subspeciality-group {
+  color: $gray-600;
+  font-size: $font-size-xs;
+}
+
+.special-license-item {
+  margin-bottom: $spacing-md;
+  padding: 15px;
+  background-color: $gray-100;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius;
+}
+
+.remove-special-license {
+  margin-top: $spacing-sm;
+}
+
+.certification-entry {
+  margin-bottom: $spacing-md;
+  padding: 15px;
+  background-color: $gray-100;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius;
+}
+
+.btn-remove-certification {
+  background-color: $danger-color;
+  color: $light-color;
+  border: none;
+  padding: 5px 10px;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: $font-size-xs;
+  margin-top: $spacing-sm;
+  
+  &:hover {
+    background-color: darken($danger-color, 10%);
+  }
+}
+
+.availability-toggle-container {
+  display: flex;
+  align-items: center;
+  
+  // Responsive
+  @include media-breakpoint-down(md) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.toggle-switch-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.toggle-label-text {
+  margin-right: $spacing-sm;
+  font-weight: $font-weight-medium;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.toggle-switch-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  
+  &:checked + .toggle-switch-slider {
+    background-color: $primary-color;
+  }
+  
+  &:focus + .toggle-switch-slider {
+    box-shadow: 0 0 1px $primary-color;
+  }
+  
+  &:checked + .toggle-switch-slider:before {
+    transform: translateX(26px);
+  }
+}
+
+.toggle-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: $gray-400;
+  transition: .4s;
+  border-radius: 34px;
+  
+  &:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: $light-color;
+    transition: .4s;
+    border-radius: 50%;
+  }
+}
+
+.toggle-switch-text {
+  margin-left: $spacing-sm;
+}
+
+// Στυλ για τις τρεις στήλες στα προσωπικά στοιχεία
+.documents-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+  margin-top: $spacing-md;
+}
+
+.document-column {
+  &:nth-child(1),
+  &:nth-child(2),
+  &:nth-child(3) {
+    flex: 0 0 33.33%;
+    max-width: 33.33%;
+    padding-right: 15px;
+    padding-left: 15px;
+    position: relative;
+  }
+  
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 1px;
+    background-color: $gray-300;
+  }
+  
+  .form-group {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  
+  .form-hint {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  
+  .radio-group {
+    margin-bottom: $spacing-sm;
+  }
+  
+  .criminal-record-upload {
+    margin-bottom: $spacing-sm;
+  }
+  
+  // Προσθήκη media query για μικρότερες οθόνες
+  @include media-breakpoint-down(lg) {
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-bottom: $spacing-md;
+    
+    &:not(:last-child)::after {
+      display: none;
+    }
+  }
+}
+
+// Διασφάλιση ότι τα κουμπιά είναι μέσα στη φόρμα και εμφανίζονται σωστά
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px $spacing-md;
+  background-color: $gray-100;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius;
+  margin-top: $spacing-md;
+  margin-bottom: $spacing-md;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  
+  @include media-breakpoint-down(md) {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+// Προσθήκη περιθωρίου στο κάτω μέρος της σελίδας για να μην κρύβονται τα κουμπιά
+main {
+  margin-bottom: 80px;
+}
+
+// Στυλ για το toggle switch του ποινικού μητρώου
+.criminal-record-upload {
+  margin-top: 15px;
+  padding: 15px;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius-sm;
+  background-color: $gray-100;
+  
+  .file-upload-label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: $font-weight-medium;
+  }
+  
+  input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid $gray-300;
+    border-radius: $border-radius-sm;
+    background-color: $light-color;
+  }
+  
+  .current-file {
+    margin-top: $spacing-sm;
+    padding: $spacing-xs;
+    background-color: lighten($info-color, 45%);
+    border-radius: $border-radius-sm;
+    
+    a {
+      color: $link-color;
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

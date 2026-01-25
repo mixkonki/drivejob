@@ -6,6 +6,7 @@ class Session
 {
     private static $started = false;
     private static $handler = null;
+    private static $useDatabase = false;
     /**
      * Ορίζει έναν προσαρμοσμένο session handler
      */
@@ -31,7 +32,7 @@ class Session
 
         if (session_status() === PHP_SESSION_NONE) {
             // Έλεγχος για headers στο περιβάλλον testing
-            if (defined('TESTING') && TESTING === true && headers_sent()) {
+            if (defined('TESTING') && constant('TESTING') === true && headers_sent()) {
                 self::$started = true;
                 return true;
             }
@@ -51,12 +52,25 @@ class Session
                 'domain' => '',     // Άδειο σημαίνει το τρέχον domain
                 'secure' => false,  // Θέστε το σε true σε παραγωγικό περιβάλλον με HTTPS
                 'httponly' => true, // Προστασία από XSS
-                'samesite' => 'Lax' // Προστασία από CSRF
+                'samesite' => 'Lax' // Αλλαγή σε 'Lax' για να αποφύγουμε προβλήματα με τα cookies
             ]);
 
             // Έναρξη συνεδρίας
             $result = session_start();
             self::$started = $result;
+
+            // Καταγραφή για αποσφαλμάτωση
+            Logger::debug('Session started', [
+                'session_id' => session_id(),
+                'result' => $result,
+                'cookie_params' => session_get_cookie_params()
+            ]);
+
+            // Έλεγχος ασφάλειας συνεδρίας
+            if ($result) {
+                self::checkSessionSecurity();
+            }
+
             return $result;
         }
 
@@ -72,15 +86,24 @@ class Session
         // Έλεγχος αλλαγής IP (προαιρετικό, μπορεί να προκαλέσει προβλήματα με δυναμικές IP)
         if (isset($_SESSION['_user_ip']) && $_SESSION['_user_ip'] !== $_SERVER['REMOTE_ADDR']) {
             // Ύποπτη αλλαγή IP - Καταγραφή για αποσφαλμάτωση και πιθανή αναγέννηση συνεδρίας
-            error_log("Suspicious session activity: IP change from {$_SESSION['_user_ip']} to {$_SERVER['REMOTE_ADDR']}");
+            Logger::warning("Suspicious session activity: IP change", [
+                'old_ip' => $_SESSION['_user_ip'],
+                'new_ip' => $_SERVER['REMOTE_ADDR'],
+                'session_id' => session_id()
+            ]);
             // self::regenerate(true); // Αν θέλετε πιο αυστηρό έλεγχο, ανανεώστε τη συνεδρία
         }
 
         // Έλεγχος αλλαγής User Agent
         if (isset($_SESSION['_user_agent']) && $_SESSION['_user_agent'] !== ($_SERVER['HTTP_USER_AGENT'] ?? '')) {
             // Ύποπτη αλλαγή User Agent - Καταγραφή και αναγέννηση συνεδρίας
-            error_log("Suspicious session activity: User Agent change");
-            self::regenerate(true);
+            Logger::warning("Suspicious session activity: User Agent change", [
+                'old_user_agent' => $_SESSION['_user_agent'],
+                'new_user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+                'session_id' => session_id()
+            ]);
+            // Απενεργοποίηση της αναγέννησης συνεδρίας για να αποφύγουμε προβλήματα με το CSRF token
+            // self::regenerate(true);
         }
 
         // Αποθήκευση των τρεχόντων στοιχείων για μελλοντικούς ελέγχους
@@ -147,7 +170,7 @@ class Session
             $_SESSION = [];
 
             // Έλεγχος για headers στο περιβάλλον testing
-            if ((!defined('TESTING') || TESTING !== true) && !headers_sent()) {
+            if ((!defined('TESTING') || constant('TESTING') !== true) && !headers_sent()) {
                 // Διαγραφή του cookie συνεδρίας
                 if (ini_get("session.use_cookies")) {
                     $params = session_get_cookie_params();
@@ -169,7 +192,16 @@ class Session
     public static function regenerate($deleteOldSession = true)
     {
         self::start();
-        return session_regenerate_id($deleteOldSession);
+        $result = session_regenerate_id($deleteOldSession);
+
+        // Καταγραφή για αποσφαλμάτωση
+        Logger::debug('Session regenerated', [
+            'old_session_id' => session_id(),
+            'result' => $result,
+            'delete_old_session' => $deleteOldSession
+        ]);
+
+        return $result;
     }
 
     /**
@@ -198,7 +230,6 @@ class Session
      * @return bool True αν η συνεδρία έχει λήξει, false διαφορετικά
      */
     public static function isExpired($maxIdleTime = 1800) // 30 λεπτά προεπιλογή
-
     {
         self::start();
         if (!isset($_SESSION['_last_activity'])) {

@@ -1,0 +1,263 @@
+/* Alert Styles */
+
+.alert {
+  position: relative;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-md;
+  border: $border-width solid transparent;
+  border-radius: $border-radius;
+  
+  // Alert with link
+  a {
+    font-weight: $font-weight-bold;
+    text-decoration: underline;
+    
+    &:hover {
+      text-decoration: none;
+    }
+  }
+  
+  // Alert with heading
+  h4 {
+    margin-top: 0;
+    margin-bottom: $spacing-xs;
+    font-weight: $font-weight-bold;
+  }
+  
+  // Alert with paragraph
+  p {
+    margin-bottom: $spacing-xs;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  // Alert with list
+  ul, ol {
+    margin-top: $spacing-xs;
+    margin-bottom: $spacing-xs;
+    padding-left: $spacing-md;
+  }
+  
+  // Alert with close button
+  .close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: $spacing-sm $spacing-md;
+    color: inherit;
+    background-color: transparent;
+    border: 0;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    line-height: 1;
+    opacity: 0.5;
+    cursor: pointer;
+    transition: $transition-base;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// Alert variants
+.alert-primary {
+  color: darken($primary-color, 30%);
+  background-color: lighten($primary-color, 30%);
+  border-color: lighten($primary-color, 20%);
+  
+  a {
+    color: darken($primary-color, 40%);
+  }
+}
+
+.alert-secondary {
+  color: darken($secondary-color, 30%);
+  background-color: lighten($secondary-color, 30%);
+  border-color: lighten($secondary-color, 20%);
+  
+  a {
+    color: darken($secondary-color, 40%);
+  }
+}
+
+.alert-success {
+  color: darken($success-color, 30%);
+  background-color: lighten($success-color, 50%);
+  border-color: lighten($success-color, 40%);
+  
+  a {
+    color: darken($success-color, 40%);
+  }
+}
+
+.alert-danger {
+  color: darken($danger-color, 10%);
+  background-color: lighten($danger-color, 35%);
+  border-color: lighten($danger-color, 25%);
+  
+  a {
+    color: darken($danger-color, 20%);
+  }
+}
+
+.alert-warning {
+  color: darken($warning-color, 30%);
+  background-color: lighten($warning-color, 35%);
+  border-color: lighten($warning-color, 25%);
+  
+  a {
+    color: darken($warning-color, 40%);
+  }
+}
+
+.alert-info {
+  color: darken($info-color, 30%);
+  background-color: lighten($info-color, 40%);
+  border-color: lighten($info-color, 30%);
+  
+  a {
+    color: darken($info-color, 40%);
+  }
+}
+
+.alert-light {
+  color: $gray-700;
+  background-color: $gray-100;
+  border-color: $gray-200;
+  
+  a {
+    color: $gray-800;
+  }
+}
+
+.alert-dark {
+  color: $light-color;
+  background-color: $gray-800;
+  border-color: $gray-700;
+  
+  a {
+    color: $light-color;
+    text-decoration-color: rgba($light-color, 0.5);
+  }
+}
+
+// Alert with icon
+.alert-icon {
+  padding-left: $spacing-lg * 2;
+  
+  &::before {
+    position: absolute;
+    left: $spacing-md;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.alert-primary.alert-icon::before {
+  content: "ℹ";
+}
+
+.alert-success.alert-icon::before {
+  content: "✓";
+}
+
+.alert-danger.alert-icon::before {
+  content: "✕";
+}
+
+.alert-warning.alert-icon::before {
+  content: "⚠";
+}
+
+// Alert dismissible
+.alert-dismissible {
+  padding-right: $spacing-lg * 2;
+  
+  .close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: $spacing-sm $spacing-md;
+    color: inherit;
+  }
+}
+
+// Alert with border
+.alert-outline {
+  background-color: transparent;
+  
+  &.alert-primary {
+    color: $primary-color;
+    border-color: $primary-color;
+  }
+  
+  &.alert-secondary {
+    color: $secondary-color;
+    border-color: $secondary-color;
+  }
+  
+  &.alert-success {
+    color: $success-color;
+    border-color: $success-color;
+  }
+  
+  &.alert-danger {
+    color: $danger-color;
+    border-color: $danger-color;
+  }
+  
+  &.alert-warning {
+    color: $warning-color;
+    border-color: $warning-color;
+  }
+  
+  &.alert-info {
+    color: $info-color;
+    border-color: $info-color;
+  }
+}
+
+// Alert with left border
+.alert-border-left {
+  border-left-width: 4px;
+  border-top: $border-width solid $gray-200;
+  border-right: $border-width solid $gray-200;
+  border-bottom: $border-width solid $gray-200;
+}
+
+// Alert animations
+@keyframes alert-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-animated {
+  animation: alert-fade-in 0.3s ease-out;
+}
+
+// Specific alert styles from styles.css
+.success {
+  color: $success-color;
+  font-weight: $font-weight-bold;
+  text-align: center;
+  margin: $spacing-sm 0;
+}
+
+.error {
+  color: $danger-color;
+  font-size: 1.2rem;
+  margin: $spacing-lg auto;
+  padding: $spacing-sm;
+  text-align: left;
+}

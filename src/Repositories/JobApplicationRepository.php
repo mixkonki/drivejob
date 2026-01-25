@@ -3,7 +3,6 @@
 namespace Drivejob\Repositories;
 
 use PDO;
-use Drivejob\Core\Logger;
 use Drivejob\Core\Exceptions\DatabaseException;
 
 /**
@@ -14,417 +13,305 @@ class JobApplicationRepository
     /**
      * @var PDO Η σύνδεση με τη βάση δεδομένων
      */
-    private $pdo;
-
-    /**
-     * @var string Το όνομα του πίνακα
-     */
-    private $table = 'job_applications';
+    private $db;
 
     /**
      * Constructor
      *
-     * @param PDO $pdo Η σύνδεση με τη βάση δεδομένων
+     * @param PDO $db Η σύνδεση με τη βάση δεδομένων
      */
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $db)
     {
-        $this->pdo = $pdo;
+        $this->db = $db;
     }
 
     /**
-     * Δημιουργεί μια νέα αίτηση εργασίας
-     * 
-     * @param array $data Τα δεδομένα της αίτησης
-     * @return int|false Το ID της νέας αίτησης ή false σε περίπτωση αποτυχίας
+     * Βρίσκει μια αίτηση εργασίας με βάση το ID της
+     *
+     * @param int $id Το ID της αίτησης εργασίας
+     * @return array|null Τα στοιχεία της αίτησης εργασίας ή null αν δεν βρεθεί
+     * @throws DatabaseException Αν υπάρξει σφάλμα στη βάση δεδομένων
      */
-    public function create(array $data)
+    public function find(int $id): ?array
     {
         try {
-            // Δημιουργία του SQL ερωτήματος
-            $columns = implode(', ', array_keys($data));
-            $placeholders = implode(', ', array_fill(0, count($data), '?'));
-            $sql = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
+            $sql = "SELECT * FROM job_applications WHERE id = :id";
+            $params = [':id' => $id];
 
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $result = $stmt->execute(array_values($data));
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $application = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($result) {
-                return $this->pdo->lastInsertId();
-            } else {
-                Logger::error('Failed to create job application', [
-                    'data' => $data,
-                    'error' => $stmt->errorInfo()
-                ]);
-                return false;
-            }
+            return $application ?: null;
         } catch (\PDOException $e) {
-            Logger::error('PDO exception in create job application', [
-                'message' => $e->getMessage(),
-                'data' => $data
-            ]);
-            throw new DatabaseException('Failed to create job application', (int)$e->getCode(), $e, $data);
+            throw new DatabaseException("Σφάλμα κατά την εύρεση της αίτησης εργασίας: " . $e->getMessage());
         }
     }
 
     /**
-     * Ενημερώνει μια αίτηση εργασίας
-     * 
-     * @param int $id Το ID της αίτησης
-     * @param array $data Τα δεδομένα προς ενημέρωση
-     * @return bool Επιτυχία/αποτυχία
+     * Βρίσκει όλες τις αιτήσεις εργασίας ενός οδηγού
+     *
+     * @param int $driverId Το ID του οδηγού
+     * @param int $page Η σελίδα των αποτελεσμάτων
+     * @param int $limit Ο αριθμός των αποτελεσμάτων ανά σελίδα
+     * @return array Οι αιτήσεις εργασίας του οδηγού
+     * @throws DatabaseException Αν υπάρξει σφάλμα στη βάση δεδομένων
      */
-    public function update($id, array $data)
+    public function findByDriver(int $driverId, int $page = 1, int $limit = 10): array
     {
         try {
-            // Δημιουργία του SQL ερωτήματος
-            $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
-            $sql = "UPDATE {$this->table} SET $setClause WHERE id = ?";
+            // Υπολογισμός του offset
+            $offset = ($page - 1) * $limit;
 
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $values = array_values($data);
-            $values[] = $id;
-            $result = $stmt->execute($values);
+            // Εύρεση του συνολικού αριθμού αιτήσεων
+            $countSql = "SELECT COUNT(*) as total FROM job_applications WHERE driver_id = :driver_id";
+            $countParams = [':driver_id' => $driverId];
+            $countStmt = $this->db->prepare($countSql);
+            $countStmt->execute($countParams);
+            $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
 
-            if (!$result) {
-                Logger::error('Failed to update job application', [
-                    'id' => $id,
-                    'data' => $data,
-                    'error' => $stmt->errorInfo()
-                ]);
-            }
+            // Εύρεση των αιτήσεων
+            $sql = "SELECT ja.*, jl.title, jl.location, jl.job_type, c.company_name
+                    FROM job_applications ja
+                    JOIN job_listings jl ON ja.job_listing_id = jl.id
+                    JOIN companies c ON jl.company_id = c.id
+                    WHERE ja.driver_id = :driver_id
+                    ORDER BY ja.created_at DESC
+                    LIMIT :limit OFFSET :offset";
 
-            return $result;
+            $params = [
+                ':driver_id' => $driverId,
+                ':limit' => $limit,
+                ':offset' => $offset
+            ];
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Υπολογισμός των σελίδων
+            $totalPages = ceil($total / $limit);
+
+            return [
+                'results' => $applications,
+                'pagination' => [
+                    'total' => $total,
+                    'per_page' => $limit,
+                    'current_page' => $page,
+                    'total_pages' => $totalPages,
+                    'has_more' => $page < $totalPages
+                ]
+            ];
         } catch (\PDOException $e) {
-            Logger::error('PDO exception in update job application', [
-                'message' => $e->getMessage(),
-                'id' => $id,
-                'data' => $data
-            ]);
-            throw new DatabaseException('Failed to update job application', (int)$e->getCode(), $e, [
-                'id' => $id,
-                'data' => $data
-            ]);
+            throw new DatabaseException("Σφάλμα κατά την εύρεση των αιτήσεων εργασίας: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Βρίσκει όλες τις αιτήσεις εργασίας για μια αγγελία
+     *
+     * @param int $jobListingId Το ID της αγγελίας
+     * @param int $page Η σελίδα των αποτελεσμάτων
+     * @param int $limit Ο αριθμός των αποτελεσμάτων ανά σελίδα
+     * @return array Οι αιτήσεις εργασίας για την αγγελία
+     * @throws DatabaseException Αν υπάρξει σφάλμα στη βάση δεδομένων
+     */
+    public function findByJobListing(int $jobListingId, int $page = 1, int $limit = 10): array
+    {
+        try {
+            // Υπολογισμός του offset
+            $offset = ($page - 1) * $limit;
+
+            // Εύρεση του συνολικού αριθμού αιτήσεων
+            $countSql = "SELECT COUNT(*) as total FROM job_applications WHERE job_listing_id = :job_listing_id";
+            $countParams = [':job_listing_id' => $jobListingId];
+            $countStmt = $this->db->prepare($countSql);
+            $countStmt->execute($countParams);
+            $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+
+            // Εύρεση των αιτήσεων
+            $sql = "SELECT ja.*, d.first_name, d.last_name, d.email, d.phone, d.city
+                    FROM job_applications ja
+                    JOIN drivers d ON ja.driver_id = d.id
+                    WHERE ja.job_listing_id = :job_listing_id
+                    ORDER BY ja.created_at DESC
+                    LIMIT :limit OFFSET :offset";
+
+            $params = [
+                ':job_listing_id' => $jobListingId,
+                ':limit' => $limit,
+                ':offset' => $offset
+            ];
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Υπολογισμός των σελίδων
+            $totalPages = ceil($total / $limit);
+
+            return [
+                'results' => $applications,
+                'pagination' => [
+                    'total' => $total,
+                    'per_page' => $limit,
+                    'current_page' => $page,
+                    'total_pages' => $totalPages,
+                    'has_more' => $page < $totalPages
+                ]
+            ];
+        } catch (\PDOException $e) {
+            throw new DatabaseException("Σφάλμα κατά την εύρεση των αιτήσεων εργασίας: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Ελέγχει αν ένας οδηγός έχει ήδη υποβάλει αίτηση για μια αγγελία
+     *
+     * @param int $driverId Το ID του οδηγού
+     * @param int $jobListingId Το ID της αγγελίας
+     * @return bool Αν ο οδηγός έχει ήδη υποβάλει αίτηση
+     * @throws DatabaseException Αν υπάρξει σφάλμα στη βάση δεδομένων
+     */
+    public function hasApplied(int $driverId, int $jobListingId): bool
+    {
+        try {
+            $sql = "SELECT COUNT(*) as count FROM job_applications 
+                    WHERE driver_id = :driver_id AND job_listing_id = :job_listing_id";
+            $params = [
+                ':driver_id' => $driverId,
+                ':job_listing_id' => $jobListingId
+            ];
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $count = $stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0;
+
+            return $count > 0;
+        } catch (\PDOException $e) {
+            throw new DatabaseException("Σφάλμα κατά τον έλεγχο της αίτησης εργασίας: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Δημιουργεί μια νέα αίτηση εργασίας
+     *
+     * @param array $data Τα δεδομένα της αίτησης εργασίας
+     * @return int Το ID της νέας αίτησης εργασίας
+     * @throws DatabaseException Αν υπάρξει σφάλμα στη βάση δεδομένων
+     */
+    public function create(array $data): int
+    {
+        try {
+            $sql = "INSERT INTO job_applications (driver_id, job_listing_id, cover_letter, status, created_at, updated_at)
+                    VALUES (:driver_id, :job_listing_id, :cover_letter, :status, NOW(), NOW())";
+
+            $params = [
+                ':driver_id' => $data['driver_id'],
+                ':job_listing_id' => $data['job_listing_id'],
+                ':cover_letter' => $data['cover_letter'] ?? null,
+                ':status' => $data['status'] ?? 'pending'
+            ];
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $this->db->lastInsertId();
+        } catch (\PDOException $e) {
+            throw new DatabaseException("Σφάλμα κατά τη δημιουργία της αίτησης εργασίας: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Ενημερώνει μια υπάρχουσα αίτηση εργασίας
+     *
+     * @param int $id Το ID της αίτησης εργασίας
+     * @param array $data Τα νέα δεδομένα της αίτησης εργασίας
+     * @return bool Αν η ενημέρωση ήταν επιτυχής
+     * @throws DatabaseException Αν υπάρξει σφάλμα στη βάση δεδομένων
+     */
+    public function update(int $id, array $data): bool
+    {
+        try {
+            $sql = "UPDATE job_applications SET
+                    cover_letter = :cover_letter,
+                    status = :status,
+                    updated_at = NOW()
+                    WHERE id = :id";
+
+            $params = [
+                ':id' => $id,
+                ':cover_letter' => $data['cover_letter'] ?? null,
+                ':status' => $data['status'] ?? 'pending'
+            ];
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->rowCount() > 0;
+        } catch (\PDOException $e) {
+            throw new DatabaseException("Σφάλμα κατά την ενημέρωση της αίτησης εργασίας: " . $e->getMessage());
         }
     }
 
     /**
      * Διαγράφει μια αίτηση εργασίας
-     * 
-     * @param int $id Το ID της αίτησης
-     * @return bool Επιτυχία/αποτυχία
+     *
+     * @param int $id Το ID της αίτησης εργασίας
+     * @return bool Αν η διαγραφή ήταν επιτυχής
+     * @throws DatabaseException Αν υπάρξει σφάλμα στη βάση δεδομένων
      */
-    public function delete($id)
+    public function delete(int $id): bool
     {
         try {
-            // Δημιουργία του SQL ερωτήματος
-            $sql = "DELETE FROM {$this->table} WHERE id = ?";
+            $sql = "DELETE FROM job_applications WHERE id = :id";
+            $params = [':id' => $id];
 
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $result = $stmt->execute([$id]);
-
-            if (!$result) {
-                Logger::error('Failed to delete job application', [
-                    'id' => $id,
-                    'error' => $stmt->errorInfo()
-                ]);
-            }
-
-            return $result;
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
-            Logger::error('PDO exception in delete job application', [
-                'message' => $e->getMessage(),
-                'id' => $id
-            ]);
-            throw new DatabaseException('Failed to delete job application', (int)$e->getCode(), $e, ['id' => $id]);
+            throw new DatabaseException("Σφάλμα κατά τη διαγραφή της αίτησης εργασίας: " . $e->getMessage());
         }
     }
 
     /**
-     * Βρίσκει μια αίτηση εργασίας με βάση το ID
-     * 
-     * @param int $id Το ID της αίτησης
-     * @return array|null Τα δεδομένα της αίτησης ή null αν δεν βρέθηκε
-     */
-    public function find($id)
-    {
-        try {
-            // Δημιουργία του SQL ερωτήματος
-            $sql = "SELECT * FROM {$this->table} WHERE id = ?";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$id]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            return $result ?: null;
-        } catch (\PDOException $e) {
-            Logger::error('PDO exception in find job application', [
-                'message' => $e->getMessage(),
-                'id' => $id
-            ]);
-            throw new DatabaseException('Failed to find job application', (int)$e->getCode(), $e, ['id' => $id]);
-        }
-    }
-
-    /**
-     * Βρίσκει μια αίτηση εργασίας με βάση τον οδηγό και την αγγελία
-     * 
+     * Διαγράφει όλες τις αιτήσεις εργασίας ενός οδηγού
+     *
      * @param int $driverId Το ID του οδηγού
-     * @param int $listingId Το ID της αγγελίας
-     * @return array|null Τα δεδομένα της αίτησης ή null αν δεν βρέθηκε
+     * @return bool Αν η διαγραφή ήταν επιτυχής
+     * @throws DatabaseException Αν υπάρξει σφάλμα στη βάση δεδομένων
      */
-    public function findByDriverAndListing($driverId, $listingId)
+    public function deleteByDriver(int $driverId): bool
     {
         try {
-            // Δημιουργία του SQL ερωτήματος
-            $sql = "SELECT * FROM {$this->table} WHERE driver_id = ? AND job_listing_id = ?";
+            $sql = "DELETE FROM job_applications WHERE driver_id = :driver_id";
+            $params = [':driver_id' => $driverId];
 
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$driverId, $listingId]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            return $result ?: null;
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
-            Logger::error('PDO exception in findByDriverAndListing', [
-                'message' => $e->getMessage(),
-                'driver_id' => $driverId,
-                'listing_id' => $listingId
-            ]);
-            throw new DatabaseException('Failed to find job application by driver and listing', (int)$e->getCode(), $e, [
-                'driver_id' => $driverId,
-                'listing_id' => $listingId
-            ]);
+            throw new DatabaseException("Σφάλμα κατά τη διαγραφή των αιτήσεων εργασίας: " . $e->getMessage());
         }
     }
 
     /**
-     * Βρίσκει τις αιτήσεις εργασίας ενός οδηγού
-     * 
-     * @param int $driverId Το ID του οδηγού
-     * @param int $page Η σελίδα των αποτελεσμάτων
-     * @param int $limit Ο αριθμός των αποτελεσμάτων ανά σελίδα
-     * @return array Τα αποτελέσματα και οι πληροφορίες σελιδοποίησης
+     * Διαγράφει όλες τις αιτήσεις εργασίας για μια αγγελία
+     *
+     * @param int $jobListingId Το ID της αγγελίας
+     * @return bool Αν η διαγραφή ήταν επιτυχής
+     * @throws DatabaseException Αν υπάρξει σφάλμα στη βάση δεδομένων
      */
-    public function findByDriver($driverId, $page = 1, $limit = 10)
+    public function deleteByJobListing(int $jobListingId): bool
     {
         try {
-            // Υπολογισμός του offset
-            $offset = ($page - 1) * $limit;
+            $sql = "DELETE FROM job_applications WHERE job_listing_id = :job_listing_id";
+            $params = [':job_listing_id' => $jobListingId];
 
-            // Μέτρηση του συνολικού αριθμού αιτήσεων
-            $countSql = "SELECT COUNT(*) FROM {$this->table} WHERE driver_id = ?";
-            $countStmt = $this->pdo->prepare($countSql);
-            $countStmt->execute([$driverId]);
-            $totalCount = $countStmt->fetchColumn();
-
-            // Δημιουργία του SQL ερωτήματος για τις αιτήσεις
-            $sql = "SELECT a.*, j.title as job_title, j.location as job_location, c.name as company_name
-                    FROM {$this->table} a
-                    JOIN job_listings j ON a.job_listing_id = j.id
-                    JOIN companies c ON a.company_id = c.id
-                    WHERE a.driver_id = ?
-                    ORDER BY a.created_at DESC
-                    LIMIT ? OFFSET ?";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$driverId, $limit, $offset]);
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // Υπολογισμός του συνολικού αριθμού σελίδων
-            $totalPages = ceil($totalCount / $limit);
-
-            return [
-                'results' => $results,
-                'pagination' => [
-                    'total' => $totalCount,
-                    'per_page' => $limit,
-                    'current_page' => $page,
-                    'last_page' => $totalPages,
-                    'from' => $offset + 1,
-                    'to' => min($offset + $limit, $totalCount)
-                ]
-            ];
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->rowCount() > 0;
         } catch (\PDOException $e) {
-            Logger::error('PDO exception in findByDriver', [
-                'message' => $e->getMessage(),
-                'driver_id' => $driverId,
-                'page' => $page,
-                'limit' => $limit
-            ]);
-            throw new DatabaseException('Failed to find job applications by driver', (int)$e->getCode(), $e, [
-                'driver_id' => $driverId,
-                'page' => $page,
-                'limit' => $limit
-            ]);
-        }
-    }
-
-    /**
-     * Βρίσκει τις αιτήσεις εργασίας μιας εταιρείας
-     * 
-     * @param int $companyId Το ID της εταιρείας
-     * @param int $page Η σελίδα των αποτελεσμάτων
-     * @param int $limit Ο αριθμός των αποτελεσμάτων ανά σελίδα
-     * @return array Τα αποτελέσματα και οι πληροφορίες σελιδοποίησης
-     */
-    public function findByCompany($companyId, $page = 1, $limit = 10)
-    {
-        try {
-            // Υπολογισμός του offset
-            $offset = ($page - 1) * $limit;
-
-            // Μέτρηση του συνολικού αριθμού αιτήσεων
-            $countSql = "SELECT COUNT(*) FROM {$this->table} WHERE company_id = ?";
-            $countStmt = $this->pdo->prepare($countSql);
-            $countStmt->execute([$companyId]);
-            $totalCount = $countStmt->fetchColumn();
-
-            // Δημιουργία του SQL ερωτήματος για τις αιτήσεις
-            $sql = "SELECT a.*, j.title as job_title, j.location as job_location, d.first_name, d.last_name
-                    FROM {$this->table} a
-                    JOIN job_listings j ON a.job_listing_id = j.id
-                    JOIN drivers d ON a.driver_id = d.id
-                    WHERE a.company_id = ?
-                    ORDER BY a.created_at DESC
-                    LIMIT ? OFFSET ?";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$companyId, $limit, $offset]);
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // Υπολογισμός του συνολικού αριθμού σελίδων
-            $totalPages = ceil($totalCount / $limit);
-
-            return [
-                'results' => $results,
-                'pagination' => [
-                    'total' => $totalCount,
-                    'per_page' => $limit,
-                    'current_page' => $page,
-                    'last_page' => $totalPages,
-                    'from' => $offset + 1,
-                    'to' => min($offset + $limit, $totalCount)
-                ]
-            ];
-        } catch (\PDOException $e) {
-            Logger::error('PDO exception in findByCompany', [
-                'message' => $e->getMessage(),
-                'company_id' => $companyId,
-                'page' => $page,
-                'limit' => $limit
-            ]);
-            throw new DatabaseException('Failed to find job applications by company', (int)$e->getCode(), $e, [
-                'company_id' => $companyId,
-                'page' => $page,
-                'limit' => $limit
-            ]);
-        }
-    }
-
-    /**
-     * Βρίσκει τις αιτήσεις εργασίας για μια αγγελία
-     * 
-     * @param int $listingId Το ID της αγγελίας
-     * @param int $page Η σελίδα των αποτελεσμάτων
-     * @param int $limit Ο αριθμός των αποτελεσμάτων ανά σελίδα
-     * @return array Τα αποτελέσματα και οι πληροφορίες σελιδοποίησης
-     */
-    public function findByListing($listingId, $page = 1, $limit = 10)
-    {
-        try {
-            // Υπολογισμός του offset
-            $offset = ($page - 1) * $limit;
-
-            // Μέτρηση του συνολικού αριθμού αιτήσεων
-            $countSql = "SELECT COUNT(*) FROM {$this->table} WHERE job_listing_id = ?";
-            $countStmt = $this->pdo->prepare($countSql);
-            $countStmt->execute([$listingId]);
-            $totalCount = $countStmt->fetchColumn();
-
-            // Δημιουργία του SQL ερωτήματος για τις αιτήσεις
-            $sql = "SELECT a.*, d.first_name, d.last_name, d.email, d.phone, d.profile_image, d.rating
-                    FROM {$this->table} a
-                    JOIN drivers d ON a.driver_id = d.id
-                    WHERE a.job_listing_id = ?
-                    ORDER BY a.created_at DESC
-                    LIMIT ? OFFSET ?";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$listingId, $limit, $offset]);
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // Υπολογισμός του συνολικού αριθμού σελίδων
-            $totalPages = ceil($totalCount / $limit);
-
-            return [
-                'results' => $results,
-                'pagination' => [
-                    'total' => $totalCount,
-                    'per_page' => $limit,
-                    'current_page' => $page,
-                    'last_page' => $totalPages,
-                    'from' => $offset + 1,
-                    'to' => min($offset + $limit, $totalCount)
-                ]
-            ];
-        } catch (\PDOException $e) {
-            Logger::error('PDO exception in findByListing', [
-                'message' => $e->getMessage(),
-                'listing_id' => $listingId,
-                'page' => $page,
-                'limit' => $limit
-            ]);
-            throw new DatabaseException('Failed to find job applications by listing', (int)$e->getCode(), $e, [
-                'listing_id' => $listingId,
-                'page' => $page,
-                'limit' => $limit
-            ]);
-        }
-    }
-
-    /**
-     * Ενημερώνει την κατάσταση μιας αίτησης
-     * 
-     * @param int $id Το ID της αίτησης
-     * @param string $status Η νέα κατάσταση
-     * @return bool Επιτυχία/αποτυχία
-     */
-    public function updateStatus($id, $status)
-    {
-        try {
-            // Δημιουργία του SQL ερωτήματος
-            $sql = "UPDATE {$this->table} SET status = ?, updated_at = ? WHERE id = ?";
-
-            // Εκτέλεση του ερωτήματος
-            $stmt = $this->pdo->prepare($sql);
-            $result = $stmt->execute([$status, date('Y-m-d H:i:s'), $id]);
-
-            if (!$result) {
-                Logger::error('Failed to update job application status', [
-                    'id' => $id,
-                    'status' => $status,
-                    'error' => $stmt->errorInfo()
-                ]);
-            }
-
-            return $result;
-        } catch (\PDOException $e) {
-            Logger::error('PDO exception in updateStatus', [
-                'message' => $e->getMessage(),
-                'id' => $id,
-                'status' => $status
-            ]);
-            throw new DatabaseException('Failed to update job application status', (int)$e->getCode(), $e, [
-                'id' => $id,
-                'status' => $status
-            ]);
+            throw new DatabaseException("Σφάλμα κατά τη διαγραφή των αιτήσεων εργασίας: " . $e->getMessage());
         }
     }
 }
