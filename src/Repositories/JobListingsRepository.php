@@ -53,7 +53,7 @@ class JobListingsRepository
     /**
      * Get job listings by company
      */
-    public function getByCompanyId(int $companyId, string $status = null): array
+    public function getByCompanyId(int $companyId, ?string $status = null): array
     {
         $sql = "
             SELECT j.*
@@ -256,7 +256,7 @@ class JobListingsRepository
     /**
      * Get job statistics
      */
-    public function getStatistics(int $companyId = null): array
+    public function getStatistics(?int $companyId = null): array
     {
         $sql = "
             SELECT 

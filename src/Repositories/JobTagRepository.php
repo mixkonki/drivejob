@@ -17,7 +17,7 @@ class JobTagRepository
      *
      * @param Database $db
      */
-    public function __construct(Database $db = null)
+    public function __construct(?Database $db = null)
     {
         $this->db = $db ?? new Database();
     }

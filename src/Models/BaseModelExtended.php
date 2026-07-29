@@ -63,7 +63,7 @@ class BaseModelExtended extends BaseModel
      * @param PDO $pdo Η σύνδεση με τη βάση δεδομένων
      * @param string|null $table Το όνομα του πίνακα (προαιρετικό)
      */
-    public function __construct(PDO $pdo, string $table = null)
+    public function __construct(PDO $pdo, ?string $table = null)
     {
         parent::__construct($pdo, $table);
     }
@@ -127,7 +127,7 @@ class BaseModelExtended extends BaseModel
      * @param int|null $offset Η μετατόπιση των αποτελεσμάτων
      * @return array Οι εγγραφές που επιλέχθηκαν
      */
-    public function search(string $search, array $searchFields = [], array $where = [], $columns = '*', array $orderBy = [], int $limit = null, int $offset = null)
+    public function search(string $search, array $searchFields = [], array $where = [], $columns = '*', array $orderBy = [], ?int $limit = null, ?int $offset = null)
     {
         try {
             // Αν δεν έχουν οριστεί πεδία αναζήτησης, χρησιμοποίησε τα προκαθορισμένα
@@ -571,7 +571,7 @@ class BaseModelExtended extends BaseModel
      * @param int|null $offset Η μετατόπιση των αποτελεσμάτων
      * @return array Οι εγγραφές που επιλέχθηκαν
      */
-    public function selectWithJoin(array $joins, array $where = [], $columns = '*', array $orderBy = [], int $limit = null, int $offset = null)
+    public function selectWithJoin(array $joins, array $where = [], $columns = '*', array $orderBy = [], ?int $limit = null, ?int $offset = null)
     {
         try {
             // Προετοιμασία των στηλών προς επιλογή

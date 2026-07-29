@@ -23,7 +23,7 @@ class JobListingService implements JobListingServiceInterface
      */
     public function __construct(
         JobListingRepository $jobListingRepository,
-        JobTagRepository $jobTagRepository = null
+        ?JobTagRepository $jobTagRepository = null
     ) {
         $this->jobListingRepository = $jobListingRepository;
         $this->jobTagRepository = $jobTagRepository;

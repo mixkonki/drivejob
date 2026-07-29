@@ -32,9 +32,9 @@ class RatingService implements RatingServiceInterface
      * @param CompanyRatingModel|null $companyRatingModel Το μοντέλο για τις αξιολογήσεις εταιρειών
      */
     public function __construct(
-        PDO $pdo = null,
-        RatingModel $driverRatingModel = null,
-        CompanyRatingModel $companyRatingModel = null
+        ?PDO $pdo = null,
+        ?RatingModel $driverRatingModel = null,
+        ?CompanyRatingModel $companyRatingModel = null
     ) {
         if ($pdo === null) {
             // Χρήση του Database class από το Core namespace

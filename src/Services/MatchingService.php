@@ -55,11 +55,11 @@ class MatchingService
      */
     public function __construct(
         PDO $pdo,
-        MatchingRepositoryInterface $matchingRepository = null,
-        DriversRepositoryInterface $driversRepository = null,
-        JobListingRepositoryInterface $jobListingRepository = null,
-        GeoLocationService $geoLocationService = null,
-        MachineLearningService $machineLearningService = null
+        ?MatchingRepositoryInterface $matchingRepository = null,
+        ?DriversRepositoryInterface $driversRepository = null,
+        ?JobListingRepositoryInterface $jobListingRepository = null,
+        ?GeoLocationService $geoLocationService = null,
+        ?MachineLearningService $machineLearningService = null
     ) {
         $this->matchingRepository = $matchingRepository ?? new MatchingRepository($pdo);
         $this->driversRepository = $driversRepository ?? new DriversRepository($pdo);

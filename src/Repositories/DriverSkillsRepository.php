@@ -20,7 +20,7 @@ class DriverSkillsRepository
      *
      * @param Database|null $db Η σύνδεση με τη βάση δεδομένων
      */
-    public function __construct(Database $db = null)
+    public function __construct(?Database $db = null)
     {
         $this->db = $db ?? new Database();
     }

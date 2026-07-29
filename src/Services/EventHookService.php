@@ -17,8 +17,8 @@ class EventHookService
     private RealTimeMatchingService $realTimeService;
 
     public function __construct(
-        PDO $pdo = null,
-        RealTimeMatchingService $realTimeService = null
+        ?PDO $pdo = null,
+        ?RealTimeMatchingService $realTimeService = null
     ) {
         $this->pdo = $pdo ?? Database::getInstance()->getConnection();
         $this->realTimeService = $realTimeService ?? new RealTimeMatchingService($this->pdo);

@@ -36,8 +36,8 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
      */
     public function __construct(
         PDO $pdo,
-        DriversRepositoryInterface $driversRepository = null,
-        CompaniesRepositoryInterface $companiesRepository = null
+        ?DriversRepositoryInterface $driversRepository = null,
+        ?CompaniesRepositoryInterface $companiesRepository = null
     ) {
         parent::__construct($pdo);
 

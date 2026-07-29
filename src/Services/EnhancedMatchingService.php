@@ -46,12 +46,12 @@ class EnhancedMatchingService implements MatchingServiceInterface
     ];
 
     public function __construct(
-        PDO $pdo = null,
-        MatchingRepositoryInterface $matchingRepository = null,
-        DriversRepositoryInterface $driversRepository = null,
-        JobListingRepositoryInterface $jobListingRepository = null,
-        GeoLocationService $geoLocationService = null,
-        MachineLearningService $machineLearningService = null
+        ?PDO $pdo = null,
+        ?MatchingRepositoryInterface $matchingRepository = null,
+        ?DriversRepositoryInterface $driversRepository = null,
+        ?JobListingRepositoryInterface $jobListingRepository = null,
+        ?GeoLocationService $geoLocationService = null,
+        ?MachineLearningService $machineLearningService = null
     ) {
         $this->pdo = $pdo ?? Database::getInstance()->getConnection();
         $this->matchingRepository = $matchingRepository ?? new MatchingRepository($this->pdo);

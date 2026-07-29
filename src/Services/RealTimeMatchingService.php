@@ -25,9 +25,9 @@ class RealTimeMatchingService
     private array $config;
 
     public function __construct(
-        PDO $pdo = null,
-        EnhancedMatchingService $matchingService = null,
-        NotificationServices $notificationService = null
+        ?PDO $pdo = null,
+        ?EnhancedMatchingService $matchingService = null,
+        ?NotificationServices $notificationService = null
     ) {
         $this->pdo = $pdo ?? Database::getInstance()->getConnection();
         $this->matchingService = $matchingService ?? new EnhancedMatchingService($this->pdo);

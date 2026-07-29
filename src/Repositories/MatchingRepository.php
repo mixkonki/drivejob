@@ -55,8 +55,8 @@ class MatchingRepository extends BaseRepository implements MatchingRepositoryInt
      */
     public function __construct(
         PDO $pdo,
-        DriversRepositoryInterface $driversRepository = null,
-        JobListingRepositoryInterface $jobListingRepository = null
+        ?DriversRepositoryInterface $driversRepository = null,
+        ?JobListingRepositoryInterface $jobListingRepository = null
     ) {
         parent::__construct($pdo);
 

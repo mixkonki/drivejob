@@ -50,7 +50,7 @@ class TestDatabaseConfig
             loadTestEnv();
 
             self::$config = [
-                'host' => $_ENV['DB_TEST_HOST'] ?? 'localhost',
+                'host' => $_ENV['DB_TEST_HOST'] ?? '127.0.0.1',
                 'database' => $_ENV['DB_TEST_NAME'] ?? 'drivejob_test',
                 'username' => $_ENV['DB_TEST_USER'] ?? 'test_user',
                 'password' => $_ENV['DB_TEST_PASS'] ?? 'test_password',

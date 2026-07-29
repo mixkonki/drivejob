@@ -55,8 +55,8 @@ class MachineLearningService
      */
     public function __construct(
         PDO $pdo,
-        JobApplicationRepositoryInterface $jobApplicationRepository = null,
-        MatchingRepositoryInterface $matchingRepository = null
+        ?JobApplicationRepositoryInterface $jobApplicationRepository = null,
+        ?MatchingRepositoryInterface $matchingRepository = null
     ) {
         $this->pdo = $pdo;
         $this->jobApplicationRepository = $jobApplicationRepository ?? new JobApplicationRepository($pdo);
@@ -198,7 +198,7 @@ class MachineLearningService
      * @param array|null $trainingData Τα δεδομένα εκπαίδευσης (προαιρετικά)
      * @return bool Επιτυχία/αποτυχία
      */
-    public function trainModel(array $trainingData = null)
+    public function trainModel(?array $trainingData = null)
     {
         try {
             // Λήψη των δεδομένων εκπαίδευσης αν δεν έχουν δοθεί

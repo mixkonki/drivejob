@@ -14,7 +14,7 @@ class FeatureExtractor
 {
     private PDO $pdo;
 
-    public function __construct(PDO $pdo = null)
+    public function __construct(?PDO $pdo = null)
     {
         $this->pdo = $pdo ?? Database::getInstance()->getConnection();
     }

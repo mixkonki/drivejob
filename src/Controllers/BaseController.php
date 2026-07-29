@@ -183,7 +183,7 @@ class BaseController
      * @param string $redirectUrl Η διαδρομή URL για ανακατεύθυνση σε περίπτωση αποτυχίας
      * @return bool
      */
-    protected function validateCsrfToken(string $token, string $redirectUrl = null)
+    protected function validateCsrfToken(string $token, ?string $redirectUrl = null)
     {
         if (!CSRF::validateToken($token)) {
             Logger::error('CSRF token validation failed');

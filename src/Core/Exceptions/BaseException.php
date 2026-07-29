@@ -41,7 +41,7 @@ class BaseException extends Exception
      * @param int $code Ο κωδικός του σφάλματος
      * @param Exception|null $previous Η προηγούμενη εξαίρεση
      */
-    public function __construct(string $message = '', array $context = null, int $code = 0, Exception $previous = null)
+    public function __construct(string $message = '', ?array $context = null, int $code = 0, ?Exception $previous = null)
     {
         parent::__construct($message, $code, $previous);
         $this->context = $context;
