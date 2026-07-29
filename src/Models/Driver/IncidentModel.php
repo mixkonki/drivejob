@@ -2,13 +2,12 @@
 
 namespace Drivejob\Models\Driver;
 
-use PDO;
-use PDOException;
-use Drivejob\Core\Logger;
 use Drivejob\Models\BaseModel;
+use Drivejob\Core\Logger;
+use Drivejob\Core\Exceptions\DatabaseException;
 
 /**
- * Μοντέλο για τη διαχείριση των συμβάντων των οδηγών
+ * Μοντέλο για τα περιστατικά οδηγών
  */
 class IncidentModel extends BaseModel
 {
@@ -17,304 +16,193 @@ class IncidentModel extends BaseModel
      *
      * @param PDO $pdo Η σύνδεση με τη βάση δεδομένων
      */
-    public function __construct(PDO $pdo)
+    public function __construct(\PDO $pdo)
     {
         parent::__construct($pdo, 'driver_incidents');
     }
 
     /**
-     * Αποθηκεύει ένα νέο συμβάν για τον οδηγό
+     * Επιστρέφει τα περιστατικά ενός οδηγού
      * 
-     * @param int $driverId ID του οδηγού
-     * @param array $incidentData Δεδομένα συμβάντος
-     * @return int|bool ID του συμβάντος ή false σε αποτυχία
-     */
-    public function saveDriverIncident($driverId, $incidentData)
-    {
-        try {
-            $data = [
-                'driver_id' => $driverId,
-                'incident_type' => $incidentData['incident_type'],
-                'incident_date' => $incidentData['incident_date'],
-                'description' => $incidentData['description'],
-                'severity' => $incidentData['severity']
-            ];
-
-            return $this->insert($data);
-        } catch (PDOException $e) {
-            Logger::error('Error in saveDriverIncident: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Λαμβάνει τα συμβάντα ενός οδηγού
-     * 
-     * @param int $driverId ID του οδηγού
-     * @return array Λίστα συμβάντων
+     * @param int $driverId Το ID του οδηγού
+     * @return array Τα περιστατικά του οδηγού
      */
     public function getDriverIncidents($driverId)
     {
         try {
-            return $this->select(
-                ['driver_id' => $driverId],
-                '*',
-                ['incident_date' => 'DESC']
-            );
-        } catch (PDOException $e) {
-            Logger::error('Error in getDriverIncidents: ' . $e->getMessage());
-            return [];
+            $sql = "SELECT * FROM driver_incidents WHERE driver_id = :driver_id ORDER BY incident_date DESC";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':driver_id', $driverId, \PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            Logger::error('Σφάλμα κατά την ανάκτηση των περιστατικών οδηγού', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+
+            throw new DatabaseException('Σφάλμα κατά την ανάκτηση των περιστατικών οδηγού', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
         }
     }
 
     /**
-     * Λαμβάνει ένα συγκεκριμένο συμβάν
+     * Προσθέτει ένα νέο περιστατικό
      * 
-     * @param int $incidentId ID του συμβάντος
-     * @return array|null Δεδομένα συμβάντος ή null αν δεν βρέθηκε
+     * @param array $data Τα δεδομένα του περιστατικού
+     * @return bool Αν η προσθήκη ήταν επιτυχής
      */
-    public function getIncidentById($incidentId)
+    public function addIncident($data)
     {
         try {
-            return $this->selectOne(['id' => $incidentId]);
-        } catch (PDOException $e) {
-            Logger::error('Error in getIncidentById: ' . $e->getMessage());
-            return null;
+            $sql = "INSERT INTO driver_incidents (
+                driver_id, incident_type, incident_date, description, location, severity, file_path, created_at
+            ) VALUES (
+                :driver_id, :incident_type, :incident_date, :description, :location, :severity, :file_path, :created_at
+            )";
+
+            $stmt = $this->pdo->prepare($sql);
+            $driverId = $data['driver_id'];
+            $incidentType = $data['incident_type'];
+            $incidentDate = $data['incident_date'];
+            $description = $data['description'];
+            $location = $data['location'];
+            $severity = $data['severity'];
+            $filePath = $data['file_path'] ?? null;
+            $createdAt = $data['created_at'];
+
+            $stmt->bindParam(':driver_id', $driverId, \PDO::PARAM_INT);
+            $stmt->bindParam(':incident_type', $incidentType, \PDO::PARAM_STR);
+            $stmt->bindParam(':incident_date', $incidentDate, \PDO::PARAM_STR);
+            $stmt->bindParam(':description', $description, \PDO::PARAM_STR);
+            $stmt->bindParam(':location', $location, \PDO::PARAM_STR);
+            $stmt->bindParam(':severity', $severity, \PDO::PARAM_STR);
+            $stmt->bindParam(':file_path', $filePath, \PDO::PARAM_STR);
+            $stmt->bindParam(':created_at', $createdAt, \PDO::PARAM_STR);
+
+            return $stmt->execute();
+        } catch (\PDOException $e) {
+            Logger::error('Σφάλμα κατά την προσθήκη περιστατικού', [
+                'driver_id' => $data['driver_id'],
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+
+            throw new DatabaseException('Σφάλμα κατά την προσθήκη περιστατικού', [
+                'driver_id' => $data['driver_id'],
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
         }
     }
 
     /**
-     * Ενημερώνει ένα συμβάν
+     * Ενημερώνει ένα περιστατικό
      * 
-     * @param int $incidentId ID του συμβάντος
-     * @param array $incidentData Νέα δεδομένα συμβάντος
-     * @return bool Επιτυχία/αποτυχία
+     * @param int $incidentId Το ID του περιστατικού
+     * @param array $data Τα δεδομένα του περιστατικού
+     * @return bool Αν η ενημέρωση ήταν επιτυχής
      */
-    public function updateIncident($incidentId, $incidentData)
+    public function updateIncident($incidentId, $data)
     {
         try {
-            return $this->update($incidentData, ['id' => $incidentId]);
-        } catch (PDOException $e) {
-            Logger::error('Error in updateIncident: ' . $e->getMessage());
-            return false;
+            $sql = "UPDATE driver_incidents SET 
+                incident_type = :incident_type,
+                incident_date = :incident_date,
+                description = :description,
+                location = :location,
+                severity = :severity,
+                file_path = :file_path,
+                updated_at = :updated_at
+            WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':id', $incidentId, \PDO::PARAM_INT);
+            $stmt->bindParam(':incident_type', $data['incident_type'], \PDO::PARAM_STR);
+            $stmt->bindParam(':incident_date', $data['incident_date'], \PDO::PARAM_STR);
+            $stmt->bindParam(':description', $data['description'], \PDO::PARAM_STR);
+            $stmt->bindParam(':location', $data['location'], \PDO::PARAM_STR);
+            $stmt->bindParam(':severity', $data['severity'], \PDO::PARAM_STR);
+            $stmt->bindParam(':file_path', $data['file_path'] ?? null, \PDO::PARAM_STR);
+            $stmt->bindParam(':updated_at', $data['updated_at'], \PDO::PARAM_STR);
+
+            return $stmt->execute();
+        } catch (\PDOException $e) {
+            Logger::error('Σφάλμα κατά την ενημέρωση περιστατικού', [
+                'incident_id' => $incidentId,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+
+            throw new DatabaseException('Σφάλμα κατά την ενημέρωση περιστατικού', [
+                'incident_id' => $incidentId,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
         }
     }
 
     /**
-     * Διαγράφει ένα συμβάν
+     * Διαγράφει ένα περιστατικό
      * 
-     * @param int $incidentId ID του συμβάντος
-     * @return bool Επιτυχία/αποτυχία
+     * @param int $incidentId Το ID του περιστατικού
+     * @return bool Αν η διαγραφή ήταν επιτυχής
      */
     public function deleteIncident($incidentId)
     {
         try {
-            return $this->delete(['id' => $incidentId]);
-        } catch (PDOException $e) {
-            Logger::error('Error in deleteIncident: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Λαμβάνει τα πρόσφατα συμβάντα ενός οδηγού
-     * 
-     * @param int $driverId ID του οδηγού
-     * @param int $years Αριθμός ετών προς τα πίσω
-     * @return array Λίστα πρόσφατων συμβάντων
-     */
-    public function getRecentIncidents($driverId, $years = 3)
-    {
-        try {
-            $date = date('Y-m-d', strtotime("-$years years"));
-
-            $sql = "SELECT * FROM {$this->table} 
-                    WHERE driver_id = ? AND incident_date >= ? 
-                    ORDER BY incident_date DESC";
-
+            $sql = "DELETE FROM driver_incidents WHERE id = :id";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$driverId, $date]);
+            $stmt->bindParam(':id', $incidentId, \PDO::PARAM_INT);
 
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            Logger::error('Error in getRecentIncidents: ' . $e->getMessage());
-            return [];
+            return $stmt->execute();
+        } catch (\PDOException $e) {
+            Logger::error('Σφάλμα κατά τη διαγραφή περιστατικού', [
+                'incident_id' => $incidentId,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+
+            throw new DatabaseException('Σφάλμα κατά τη διαγραφή περιστατικού', [
+                'incident_id' => $incidentId,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
         }
     }
 
     /**
-     * Λαμβάνει τα συμβάντα ανά τύπο για έναν οδηγό
+     * Επιστρέφει ένα περιστατικό με βάση το ID του
      * 
-     * @param int $driverId ID του οδηγού
-     * @param string $incidentType Τύπος συμβάντος (π.χ. 'accident', 'traffic_violation')
-     * @return array Λίστα συμβάντων
+     * @param int $incidentId Το ID του περιστατικού
+     * @return array|false Τα δεδομένα του περιστατικού ή false αν δεν βρέθηκε
      */
-    public function getIncidentsByType($driverId, $incidentType)
+    public function getIncidentById($incidentId)
     {
         try {
-            return $this->select(
-                ['driver_id' => $driverId, 'incident_type' => $incidentType],
-                '*',
-                ['incident_date' => 'DESC']
-            );
-        } catch (PDOException $e) {
-            Logger::error('Error in getIncidentsByType: ' . $e->getMessage());
-            return [];
-        }
-    }
-
-    /**
-     * Υπολογίζει τον αριθμό συμβάντων ανά τύπο για έναν οδηγό
-     * 
-     * @param int $driverId ID του οδηγού
-     * @return array Αριθμός συμβάντων ανά τύπο
-     */
-    public function countIncidentsByType($driverId)
-    {
-        try {
-            $sql = "SELECT incident_type, COUNT(*) as count 
-                    FROM {$this->table} 
-                    WHERE driver_id = ? 
-                    GROUP BY incident_type";
-
+            $sql = "SELECT * FROM driver_incidents WHERE id = :id";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$driverId]);
+            $stmt->bindParam(':id', $incidentId, \PDO::PARAM_INT);
+            $stmt->execute();
 
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $counts = [];
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            Logger::error('Σφάλμα κατά την ανάκτηση περιστατικού', [
+                'incident_id' => $incidentId,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
 
-            foreach ($results as $row) {
-                $counts[$row['incident_type']] = $row['count'];
-            }
-
-            return $counts;
-        } catch (PDOException $e) {
-            Logger::error('Error in countIncidentsByType: ' . $e->getMessage());
-            return [];
-        }
-    }
-
-    /**
-     * Υπολογίζει το μέσο επίπεδο σοβαρότητας των συμβάντων ενός οδηγού
-     * 
-     * @param int $driverId ID του οδηγού
-     * @param string|null $incidentType Προαιρετικά φιλτράρισμα ανά τύπο συμβάντος
-     * @return float Μέσο επίπεδο σοβαρότητας
-     */
-    public function getAverageSeverity($driverId, $incidentType = null)
-    {
-        try {
-            $sql = "SELECT AVG(severity) as avg_severity 
-                    FROM {$this->table} 
-                    WHERE driver_id = ?";
-
-            $params = [$driverId];
-
-            if ($incidentType !== null) {
-                $sql .= " AND incident_type = ?";
-                $params[] = $incidentType;
-            }
-
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($params);
-
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $result ? floatval($result['avg_severity']) : 0;
-        } catch (PDOException $e) {
-            Logger::error('Error in getAverageSeverity: ' . $e->getMessage());
-            return 0;
-        }
-    }
-
-    /**
-     * Λαμβάνει τις τάσεις συμβάντων ενός οδηγού ανά έτος
-     * 
-     * @param int $driverId ID του οδηγού
-     * @param int $years Αριθμός ετών προς τα πίσω
-     * @return array Αριθμός συμβάντων ανά έτος
-     */
-    public function getIncidentTrendsByYear($driverId, $years = 5)
-    {
-        try {
-            $sql = "SELECT YEAR(incident_date) as year, COUNT(*) as count 
-                    FROM {$this->table} 
-                    WHERE driver_id = ? AND incident_date >= DATE_SUB(CURDATE(), INTERVAL ? YEAR)
-                    GROUP BY YEAR(incident_date) 
-                    ORDER BY year";
-
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$driverId, $years]);
-
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $trends = [];
-
-            // Έλεγχος στην πληρότητα των ετών
-            $currentYear = date('Y');
-            for ($i = 0; $i < $years; $i++) {
-                $year = $currentYear - $i;
-                $trends[$year] = 0;
-            }
-
-            foreach ($results as $row) {
-                $trends[$row['year']] = intval($row['count']);
-            }
-
-            // Ταξινόμηση με βάση το έτος (αύξουσα)
-            ksort($trends);
-
-            return $trends;
-        } catch (PDOException $e) {
-            Logger::error('Error in getIncidentTrendsByYear: ' . $e->getMessage());
-            return [];
-        }
-    }
-
-    /**
-     * Λαμβάνει το πιο πρόσφατο συμβάν ενός οδηγού
-     * 
-     * @param int $driverId ID του οδηγού
-     * @return array|null Δεδομένα συμβάντος ή null αν δεν βρέθηκε
-     */
-    public function getLatestIncident($driverId)
-    {
-        try {
-            $sql = "SELECT * FROM {$this->table} 
-                    WHERE driver_id = ? 
-                    ORDER BY incident_date DESC 
-                    LIMIT 1";
-
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$driverId]);
-
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            Logger::error('Error in getLatestIncident: ' . $e->getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Υπολογίζει το χρόνο από το τελευταίο συμβάν σε ημέρες
-     * 
-     * @param int $driverId ID του οδηγού
-     * @return int Αριθμός ημερών από το τελευταίο συμβάν ή -1 αν δεν υπάρχει
-     */
-    public function getDaysSinceLastIncident($driverId)
-    {
-        try {
-            $latestIncident = $this->getLatestIncident($driverId);
-
-            if (!$latestIncident) {
-                return -1; // Δεν υπάρχει συμβάν
-            }
-
-            $incidentDate = new \DateTime($latestIncident['incident_date']);
-            $today = new \DateTime();
-
-            return $incidentDate->diff($today)->days;
-        } catch (\Exception $e) {
-            Logger::error('Error in getDaysSinceLastIncident: ' . $e->getMessage());
-            return -1;
+            throw new DatabaseException('Σφάλμα κατά την ανάκτηση περιστατικού', [
+                'incident_id' => $incidentId,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
         }
     }
 }

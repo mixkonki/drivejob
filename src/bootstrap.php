@@ -31,8 +31,19 @@ if (ENVIRONMENT === 'development') {
     error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 }
 
-// Αρχικοποίηση του ExceptionHandler
-\Drivejob\Core\ExceptionHandler::register();
+// Αρχικοποίηση του ExceptionHandler αν δεν έχει απενεργοποιηθεί
+if (!defined('DISABLE_EXCEPTION_HANDLER') || !DISABLE_EXCEPTION_HANDLER) {
+    $exceptionHandler = new \Drivejob\Core\ExceptionHandler([
+        'debug' => ENVIRONMENT === 'development',
+        'log_exceptions' => true,
+        'display_errors' => ENVIRONMENT === 'development',
+        'error_view' => 'error',
+        'error_layout' => 'layout',
+        'error_views_path' => '/src/Views/errors/',
+        'default_error_message' => 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά αργότερα.'
+    ]);
+    $exceptionHandler->register();
+}
 
 // Αρχικοποίηση του Container
 $container = \Drivejob\Core\Container::getInstance();
@@ -40,9 +51,12 @@ $container = \Drivejob\Core\Container::getInstance();
 // Καταχώρηση των βασικών υπηρεσιών
 $container->set('pdo', function () {
     // Σύνδεση με τη βάση δεδομένων
-    require_once ROOT_DIR . '/config/database.php';
+    $pdo = require_once ROOT_DIR . '/config/database.php';
     return $pdo;
 });
+
+// Καταχώρηση των repositories
+require_once __DIR__ . '/container_bindings.php';
 
 // Αρχικοποίηση του Logger
 \Drivejob\Core\Logger::init();
@@ -71,7 +85,16 @@ if (!IS_CLI) {
     // Εκκίνηση της συνεδρίας
     Session::start();
 
-    // Έλεγχος για μη ενεργές συνεδρίες
+    // CSRF token bootstrap - ΜΗΝ δημιουργείς νέο αν υπάρχει ήδη
+    // Το CSRF::generateToken() θα το κάνει όταν χρειάζεται
+    if (!isset($_SESSION["csrf_token"]) || empty($_SESSION["csrf_token"])) {
+        $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+        $_SESSION["csrf_token_time"] = time();
+    }
+
+    // Έλεγχος για μη ενεργές συνεδρίες - ΠΡΟΣΩΡΙΝΑ ΑΠΕΝΕΡΓΟΠΟΙΗΜΕΝΟ
+    // Αυτό μπορεί να προκαλεί προβλήματα με το login
+    /*
     if (Session::isExpired(1800)) { // 30 λεπτά
         // Καταγραφή λήξης συνεδρίας
         \Drivejob\Core\Logger::info("Session expired due to inactivity: " . Session::getId());
@@ -81,7 +104,7 @@ if (!IS_CLI) {
             Session::destroy();
             Session::start();
             if (!headers_sent() && !isset($_GET['ajax'])) {
-                header('Location: ' . BASE_URL . 'login.php?expired=1');
+                header('Location: login.php?expired=1');
                 exit();
             }
         } else {
@@ -89,6 +112,7 @@ if (!IS_CLI) {
             Session::start();
         }
     }
+    */
 }
 
 // Επιστροφή του Container

@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Drivejob\Controllers\AuthController;
 use Drivejob\Core\Session;
 use Drivejob\Models\Driver\ProfileModel;
-use Drivejob\Models\CompaniesModel;
+use Drivejob\Models\Company\CompaniesModel;
 
 class AuthControllerTest extends TestCase
 {

@@ -8,7 +8,7 @@ use Drivejob\Core\Exceptions\DatabaseException;
 /**
  * Repository για τις εταιρείες
  */
-class CompaniesRepository extends BaseRepository
+class CompaniesRepository extends BaseRepository implements CompaniesRepositoryInterface
 {
     /**
      * @var string Το όνομα του πίνακα
@@ -30,10 +30,38 @@ class CompaniesRepository extends BaseRepository
         'postal_code',
         'website',
         'logo',
+        'company_logo',
         'description',
         'industry',
         'company_size',
         'founded_year',
+        'foundation_year',
+        'vat_number',
+        'position',
+        'social_linkedin',
+        'social_facebook',
+        'social_twitter',
+        'fleet_size',
+        'active_drivers',
+        'has_hr_system',
+        'has_payroll_system',
+        'has_training_program',
+        'has_fleet_management',
+        'has_telematics',
+        'has_route_optimization',
+        'maintenance_provider',
+        'average_hiring_time',
+        'has_legal_support',
+        'operates_internationally',
+        'transport_types',
+        'operating_countries',
+        'specializations',
+        'compliance_certifications',
+        'subscription_plan',
+        'subscription_expires_at',
+        'enabled_modules',
+        'monthly_job_posts',
+        'successful_hires',
         'is_verified',
         'verification_token',
         'reset_token',
@@ -52,14 +80,26 @@ class CompaniesRepository extends BaseRepository
     ];
 
     /**
+     * Βρίσκει μια εταιρεία με βάση το email
+     * 
+     * @param string $email Το email της εταιρείας
+     * @return array|null Τα δεδομένα της εταιρείας ή null αν δεν βρέθηκε
+     */
+    public function findByEmail($email)
+    {
+        return $this->findOne(['email' => $email]);
+    }
+
+    /**
      * Επιστρέφει μια εταιρεία με βάση το email
      *
      * @param string $email Το email της εταιρείας
      * @return array|null Η εταιρεία ή null αν δεν βρέθηκε
+     * @deprecated Χρησιμοποιήστε τη μέθοδο findByEmail αντί για αυτή
      */
     public function getCompanyByEmail($email)
     {
-        return $this->findOne(['email' => $email]);
+        return $this->findByEmail($email);
     }
 
     /**
@@ -262,6 +302,124 @@ class CompaniesRepository extends BaseRepository
                       WHERE c.is_verified = 1
                       GROUP BY c.id
                       ORDER BY c.last_login DESC
+                      LIMIT :limit";
+
+            return $this->query($query, ['limit' => $limit]);
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['limit' => $limit]);
+        }
+    }
+
+    /**
+     * Ενημερώνει το προφίλ μιας εταιρείας
+     * 
+     * @param int $id Το ID της εταιρείας
+     * @param array $data Τα δεδομένα του προφίλ
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateProfile($id, array $data)
+    {
+        return $this->update($id, $data);
+    }
+
+    /**
+     * Ενημερώνει την αξιολόγηση μιας εταιρείας
+     * 
+     * @param int $id Το ID της εταιρείας
+     * @param float $rating Η νέα αξιολόγηση
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateRating($id, $rating)
+    {
+        try {
+            $query = "UPDATE {$this->table} SET rating = :rating WHERE id = :id";
+            return $this->execute($query, ['id' => $id, 'rating' => $rating]) > 0;
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['id' => $id, 'rating' => $rating]);
+        }
+    }
+
+    /**
+     * Επιστρέφει τις εταιρείες με βάση την τοποθεσία
+     * 
+     * @param string $location Η τοποθεσία
+     * @param int $radius Η ακτίνα σε χιλιόμετρα
+     * @return array Οι εταιρείες στην συγκεκριμένη τοποθεσία
+     */
+    public function getCompaniesByLocation($location, $radius = 50)
+    {
+        try {
+            // Απλή υλοποίηση με βάση το όνομα της πόλης ή της χώρας
+            // Σε μια πραγματική εφαρμογή θα χρησιμοποιούσαμε γεωγραφικές συντεταγμένες
+            $query = "SELECT c.* FROM {$this->table} c
+                      WHERE (c.city LIKE :location OR c.country LIKE :location)
+                      AND c.is_verified = 1
+                      ORDER BY c.company_name";
+
+            return $this->query($query, ['location' => '%' . $location . '%']);
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['location' => '%' . $location . '%']);
+        }
+    }
+
+    /**
+     * Επιστρέφει τις εταιρείες με βάση τον κλάδο
+     * 
+     * @param string $industry Ο κλάδος
+     * @return array Οι εταιρείες στον συγκεκριμένο κλάδο
+     */
+    public function getCompaniesByIndustry($industry)
+    {
+        try {
+            $query = "SELECT c.* FROM {$this->table} c
+                      WHERE c.industry = :industry
+                      AND c.is_verified = 1
+                      ORDER BY c.company_name";
+
+            return $this->query($query, ['industry' => $industry]);
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['industry' => $industry]);
+        }
+    }
+
+    /**
+     * Επιστρέφει τις κορυφαίες εταιρείες με βάση την αξιολόγηση
+     * 
+     * @param int $limit Ο αριθμός αποτελεσμάτων
+     * @return array Οι κορυφαίες εταιρείες
+     */
+    public function getTopRatedCompanies($limit = 10)
+    {
+        try {
+            $query = "SELECT c.*, 
+                      COALESCE(AVG(cr.rating), 0) as average_rating,
+                      COUNT(DISTINCT cr.id) as rating_count
+                      FROM {$this->table} c
+                      LEFT JOIN company_ratings cr ON c.id = cr.company_id
+                      WHERE c.is_verified = 1
+                      GROUP BY c.id
+                      HAVING rating_count > 0
+                      ORDER BY average_rating DESC, rating_count DESC
+                      LIMIT :limit";
+
+            return $this->query($query, ['limit' => $limit]);
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['limit' => $limit]);
+        }
+    }
+
+    /**
+     * Επιστρέφει τις πρόσφατα εγγεγραμμένες εταιρείες
+     * 
+     * @param int $limit Ο αριθμός αποτελεσμάτων
+     * @return array Οι πρόσφατα εγγεγραμμένες εταιρείες
+     */
+    public function getRecentlyRegisteredCompanies($limit = 10)
+    {
+        try {
+            $query = "SELECT c.* FROM {$this->table} c
+                      WHERE c.is_verified = 1
+                      ORDER BY c.created_at DESC
                       LIMIT :limit";
 
             return $this->query($query, ['limit' => $limit]);

@@ -395,7 +395,65 @@ footer .footer-right img:hover {
     margin-bottom: 5px; /* Χώρος κάτω από την κεφαλίδα */
 }
 
+/* Στυλ για τα links του dropdown menu */
+.dropdown-menu a {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
 
+.dropdown-menu a:hover {
+    background-color: #f5f5f5;
+    border-radius: 3px;
+}
 
+/* Στυλ για τα icons στο dropdown menu */
+.dropdown-menu a i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+    color: #aa3636;
+}
 
+/* Dropdown divider για διαχωρισμό sections */
+.dropdown-divider {
+    height: 1px;
+    margin: 8px 0;
+    background-color: #e0e0e0;
+}
 
+/* Ειδικό στυλ για το dropdown button */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle {
+    background-color: #ffffff;
+    color: rgb(5, 5, 5);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.dropdown-toggle:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+/* Τοποθέτηση του dropdown menu */
+.dropdown-menu {
+    right: 0;
+    top: 100%;
+    margin-top: 5px;
+    min-width: 250px;
+    z-index: 1000;
+}

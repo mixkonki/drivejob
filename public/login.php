@@ -1,52 +1,53 @@
 <?php
-// public/login.php
-// Αυτόματη φόρτωση μέσω Composer
-require_once __DIR__ . '/../vendor/autoload.php';
-// Συμπερίληψη του config.php για σταθερές BASE_URL και ROOT_DIR
-require_once '../config/config.php';
 
+/**
+ * Login Page - Direct Entry Point with Diagnostics
+ * Loads the AuthController to show login form
+ */
+require_once __DIR__ . '/../src/bootstrap.php';
+
+use Drivejob\Controllers\AuthController;
+use Drivejob\Core\CSRF;
 use Drivejob\Core\Session;
 
-// Συμπερίληψη του header
-include ROOT_DIR . '/src/Views/partials/header.php';
+// Start session (already started in bootstrap but ensure it's active)
+Session::start();
 
-echo '<main>'; // Έναρξη του main
-?>
+// ΔΙΑΓΝΩΣΤΙΚΟΣ ΚΩΔΙΚΑΣ
+error_log("=== LOGIN PAGE LOADED ===");
+error_log("Session ID: " . session_id());
+error_log("Session Status: " . session_status());
+error_log("Has user_id: " . (Session::has('user_id') ? 'YES' : 'NO'));
+error_log("Has user_role: " . (Session::has('user_role') ? 'YES' : 'NO'));
+if (Session::has('user_id')) {
+    error_log("User ID: " . Session::get('user_id'));
+    error_log("User Role: " . Session::get('user_role'));
+}
+error_log("Session Data: " . print_r($_SESSION, true));
+error_log("Cookies: " . print_r($_COOKIE, true));
 
-<!-- Φόρμα Σύνδεσης -->
-<div class="container">
-<div class="login-form-container">
-        <h1>Σύνδεση</h1>
-        
-        <?php if (Session::has('login_error')) : ?>
-            <div class="error-message">
-                <?php echo Session::get('login_error'); ?>
-                <?php Session::remove('login_error'); ?>
-            </div>
-        <?php endif; ?>
-        
-        <form class="login-form" action="login_process.php" method="POST">
-            <!-- CSRF token -->
-            <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
-            
-            <!-- Πεδίο Email -->
-           <div>
-            <label for="email"></label>
-            <input class="login-input" type="email" id="email" name="email" placeholder="Εισάγετε το email σας" required>
-            </div>
-            <!-- Πεδίο Συνθηματικού -->
-            <div>
-            <label for="password"></label>
-            <input class="login-input" type="password" id="password" name="password" placeholder="Εισάγετε το συνθηματικό σας" required>
-            </div>
-            <!-- Κουμπί Σύνδεσης -->
-            <button class="login-btn" type="submit">Σύνδεση</button>
-        </form>
-        <p>Ξεχάσατε το συνθηματικό σας; <a href="password_recovery.php">Πατήστε εδώ</a></p>
-    </div>
-</div>
+// Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
+if (Session::has('user_id') && Session::has('user_role')) {
+    error_log("User already logged in, redirecting...");
+    $role = Session::get('user_role');
+    if ($role === 'driver') {
+        header('Location: ' . BASE_URL . 'drivers/profile.php');
+        exit();
+    } elseif ($role === 'company') {
+        header('Location: ' . BASE_URL . 'companies/profile.php');
+        exit();
+    } elseif ($role === 'admin') {
+        header('Location: ' . BASE_URL . 'admin/dashboard.php');
+        exit();
+    }
+}
 
-<?php
-echo '</main>'; // Κλείσιμο του main
-include ROOT_DIR . '/src/Views/partials/footer.php'; // Συμπερίληψη του footer
-?>
+// Prevent caching of this page
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+
+error_log("Showing login form...");
+
+// Create controller instance and show login form
+$controller = new AuthController();
+$controller->showLoginForm();

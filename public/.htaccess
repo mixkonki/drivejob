@@ -2,16 +2,23 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
     
+    # Προώθηση Authorization header σε FastCGI/PHP
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    
     # Μην επανεγγράψεις αρχεία και φακέλους που υπάρχουν
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     
     # Επανέγγραψε όλα τα άλλα στο index.php
     RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
 
-    
+# Fallback για setups χωρίς mod_rewrite:
+<IfModule mod_setenvif.c>
+    SetEnvIfNoCase Authorization "^(.*)" HTTP_AUTHORIZATION=$1
 </IfModule>
 
 <IfModule mod_headers.c>
-    Header set Content-Security-Policy "default-src 'self'; connect-src 'self' https://maps.googleapis.com blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;"
+    Header set Content-Security-Policy "default-src 'self'; connect-src 'self' https://maps.googleapis.com blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; object-src 'none'; base-uri 'self';"
 </IfModule>

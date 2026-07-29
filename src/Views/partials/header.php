@@ -23,7 +23,7 @@ if (!function_exists('isCurrentPage')) {
 // Έλεγχος για συνδεδεμένο χρήστη
 $isLoggedIn = Session::has('user_id');
 $userName = Session::has('user_name') ? Session::get('user_name') : '';
-$userRole = Session::has('role') ? Session::get('role') : '';
+$userRole = Session::has('user_role') ? Session::get('user_role') : '';
 ?>
 <!DOCTYPE html>
 <html lang="el">
@@ -36,6 +36,20 @@ $userRole = Session::has('role') ? Session::get('role') : '';
     <meta name="author" content="DriveJob">
     <meta name="csrf-token" content="<?php echo \Drivejob\Core\CSRF::getCurrentToken(); ?>">
 
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="DriveJob">
+    <meta name="msapplication-TileColor" content="#3b82f6">
+    <meta name="msapplication-config" content="<?php echo BASE_URL; ?>browserconfig.xml">
+    <link rel="manifest" href="<?php echo BASE_URL; ?>manifest.json">
+    <link rel="apple-touch-icon" href="<?php echo BASE_URL; ?>img/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?php echo BASE_URL; ?>img/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo BASE_URL; ?>img/icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?php echo BASE_URL; ?>img/icons/icon-72x72.png">
+
 
 
     <!-- Δυναμικός τίτλος σελίδας -->
@@ -47,8 +61,146 @@ $userRole = Session::has('role') ? Session::get('role') : '';
     <link rel="icon" href="<?php echo BASE_URL; ?>img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
+    <!-- Επιπλέον CSS αρχεία -->
+    <?php if (isset($extraCss) && is_array($extraCss)) : ?>
+        <?php foreach ($extraCss as $css) : ?>
+            <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/<?php echo $css; ?>">
+        <?php endforeach; ?>
+    <?php endif; ?>
+
     <!-- Σύνδεση του header.js -->
     <script src="<?php echo BASE_URL; ?>js/header.js" defer></script>
+
+    <!-- Επιπλέον JS αρχεία -->
+    <?php if (isset($extraJs) && is_array($extraJs)) : ?>
+        <?php foreach ($extraJs as $js) : ?>
+            <script src="<?php echo BASE_URL; ?>js/<?php echo $js; ?>" defer></script>
+        <?php endforeach; ?>
+    <?php endif; ?>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Register service worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('<?php echo BASE_URL; ?>sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered: ', registration);
+
+                        // Check for updates
+                        registration.addEventListener('updatefound', function() {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', function() {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New content is available, notify user
+                                    if (confirm('New version available! Reload to update?')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(function(registrationError) {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // Handle PWA install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', function(e) {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+
+            // Show custom install button or banner
+            const installBanner = document.createElement('div');
+            installBanner.id = 'pwa-install-banner';
+            installBanner.innerHTML = `
+                <div style="position: fixed; bottom: 20px; left: 20px; right: 20px;
+                           background: #3b82f6; color: white; padding: 15px;
+                           border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                           z-index: 10000; text-align: center;">
+                    <p style="margin: 0 0 10px 0; font-size: 14px;">📱 Install DriveJob on your device!</p>
+                    <button onclick="installPWA()" style="background: white; color: #3b82f6;
+                              border: none; padding: 8px 16px; border-radius: 5px;
+                              font-weight: bold; cursor: pointer;">Install</button>
+                    <button onclick="dismissInstall()" style="background: transparent; color: white;
+                              border: 1px solid white; padding: 8px 16px; border-radius: 5px;
+                              margin-left: 10px; cursor: pointer;">Later</button>
+                </div>
+            `;
+            document.body.appendChild(installBanner);
+
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                const banner = document.getElementById('pwa-install-banner');
+                if (banner) banner.remove();
+            }, 10000);
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function(choiceResult) {
+                    console.log('User choice:', choiceResult.outcome);
+                    deferredPrompt = null;
+
+                    // Remove install banner
+                    const banner = document.getElementById('pwa-install-banner');
+                    if (banner) banner.remove();
+                });
+            }
+        }
+
+        function dismissInstall() {
+            const banner = document.getElementById('pwa-install-banner');
+            if (banner) banner.remove();
+            deferredPrompt = null;
+        }
+
+        // Handle app installed event
+        window.addEventListener('appinstalled', function(evt) {
+            console.log('DriveJob PWA was installed successfully!');
+            // Analytics tracking
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'pwa_installed', {
+                    event_category: 'pwa',
+                    event_label: 'DriveJob PWA'
+                });
+            }
+        });
+
+        // Handle online/offline status
+        window.addEventListener('online', function() {
+            console.log('Back online');
+            // Show online notification
+            showNetworkStatus('Back online!', 'success');
+        });
+
+        window.addEventListener('offline', function() {
+            console.log('Gone offline');
+            // Show offline notification
+            showNetworkStatus('You are offline. Some features may not work.', 'warning');
+        });
+
+        function showNetworkStatus(message, type) {
+            const statusDiv = document.createElement('div');
+            statusDiv.style.cssText = `
+                position: fixed; top: 20px; right: 20px; z-index: 10001;
+                padding: 10px 15px; border-radius: 5px; color: white;
+                font-weight: bold; max-width: 300px;
+                ${type === 'success' ? 'background: #10b981;' : 'background: #f59e0b;'}
+            `;
+            statusDiv.textContent = message;
+            document.body.appendChild(statusDiv);
+
+            setTimeout(() => {
+                statusDiv.remove();
+            }, 3000);
+        }
+    </script>
 </head>
 
 <body>
@@ -117,20 +269,24 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                             $pdo = $GLOBALS['pdo'] ?? null;
 
                             if ($pdo) {
-                                $query = "SELECT logo FROM companies WHERE id = ?";
+                                $query = "SELECT company_logo FROM companies WHERE id = ?";
                                 $stmt = $pdo->prepare($query);
                                 $stmt->execute([$companyId]);
                                 $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-                                if ($result && !empty($result['logo'])) {
-                                    $profileImage = BASE_URL . $result['logo'];
+                                if ($result && !empty($result['company_logo'])) {
+                                    $profileImage = BASE_URL . $result['company_logo'];
                                 }
                             }
                         }
 
                         // Αν δεν βρέθηκε εικόνα, χρησιμοποίησε την προεπιλεγμένη
                         if (empty($profileImage)) {
-                            $profileImage = BASE_URL . 'img/profile_placeholder.png';
+                            if ($userRole === 'company') {
+                                $profileImage = BASE_URL . 'img/default_company_logo.png';
+                            } else {
+                                $profileImage = BASE_URL . 'img/user_icon.png';
+                            }
                         }
                         ?>
                         <style>
@@ -149,21 +305,39 @@ $userRole = Session::has('role') ? Session::get('role') : '';
                             <?php echo htmlspecialchars($userName ?: 'Χρήστης'); ?>
                         </div>
                         <!-- Επιλογές προφίλ, αποσύνδεσης -->
-                        <?php if ($userRole === 'company') :
-                        ?>
-                            <a href="<?php echo BASE_URL; ?>companies/company_profile">
+                        <?php if ($userRole === 'admin') : ?>
+                            <a href="<?php echo BASE_URL; ?>admin/monitoring/dashboard">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Admin Dashboard
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>admin/users">
+                                <i class="fas fa-users"></i>
+                                Διαχείριση Χρηστών
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>admin/job-listings">
+                                <i class="fas fa-briefcase"></i>
+                                Διαχείριση Αγγελιών
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>admin/analytics">
+                                <i class="fas fa-chart-line"></i>
+                                Στατιστικά
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>admin/monitoring/dashboard">
+                                <i class="fas fa-server"></i>
+                                System Monitoring
+                            </a>
+                            <div class="dropdown-divider"></div>
+                        <?php elseif ($userRole === 'company') : ?>
+                            <a href="<?php echo BASE_URL; ?>companies/profile">
                                 <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
                                 Προφίλ
                             </a>
-                        <?php
-                        else :
-                        ?>
-                            <a href="<?php echo BASE_URL; ?>drivers/driver_profile">
+                        <?php else : ?>
+                            <a href="<?php echo BASE_URL; ?>drivers/profile">
                                 <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
                                 Προφίλ
                             </a>
-                        <?php
-                        endif; ?>
+                        <?php endif; ?>
                         <a href="<?php echo BASE_URL; ?>logout.php">
                             <img src="<?php echo BASE_URL; ?>img/logout_icon.png" alt="Logout Icon" />
                             Αποσύνδεση

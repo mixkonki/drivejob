@@ -11,6 +11,7 @@ composer.phar
 
 # Αρχεία ρυθμίσεων που περιέχουν ευαίσθητα δεδομένα
 .env
+.env.testing.local
 config.php
 
 # Προσωρινά αρχεία
@@ -27,3 +28,14 @@ Thumbs.db
 *.sql
 *.sqlite
 "@ | Out-File -FilePath ".gitignore" -Encoding utf8
+# Refactoring scripts
+/verify-refactoring.php
+/refactoring-phase*.php
+/migrate-*.php
+
+# Test αρχεία και directories
+/tests/temp/
+/tests/logs/
+/coverage/
+phpunit.cache
+.phpunit.result.cache

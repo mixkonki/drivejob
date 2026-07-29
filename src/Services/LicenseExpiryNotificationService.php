@@ -55,7 +55,7 @@ class LicenseExpiryNotificationService
      * @param SmsService $smsService Υπηρεσία αποστολής SMS
      * @param array $config Προαιρετικές ρυθμίσεις περιόδων ειδοποίησης
      */
-    public function __construct(PDO $pdo, EmailService $emailService, SmsService $smsService, array $config = null)
+    public function __construct(PDO $pdo, EmailService $emailService, SmsService $smsService, ?array $config = null)
     {
         $this->pdo = $pdo;
         $this->emailService = $emailService;

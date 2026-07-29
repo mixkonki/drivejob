@@ -6,8 +6,11 @@ use Drivejob\Models\Driver\ProfileModel;
 use Drivejob\Models\Driver\LicenseModel;
 use Drivejob\Models\Driver\CertificationModel;
 use Drivejob\Models\Driver\SkillModel;
-use Drivejob\Models\Driver\RatingModel;
+use Drivejob\Services\Rating\RatingServiceInterface;
+use Drivejob\Services\Rating\RatingService;
 use Drivejob\Utils\DriverResumePDF;
+use Drivejob\Services\FileService;
+use Drivejob\Core\Logger;
 
 class DriverResumeController
 {
@@ -15,7 +18,8 @@ class DriverResumeController
     private $licenseModel;
     private $certificationModel;
     private $skillModel;
-    private $ratingModel;
+    private $ratingService;
+    private $fileService;
     private $pdo;
 
     public function __construct($pdo)
@@ -25,7 +29,12 @@ class DriverResumeController
         $this->licenseModel = new LicenseModel($pdo);
         $this->certificationModel = new CertificationModel($pdo);
         $this->skillModel = new SkillModel($pdo);
-        $this->ratingModel = new RatingModel($pdo);
+
+        // Χρήση του container για να πάρουμε το rating_service αν υπάρχει
+        $container = \Drivejob\Core\Container::getInstance();
+        $this->ratingService = $container->get('rating_service') ?? new RatingService($pdo);
+
+        $this->fileService = new FileService();
     }
 
     /**
@@ -73,7 +82,7 @@ class DriverResumeController
         $driverAdrCertificates = $this->certificationModel->getDriverAdrCertificates($id);
         $driverOperatorLicenses = $this->certificationModel->getDriverOperatorLicenses($id);
         $driverTachographCard = $this->certificationModel->getDriverTachographCards($id);
-        $averageRating = $this->ratingModel->getDriverRating($id);
+        $averageRating = $this->ratingService->getDriverRating($id);
 
         // Δημιουργία του PDF
         $options = [
@@ -144,6 +153,42 @@ class DriverResumeController
             'language_english' => $language_english
         ];
 
+        // Επεξεργασία των αρχείων που ανεβάζονται
+        if (isset($_FILES['resume_file']) && $_FILES['resume_file']['error'] === UPLOAD_ERR_OK) {
+            $resumePath = $this->uploadFile($_FILES['resume_file'], 'resume_file', 'document');
+            if ($resumePath) {
+                $updateData['resume_file'] = $resumePath;
+                Logger::info('Επιτυχές ανέβασμα βιογραφικού', [
+                    'driver_id' => $id,
+                    'file_path' => $resumePath
+                ]);
+            } else {
+                $_SESSION['error_message'] = 'Υπήρξε ένα πρόβλημα κατά το ανέβασμα του βιογραφικού.';
+                header('Location: ' . BASE_URL . 'drivers/edit-resume');
+                exit();
+            }
+        }
+
+        // Επεξεργασία άλλων αρχείων
+        $fileTypes = [
+            'profile_image' => 'image',
+            'additional_document' => 'document'
+        ];
+
+        foreach ($fileTypes as $fileField => $category) {
+            if (isset($_FILES[$fileField]) && $_FILES[$fileField]['error'] === UPLOAD_ERR_OK) {
+                $filePath = $this->uploadFile($_FILES[$fileField], $fileField, $category);
+                if ($filePath) {
+                    $updateData[$fileField] = $filePath;
+                    Logger::info('Επιτυχές ανέβασμα αρχείου', [
+                        'driver_id' => $id,
+                        'file_type' => $fileField,
+                        'file_path' => $filePath
+                    ]);
+                }
+            }
+        }
+
         $success = $this->profileModel->updateProfile($id, $updateData);
 
         if ($success) {
@@ -204,10 +249,35 @@ class DriverResumeController
         $driverAdrCertificates = $this->certificationModel->getDriverAdrCertificates($id);
         $driverOperatorLicenses = $this->certificationModel->getDriverOperatorLicenses($id);
         $driverTachographCard = $this->certificationModel->getDriverTachographCards($id);
-        $averageRating = $this->ratingModel->getDriverRating($id);
+        $averageRating = $this->ratingService->getDriverRating($id);
 
         // Φόρτωση της προβολής επεξεργασίας βιογραφικού
         include ROOT_DIR . '/src/Views/drivers/edit-resume.php';
+    }
+
+    /**
+     * Ανεβάζει ένα αρχείο χρησιμοποιώντας το FileService
+     * 
+     * @param array $file Τα δεδομένα του αρχείου
+     * @param string $fileType Ο τύπος του αρχείου
+     * @param string $category Η κατηγορία του αρχείου (image, document, all)
+     * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
+     */
+    private function uploadFile($file, $fileType, $category = 'all')
+    {
+        $result = $this->fileService->uploadFile($file, $fileType, $category);
+
+        if ($result['success']) {
+            return $result['file_path'];
+        }
+
+        Logger::error('Αποτυχία ανεβάσματος αρχείου', [
+            'file_type' => $fileType,
+            'error' => $result['message'],
+            'error_code' => $result['error_code'] ?? 'unknown'
+        ]);
+
+        return false;
     }
 
     /**

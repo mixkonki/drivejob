@@ -2,6 +2,9 @@
 
 namespace Drivejob\Core;
 
+use Drivejob\Core\Session;
+use Drivejob\Core\Logger;
+
 class CSRF
 {
     /**
@@ -26,10 +29,20 @@ class CSRF
      * @return bool true εάν το token είναι έγκυρο, false διαφορετικά
      */
     public static function validateToken($token, $maxTokenAge = 7200) // 2 ώρες προεπιλογή
-
     {
         Session::start();
+        // Καταγραφή για αποσφαλμάτωση
+        Logger::debug('CSRF validateToken called', [
+            'session_id' => session_id(),
+            'session_data' => $_SESSION,
+            'has_csrf_token' => Session::has('csrf_token')
+        ]);
+
         if (!Session::has('csrf_token')) {
+            Logger::warning('CSRF token not found in session', [
+                'session_id' => session_id(),
+                'session_data' => $_SESSION
+            ]);
             return false;
         }
 
@@ -37,12 +50,18 @@ class CSRF
         if (Session::has('csrf_token_time')) {
             $tokenTime = Session::get('csrf_token_time');
             if ((time() - $tokenTime) > $maxTokenAge) {
-            // Το token έχει λήξει
-                self::generateToken();
-            // Δημιουργία νέου token
+                // Το token έχει λήξει
+                self::generateToken(); // Δημιουργία νέου token
                 return false;
             }
         }
+
+        // Καταγραφή για αποσφαλμάτωση
+        Logger::debug('CSRF validation', [
+            'session_token' => Session::get('csrf_token'),
+            'provided_token' => $token,
+            'match' => hash_equals(Session::get('csrf_token'), $token)
+        ]);
 
         return hash_equals(Session::get('csrf_token'), $token);
     }
@@ -54,7 +73,31 @@ class CSRF
      */
     public static function tokenField()
     {
-        $token = self::generateToken();
+        Session::start();
+
+        // Έλεγχος αν υπάρχει ήδη token
+        if (Session::has('csrf_token')) {
+            $token = Session::get('csrf_token');
+
+            // Έλεγχος αν το token έχει λήξει
+            if (Session::has('csrf_token_time')) {
+                $tokenTime = Session::get('csrf_token_time');
+                if ((time() - $tokenTime) > 7200) { // 2 ώρες
+                    // Το token έχει λήξει, δημιουργία νέου
+                    $token = self::generateToken();
+                }
+            }
+        } else {
+            // Δεν υπάρχει token, δημιουργία νέου
+            $token = self::generateToken();
+        }
+
+        // Καταγραφή για αποσφαλμάτωση
+        Logger::debug('CSRF token field generated', [
+            'token' => $token,
+            'session_id' => Session::getId()
+        ]);
+
         return '<input type="hidden" name="csrf_token" value="' . $token . '">';
     }
 

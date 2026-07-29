@@ -4,6 +4,7 @@ namespace Drivejob\Models;
 
 use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
+use Drivejob\Services\EmailService;
 
 /**
  * Μοντέλο για τη διαχείριση της αυθεντικοποίησης και εξουσιοδότησης
@@ -11,8 +12,7 @@ use Drivejob\Core\Session;
 class AuthModel
 {
     private $pdo;
-    private $profileModel;
-    private $companiesModel;
+    private $emailService;
 
     /**
      * Κατασκευαστής του μοντέλου
@@ -20,8 +20,19 @@ class AuthModel
     public function __construct($pdo)
     {
         $this->pdo = $pdo;
-        $this->profileModel = new ProfileModel($pdo);
-        $this->companiesModel = new CompaniesModel($pdo);
+
+        // Initialize EmailService
+        if (defined('SMTP_HOST') && defined('SMTP_PORT')) {
+            $this->emailService = new EmailService(
+                SMTP_HOST,
+                SMTP_PORT,
+                SMTP_USERNAME,
+                SMTP_PASSWORD,
+                SMTP_FROM_EMAIL,
+                SMTP_FROM_NAME,
+                EMAIL_DEBUG ?? false
+            );
+        }
     }
 
     /**
@@ -35,18 +46,31 @@ class AuthModel
     public function authenticate($email, $password, $role = null)
     {
         try {
+            Logger::debug('AuthModel::authenticate called', [
+                'email' => $email,
+                'role' => $role,
+                'session_id' => session_id()
+            ]);
+
             // Έλεγχος αν ο χρήστης είναι οδηγός
             if ($role === 'driver' || $role === null) {
+                Logger::debug('Attempting driver authentication');
                 $driver = $this->authenticateDriver($email, $password);
                 if ($driver) {
+                    Logger::debug('Driver authentication successful', [
+                        'driver_id' => $driver['id'],
+                        'is_verified' => $driver['is_verified']
+                    ]);
                     return [
                         'user_id' => $driver['id'],
                         'role' => 'driver',
                         'email' => $driver['email'],
                         'name' => $driver['first_name'] . ' ' . $driver['last_name'],
                         'is_verified' => $driver['is_verified'],
-                        'is_active' => $driver['is_active']
+                        'is_active' => $driver['is_verified'] // Χρησιμοποιούμε το is_verified αντί για is_active
                     ];
+                } else {
+                    Logger::debug('Driver authentication failed');
                 }
             }
 
@@ -60,20 +84,20 @@ class AuthModel
                         'email' => $company['email'],
                         'name' => $company['company_name'],
                         'is_verified' => $company['is_verified'],
-                        'is_active' => $company['is_active']
+                        'is_active' => $company['is_verified'] // Χρησιμοποιούμε το is_verified αντί για is_active
                     ];
                 }
             }
 
-            // Έλεγχος αν ο χρήστης είναι διαχειριστής
+            // Έλεγχος αν ο χρήστης είναι διαχειριστής (από τον πίνακα users)
             if ($role === 'admin' || $role === null) {
                 $admin = $this->authenticateAdmin($email, $password);
                 if ($admin) {
                     return [
                         'user_id' => $admin['id'],
-                        'role' => 'admin',
-                        'email' => $admin['email'],
-                        'name' => $admin['name'],
+                        'role' => $admin['role'], // Χρησιμοποιούμε το role από τη βάση
+                        'email' => $admin['email'], // Χρησιμοποιούμε το email από τη βάση
+                        'name' => 'Administrator',
                         'is_verified' => 1,
                         'is_active' => 1
                     ];
@@ -97,15 +121,37 @@ class AuthModel
     private function authenticateDriver($email, $password)
     {
         try {
+            Logger::debug('AuthModel::authenticateDriver called', [
+                'email' => $email,
+                'session_id' => session_id()
+            ]);
+
             $query = "SELECT * FROM drivers WHERE email = ?";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([$email]);
             $driver = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-            if ($driver && password_verify($password, $driver['password'])) {
-                // Ενημέρωση της ημερομηνίας τελευταίας σύνδεσης
-                $this->updateLastLogin('drivers', $driver['id']);
-                return $driver;
+            Logger::debug('Driver query result', [
+                'driver_found' => !empty($driver),
+                'driver_data' => $driver ? [
+                    'id' => $driver['id'],
+                    'email' => $driver['email'],
+                    'is_verified' => $driver['is_verified'] ?? null,
+                    'is_active' => $driver['is_active'] ?? null
+                ] : null
+            ]);
+
+            if ($driver) {
+                $passwordVerified = password_verify($password, $driver['password']);
+                Logger::debug('Password verification result', [
+                    'password_verified' => $passwordVerified
+                ]);
+
+                if ($passwordVerified) {
+                    // Ενημέρωση της ημερομηνίας τελευταίας σύνδεσης
+                    $this->updateLastLogin('drivers', $driver['id']);
+                    return $driver;
+                }
             }
 
             return false;
@@ -153,15 +199,42 @@ class AuthModel
     private function authenticateAdmin($email, $password)
     {
         try {
-            $query = "SELECT * FROM admins WHERE email = ?";
+            Logger::debug('AuthModel::authenticateAdmin called', [
+                'email' => $email,
+                'session_id' => session_id()
+            ]);
+
+            // Χρησιμοποιούμε τον πίνακα users και ελέγχουμε και email και username
+            // Επίσης απαιτούμε role = 'admin'
+            $query = "SELECT * FROM users WHERE (email = ? OR username = ?) AND role = 'admin'";
             $stmt = $this->pdo->prepare($query);
-            $stmt->execute([$email]);
+            $stmt->execute([$email, $email]);
             $admin = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-            if ($admin && password_verify($password, $admin['password'])) {
-                // Ενημέρωση της ημερομηνίας τελευταίας σύνδεσης
-                $this->updateLastLogin('admins', $admin['id']);
-                return $admin;
+            Logger::debug('Admin query result', [
+                'admin_found' => !empty($admin),
+                'admin_data' => $admin ? [
+                    'id' => $admin['id'],
+                    'email' => $admin['email'],
+                    'username' => $admin['username'],
+                    'role' => $admin['role']
+                ] : null
+            ]);
+
+            if ($admin) {
+                $passwordVerified = password_verify($password, $admin['password']);
+                Logger::debug('Password verification result', [
+                    'password_verified' => $passwordVerified
+                ]);
+
+                if ($passwordVerified) {
+                    // Ενημέρωση last_login
+                    $updateQuery = "UPDATE users SET last_login = NOW() WHERE id = ?";
+                    $updateStmt = $this->pdo->prepare($updateQuery);
+                    $updateStmt->execute([$admin['id']]);
+
+                    return $admin;
+                }
             }
 
             return false;
@@ -314,12 +387,15 @@ class AuthModel
             }
 
             // Έλεγχος στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             $query = "SELECT COUNT(*) FROM admins WHERE email = ?";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([$email]);
             if ($stmt->fetchColumn() > 0) {
                 return true;
             }
+            */
 
             return false;
         } catch (\PDOException $e) {
@@ -348,10 +424,71 @@ class AuthModel
      */
     private function sendVerificationEmail($email, $code, $role)
     {
-        // Σε πραγματικό περιβάλλον, εδώ θα υπήρχε κώδικας για την αποστολή email
-        // Για τους σκοπούς του refactoring, απλά καταγράφουμε το γεγονός
-        Logger::info("Verification email sent to $email with code $code for role $role");
-        return true;
+        try {
+            // Αν δεν υπάρχει EmailService, κάνε logging και επέστρεψε true
+            if (!$this->emailService) {
+                Logger::info("Verification email sent to $email with code $code for role $role (EmailService not available)");
+                return true;
+            }
+
+            $verifyLink = BASE_URL . 'auth/verify/' . $code;
+            $roleText = $role === 'driver' ? 'Οδηγός' : 'Εταιρεία';
+
+            $subject = 'Επαλήθευση Λογαριασμού - DriveJob';
+
+            $message = "
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset='UTF-8'>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background-color: #c62828; color: white; padding: 20px; text-align: center; }
+                    .content { background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; }
+                    .button { display: inline-block; padding: 12px 30px; background-color: #c62828; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='header'>
+                        <h1>DriveJob</h1>
+                    </div>
+                    <div class='content'>
+                        <h2>Καλώς ήρθατε στο DriveJob!</h2>
+                        <p>Ευχαριστούμε για την εγγραφή σας ως <strong>$roleText</strong>.</p>
+                        <p>Για να ολοκληρώσετε την εγγραφή σας, παρακαλούμε επαληθεύστε τη διεύθυνση email σας.</p>
+                        <p style='text-align: center;'>
+                            <a href='$verifyLink' class='button'>Επαλήθευση Email</a>
+                        </p>
+                        <p>Ή αντιγράψτε και επικολλήστε αυτόν τον σύνδεσμο στον browser σας:</p>
+                        <p style='word-break: break-all;'><a href='$verifyLink'>$verifyLink</a></p>
+                        <p><strong>Σημαντικό:</strong> Ο σύνδεσμος θα λήξει σε 24 ώρες.</p>
+                        <p>Αν δεν δημιουργήσατε λογαριασμό στο DriveJob, αγνοήστε αυτό το email.</p>
+                    </div>
+                    <div class='footer'>
+                        <p>&copy; 2025 DriveJob. Όλα τα δικαιώματα κατοχυρωμένα.</p>
+                        <p>Αυτό είναι ένα αυτοματοποιημένο email. Παρακαλούμε μην απαντήσετε.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            ";
+
+            $result = $this->emailService->send($email, $subject, $message);
+
+            if ($result) {
+                Logger::info("Verification email sent successfully to $email for role $role");
+            } else {
+                Logger::error("Failed to send verification email to $email");
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            Logger::error('Error sending verification email: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -453,6 +590,80 @@ class AuthModel
     }
 
     /**
+     * Αποστολή συνδέσμου επαναφοράς συνθηματικού
+     *
+     * @param string $email Email του χρήστη
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function sendPasswordResetLink($email)
+    {
+        try {
+            // Έλεγχος αν υπάρχει χρήστης με το συγκεκριμένο email
+            if (!$this->emailExists($email)) {
+                return false;
+            }
+
+            // Δημιουργία του κωδικού επαναφοράς
+            $resetCode = $this->generateVerificationCode();
+            $resetExpires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+            // Ενημέρωση του λογαριασμού στη βάση δεδομένων
+            $this->updateResetCode($email, $resetCode, $resetExpires);
+
+            // Αποστολή email επαναφοράς
+            $this->sendResetEmail($email, $resetCode);
+
+            return true;
+        } catch (\Exception $e) {
+            Logger::error('Error in sendPasswordResetLink: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Έλεγχος εγκυρότητας του token επαναφοράς
+     *
+     * @param string $token Token επαναφοράς
+     * @return bool Αν το token είναι έγκυρο
+     */
+    public function isValidResetToken($token)
+    {
+        try {
+            // Έλεγχος στον πίνακα drivers
+            $query = "SELECT COUNT(*) FROM drivers WHERE reset_code = ? AND reset_expires > NOW()";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$token]);
+            if ($stmt->fetchColumn() > 0) {
+                return true;
+            }
+
+            // Έλεγχος στον πίνακα companies
+            $query = "SELECT COUNT(*) FROM companies WHERE reset_code = ? AND reset_expires > NOW()";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$token]);
+            if ($stmt->fetchColumn() > 0) {
+                return true;
+            }
+
+            // Έλεγχος στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
+            $query = "SELECT COUNT(*) FROM admins WHERE reset_code = ? AND reset_expires > NOW()";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$token]);
+            if ($stmt->fetchColumn() > 0) {
+                return true;
+            }
+            */
+
+            return false;
+        } catch (\PDOException $e) {
+            Logger::error('Error in isValidResetToken: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Αποστολή email επαναφοράς κωδικού πρόσβασης
      *
      * @param string $email Email του χρήστη
@@ -505,9 +716,12 @@ class AuthModel
             $stmt->execute([$resetCode, $resetExpires, $email]);
 
             // Ενημέρωση στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             $query = "UPDATE admins SET reset_code = ?, reset_expires = ? WHERE email = ?";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([$resetCode, $resetExpires, $email]);
+            */
 
             return true;
         } catch (\PDOException $e) {
@@ -525,10 +739,70 @@ class AuthModel
      */
     private function sendResetEmail($email, $resetCode)
     {
-        // Σε πραγματικό περιβάλλον, εδώ θα υπήρχε κώδικας για την αποστολή email
-        // Για τους σκοπούς του refactoring, απλά καταγράφουμε το γεγονός
-        Logger::info("Password reset email sent to $email with code $resetCode");
-        return true;
+        try {
+            // Αν δεν υπάρχει EmailService, κάνε logging και επέστρεψε true
+            if (!$this->emailService) {
+                Logger::info("Password reset email sent to $email with code $resetCode (EmailService not available)");
+                return true;
+            }
+
+            $resetLink = BASE_URL . 'auth/reset-password/' . $resetCode;
+
+            $subject = 'Επαναφορά Κωδικού Πρόσβασης - DriveJob';
+
+            $message = "
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset='UTF-8'>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background-color: #c62828; color: white; padding: 20px; text-align: center; }
+                    .content { background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; }
+                    .button { display: inline-block; padding: 12px 30px; background-color: #c62828; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='header'>
+                        <h1>DriveJob</h1>
+                    </div>
+                    <div class='content'>
+                        <h2>Επαναφορά Κωδικού Πρόσβασης</h2>
+                        <p>Λάβαμε αίτημα για επαναφορά του κωδικού πρόσβασής σας.</p>
+                        <p>Κάντε κλικ στο παρακάτω κουμπί για να επαναφέρετε τον κωδικό σας:</p>
+                        <p style='text-align: center;'>
+                            <a href='$resetLink' class='button'>Επαναφορά Κωδικού</a>
+                        </p>
+                        <p>Ή αντιγράψτε και επικολλήστε αυτόν τον σύνδεσμο στον browser σας:</p>
+                        <p style='word-break: break-all;'><a href='$resetLink'>$resetLink</a></p>
+                        <p><strong>Σημαντικό:</strong> Ο σύνδεσμος θα λήξει σε 1 ώρα.</p>
+                        <p>Αν δεν ζητήσατε επαναφορά κωδικού, αγνοήστε αυτό το email. Ο λογαριασμός σας παραμένει ασφαλής.</p>
+                    </div>
+                    <div class='footer'>
+                        <p>&copy; 2025 DriveJob. Όλα τα δικαιώματα κατοχυρωμένα.</p>
+                        <p>Αυτό είναι ένα αυτοματοποιημένο email. Παρακαλούμε μην απαντήσετε.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            ";
+
+            $result = $this->emailService->send($email, $subject, $message);
+
+            if ($result) {
+                Logger::info("Password reset email sent successfully to $email");
+            } else {
+                Logger::error("Failed to send password reset email to $email");
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            Logger::error('Error sending reset email: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -596,6 +870,8 @@ class AuthModel
             }
 
             // Έλεγχος στον πίνακα admins
+            // Προσωρινά απενεργοποιημένο επειδή ο πίνακας 'admins' δεν υπάρχει
+            /*
             $query = "SELECT id FROM admins WHERE reset_code = ? AND reset_expires > NOW()";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([$resetCode]);
@@ -607,6 +883,7 @@ class AuthModel
                     'table' => 'admins'
                 ];
             }
+            */
 
             return false;
         } catch (\PDOException $e) {
@@ -741,5 +1018,49 @@ class AuthModel
     public function logout()
     {
         Session::destroy();
+    }
+
+    /**
+     * Επαναποστέλλει το email επαλήθευσης στον χρήστη
+     *
+     * @param int $userId Το ID του χρήστη
+     * @return bool Επιτυχία ή αποτυχία
+     */
+    public function resendVerificationEmail($userId)
+    {
+        try {
+            // Ανάκτηση των στοιχείων του χρήστη
+            $role = Session::get('role');
+            $table = $this->getTableByRole($role);
+
+            $query = "SELECT * FROM $table WHERE id = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$userId]);
+            $user = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$user) {
+                Logger::error("User not found for resendVerificationEmail: $userId");
+                return false;
+            }
+
+            // Δημιουργία νέου token επαλήθευσης
+            $verificationCode = $this->generateVerificationCode();
+            $verificationExpires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+            // Αποθήκευση του νέου token στη βάση δεδομένων
+            $updateQuery = "UPDATE $table SET verification_code = ?, verification_expires = ? WHERE id = ?";
+            $updateStmt = $this->pdo->prepare($updateQuery);
+            $updateStmt->execute([$verificationCode, $verificationExpires, $userId]);
+
+            // Αποστολή του email επαλήθευσης
+            $email = $user['email'];
+            $name = $role === 'driver' ? $user['first_name'] . ' ' . $user['last_name'] : $user['company_name'];
+
+            // Αποστολή του email επαλήθευσης
+            return $this->sendVerificationEmail($email, $verificationCode, $role);
+        } catch (\Exception $e) {
+            Logger::error('Error in resendVerificationEmail: ' . $e->getMessage());
+            return false;
+        }
     }
 }

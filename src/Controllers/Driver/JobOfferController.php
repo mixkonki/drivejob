@@ -16,11 +16,12 @@ use Drivejob\Repositories\JobOfferRepository;
 use Drivejob\Repositories\DriversRepository;
 use Drivejob\Repositories\CompaniesRepository;
 use Drivejob\Helpers\JsonHelper;
+use Drivejob\Services\FileService;
 
 /**
  * Controller για τις προσφορές εργασίας
  */
-class JobOfferController
+class JobOfferController extends \Drivejob\Controllers\BaseController
 {
     /**
      * @var JobOfferRepository Το repository για τις προσφορές εργασίας
@@ -36,6 +37,11 @@ class JobOfferController
      * @var CompaniesRepository Το repository για τις εταιρείες
      */
     private $companiesRepository;
+
+    /**
+     * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
+     */
+    private $fileService;
 
     /**
      * Constructor
@@ -56,6 +62,34 @@ class JobOfferController
         $this->jobOfferRepository = new JobOfferRepository($pdo);
         $this->driversRepository = new DriversRepository($pdo);
         $this->companiesRepository = new CompaniesRepository($pdo);
+
+        // Αρχικοποίηση του FileService
+        $this->fileService = new FileService();
+    }
+
+    /**
+     * Ανεβάζει ένα αρχείο χρησιμοποιώντας το FileService
+     * 
+     * @param array $file Τα δεδομένα του αρχείου
+     * @param string $fileType Ο τύπος του αρχείου
+     * @param string $category Η κατηγορία του αρχείου (image, document, all)
+     * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
+     */
+    private function uploadFile($file, $fileType, $category = 'all')
+    {
+        $result = $this->fileService->uploadFile($file, $fileType, $category);
+
+        if ($result['success']) {
+            return $result['file_path'];
+        }
+
+        Logger::error('Αποτυχία ανεβάσματος αρχείου', [
+            'file_type' => $fileType,
+            'error' => $result['message'],
+            'error_code' => $result['error_code'] ?? 'unknown'
+        ]);
+
+        return false;
     }
 
     /**
@@ -75,7 +109,7 @@ class JobOfferController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job offer send');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
@@ -145,6 +179,45 @@ class JobOfferController
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
+
+            // Επεξεργασία των αρχείων που ανεβάζονται
+            if (isset($_FILES['offer_document']) && $_FILES['offer_document']['error'] === UPLOAD_ERR_OK) {
+                $documentPath = $this->uploadFile($_FILES['offer_document'], 'offer_document', 'document');
+                if ($documentPath) {
+                    $data['document_path'] = $documentPath;
+                    Logger::info('Επιτυχές ανέβασμα εγγράφου προσφοράς', [
+                        'company_id' => $companyId,
+                        'driver_id' => $id,
+                        'file_path' => $documentPath
+                    ]);
+                } else {
+                    Session::set('error_message', 'Υπήρξε ένα πρόβλημα κατά το ανέβασμα του εγγράφου προσφοράς.');
+                    header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
+                    exit();
+                }
+            }
+
+            // Επεξεργασία άλλων αρχείων
+            $fileTypes = [
+                'contract_template' => 'document',
+                'job_description' => 'document',
+                'company_brochure' => 'document'
+            ];
+
+            foreach ($fileTypes as $fileField => $category) {
+                if (isset($_FILES[$fileField]) && $_FILES[$fileField]['error'] === UPLOAD_ERR_OK) {
+                    $filePath = $this->uploadFile($_FILES[$fileField], $fileField, $category);
+                    if ($filePath) {
+                        $data[$fileField . '_path'] = $filePath;
+                        Logger::info('Επιτυχές ανέβασμα αρχείου', [
+                            'company_id' => $companyId,
+                            'driver_id' => $id,
+                            'file_type' => $fileField,
+                            'file_path' => $filePath
+                        ]);
+                    }
+                }
+            }
 
             // Δημιουργία της προσφοράς
             $offerId = $this->jobOfferRepository->create($data);
@@ -275,7 +348,7 @@ class JobOfferController
      * 
      * @param int $id Το ID της προσφοράς
      */
-    public function view($id)
+    public function viewOffer($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!Session::has('user_id') || !Session::has('user_role')) {
@@ -366,7 +439,7 @@ class JobOfferController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job offer accept');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-offers/my-offers');
@@ -474,7 +547,7 @@ class JobOfferController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job offer reject');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-offers/my-offers');

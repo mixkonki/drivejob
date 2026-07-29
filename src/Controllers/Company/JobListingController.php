@@ -2,46 +2,29 @@
 
 namespace Drivejob\Controllers\Company;
 
+use Drivejob\Controllers\BaseJobListingController;
 use Drivejob\Core\Validator;
 use Drivejob\Core\CSRF;
 use Drivejob\Core\AuthMiddleware;
 use Drivejob\Core\Logger;
 use Drivejob\Core\Session;
-use Drivejob\Core\Container;
 use Drivejob\Core\Exceptions\ValidationException;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Core\Exceptions\AuthException;
-use Drivejob\Repositories\JobListingRepository;
-use Drivejob\Repositories\CompaniesRepository;
-use Drivejob\Repositories\DriversRepository;
 use Drivejob\Helpers\JsonHelper;
+use Drivejob\Services\FileService;
 
 /**
  * Controller για τις αγγελίες εργασίας
  * 
- * Νέα έκδοση που χρησιμοποιεί το Repository pattern
+ * Επεκτείνει τον BaseJobListingController για κοινές λειτουργίες
  */
-class JobListingController
+class JobListingController extends BaseJobListingController
 {
     /**
-     * @var JobListingRepository Το repository για τις αγγελίες εργασίας
+     * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
      */
-    private $jobListingRepository;
-
-    /**
-     * @var CompaniesRepository Το repository για τις εταιρείες
-     */
-    private $companiesRepository;
-
-    /**
-     * @var DriversRepository Το repository για τους οδηγούς
-     */
-    private $driversRepository;
-
-    /**
-     * @var Container Το container για τις εξαρτήσεις
-     */
-    private $container;
+    private $fileService;
 
     /**
      * Constructor
@@ -50,18 +33,11 @@ class JobListingController
      */
     public function __construct($pdo = null)
     {
-        // Λήψη του container
-        $this->container = Container::getInstance();
+        // Κλήση του constructor της γονικής κλάσης
+        parent::__construct($pdo);
 
-        // Αν δεν έχει παραχθεί PDO, πάρε το από το container
-        if ($pdo === null) {
-            $pdo = $this->container->get('pdo');
-        }
-
-        // Αρχικοποίηση των repositories
-        $this->jobListingRepository = new JobListingRepository($pdo);
-        $this->companiesRepository = new CompaniesRepository($pdo);
-        $this->driversRepository = new DriversRepository($pdo);
+        // Αρχικοποίηση του FileService
+        $this->fileService = new FileService();
     }
 
     /**
@@ -279,10 +255,10 @@ class JobListingController
     public function store()
     {
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job listing store');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings/Company/create');
+            header('Location: ' . BASE_URL . 'job-listings/create');
             exit();
         }
 
@@ -303,9 +279,9 @@ class JobListingController
 
             // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
             if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                header('Location: ' . BASE_URL . 'job-listings/Driver/create');
+                header('Location: ' . BASE_URL . 'job-listings/create');
             } else {
-                header('Location: ' . BASE_URL . 'job-listings/Company/create');
+                header('Location: ' . BASE_URL . 'job-listings/create');
             }
             exit();
         }
@@ -356,9 +332,9 @@ class JobListingController
 
                 // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
                 if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                    header('Location: ' . BASE_URL . 'job-listings/Driver/create');
+                    header('Location: ' . BASE_URL . 'job-listings/create');
                 } else {
-                    header('Location: ' . BASE_URL . 'job-listings/Company/create');
+                    header('Location: ' . BASE_URL . 'job-listings/create');
                 }
                 exit();
             }
@@ -372,9 +348,9 @@ class JobListingController
 
             // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
             if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                header('Location: ' . BASE_URL . 'job-listings/Driver/create');
+                header('Location: ' . BASE_URL . 'job-listings/create');
             } else {
-                header('Location: ' . BASE_URL . 'job-listings/Company/create');
+                header('Location: ' . BASE_URL . 'job-listings/create');
             }
             exit();
         } catch (\Exception $e) {
@@ -385,12 +361,8 @@ class JobListingController
             ]);
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
 
-            // Ανακατεύθυνση ανάλογα με τον τύπο της αγγελίας
-            if (isset($_POST['listing_type']) && $_POST['listing_type'] === 'job_search') {
-                header('Location: ' . BASE_URL . 'job-listings/Driver/create');
-            } else {
-                header('Location: ' . BASE_URL . 'job-listings/Company/create');
-            }
+            // Ανακατεύθυνση στη σελίδα δημιουργίας αγγελίας
+            header('Location: ' . BASE_URL . 'job-listings/create');
             exit();
         }
     }
@@ -536,7 +508,7 @@ class JobListingController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job listing update');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/edit/' . $id);
@@ -727,7 +699,7 @@ class JobListingController
         }
 
         // Έλεγχος για CSRF token
-        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job listing destroy');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
             header('Location: ' . BASE_URL . 'job-listings/delete/' . $id);
@@ -1023,122 +995,76 @@ class JobListingController
      * 
      * @return array Τα καθαρισμένα δεδομένα της φόρμας
      */
-    private function collectFormData()
+    /**
+     * Ανεβάζει ένα αρχείο χρησιμοποιώντας το FileService
+     * 
+     * @param array $file Τα δεδομένα του αρχείου
+     * @param string $fileType Ο τύπος του αρχείου
+     * @param string $category Η κατηγορία του αρχείου (image, document, all)
+     * @return string|false Η διαδρομή του αρχείου ή false σε περίπτωση αποτυχίας
+     */
+    private function uploadFile($file, $fileType, $category = 'all')
+    {
+        $result = $this->fileService->uploadFile($file, $fileType, $category);
+
+        if ($result['success']) {
+            return $result['file_path'];
+        }
+
+        Logger::error('Αποτυχία ανεβάσματος αρχείου', [
+            'file_type' => $fileType,
+            'error' => $result['message'],
+            'error_code' => $result['error_code'] ?? 'unknown'
+        ]);
+
+        return false;
+    }
+
+    protected function collectFormData()
     {
         // Βασικά δεδομένα αγγελίας
         $data = [
-            'title' => $this->sanitize($_POST['title'] ?? null),
-            'description' => $this->sanitizeHtml($_POST['description'] ?? null),
-            'location' => $this->sanitize($_POST['location'] ?? null),
-            'job_type' => $this->sanitize($_POST['job_type'] ?? null),
-            'vehicle_type' => $this->sanitize($_POST['vehicle_type'] ?? null),
-            'salary_min' => $this->sanitizeFloat($_POST['salary_min'] ?? null),
-            'salary_max' => $this->sanitizeFloat($_POST['salary_max'] ?? null),
-            'salary_period' => $this->sanitize($_POST['salary_period'] ?? null),
-            'experience_years' => $this->sanitizeInt($_POST['experience_years'] ?? null),
+            'title' => parent::sanitize($_POST['title'] ?? null),
+            'description' => parent::sanitizeHtml($_POST['description'] ?? null),
+            'location' => parent::sanitize($_POST['location'] ?? null),
+            'job_type' => parent::sanitize($_POST['job_type'] ?? null),
+            'vehicle_type' => parent::sanitize($_POST['vehicle_type'] ?? null),
+            'salary_min' => parent::sanitizeFloat($_POST['salary_min'] ?? null),
+            'salary_max' => parent::sanitizeFloat($_POST['salary_max'] ?? null),
+            'salary_period' => parent::sanitize($_POST['salary_period'] ?? null),
+            'experience_years' => parent::sanitizeInt($_POST['experience_years'] ?? null),
             'required_licenses' => isset($_POST['required_licenses']) ? implode(',', $_POST['required_licenses']) : null,
             'required_skills' => isset($_POST['required_skills']) ? implode(',', $_POST['required_skills']) : null,
-            'benefits' => $this->sanitizeHtml($_POST['benefits'] ?? null),
-            'contact_email' => $this->sanitizeEmail($_POST['contact_email'] ?? null),
-            'contact_phone' => $this->sanitize($_POST['contact_phone'] ?? null),
-            'expires_at' => $this->sanitizeDate($_POST['expires_at'] ?? null),
+            'benefits' => parent::sanitizeHtml($_POST['benefits'] ?? null),
+            'contact_email' => parent::sanitizeEmail($_POST['contact_email'] ?? null),
+            'contact_phone' => parent::sanitize($_POST['contact_phone'] ?? null),
+            'expires_at' => parent::sanitizeDate($_POST['expires_at'] ?? null),
             'is_active' => isset($_POST['is_active']) ? 1 : 0
         ];
 
+        // Επεξεργασία των αρχείων που ανεβάζονται
+        if (isset($_FILES['job_image']) && $_FILES['job_image']['error'] === UPLOAD_ERR_OK) {
+            $imagePath = $this->uploadFile($_FILES['job_image'], 'job_image', 'image');
+            if ($imagePath) {
+                $data['image'] = $imagePath;
+            }
+        }
+
+        // Επεξεργασία άλλων αρχείων
+        $fileTypes = [
+            'job_attachment' => 'document',
+            'job_brochure' => 'document'
+        ];
+
+        foreach ($fileTypes as $fileField => $category) {
+            if (isset($_FILES[$fileField]) && $_FILES[$fileField]['error'] === UPLOAD_ERR_OK) {
+                $filePath = $this->uploadFile($_FILES[$fileField], $fileField, $category);
+                if ($filePath) {
+                    $data[$fileField] = $filePath;
+                }
+            }
+        }
+
         return $data;
-    }
-
-    /**
-     * Καθαρίζει μια τιμή εισόδου
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return string|null Η καθαρισμένη τιμή
-     */
-    private function sanitize($input)
-    {
-        if ($input === null) {
-            return null;
-        }
-        return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
-    }
-
-    /**
-     * Καθαρίζει HTML
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return string|null Η καθαρισμένη τιμή
-     */
-    private function sanitizeHtml($input)
-    {
-        if ($input === null) {
-            return null;
-        }
-        // Επιτρέπουμε βασικά HTML tags
-        $allowedTags = '<p><br><strong><em><ul><ol><li><h2><h3><h4>';
-        return strip_tags(trim($input), $allowedTags);
-    }
-
-    /**
-     * Καθαρίζει έναν ακέραιο
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return int|null Η καθαρισμένη τιμή
-     */
-    private function sanitizeInt($input)
-    {
-        if ($input === null || $input === '') {
-            return null;
-        }
-        return (int)$input;
-    }
-
-    /**
-     * Καθαρίζει έναν αριθμό κινητής υποδιαστολής
-     * 
-     * @param string|null $input Η τιμή εισόδου
-     * @return float|null Η καθαρισμένη τιμή
-     */
-    private function sanitizeFloat($input)
-    {
-        if ($input === null || $input === '') {
-            return null;
-        }
-        return (float)$input;
-    }
-
-    /**
-     * Καθαρίζει ένα email
-     * 
-     * @param string|null $email Το email
-     * @return string|null Το καθαρισμένο email
-     */
-    private function sanitizeEmail($email)
-    {
-        if (empty($email)) {
-            return null;
-        }
-        $sanitizedEmail = filter_var($email, FILTER_SANITIZE_EMAIL);
-        if (filter_var($sanitizedEmail, FILTER_VALIDATE_EMAIL)) {
-            return $sanitizedEmail;
-        }
-        return null;
-    }
-
-    /**
-     * Καθαρίζει μια ημερομηνία
-     * 
-     * @param string|null $date Η ημερομηνία
-     * @return string|null Η καθαρισμένη ημερομηνία
-     */
-    private function sanitizeDate($date)
-    {
-        if ($date === null || empty($date)) {
-            return null;
-        }
-        $dateObj = \DateTime::createFromFormat('Y-m-d', $date);
-        if ($dateObj && $dateObj->format('Y-m-d') === $date) {
-            return $date;
-        }
-        return null;
     }
 }

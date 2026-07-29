@@ -8,7 +8,7 @@ use Drivejob\Core\Exceptions\DatabaseException;
 /**
  * Repository για τους οδηγούς
  */
-class DriversRepository extends BaseRepository
+class DriversRepository extends BaseRepository implements DriversRepositoryInterface
 {
     /**
      * @var string Το όνομα του πίνακα
@@ -50,14 +50,26 @@ class DriversRepository extends BaseRepository
     ];
 
     /**
+     * Βρίσκει έναν οδηγό με βάση το email
+     * 
+     * @param string $email Το email του οδηγού
+     * @return array|null Τα δεδομένα του οδηγού ή null αν δεν βρέθηκε
+     */
+    public function findByEmail($email)
+    {
+        return $this->findOne(['email' => $email]);
+    }
+
+    /**
      * Επιστρέφει έναν οδηγό με βάση το email
      *
      * @param string $email Το email του οδηγού
      * @return array|null Ο οδηγός ή null αν δεν βρέθηκε
+     * @deprecated Χρησιμοποιήστε τη μέθοδο findByEmail αντί για αυτή
      */
     public function getDriverByEmail($email)
     {
-        return $this->findOne(['email' => $email]);
+        return $this->findByEmail($email);
     }
 
     /**
@@ -287,6 +299,148 @@ class DriversRepository extends BaseRepository
             return $this->query($query, ['limit' => $limit]);
         } catch (\PDOException $e) {
             throw DatabaseException::fromPDOException($e, $query ?? null, ['limit' => $limit]);
+        }
+    }
+
+    /**
+     * Ενημερώνει το προφίλ ενός οδηγού
+     * 
+     * @param int $id Το ID του οδηγού
+     * @param array $data Τα δεδομένα του προφίλ
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateProfile($id, array $data)
+    {
+        return $this->update($id, $data);
+    }
+
+    /**
+     * Ενημερώνει την αξιολόγηση ενός οδηγού
+     * 
+     * @param int $id Το ID του οδηγού
+     * @param float $rating Η νέα αξιολόγηση
+     * @return bool Επιτυχία/αποτυχία
+     */
+    public function updateRating($id, $rating)
+    {
+        try {
+            $query = "UPDATE {$this->table} SET rating = :rating WHERE id = :id";
+            return $this->execute($query, ['id' => $id, 'rating' => $rating]) > 0;
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['id' => $id, 'rating' => $rating]);
+        }
+    }
+
+    /**
+     * Επιστρέφει τους οδηγούς με άδειες που λήγουν σύντομα
+     * 
+     * @param int $days Ο αριθμός των ημερών
+     * @return array Οι οδηγοί με άδειες που λήγουν σύντομα
+     */
+    public function getDriversWithExpiringLicenses($days = 30)
+    {
+        try {
+            $query = "SELECT d.* FROM {$this->table} d
+                      WHERE (
+                          (d.driving_license_expiry IS NOT NULL AND d.driving_license_expiry <= DATE_ADD(CURDATE(), INTERVAL :days DAY))
+                          OR (d.adr_certificate_expiry IS NOT NULL AND d.adr_certificate_expiry <= DATE_ADD(CURDATE(), INTERVAL :days DAY))
+                          OR (d.operator_license_expiry IS NOT NULL AND d.operator_license_expiry <= DATE_ADD(CURDATE(), INTERVAL :days DAY))
+                      )
+                      AND d.is_verified = 1
+                      ORDER BY 
+                          LEAST(
+                              IFNULL(d.driving_license_expiry, '9999-12-31'),
+                              IFNULL(d.adr_certificate_expiry, '9999-12-31'),
+                              IFNULL(d.operator_license_expiry, '9999-12-31')
+                          ) ASC";
+
+            return $this->query($query, ['days' => $days]);
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['days' => $days]);
+        }
+    }
+
+    /**
+     * Επιστρέφει τους οδηγούς με βάση τον τύπο άδειας
+     * 
+     * @param string $licenseType Ο τύπος άδειας
+     * @return array Οι οδηγοί με τον συγκεκριμένο τύπο άδειας
+     */
+    public function getDriversByLicenseType($licenseType)
+    {
+        try {
+            $query = "SELECT d.* FROM {$this->table} d
+                      JOIN driver_licenses dl ON d.id = dl.driver_id
+                      WHERE dl.license_type = :license_type
+                      AND d.is_verified = 1
+                      ORDER BY d.last_name, d.first_name";
+
+            return $this->query($query, ['license_type' => $licenseType]);
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['license_type' => $licenseType]);
+        }
+    }
+
+    /**
+     * Επιστρέφει τους οδηγούς με βάση την τοποθεσία
+     * 
+     * @param string $location Η τοποθεσία
+     * @param int $radius Η ακτίνα σε χιλιόμετρα
+     * @return array Οι οδηγοί στην συγκεκριμένη τοποθεσία
+     */
+    public function getDriversByLocation($location, $radius = 50)
+    {
+        try {
+            // Απλή υλοποίηση με βάση το όνομα της πόλης ή της χώρας
+            // Σε μια πραγματική εφαρμογή θα χρησιμοποιούσαμε γεωγραφικές συντεταγμένες
+            $query = "SELECT d.* FROM {$this->table} d
+                      WHERE (d.city LIKE :location OR d.country LIKE :location)
+                      AND d.is_verified = 1
+                      ORDER BY d.last_name, d.first_name";
+
+            return $this->query($query, ['location' => '%' . $location . '%']);
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['location' => '%' . $location . '%']);
+        }
+    }
+
+    /**
+     * Επιστρέφει τους οδηγούς με βάση την εμπειρία
+     * 
+     * @param int $years Τα έτη εμπειρίας
+     * @return array Οι οδηγοί με την συγκεκριμένη εμπειρία
+     */
+    public function getDriversByExperience($years)
+    {
+        try {
+            $query = "SELECT d.* FROM {$this->table} d
+                      WHERE d.experience_years >= :years
+                      AND d.is_verified = 1
+                      ORDER BY d.experience_years DESC, d.last_name, d.first_name";
+
+            return $this->query($query, ['years' => $years]);
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['years' => $years]);
+        }
+    }
+
+    /**
+     * Επιστρέφει τους οδηγούς με βάση τη διαθεσιμότητα
+     * 
+     * @param bool $available Η διαθεσιμότητα
+     * @return array Οι οδηγοί με την συγκεκριμένη διαθεσιμότητα
+     */
+    public function getDriversByAvailability($available = true)
+    {
+        try {
+            $query = "SELECT d.* FROM {$this->table} d
+                      WHERE d.is_available = :available
+                      AND d.is_verified = 1
+                      ORDER BY d.last_name, d.first_name";
+
+            return $this->query($query, ['available' => $available ? 1 : 0]);
+        } catch (\PDOException $e) {
+            throw DatabaseException::fromPDOException($e, $query ?? null, ['available' => $available ? 1 : 0]);
         }
     }
 }

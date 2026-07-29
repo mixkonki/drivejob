@@ -3,102 +3,377 @@
 namespace Drivejob\Controllers;
 
 use Drivejob\Core\Session;
-use Drivejob\Models\CompaniesModel;
-use Drivejob\Models\Driver\ProfileModel;
+use Drivejob\Core\CSRF;
+use Drivejob\Core\Logger;
 
-class AuthController
+/**
+ * Controller για την αυθεντικοποίηση χρηστών
+ * 
+ * Επεκτείνει τον BaseUserController και χρησιμοποιεί τις κοινές λειτουργίες
+ * για τη διαχείριση χρηστών (login, logout, κλπ.)
+ */
+class AuthController extends BaseUserController
 {
-    private $profileModel;
-    private $companiesModel;
-
-    public function __construct($pdo)
+    /**
+     * Constructor
+     */
+    public function __construct($pdo = null)
     {
-        $this->profileModel = new ProfileModel($pdo);
-        $this->companiesModel = new CompaniesModel($pdo);
+        // Κλήση του constructor της γονικής κλάσης
+        parent::__construct();
     }
 
+    /**
+     * Εμφανίζει τη φόρμα σύνδεσης
+     *
+     * @return void
+     */
+    public function showLoginForm()
+    {
+        // Ο έλεγχος για ήδη συνδεδεμένο χρήστη γίνεται στο login.php
+        // Εδώ απλά φορτώνουμε το view
+        $this->view('auth/login');
+    }
+
+    /**
+     * Επεξεργάζεται το αίτημα σύνδεσης
+     *
+     * @return void
+     */
     public function login()
-    {
-        // Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
-        if (Session::has('user_id')) {
-            $role = Session::get('role');
-            if ($role === 'driver') {
-                header('Location: ' . BASE_URL . 'drivers/profile');
-            } else {
-                header('Location: ' . BASE_URL . 'companies/profile');
-            }
-            exit();
-        }
-
-        // Φόρτωση της σελίδας σύνδεσης
-        include ROOT_DIR . '/src/Views/login.php';
-    }
-
-    public function processLogin()
     {
         // Έλεγχος αν το αίτημα είναι POST
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASE_URL . 'login.php');
-            exit();
+            $this->redirect(BASE_URL . 'login');
+        }
+
+        // Καταγραφή για αποσφαλμάτωση
+        Logger::debug('Processing login request', [
+            'email' => $_POST['email'] ?? 'not set',
+            'has_password' => isset($_POST['password']) && !empty($_POST['password']),
+            'has_csrf' => isset($_POST['csrf_token']),
+            'session_id' => session_id(),
+            'session_data' => $_SESSION
+        ]);
+
+        // Έλεγχος CSRF token
+        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+            Logger::warning('CSRF validation failed during login', [
+                'has_token' => isset($_POST['csrf_token']),
+                'session_id' => session_id()
+            ]);
+            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            $this->redirect(BASE_URL . 'login.php');
         }
 
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        // Αναζήτηση στον πίνακα drivers με το νέο model
-        $driver = $this->profileModel->getDriverByEmail($email);
+        // Καταγραφή για αποσφαλμάτωση
+        Logger::debug('Attempting authentication', [
+            'email' => $email,
+            'password_length' => strlen($password)
+        ]);
 
-        if ($driver && $driver['is_verified'] && password_verify($password, $driver['password'])) {
-            // Επιτυχής σύνδεση οδηγού
-            Session::set('user_id', $driver['id']);
-            Session::set('role', 'driver');
-            Session::set('user_name', $driver['first_name'] . ' ' . $driver['last_name']);
+        // Αυθεντικοποίηση χρήστη
+        error_log("=== CALLING AUTHENTICATE ===");
+        error_log("Email: $email");
+        error_log("Password length: " . strlen($password));
 
-            // Ενημέρωση τελευταίας σύνδεσης
-            $this->profileModel->updateLastLogin($driver['id']);
+        $user = $this->authModel->authenticate($email, $password);
+
+        error_log("=== AUTHENTICATE RESULT ===");
+        error_log("User: " . ($user ? json_encode($user) : 'FALSE'));
+
+        Logger::debug('Authentication result', [
+            'success' => $user ? true : false,
+            'user' => $user ? [
+                'user_id' => $user['user_id'],
+                'role' => $user['role'],
+                'name' => $user['name']
+            ] : null
+        ]);
+
+        if ($user) {
+            // Επιτυχής σύνδεση - Αναγέννηση του session ID για ασφάλεια
+            Session::regenerate(true);
+
+            // Αποθήκευση των στοιχείων χρήστη στο session
+            Session::set('user_id', $user['user_id']);
+            Session::set('user_role', $user['role']);
+            Session::set('role', $user['role']); // Για συμβατότητα με υπάρχον κώδικα
+            Session::set('user_name', $user['name']);
+
+            // Δημιουργία νέου CSRF token μετά το login
+            CSRF::generateToken();
+
+            // Καταγραφή για αποσφαλμάτωση
+            Logger::info('User logged in successfully', [
+                'user_id' => $user['user_id'],
+                'role' => $user['role'],
+                'session_id' => session_id()
+            ]);
 
             // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
             $redirectUrl = Session::has('redirect_after_login')
                 ? Session::get('redirect_after_login')
-                : BASE_URL . 'drivers/profile';
+                : $this->getDefaultRedirectUrl($user['role']);
 
             Session::remove('redirect_after_login');
-            header('Location: ' . $redirectUrl);
-            exit();
-        }
 
-        // Αναζήτηση στον πίνακα companies
-        $company = $this->companiesModel->getCompanyByEmail($email);
-
-        if ($company && $company['is_verified'] && password_verify($password, $company['password'])) {
-            // Επιτυχής σύνδεση εταιρείας
-            Session::set('user_id', $company['id']);
-            Session::set('role', 'company');
-            Session::set('user_name', $company['company_name']);
-
-            // Ενημέρωση τελευταίας σύνδεσης
-            $this->companiesModel->updateLastLogin($company['id']);
-
-            // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
-            $redirectUrl = Session::has('redirect_after_login')
-                ? Session::get('redirect_after_login')
-                : BASE_URL . 'companies/profile';
-
-            Session::remove('redirect_after_login');
-            header('Location: ' . $redirectUrl);
-            exit();
+            // Ανακατεύθυνση με πλήρη διαδρομή
+            $this->redirect($redirectUrl);
         }
 
         // Αποτυχία σύνδεσης
-        Session::set('login_error', 'Εσφαλμένο email ή συνθηματικό.');
-        header('Location: ' . BASE_URL . 'login.php');
-        exit();
+        Logger::warning('Login failed', [
+            'email' => $email
+        ]);
+
+        Session::set('error_message', 'Εσφαλμένο email ή συνθηματικό.');
+        $this->redirect(BASE_URL . 'login.php');
     }
 
+
+    /**
+     * Αποσυνδέει τον χρήστη
+     *
+     * @return void
+     */
     public function logout()
     {
+        // Καταγραφή για αποσφαλμάτωση
+        Logger::debug('Logout initiated', [
+            'user_id' => Session::get('user_id'),
+            'session_id' => session_id()
+        ]);
+
+        // Καθαρισμός όλων των δεδομένων session
+        Session::clear();
+
+        // Καταστροφή του session
         Session::destroy();
-        header('Location: ' . BASE_URL);
-        exit();
+
+        // Δημιουργία νέου session για το CSRF token
+        Session::start();
+
+        // Αποστολή headers για αποτροπή caching
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+        header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+
+        // Ανακατεύθυνση στη σελίδα login
+        $this->redirect(BASE_URL . 'login.php');
+    }
+
+    /**
+     * Εμφανίζει τη φόρμα επαναφοράς συνθηματικού
+     *
+     * @return void
+     */
+    public function showPasswordResetForm()
+    {
+        // Φόρτωση της σελίδας επαναφοράς συνθηματικού
+        $this->view('auth/password-reset');
+    }
+
+    /**
+     * Αποστέλλει τον σύνδεσμο επαναφοράς συνθηματικού
+     *
+     * @return void
+     */
+    public function sendPasswordResetLink()
+    {
+        // Έλεγχος αν το αίτημα είναι POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect(BASE_URL . 'auth/login');
+        }
+
+        // Έλεγχος CSRF token
+        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+            Logger::warning('CSRF validation failed during password reset request');
+            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            $this->redirect(BASE_URL . 'auth/password-reset');
+        }
+
+        $email = $_POST['email'] ?? '';
+
+        // Αποστολή του συνδέσμου επαναφοράς
+        $result = $this->authModel->sendPasswordResetLink($email);
+
+        if ($result) {
+            Session::set('success_message', 'Ένας σύνδεσμος επαναφοράς συνθηματικού έχει σταλεί στη διεύθυνση email σας.');
+        } else {
+            Session::set('error_message', 'Δεν βρέθηκε λογαριασμός με αυτή τη διεύθυνση email.');
+        }
+
+        $this->redirect(BASE_URL . 'auth/password-reset');
+    }
+
+    /**
+     * Εμφανίζει τη φόρμα επαναφοράς συνθηματικού με token
+     *
+     * @param string $token Το token επαναφοράς
+     * @return void
+     */
+    public function showResetPasswordForm($token)
+    {
+        // Έλεγχος εγκυρότητας του token
+        if (!$this->authModel->isValidResetToken($token)) {
+            Session::set('error_message', 'Το token επαναφοράς είναι άκυρο ή έχει λήξει.');
+            $this->redirect(BASE_URL . 'auth/password-reset');
+        }
+
+        // Φόρτωση της σελίδας επαναφοράς συνθηματικού με token
+        $this->view('auth/password-reset-token', ['token' => $token]);
+    }
+
+    /**
+     * Επαναφέρει το συνθηματικό του χρήστη
+     *
+     * @param string $token Το token επαναφοράς
+     * @return void
+     */
+    public function resetPassword($token)
+    {
+        // Έλεγχος αν το αίτημα είναι POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect(BASE_URL . 'auth/password-reset/' . $token);
+        }
+
+        // Έλεγχος CSRF token
+        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+            Logger::warning('CSRF validation failed during password reset');
+            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            $this->redirect(BASE_URL . 'auth/password-reset/' . $token);
+        }
+
+        $password = $_POST['password'] ?? '';
+        $passwordConfirm = $_POST['password_confirm'] ?? '';
+
+        // Έλεγχος αν τα συνθηματικά ταιριάζουν
+        if ($password !== $passwordConfirm) {
+            Session::set('error_message', 'Τα συνθηματικά δεν ταιριάζουν.');
+            $this->redirect(BASE_URL . 'auth/password-reset/' . $token);
+        }
+
+        // Έλεγχος μήκους συνθηματικού
+        if (strlen($password) < 8) {
+            Session::set('error_message', 'Το συνθηματικό πρέπει να έχει τουλάχιστον 8 χαρακτήρες.');
+            $this->redirect(BASE_URL . 'auth/password-reset/' . $token);
+        }
+
+        // Επαναφορά του συνθηματικού
+        $result = $this->authModel->resetPassword($token, $password);
+
+        if ($result) {
+            Session::set('success_message', 'Το συνθηματικό σας έχει επαναφερθεί με επιτυχία. Μπορείτε τώρα να συνδεθείτε.');
+            $this->redirect(BASE_URL . 'auth/login');
+        } else {
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την επαναφορά του συνθηματικού σας.');
+            $this->redirect(BASE_URL . 'auth/password-reset/' . $token);
+        }
+    }
+
+    /**
+     * Εμφανίζει τη σελίδα άρνησης πρόσβασης
+     *
+     * @return void
+     */
+    public function accessDenied()
+    {
+        // Φόρτωση της σελίδας άρνησης πρόσβασης
+        $this->view('auth/access-denied');
+    }
+
+    /**
+     * Εμφανίζει τη σελίδα που απαιτεί επαλήθευση
+     *
+     * @return void
+     */
+    public function verificationRequired()
+    {
+        // Φόρτωση της σελίδας που απαιτεί επαλήθευση
+        $this->view('auth/verification-required');
+    }
+
+    /**
+     * Επαληθεύει τον λογαριασμό του χρήστη
+     *
+     * @param string $token Το token επαλήθευσης
+     * @return void
+     */
+    public function verify($token)
+    {
+        // Επαλήθευση του λογαριασμού
+        $result = $this->authModel->verifyAccount($token);
+
+        if ($result) {
+            Session::set('success_message', 'Ο λογαριασμός σας επαληθεύτηκε με επιτυχία. Μπορείτε τώρα να συνδεθείτε.');
+            $this->redirect(BASE_URL . 'auth/login');
+        } else {
+            Session::set('error_message', 'Το token επαλήθευσης είναι άκυρο ή έχει λήξει.');
+            $this->redirect(BASE_URL . 'auth/login');
+        }
+    }
+    /**
+     * Επαναποστέλλει το email επαλήθευσης
+     *
+     * @return void
+     */
+    public function resendVerification()
+    {
+        // Έλεγχος αν το αίτημα είναι POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect(BASE_URL . 'auth/verification-required');
+        }
+
+        // Έλεγχος CSRF token
+        if (!isset($_POST['csrf_token']) || !CSRF::validateToken($_POST['csrf_token'])) {
+            Logger::warning('CSRF validation failed during resend verification request');
+            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            $this->redirect(BASE_URL . 'auth/verification-required');
+        }
+
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        if (!Session::has('user_id')) {
+            Session::set('error_message', 'Πρέπει να είστε συνδεδεμένοι για να ζητήσετε επαναποστολή του email επαλήθευσης.');
+            $this->redirect(BASE_URL . 'auth/login');
+        }
+
+        $userId = Session::get('user_id');
+
+        // Επαναποστολή του email επαλήθευσης
+        $result = $this->authModel->resendVerificationEmail($userId);
+
+        if ($result) {
+            Session::set('success_message', 'Ένα νέο email επαλήθευσης έχει σταλεί στη διεύθυνση email σας.');
+        } else {
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την επαναποστολή του email επαλήθευσης. Παρακαλώ δοκιμάστε ξανά αργότερα.');
+        }
+
+        $this->redirect(BASE_URL . 'auth/verification-required');
+    }
+
+    /**
+     * Επιστρέφει το προεπιλεγμένο URL ανακατεύθυνσης βάσει του ρόλου
+     *
+     * @param string $role Ο ρόλος του χρήστη
+     * @return string Το URL ανακατεύθυνσης
+     */
+    private function getDefaultRedirectUrl($role)
+    {
+        // Χρήση του BASE_URL που έχει ήδη οριστεί στο config
+        switch ($role) {
+            case 'driver':
+                return BASE_URL . 'drivers/driver-profile.php';
+            case 'company':
+                return BASE_URL . 'companies/profile.php';
+            case 'admin':
+                return BASE_URL . 'admin/dashboard.php';
+            default:
+                return BASE_URL;
+        }
     }
 }

@@ -1,13 +1,13 @@
 <?php
 
-// public/logout.php
+/**
+ * Logout Page - Direct Entry Point
+ * Handles user logout
+ */
+require_once __DIR__ . '/../src/bootstrap.php';
 
-// Αρχικοποίηση της εφαρμογής
-$container = require_once __DIR__ . '/../src/bootstrap.php';
+use Drivejob\Controllers\AuthController;
 
-// Λήψη του PDO από το container
-$pdo = $container->get('pdo');
-
-// Ανακατεύθυνση στο νέο controller
-$controller = new \Drivejob\Controllers\AuthController($pdo);
+// Create controller instance and logout
+$controller = new AuthController();
 $controller->logout();

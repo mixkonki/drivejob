@@ -1,0 +1,133 @@
+/* Στυλ για τις άδειες που λήγουν */
+.expiring-licenses {
+    margin-top: 20px;
+}
+
+.expiring-license {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.expiring-license.expired {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+}
+
+.license-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.license-title {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+
+.license-expiry {
+    font-weight: bold;
+    color: #856404;
+}
+
+.expired .license-expiry {
+    color: #721c24;
+}
+
+.license-details {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+.license-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-renew {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    display: inline-block;
+}
+
+.btn-renew:hover {
+    background-color: #218838;
+}
+
+.btn-dismiss {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    display: inline-block;
+}
+
+.btn-dismiss:hover {
+    background-color: #5a6268;
+}
+
+.no-expiring-licenses {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Ειδοποίηση στο header */
+.expiry-notification {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 10px 15px;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid #ffeeba;
+}
+
+.expiry-notification a {
+    color: #856404;
+    text-decoration: underline;
+}
+
+.expiry-notification a:hover {
+    color: #533f03;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .license-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .license-expiry {
+        margin-top: 5px;
+    }
+    
+    .license-actions {
+        flex-direction: column;
+    }
+    
+    .btn-renew, .btn-dismiss {
+        width: 100%;
+        text-align: center;
+    }
+}
