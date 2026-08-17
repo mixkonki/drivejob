@@ -153,15 +153,13 @@ $router->group(['prefix' => 'companies'], function ($router) {
     $router->post('/add-review/{id}', [CompaniesController::class, 'addReview'])->name('companies.add-review');
 });
 
-// Ομαδοποίηση διαδρομών για τις σελίδες πληροφοριών
-$router->group(['prefix' => 'info'], function ($router) {
-    $router->get('/about', [HomeController::class, 'about'])->name('info.about');
-    $router->get('/contact', [HomeController::class, 'contact'])->name('info.contact');
-    $router->post('/contact', [HomeController::class, 'submitContactForm'])->name('info.contact.submit');
-    $router->get('/terms', [HomeController::class, 'terms'])->name('info.terms');
-    $router->get('/privacy', [HomeController::class, 'privacy'])->name('info.privacy');
-    $router->get('/faq', [HomeController::class, 'faq'])->name('info.faq');
-});
+// Σελίδες πληροφοριών (top-level: /about, /contact, /terms, /privacy, /faq)
+$router->get('/about', [HomeController::class, 'about'])->name('info.about');
+$router->get('/contact', [HomeController::class, 'contact'])->name('info.contact');
+$router->post('/contact', [HomeController::class, 'submitContactForm'])->name('info.contact.submit');
+$router->get('/terms', [HomeController::class, 'terms'])->name('info.terms');
+$router->get('/privacy', [HomeController::class, 'privacy'])->name('info.privacy');
+$router->get('/faq', [HomeController::class, 'faq'])->name('info.faq');
 
 // Ομαδοποίηση διαδρομών για τα ταιριάσματα
 $router->group(['prefix' => 'matching'], function ($router) {

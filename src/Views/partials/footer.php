@@ -4,9 +4,9 @@
     </div>
     <div class="footer-center">
         <ul class="footer-links">
-            <li><a href="/drivejob/public/terms.php">Όροι Χρήσης</a></li>
-            <li><a href="/drivejob/public/privacy.php">Πολιτική Απορρήτου</a></li>
-            <li><a href="/drivejob/public/faq.php">FAQ</a></li>
+            <li><a href="<?php echo BASE_URL; ?>terms">Όροι Χρήσης</a></li>
+            <li><a href="<?php echo BASE_URL; ?>privacy">Πολιτική Απορρήτου</a></li>
+            <li><a href="<?php echo BASE_URL; ?>faq">FAQ</a></li>
         </ul>
     </div>
     <div class="footer-right">

@@ -63,7 +63,7 @@ class AuthController extends BaseUserController
                 'session_id' => session_id()
             ]);
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            $this->redirect(BASE_URL . 'login.php');
+            $this->redirect(BASE_URL . 'auth/login');
         }
 
         $email = $_POST['email'] ?? '';
@@ -131,7 +131,7 @@ class AuthController extends BaseUserController
         ]);
 
         Session::set('error_message', 'Εσφαλμένο email ή συνθηματικό.');
-        $this->redirect(BASE_URL . 'login.php');
+        $this->redirect(BASE_URL . 'auth/login');
     }
 
 
@@ -164,7 +164,7 @@ class AuthController extends BaseUserController
         header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 
         // Ανακατεύθυνση στη σελίδα login
-        $this->redirect(BASE_URL . 'login.php');
+        $this->redirect(BASE_URL . 'auth/login');
     }
 
     /**
@@ -367,11 +367,11 @@ class AuthController extends BaseUserController
         // Χρήση του BASE_URL που έχει ήδη οριστεί στο config
         switch ($role) {
             case 'driver':
-                return BASE_URL . 'drivers/driver-profile.php';
+                return BASE_URL . 'drivers/profile';
             case 'company':
-                return BASE_URL . 'companies/profile.php';
+                return BASE_URL . 'companies/profile';
             case 'admin':
-                return BASE_URL . 'admin/dashboard.php';
+                return BASE_URL . 'admin/dashboard';
             default:
                 return BASE_URL;
         }

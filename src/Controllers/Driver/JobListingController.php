@@ -270,7 +270,7 @@ class JobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in driver job listing store', [
@@ -288,7 +288,7 @@ class JobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         }
     }
@@ -475,7 +475,7 @@ class JobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in driver job listing update', [
@@ -492,7 +492,7 @@ class JobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         }
     }
@@ -623,7 +623,7 @@ class JobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in driver job listing destroy', [
@@ -640,7 +640,7 @@ class JobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         }
     }

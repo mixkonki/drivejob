@@ -283,7 +283,7 @@ class UnifiedJobListingController extends BaseJobListingController
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να δημιουργήσετε αγγελία.');
-            header('Location: ' . BASE_URL . 'login.php');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit();
         }
 
@@ -379,7 +379,7 @@ class UnifiedJobListingController extends BaseJobListingController
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να δημιουργήσετε αγγελία.');
-            header('Location: ' . BASE_URL . 'login.php');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit();
         }
 
@@ -523,7 +523,7 @@ class UnifiedJobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in job listing store', [
@@ -542,7 +542,7 @@ class UnifiedJobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         }
     }
@@ -557,7 +557,7 @@ class UnifiedJobListingController extends BaseJobListingController
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να επεξεργαστείτε αγγελία.');
-            header('Location: ' . BASE_URL . 'login.php');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit();
         }
 
@@ -625,7 +625,7 @@ class UnifiedJobListingController extends BaseJobListingController
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να επεξεργαστείτε αγγελία.');
-            header('Location: ' . BASE_URL . 'login.php');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit();
         }
 
@@ -740,7 +740,7 @@ class UnifiedJobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in job listing update', [
@@ -757,7 +757,7 @@ class UnifiedJobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         }
     }
@@ -772,7 +772,7 @@ class UnifiedJobListingController extends BaseJobListingController
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να διαγράψετε αγγελία.');
-            header('Location: ' . BASE_URL . 'login.php');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit();
         }
 
@@ -840,7 +840,7 @@ class UnifiedJobListingController extends BaseJobListingController
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!Session::has('user_id') || !Session::has('user_role')) {
             Session::set('error_message', 'Πρέπει να συνδεθείτε για να διαγράψετε αγγελία.');
-            header('Location: ' . BASE_URL . 'login.php');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit();
         }
 
@@ -918,7 +918,7 @@ class UnifiedJobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in job listing destroy', [
@@ -935,7 +935,7 @@ class UnifiedJobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'debug_job_listing.php');
+            header('Location: ' . BASE_URL . 'job-listings');
             exit();
         }
     }
@@ -947,7 +947,7 @@ class UnifiedJobListingController extends BaseJobListingController
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
         if (!Session::has('user_id') || !Session::has('user_role')) {
-            header('Location: ' . BASE_URL . 'login.php');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit();
         }
 

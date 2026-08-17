@@ -15,8 +15,13 @@ header("X-XSS-Protection: 1; mode=block");
 if (!function_exists('isCurrentPage')) {
     function isCurrentPage($page)
     {
-        $currentPage = basename($_SERVER['PHP_SELF']);
-        return $currentPage === $page;
+        // Λειτουργεί με routes: συγκρίνει το path του request με το route
+        $path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/', '/');
+        $page = trim(str_replace('.php', '', (string) $page), '/');
+        if ($page === '' || $page === 'index') {
+            return $path === '';
+        }
+        return $path === $page || strpos($path, $page . '/') === 0;
     }
 }
 
@@ -226,12 +231,12 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>about.php" class="<?php echo isCurrentPage('about.php') ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>about" class="<?php echo isCurrentPage('about') ? 'active' : ''; ?>">
                         Σχετικά
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>contact.php" class="<?php echo isCurrentPage('contact.php') ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>contact" class="<?php echo isCurrentPage('contact') ? 'active' : ''; ?>">
                         Επικοινωνία
                     </a>
                 </li>
@@ -338,7 +343,7 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
                                 Προφίλ
                             </a>
                         <?php endif; ?>
-                        <a href="<?php echo BASE_URL; ?>logout.php">
+                        <a href="<?php echo BASE_URL; ?>auth/logout">
                             <img src="<?php echo BASE_URL; ?>img/logout_icon.png" alt="Logout Icon" />
                             Αποσύνδεση
                         </a>
@@ -348,7 +353,7 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
             else :
             ?>
                 <!-- Σύνδεση για μη συνδεδεμένο χρήστη -->
-                <a href="<?php echo BASE_URL; ?>login.php" class="btn btn-dark">
+                <a href="<?php echo BASE_URL; ?>auth/login" class="btn btn-dark">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
