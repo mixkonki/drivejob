@@ -16,6 +16,7 @@ use Drivejob\Repositories\DriversRepository;
 use Drivejob\Services\Driver\DriverProfileServiceInterface;
 use Drivejob\Services\Driver\DriverProfileService;
 use Drivejob\Services\FileService;
+use Drivejob\Services\Driver\DriverLicenseService;
 use Drivejob\Helpers\JsonHelper;
 use Drivejob\Models\Driver\IncidentModel;
 use Drivejob\Models\Driver\AssessmentModel;
@@ -38,6 +39,7 @@ class DriversController extends BaseUserController
      * @var DriverProfileServiceInterface Η υπηρεσία για τα προφίλ οδηγών
      */
     private $driverProfileService;
+    private $driverLicenseService;
 
     /**
      * @var FileService Η υπηρεσία για τη διαχείριση αρχείων
@@ -80,6 +82,7 @@ class DriversController extends BaseUserController
         // Αρχικοποίηση του repository και των υπηρεσιών
         $this->driversRepository = new DriversRepository($pdo);
         $this->driverProfileService = new DriverProfileService($pdo);
+        $this->driverLicenseService = new DriverLicenseService($pdo);
         $this->fileService = new FileService();
         $this->incidentModel = new IncidentModel($pdo);
         $this->assessmentModel = new AssessmentModel($pdo);
@@ -337,6 +340,26 @@ class DriversController extends BaseUserController
 
             if ($updateResult) {
                 Logger::info('Profile update successful');
+
+                // Ενημέρωση αδειών & πιστοποιητικών (ADR, ταχογράφος, χειριστής κ.λπ.)
+                // Τα unchecked checkboxes ΔΕΝ έρχονται στο POST — οι handlers
+                // διαγράφουν τα αντίστοιχα στοιχεία όταν λείπει το πεδίο.
+                $licenseResults = [
+                    'driving_licenses' => $this->driverLicenseService->handleDrivingLicenses($driverId, $_POST),
+                    'adr'              => $this->driverLicenseService->handleADRCertificate($driverId, $_POST),
+                    'tachograph'       => $this->driverLicenseService->handleTachographCard($driverId, $_POST),
+                    'special_licenses' => $this->driverLicenseService->handleSpecialLicenses($driverId, $_POST),
+                    'operator'         => $this->driverLicenseService->handleOperatorLicense($driverId, $_POST),
+                ];
+                foreach ($licenseResults as $section => $ok) {
+                    if (!$ok) {
+                        Logger::error('License section update failed', ['section' => $section, 'driver_id' => $driverId]);
+                    }
+                }
+                if (in_array(false, $licenseResults, true)) {
+                    Session::set('warning_message', 'Το προφίλ αποθηκεύτηκε, αλλά κάποια στοιχεία αδειών/πιστοποιητικών δεν ενημερώθηκαν. Ελέγξτε την καρτέλα αδειών.');
+                }
+
                 Session::set('success_message', 'Το προφίλ σας ενημερώθηκε με επιτυχία.');
 
                 // Trigger event hook για profile update

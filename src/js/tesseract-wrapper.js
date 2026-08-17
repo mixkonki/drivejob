@@ -39,18 +39,10 @@ const TesseractWrapper = {
         }));
 
         try {
-            debugLog('Creating worker...');
-          // Αντί για την αρχική μέθοδο, χρησιμοποιήστε μια πιο απλή προσέγγιση
-            const worker = await createWorker();
-            debugLog('Worker created successfully');
-
-            debugLog('Loading language...');
-            await worker.loadLanguage(language);
-            debugLog('Language loaded successfully');
-
-            debugLog('Initializing worker...');
-            await worker.initialize(language);
-            debugLog('Worker initialized successfully');
+            debugLog('Creating worker (tesseract.js v5 API)...');
+            // v5: το createWorker(language) φορτώνει και αρχικοποιεί σε ένα βήμα
+            const worker = await createWorker(language);
+            debugLog('Worker created & initialized successfully');
 
           // Έλεγχος και προσεκτική εφαρμογή παραμέτρων
             if (options.params) {
