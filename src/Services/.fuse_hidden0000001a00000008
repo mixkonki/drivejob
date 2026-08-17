@@ -39,6 +39,7 @@ class FileService
     private $baseDirectories = [
         'profile_image' => 'profile_images',
         'resume_file' => 'resumes',
+        'criminal_record_file' => 'criminal_records',
         'license_front_image' => 'licenses',
         'license_back_image' => 'licenses',
         'tachograph_front_image' => 'tachographs',

@@ -239,6 +239,14 @@ class ProfileModel extends BaseModel
                 return false;
             }
 
+            // Αν είναι ποινικό μητρώο, ενημερώνουμε και το πεδίο legal_status
+            if ($documentType === 'criminal_record_file') {
+                return $this->update([
+                    $documentType => $imagePath,
+                    'legal_status' => 'yes'
+                ], ['id' => $driverId]);
+            }
+
             return $this->update([$documentType => $imagePath], ['id' => $driverId]);
         } catch (PDOException $e) {
             Logger::error('Error in updateDriverDocumentImage: ' . $e->getMessage());

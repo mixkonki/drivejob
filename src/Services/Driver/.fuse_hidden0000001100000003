@@ -187,6 +187,7 @@ class DriverProfileService implements DriverProfileServiceInterface
             $uploadedFiles = [
                 'profile_image' => $files['profile_image'] ?? null,
                 'resume_file' => $files['resume_file'] ?? null,
+                'criminal_record_file' => $files['criminal_record_file'] ?? null,
                 'license_front_image' => $files['license_front_image'] ?? null,
                 'license_back_image' => $files['license_back_image'] ?? null,
                 'tachograph_front_image' => $files['tachograph_front_image'] ?? null,
@@ -208,7 +209,8 @@ class DriverProfileService implements DriverProfileServiceInterface
                 'adr_back_image' => 'image',
                 'operator_front_image' => 'image',
                 'operator_back_image' => 'image',
-                'resume_file' => 'document'
+                'resume_file' => 'document',
+                'criminal_record_file' => 'document'
             ];
 
             // Επεξεργασία των αρχείων

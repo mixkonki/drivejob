@@ -462,7 +462,7 @@ class BaseUserController extends BaseController
             $data['country'] = $this->sanitize($_POST['country'] ?? '');
             $data['postal_code'] = $this->sanitize($_POST['postal_code'] ?? '');
             $data['date_of_birth'] = $this->sanitizeDate($_POST['birth_date'] ?? '');
-            $data['legal_status'] = (($_POST['legal_status'] ?? '') === 'yes') ? 'yes' : 'no';
+            $data['legal_status'] = $this->sanitize($_POST['legal_status'] ?? '');
         }
 
         return $data;

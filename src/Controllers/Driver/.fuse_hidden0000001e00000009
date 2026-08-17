@@ -494,7 +494,7 @@ class DriversController extends BaseUserController
             'country' => $this->sanitize($_POST['country'] ?? null),
             'postal_code' => $this->sanitize($_POST['postal_code'] ?? null),
             'date_of_birth' => $this->sanitizeDate($_POST['birth_date'] ?? null),
-            'legal_status' => (($_POST['legal_status'] ?? '') === 'yes') ? 'yes' : 'no',
+            'legal_status' => $this->sanitize($_POST['legal_status'] ?? null),
             'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
             'updated_at' => date('Y-m-d H:i:s')
         ];

@@ -27,6 +27,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 <script src="<?php echo BASE_URL; ?>js/driver_edit_profile.js"></script>
 <script src="<?php echo BASE_URL; ?>js/license-validation.js"></script>
 <script src="<?php echo BASE_URL; ?>js/country-phone-codes.js"></script>
+<script src="<?php echo BASE_URL; ?>js/criminal-record-toggle.js"></script>
 <script src="<?php echo BASE_URL; ?>js/vehicle-experience.js"></script>
 <script src="<?php echo BASE_URL; ?>js/update-profile-experience.js"></script>
 <script>
@@ -241,11 +242,27 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                             <div class="document-column" style="flex: 1; max-width: 33.33%; padding-right: 15px; padding-left: 15px; position: relative;">
                                 <div class="form-group">
                                     <label>Ποινικό Μητρώο</label>
-                                    <label class="checkbox-inline" style="display:block; margin-top:8px;">
-                                        <input type="checkbox" name="legal_status" value="yes" <?php echo (isset($driverData["legal_status"]) && $driverData["legal_status"] == "yes") ? "checked" : ""; ?>>
-                                        Δηλώνω υπεύθυνα ότι διαθέτω λευκό ποινικό μητρώο
-                                    </label>
-                                    <p class="form-hint">Δεν απαιτείται ανέβασμα αρχείου. Η δήλωση επέχει θέση υπεύθυνης δήλωσης και μπορεί να ζητηθεί επαλήθευση κατά τη συνέντευξη.</p>
+                                    <div class="radio-group">
+                                        <!-- Τα radio buttons παραμένουν για συμβατότητα αλλά θα κρύβονται με CSS -->
+                                        <label class="radio-inline" style="display: none;">
+                                            <input type="radio" name="legal_status" value="yes" <?php echo (isset($driverData['legal_status']) && $driverData['legal_status'] == 'yes') ? 'checked' : ''; ?>> Ναι
+                                        </label>
+                                        <label class="radio-inline" style="display: none;">
+                                            <input type="radio" name="legal_status" value="no" <?php echo (isset($driverData['legal_status']) && $driverData['legal_status'] == 'no') ? 'checked' : ''; ?>> Όχι
+                                        </label>
+
+                                        <!-- Το div για το ανέβασμα αρχείου -->
+                                        <div id="criminal_record_upload" class="criminal-record-upload" style="<?php echo (isset($driverData['legal_status']) && $driverData['legal_status'] == 'yes') ? 'display:inline-block;' : 'display:none;'; ?> margin-left: 20px;">
+                                            <label for="criminal_record_file" class="file-upload-label">Ανέβασμα αρχείου:</label>
+                                            <input type="file" id="criminal_record_file" name="criminal_record_file" accept=".pdf,.jpg,.jpeg,.png">
+                                            <?php if (isset($driverData['criminal_record_file']) && $driverData['criminal_record_file']) : ?>
+                                                <div class="current-file">
+                                                    <a href="<?php echo BASE_URL . htmlspecialchars($driverData['criminal_record_file']); ?>" target="_blank">Προβολή τρέχοντος αρχείου</a>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <p class="form-hint">Επιλέξτε "Ναι" για να ανεβάστε το αρχείο. Μέγιστο μέγεθος: 5MB. Επιτρεπόμενοι τύποι: PDF, JPG, JPEG, PNG</p>
                                 </div>
                             </div>
                         </div>
@@ -1287,8 +1304,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                             <td><?php echo $filePreview; ?></td>
                                             <td title="<?php echo htmlspecialchars($cert['description'] ?? ''); ?>"><?php
                                                                                                                     echo isset($cert['description']) && $cert['description']
-                                                                                                                        ? (mb_strlen($cert['description'], 'UTF-8') > 50
-                                                                                                                            ? htmlspecialchars(mb_substr($cert['description'], 0, 50, 'UTF-8')) . '...'
+                                                                                                                        ? (strlen($cert['description']) > 50
+                                                                                                                            ? htmlspecialchars(substr($cert['description'], 0, 50)) . '...'
                                                                                                                             : htmlspecialchars($cert['description']))
                                                                                                                         : '-';
                                                                                                                     ?></td>

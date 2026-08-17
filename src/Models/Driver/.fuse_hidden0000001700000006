@@ -231,12 +231,21 @@ class ProfileModel extends BaseModel
                 'operator_front_image',
                 'operator_back_image',
                 'tachograph_front_image',
-                'tachograph_back_image'
+                'tachograph_back_image',
+                'criminal_record_file'
             ];
 
             if (!in_array($documentType, $validDocTypes)) {
                 Logger::error('Invalid document type for image update: ' . $documentType);
                 return false;
+            }
+
+            // Αν είναι ποινικό μητρώο, ενημερώνουμε και το πεδίο legal_status
+            if ($documentType === 'criminal_record_file') {
+                return $this->update([
+                    $documentType => $imagePath,
+                    'legal_status' => 'yes'
+                ], ['id' => $driverId]);
             }
 
             return $this->update([$documentType => $imagePath], ['id' => $driverId]);

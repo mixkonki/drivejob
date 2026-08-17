@@ -45,3 +45,6 @@ Thumbs.db
 /coverage/
 phpunit.cache
 .phpunit.result.cache
+
+# Προσωρινός κάδος (τα σβήνει ο χρήστης χειροκίνητα)
+/_to_delete/
