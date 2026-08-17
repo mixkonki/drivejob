@@ -8,14 +8,28 @@
 require_once __DIR__ . '/../../../../src/bootstrap.php';
 
 use Drivejob\Core\Database;
+use Drivejob\Core\Session;
 use Drivejob\Services\EnhancedMatchingService;
 
 // Set JSON header
 header('Content-Type: application/json');
 
+// Έλεγχος πρόσβασης: μόνο συνδεδεμένοι χρήστες
+Session::start();
+if (!Session::has('user_id')) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit;
+}
+
 try {
-    // Get driver ID from query parameter (for testing)
-    $driverId = isset($_GET['driver_id']) ? intval($_GET['driver_id']) : 26; // Default to test driver
+    // Ο οδηγός βλέπει ΜΟΝΟ τα δικά του matches· ο admin μπορεί να δώσει ?driver_id=
+    $sessionRole = Session::get('user_role');
+    if ($sessionRole === 'admin' && isset($_GET['driver_id'])) {
+        $driverId = intval($_GET['driver_id']);
+    } else {
+        $driverId = intval(Session::get('user_id'));
+    }
     $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 20;
     $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 
