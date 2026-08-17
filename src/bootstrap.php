@@ -15,8 +15,16 @@ if (!defined('ROOT_DIR')) {
 // Αυτόματη φόρτωση μέσω Composer
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// Φόρτωση μεταβλητών περιβάλλοντος από το .env (root του project)
+if (class_exists(\Dotenv\Dotenv::class) && file_exists(ROOT_DIR . '/.env')) {
+    \Dotenv\Dotenv::createImmutable(ROOT_DIR)->safeLoad();
+}
+
 // Συμπερίληψη του config.php για τον ορισμό σταθερών
 require_once __DIR__ . '/../config/config.php';
+
+// Ρυθμίσεις email (SMTP σταθερές) — διαθέσιμες σε όλη την εφαρμογή
+require_once __DIR__ . '/../config/email.php';
 
 // Ορισμός περιβάλλοντος
 defined('ENVIRONMENT') or define('ENVIRONMENT', 'development');

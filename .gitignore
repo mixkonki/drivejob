@@ -52,3 +52,6 @@ phpunit.cache
 # Backup φάκελοι & mount artifacts
 /_backup/
 .fuse_hidden*
+
+# Αρχεία χρηστών — ΠΟΤΕ στο git
+/storage/uploads/
