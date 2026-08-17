@@ -1304,8 +1304,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                                             <td><?php echo $filePreview; ?></td>
                                             <td title="<?php echo htmlspecialchars($cert['description'] ?? ''); ?>"><?php
                                                                                                                     echo isset($cert['description']) && $cert['description']
-                                                                                                                        ? (mb_strlen($cert['description'], 'UTF-8') > 50
-                                                                                                                            ? htmlspecialchars(mb_substr($cert['description'], 0, 50, 'UTF-8')) . '...'
+                                                                                                                        ? (strlen($cert['description']) > 50
+                                                                                                                            ? htmlspecialchars(substr($cert['description'], 0, 50)) . '...'
                                                                                                                             : htmlspecialchars($cert['description']))
                                                                                                                         : '-';
                                                                                                                     ?></td>

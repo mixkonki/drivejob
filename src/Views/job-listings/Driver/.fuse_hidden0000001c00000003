@@ -7,7 +7,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
 <main>
     <div class="container">
-        <h1>Οι Αγγελίες μας</h1>
+        <h1>Οι Αγγελίες μου</h1>
 
         <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">
@@ -68,7 +68,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             </div>
 
                             <div class="listing-description">
-                                <?php echo htmlspecialchars(mb_substr($listing['description'], 0, 200, 'UTF-8')) . '...'; ?>
+                                <?php echo substr(htmlspecialchars($listing['description']), 0, 200) . '...'; ?>
                             </div>
 
                             <div class="listing-status">

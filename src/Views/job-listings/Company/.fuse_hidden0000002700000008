@@ -7,43 +7,60 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
 <main>
     <div class="container">
-        <h1>Αγγελίες Οδηγού</h1>
+        <h1>Αγγελίες Εταιρείας</h1>
 
-        <div class="driver-profile-header">
-            <div class="driver-info">
-                <?php if (isset($driver['profile_image']) && $driver['profile_image']) : ?>
-                    <img src="<?php echo BASE_URL . htmlspecialchars($driver['profile_image']); ?>" alt="Φωτογραφία προφίλ" class="driver-image">
+        <div class="company-profile-header">
+            <div class="company-info">
+                <?php if (isset($company['logo']) && $company['logo']) : ?>
+                    <img src="<?php echo BASE_URL . htmlspecialchars($company['logo']); ?>" alt="Λογότυπο εταιρείας" class="company-logo">
                 <?php else : ?>
-                    <img src="<?php echo BASE_URL; ?>img/default_profile.png" alt="Προεπιλεγμένη φωτογραφία" class="driver-image">
+                    <img src="<?php echo BASE_URL; ?>img/default_company_logo.png" alt="Προεπιλεγμένο λογότυπο" class="company-logo">
                 <?php endif; ?>
-                <div class="driver-details">
-                    <h2><?php echo htmlspecialchars($driver['first_name'] . ' ' . $driver['last_name']); ?></h2>
-                    <?php if (isset($driver['city']) && $driver['city']) : ?>
-                        <p class="driver-location">
+                <div class="company-details">
+                    <h2><?php echo htmlspecialchars($company['company_name']); ?></h2>
+                    <?php if (isset($company['city']) && $company['city']) : ?>
+                        <p class="company-location">
                             <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
-                            <?php echo htmlspecialchars($driver['city'] . ', ' . $driver['country']); ?>
+                            <?php echo htmlspecialchars($company['city'] . ', ' . $company['country']); ?>
                         </p>
                     <?php endif; ?>
-                    <div class="driver-meta">
-                        <?php if (isset($driver['experience_years']) && $driver['experience_years']) : ?>
-                            <span class="driver-experience">
-                                <img src="<?php echo BASE_URL; ?>img/experience_icon.png" alt="Εμπειρία">
-                                <?php echo $driver['experience_years']; ?> έτη εμπειρίας
+                    <div class="company-meta">
+                        <?php if (isset($company['company_size']) && $company['company_size']) : ?>
+                            <span class="company-size">
+                                <img src="<?php echo BASE_URL; ?>img/employees_icon.png" alt="Μέγεθος">
+                                <?php
+                                switch ($company['company_size']) {
+                                    case 'micro':
+                                        echo '1-9 εργαζόμενοι';
+                                        break;
+                                    case 'small':
+                                        echo '10-49 εργαζόμενοι';
+                                        break;
+                                    case 'medium':
+                                        echo '50-249 εργαζόμενοι';
+                                        break;
+                                    case 'large':
+                                        echo '250+ εργαζόμενοι';
+                                        break;
+                                    default:
+                                        echo htmlspecialchars($company['company_size']);
+                                }
+                                ?>
                             </span>
                         <?php endif; ?>
-                        <?php if (isset($driver['rating']) && $driver['rating']) : ?>
-                            <span class="driver-rating">
+                        <?php if (isset($company['rating']) && $company['rating']) : ?>
+                            <span class="company-rating">
                                 <img src="<?php echo BASE_URL; ?>img/rating_icon.png" alt="Αξιολόγηση">
-                                <?php echo number_format($driver['rating'], 1); ?>/5
+                                <?php echo number_format($company['rating'], 1); ?>/5
                             </span>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
-            <div class="driver-actions">
-                <a href="<?php echo BASE_URL; ?>drivers/profile/<?php echo $driver['id']; ?>" class="btn-secondary">Προβολή Προφίλ</a>
-                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'company') : ?>
-                    <a href="<?php echo BASE_URL; ?>messages/create/<?php echo $driver['id']; ?>" class="btn-primary">Επικοινωνία</a>
+            <div class="company-actions">
+                <a href="<?php echo BASE_URL; ?>companies/profile/<?php echo $company['id']; ?>" class="btn-secondary">Προβολή Προφίλ</a>
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'driver') : ?>
+                    <a href="<?php echo BASE_URL; ?>messages/create/<?php echo $company['id']; ?>" class="btn-primary">Επικοινωνία</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -141,10 +158,20 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                     </span>
                                 </div>
                             <?php endif; ?>
+
+                            <?php if ($listing['is_active']) : ?>
+                                <div class="job-listing-detail">
+                                    <span class="listing-status active">Ενεργή</span>
+                                </div>
+                            <?php else : ?>
+                                <div class="job-listing-detail">
+                                    <span class="listing-status inactive">Ανενεργή</span>
+                                </div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="job-listing-description">
-                            <?php echo nl2br(htmlspecialchars(mb_substr($listing['description'], 0, 150, 'UTF-8') . (mb_strlen($listing['description'], 'UTF-8') > 150 ? '...' : ''))); ?>
+                            <?php echo nl2br(htmlspecialchars(substr($listing['description'], 0, 150) . (strlen($listing['description']) > 150 ? '...' : ''))); ?>
                         </div>
 
                         <div class="job-listing-footer">
@@ -168,14 +195,14 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
         <?php else : ?>
             <div class="no-results">
-                <p>Ο οδηγός δεν έχει δημοσιεύσει αγγελίες.</p>
+                <p>Η εταιρεία δεν έχει δημοσιεύσει αγγελίες.</p>
             </div>
         <?php endif; ?>
     </div>
 </main>
 
 <style>
-    .driver-profile-header {
+    .company-profile-header {
         background-color: #f9f9f9;
         border-radius: 8px;
         padding: 20px;
@@ -185,60 +212,80 @@ include ROOT_DIR . '/src/Views/partials/header.php';
         align-items: center;
     }
 
-    .driver-info {
+    .company-info {
         display: flex;
         align-items: center;
     }
 
-    .driver-image {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
+    .company-logo {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
         margin-right: 20px;
+        background-color: white;
+        border-radius: 8px;
+        padding: 10px;
     }
 
-    .driver-details h2 {
+    .company-details h2 {
         margin: 0 0 5px 0;
         font-size: 24px;
     }
 
-    .driver-location {
+    .company-location {
         display: flex;
         align-items: center;
         color: #666;
         margin: 0 0 10px 0;
     }
 
-    .driver-location img {
+    .company-location img {
         width: 16px;
         height: 16px;
         margin-right: 5px;
     }
 
-    .driver-meta {
+    .company-meta {
         display: flex;
         gap: 15px;
     }
 
-    .driver-experience,
-    .driver-rating {
+    .company-size,
+    .company-rating {
         display: flex;
         align-items: center;
         font-size: 14px;
         color: #666;
     }
 
-    .driver-experience img,
-    .driver-rating img {
+    .company-size img,
+    .company-rating img {
         width: 16px;
         height: 16px;
         margin-right: 5px;
     }
 
-    .driver-actions {
+    .company-actions {
         display: flex;
         gap: 10px;
+    }
+
+    .listing-status {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .listing-status.active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .listing-status.inactive {
+        background-color: #f8d7da;
+        color: #721c24;
     }
 </style>
 

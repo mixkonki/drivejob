@@ -67,7 +67,7 @@ $recentConversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php echo htmlspecialchars($conv['subject']); ?>
                     </div>
                     <div class="message-preview">
-                        <?php echo htmlspecialchars(mb_substr($conv['last_message'] ?? '', 0, 50, 'UTF-8')) . '...'; ?>
+                        <?php echo htmlspecialchars(substr($conv['last_message'] ?? '', 0, 50)) . '...'; ?>
                     </div>
                     <div class="message-time">
                         <?php

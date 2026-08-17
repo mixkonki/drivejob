@@ -99,7 +99,7 @@ include ROOT_DIR . '/src/Views/partials/admin-header.php';
                                             alt="Profile" class="user-avatar">
                                     <?php else: ?>
                                         <div class="user-avatar-placeholder">
-                                            <?php echo mb_strtoupper(mb_substr($user['name'] ?? 'U', 0, 1, 'UTF-8'), 'UTF-8'); ?>
+                                            <?php echo strtoupper(substr($user['name'] ?? 'U', 0, 1)); ?>
                                         </div>
                                     <?php endif; ?>
                                     <span><?php echo htmlspecialchars($user['name'] ?? 'Χωρίς όνομα'); ?></span>

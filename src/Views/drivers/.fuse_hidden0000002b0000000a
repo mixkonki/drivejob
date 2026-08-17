@@ -1442,7 +1442,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                             <span class="company"><i class="fas fa-building"></i> <?php echo htmlspecialchars($match['company_name']); ?></span>
                                             <span class="location"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($match['location']); ?></span>
                                         </div>
-                                        <p class="match-description"><?php echo htmlspecialchars(mb_substr($match['description'], 0, 200, 'UTF-8')) . '...'; ?></p>
+                                        <p class="match-description"><?php echo substr(htmlspecialchars($match['description']), 0, 200) . '...'; ?></p>
                                         <div class="match-actions">
                                             <a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $match['company_listing_id']; ?>" class="btn-primary">Προβολή Λεπτομερειών</a>
                                         </div>

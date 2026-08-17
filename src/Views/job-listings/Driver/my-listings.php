@@ -68,7 +68,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             </div>
 
                             <div class="listing-description">
-                                <?php echo substr(htmlspecialchars($listing['description']), 0, 200) . '...'; ?>
+                                <?php echo htmlspecialchars(mb_substr($listing['description'], 0, 200, 'UTF-8')) . '...'; ?>
                             </div>
 
                             <div class="listing-status">

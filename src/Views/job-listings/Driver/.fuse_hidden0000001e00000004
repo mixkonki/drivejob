@@ -426,7 +426,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                 <div class="job-listing-description">
                                     <?php
                                     $description = $listing['description'];
-                                    $shortDesc = mb_strlen($description, 'UTF-8') > 150 ? mb_substr($description, 0, 150, 'UTF-8') . '...' : $description;
+                                    $shortDesc = strlen($description) > 150 ? substr($description, 0, 150) . '...' : $description;
                                     echo nl2br(htmlspecialchars($shortDesc));
                                     ?>
                                 </div>
