@@ -69,6 +69,31 @@ fi
 check "Λάθος login δεν σκάει με 500"     "200" "$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 10 \
     -d "email=smoke@test.invalid&password=wrongpass" "$BASE/auth/login")"
 
+echo "— Uploads (Πακέτο 1) —"
+# Ιδιωτικά αρχεία: χωρίς login πρέπει να απαντούν 403
+RESUME=$(ls "$HOME/Herd/drivejob/storage/uploads/resumes/" 2>/dev/null | head -1)
+if [ -n "$RESUME" ]; then
+    check "Βιογραφικό χωρίς login → 403" "403" "$(status_of "$BASE/uploads/resumes/$RESUME")"
+fi
+LICENSE=$(ls "$HOME/Herd/drivejob/storage/uploads/license_images/" 2>/dev/null | head -1)
+if [ -n "$LICENSE" ]; then
+    check "Δίπλωμα χωρίς login → 403" "403" "$(status_of "$BASE/uploads/license_images/$LICENSE")"
+fi
+# Δημόσια: profile images πρέπει να σερβίρονται κανονικά (κωδικοποίηση κενών στο URL)
+PIMG=$(ls "$HOME/Herd/drivejob/storage/uploads/profile_images/" 2>/dev/null | head -1 | sed 's/ /%20/g')
+if [ -n "$PIMG" ]; then
+    check "Εικόνα προφίλ (δημόσια) → 200" "200" "$(status_of "$BASE/uploads/profile_images/$PIMG")"
+fi
+# Path traversal: αρκεί να ΜΠΛΟΚΑΡΕΤΑΙ (400 από nginx, 403 από auth, ή 404 από realpath — όχι 200)
+TRAV=$(status_of "$BASE/uploads/profile_images/..%2F..%2F..%2Fconfig%2F.env")
+case "$TRAV" in
+    400|403|404)
+        printf "  ✅ %-45s [μπλοκαρίστηκε με %s]\n" "Path traversal μπλοκάρεται" "$TRAV"; PASS=$((PASS+1)) ;;
+    *)
+        printf "  ❌ %-45s [πέρασε με %s!]\n" "Path traversal μπλοκάρεται" "$TRAV"; FAIL=$((FAIL+1))
+        FAILED_TESTS="$FAILED_TESTS\n  - Path traversal" ;;
+esac
+
 echo "— Βάση δεδομένων —"
 DB_TABLES=$(php -r '
 try { $p=new PDO("mysql:host=127.0.0.1;dbname=drivejob","root","");

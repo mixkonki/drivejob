@@ -48,3 +48,7 @@ phpunit.cache
 
 # Προσωρινός κάδος (τα σβήνει ο χρήστης χειροκίνητα)
 /_to_delete/
+
+# Backup φάκελοι & mount artifacts
+/_backup/
+.fuse_hidden*

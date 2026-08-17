@@ -248,6 +248,9 @@ $router->group(['prefix' => 'admin'], function ($router) {
 // Include API routes
 require_once ROOT_DIR . '/routes/api.php';
 
+// Σερβίρισμα αρχείων uploads με έλεγχο πρόσβασης (τα αρχεία ζουν στο storage/uploads)
+$router->get("/uploads/{folder}/{filename}", [\Drivejob\Controllers\FileController::class, "serve"])->name("files.serve");
+
 // Διαδρομή για 404 Not Found
 $router->notFound(function () {
     require_once ROOT_DIR . '/src/Views/errors/404.php';

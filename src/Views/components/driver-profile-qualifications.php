@@ -64,7 +64,7 @@ class DriverResumePDF
         $this->addAdditionalInfo();
         $this->addFooter();
 // Δημιουργία του φακέλου uploads/resumes αν δεν υπάρχει
-        $uploadDir = ROOT_DIR . '/public/uploads/resumes';
+        $uploadDir = ROOT_DIR . '/storage/uploads/resumes';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }

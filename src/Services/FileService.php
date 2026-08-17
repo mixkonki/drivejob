@@ -63,7 +63,7 @@ class FileService
      */
     public function __construct()
     {
-        $this->uploadsDir = ROOT_DIR . '/uploads';
+        $this->uploadsDir = ROOT_DIR . '/storage/uploads';
     }
 
     /**
@@ -144,7 +144,7 @@ class FileService
         return [
             'success' => true,
             'message' => 'Το αρχείο ανέβηκε με επιτυχία',
-            'file_path' => str_replace(ROOT_DIR, '', $targetPath),
+            'file_path' => ltrim(str_replace(ROOT_DIR . '/storage', '', $targetPath), '/'),
             'file_name' => $filename,
             'original_name' => $file['name'],
             'mime_type' => $mimeType,
@@ -169,9 +169,12 @@ class FileService
             ];
         }
 
-        // Προσθήκη του ROOT_DIR αν η διαδρομή είναι σχετική
+        // Κανονικοποίηση σχετικών διαδρομών (uploads/... -> storage/uploads/...)
         if (strpos($filePath, ROOT_DIR) !== 0) {
-            $filePath = ROOT_DIR . $filePath;
+            $rel = ltrim($filePath, '/');
+            $filePath = (strpos($rel, 'uploads/') === 0)
+                ? ROOT_DIR . '/storage/' . $rel
+                : ROOT_DIR . '/' . $rel;
         }
 
         // Έλεγχος αν το αρχείο υπάρχει
