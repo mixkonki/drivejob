@@ -7,7 +7,9 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-if (empty($_SESSION['user_id'])) {
-    header('Location: login.php?err=7');
+// Απαιτείται σύνδεση ΚΑΙ ρόλος admin
+$role = $_SESSION['user_role'] ?? $_SESSION['role'] ?? '';
+if (empty($_SESSION['user_id']) || $role !== 'admin') {
+    header('Location: /auth/access-denied');
     exit;
 }

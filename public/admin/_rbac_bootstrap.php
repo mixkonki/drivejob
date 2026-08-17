@@ -25,7 +25,7 @@ function currentUserId(): ?int
 function requireLogin(): void
 {
     if (!currentUserId()) {
-        header('Location: /drivejob/public/auth/login');
+        header('Location: /auth/login');
         exit;
     }
 }

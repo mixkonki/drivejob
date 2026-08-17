@@ -2,6 +2,8 @@
 
 namespace Drivejob\Controllers\Admin;
 
+use Drivejob\Core\AuthMiddleware;
+
 use Drivejob\Models\Admin\DummySystemMonitoringModel;
 use Drivejob\Helpers\MonitoringHelper;
 
@@ -17,6 +19,8 @@ class SimpleMonitoringController
 
     public function __construct()
     {
+        AuthMiddleware::hasRole('admin');
+
         // Χρήση μόνο του dummy μοντέλου
         $this->model = new DummySystemMonitoringModel();
     }

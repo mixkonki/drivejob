@@ -156,7 +156,7 @@ class ExceptionHandler
             ], 401);
         } else {
             // Ανακατεύθυνση στη σελίδα σύνδεσης
-            header('Location: ' . BASE_URL . 'login');
+            header('Location: ' . BASE_URL . 'auth/login');
             exit;
         }
     }

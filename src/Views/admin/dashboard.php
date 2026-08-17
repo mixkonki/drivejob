@@ -13,10 +13,10 @@ if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 $nonce = base64_encode(random_bytes(16));
 header("Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-{$nonce}'; style-src 'self' 'unsafe-inline'; connect-src 'self';");
 
-// Resolve user id (adapt to your auth)
-$uid = (int)($_SESSION["user_id"] ?? $_GET["uid"] ?? 1);
+// Το user id προέρχεται ΜΟΝΟ από το session (ο controller έχει ήδη ελέγξει ρόλο admin)
+$uid = (int)($_SESSION["user_id"] ?? 0);
 
-$base = "/drivejob/public";
+$base = rtrim(defined('BASE_URL') ? BASE_URL : '/', '/');
 $q = "?uid=" . $uid;
 $API_METRICS = $base . "/api/admin/matching_metrics.php" . $q;
 $API_PROM    = $base . "/api/admin/matching_metrics_prom.php" . $q;

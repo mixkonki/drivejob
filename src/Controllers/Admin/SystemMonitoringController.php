@@ -2,6 +2,8 @@
 
 namespace Drivejob\Controllers\Admin;
 
+use Drivejob\Core\AuthMiddleware;
+
 use Drivejob\Core\Controller;
 use Drivejob\Core\Session;
 use Drivejob\Models\Admin\SystemMonitoringModel;
@@ -15,6 +17,8 @@ class SystemMonitoringController extends Controller
 
     public function __construct()
     {
+        AuthMiddleware::hasRole('admin');
+
         // Προσπάθεια χρήσης του κανονικού μοντέλου
         try {
             $this->model = SystemMonitoringModelFactory::create();

@@ -95,7 +95,7 @@ class AuthModel
                 if ($admin) {
                     return [
                         'user_id' => $admin['id'],
-                        'role' => $admin['role'], // Χρησιμοποιούμε το role από τη βάση
+                        'role' => $admin['role'] ?? $admin['user_type'] ?? 'admin',
                         'email' => $admin['email'], // Χρησιμοποιούμε το email από τη βάση
                         'name' => 'Administrator',
                         'is_verified' => 1,
@@ -204,25 +204,49 @@ class AuthModel
                 'session_id' => session_id()
             ]);
 
-            // Χρησιμοποιούμε τον πίνακα users και ελέγχουμε και email και username
-            // Επίσης απαιτούμε role = 'admin'
-            $query = "SELECT * FROM users WHERE (email = ? OR username = ?) AND role = 'admin'";
+            // Χρησιμοποιούμε τον πίνακα users — ο ρόλος ελέγχεται μετά,
+            // γιατί η στήλη διαφέρει ανά σχήμα (role ή user_type)
+            $query = "SELECT * FROM users WHERE (email = ? OR username = ?)";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([$email, $email]);
             $admin = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            // Έλεγχος ρόλου admin: στήλη (role/user_type) ή πίνακες RBAC
+            $adminRole = $admin['role'] ?? $admin['user_type'] ?? null;
+            if ($admin && $adminRole === null) {
+                try {
+                    $roleStmt = $this->pdo->prepare(
+                        "SELECT r.name FROM user_roles ur
+                         JOIN roles r ON r.id = ur.role_id
+                         WHERE ur.user_id = ? LIMIT 1"
+                    );
+                    $roleStmt->execute([$admin['id']]);
+                    $adminRole = $roleStmt->fetchColumn() ?: null;
+                } catch (\PDOException $rbacError) {
+                    Logger::debug('RBAC role lookup failed: ' . $rbacError->getMessage());
+                }
+            }
+            if ($admin && !in_array($adminRole, ['admin', 'super_admin'], true)) {
+                $admin = false;
+            }
+            // Κανονικοποίηση για το session
+            if ($adminRole === 'super_admin') {
+                $adminRole = 'admin';
+            }
 
             Logger::debug('Admin query result', [
                 'admin_found' => !empty($admin),
                 'admin_data' => $admin ? [
                     'id' => $admin['id'],
-                    'email' => $admin['email'],
-                    'username' => $admin['username'],
-                    'role' => $admin['role']
+                    'email' => $admin['email'] ?? null,
+                    'username' => $admin['username'] ?? null,
+                    'role' => $adminRole
                 ] : null
             ]);
 
             if ($admin) {
-                $passwordVerified = password_verify($password, $admin['password']);
+                $storedHash = $admin['password'] ?? $admin['password_hash'] ?? '';
+                $passwordVerified = $storedHash !== '' && password_verify($password, $storedHash);
                 Logger::debug('Password verification result', [
                     'password_verified' => $passwordVerified
                 ]);

@@ -33,25 +33,20 @@ set_error_handler(function ($severity, $message, $file, $line) {
     exit;
 });
 
-/** Check session first, then GET parameter for dev. */
+/** Επιστρέφει το user id ΜΟΝΟ από το session (το ?uid= dev fallback αφαιρέθηκε — security). */
 function currentUserId(): ?int
 {
-    // Check session first (normal login)
     if (isset($_SESSION['user_id'])) {
         return (int) $_SESSION['user_id'];
     }
-
-    // Development fallback: check GET parameter
-    if (isset($_GET["uid"])) {
-        return max(1, (int)$_GET["uid"]);
-    }
-
-    // No user ID found
     return null;
 }
 
 // Προφόρτωση permissions για το τρέχον request
-RBAC::primePermissions((int) (currentUserId() ?? 0));
+// Προαιρετικό cache warm-up — η μέθοδος δεν υπάρχει σε όλες τις εκδόσεις της RBAC
+if (method_exists(RBAC::class, 'primePermissions')) {
+    RBAC::primePermissions((int) (currentUserId() ?? 0));
+}
 
 // set actor for audit triggers
 DB::pdo()->prepare("SET @rbac_actor_user_id = :uid")->execute([':uid' => (int)(currentUserId() ?? 0)]);
