@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Supervisor;
+namespace Drivejob\Services\Supervisor;
 
-use App\Services\HealthStatus;
-use App\Services\Interfaces\MonitorableInterface;
-use App\Services\Interfaces\ServiceInterface;
-use App\Services\Interfaces\SupervisorInterface;
+use Drivejob\Services\HealthStatus;
+use Drivejob\Services\Interfaces\MonitorableInterface;
+use Drivejob\Services\Interfaces\ServiceInterface;
+use Drivejob\Services\Interfaces\SupervisorInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 

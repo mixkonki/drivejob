@@ -351,7 +351,7 @@ class JobListingRepository extends BaseRepository implements JobListingRepositor
                       LEFT JOIN companies c ON j.company_id = c.id
                       WHERE j.is_active = 1 AND (j.expires_at IS NULL OR j.expires_at > NOW())
                       AND j.id NOT IN (
-                          SELECT job_id FROM job_applications WHERE driver_id = :driver_id
+                          SELECT job_listing_id FROM job_applications WHERE driver_id = :driver_id
                       )";
 
             $params = [

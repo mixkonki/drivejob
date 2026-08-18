@@ -34,6 +34,7 @@ class SystemMonitoringController extends Controller
      */
     public function dashboard() {
         $this->requireAdminAuth();
+        $period = $_GET['period'] ?? '24h';
         // Λήψη δεδομένων από το μοντέλο
         try {
             $systemStatus = $this->model->getSystemStatus();
@@ -74,6 +75,7 @@ class SystemMonitoringController extends Controller
      */
     public function errors() {
         $this->requireAdminAuth();
+        $period = $_GET['period'] ?? '24h';
         $page = (int)($_GET['page'] ?? 1);
         $limit = 50;
         $type = $_GET['type'] ?? 'all';
@@ -100,6 +102,7 @@ class SystemMonitoringController extends Controller
      */
     public function performance() {
         $this->requireAdminAuth();
+        $period = $_GET['period'] ?? '24h';
         try {
             $performanceData = $this->model->getPerformanceData($period);
         } catch (\Exception $e) {
@@ -119,6 +122,7 @@ class SystemMonitoringController extends Controller
      */
     public function usage() {
         $this->requireAdminAuth();
+        $period = $_GET['period'] ?? '24h';
         try {
             $usageData = $this->model->getUsageData($period);
         } catch (\Exception $e) {
@@ -138,6 +142,8 @@ class SystemMonitoringController extends Controller
      */
     public function logs() {
         $this->requireAdminAuth();
+        $period = $_GET['period'] ?? '24h';
+        $type = $_GET['type'] ?? 'all';
         $page = (int)($_GET['page'] ?? 1);
         $limit = 100;
         $search = $_GET['search'] ?? '';
@@ -166,6 +172,7 @@ class SystemMonitoringController extends Controller
      */
     public function backupDatabase() {
         $this->requireAdminAuth();
+        $period = $_GET['period'] ?? '24h';
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/admin/monitoring/dashboard');
             return;

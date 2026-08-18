@@ -8,7 +8,7 @@ require_once dirname(__DIR__, 4) . "/src/RBAC/DB.php";
 
 use DriveJob\RBAC\Perms;
 use DriveJob\RBAC\Middleware\Guard;
-use DriveJob\RBAC\HttpGuard;
+use DriveJob\RBAC\Middleware\HttpGuard;
 use DriveJob\RBAC\Util\Http;
 use DriveJob\RBAC\DB;
 

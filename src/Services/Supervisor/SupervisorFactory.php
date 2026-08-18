@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Supervisor;
+namespace Drivejob\Services\Supervisor;
 
-use App\Services\Interfaces\SupervisorInterface;
-use App\Services\Supervisor\SupervisorRegistry;
+use Drivejob\Services\Interfaces\SupervisorInterface;
+use Drivejob\Services\Supervisor\SupervisorRegistry;
 use Drivejob\Core\Container;
 use Psr\Log\LoggerInterface;
 use Throwable;

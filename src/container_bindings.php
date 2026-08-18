@@ -33,23 +33,23 @@ $container->set('JobApplicationRepository', function () use ($container) {
 
 // Supervisor System Bindings
 $container->set('SupervisorRegistry', function () use ($container) {
-    return new \App\Services\Supervisor\SupervisorRegistry([], $container->get('logger') ?? null);
+    return new \Drivejob\Services\Supervisor\SupervisorRegistry([], $container->get('logger') ?? null);
 });
 
 $container->set('MainSupervisor', function () use ($container) {
-    return new \App\Services\Supervisor\MainSupervisor([], $container->get('logger') ?? null);
+    return new \Drivejob\Services\Supervisor\MainSupervisor([], $container->get('logger') ?? null);
 });
 
 $container->set('MonitoringService', function () use ($container) {
-    return new \App\Services\Supervisor\MonitoringService([], $container->get('logger') ?? null);
+    return new \Drivejob\Services\Supervisor\MonitoringService([], $container->get('logger') ?? null);
 });
 
 $container->set('RecoveryService', function () use ($container) {
-    return new \App\Services\Supervisor\RecoveryService([], $container->get('logger') ?? null);
+    return new \Drivejob\Services\Supervisor\RecoveryService([], $container->get('logger') ?? null);
 });
 
 $container->set('SupervisorFactory', function () use ($container) {
-    return new \App\Services\Supervisor\SupervisorFactory(
+    return new \Drivejob\Services\Supervisor\SupervisorFactory(
         $container,
         $container->get('SupervisorRegistry'),
         [],
@@ -60,7 +60,7 @@ $container->set('SupervisorFactory', function () use ($container) {
 // Factory method for creating service supervisors
 $container->set('ServiceSupervisorFactory', function () use ($container) {
     return function (string $name, array $config = []) use ($container) {
-        return new \App\Services\Supervisor\ServiceSupervisor(
+        return new \Drivejob\Services\Supervisor\ServiceSupervisor(
             $name,
             $config,
             $container->get('logger') ?? null

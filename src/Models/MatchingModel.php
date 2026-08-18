@@ -19,7 +19,7 @@ class MatchingModel
     public function __construct($pdo)
     {
         $this->pdo = $pdo;
-        $this->jobListingModel = new JobListingModel($pdo);
+        $this->jobListingModel = new \Drivejob\Models\Company\JobListingModel($pdo);
         $this->profileModel = new ProfileModel($pdo);
     }
 

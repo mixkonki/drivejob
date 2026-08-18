@@ -22,7 +22,7 @@ class DriverSkillsRepository
      */
     public function __construct(?Database $db = null)
     {
-        $this->db = $db ?? new Database();
+        $this->db = $db ?? Database::getInstance();
     }
 
     /**

@@ -13,6 +13,11 @@ define('ROOT_DIR', dirname(__DIR__));
 // Φόρτωση του autoloader του Composer
 require_once ROOT_DIR . '/vendor/autoload.php';
 
+// Φόρτωση .env (αν υπάρχει) ώστε τα DB_* να είναι διαθέσιμα στα tests
+if (class_exists(\Dotenv\Dotenv::class) && file_exists(ROOT_DIR . '/.env')) {
+    \Dotenv\Dotenv::createImmutable(ROOT_DIR)->safeLoad();
+}
+
 // Ορισμός της σταθεράς BASE_URL για το περιβάλλον δοκιμών
 if (!defined('BASE_URL')) {
     define('BASE_URL', 'http://localhost/');

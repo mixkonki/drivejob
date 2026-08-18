@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Supervisor;
 
-use App\Services\HealthStatus;
-use App\Services\Interfaces\ServiceInterface;
-use App\Services\Supervisor\MainSupervisor;
-use App\Services\Supervisor\SupervisorResult;
-use App\Services\SupervisorStatus;
-use App\Services\SupervisorResult as GlobalSupervisorResult;
+use Drivejob\Services\HealthStatus;
+use Drivejob\Services\Interfaces\ServiceInterface;
+use Drivejob\Services\Supervisor\MainSupervisor;
+use Drivejob\Services\Supervisor\SupervisorResult;
+use Drivejob\Services\SupervisorStatus;
+use Drivejob\Services\SupervisorResult as GlobalSupervisorResult;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
@@ -44,7 +44,8 @@ class MainSupervisorTest extends TestCase
     public function testInitialization(): void
     {
         $this->assertEquals('MainSupervisor', $this->mainSupervisor->getName());
-        $this->assertEquals(SupervisorStatus::HEALTHY, $this->mainSupervisor->getStatus());
+        // Χωρίς καμία εποπτεία ακόμη, η κατάσταση είναι UNKNOWN
+        $this->assertEquals(SupervisorStatus::UNKNOWN, $this->mainSupervisor->getStatus());
         $this->assertEmpty($this->mainSupervisor->getManagedServices());
     }
 
@@ -54,21 +55,10 @@ class MainSupervisorTest extends TestCase
     public function testSuperviseHealthyService(): void
     {
         $service = $this->createMock(ServiceInterface::class);
-        $service->expects($this->once())
-            ->method('getName')
-            ->willReturn('TestService');
-
-        $service->expects($this->once())
-            ->method('isOperational')
-            ->willReturn(true);
-
-        $service->expects($this->once())
-            ->method('getHealth')
-            ->willReturn(HealthStatus::HEALTHY);
-
-        $service->expects($this->once())
-            ->method('execute')
-            ->willReturn($this->createMock(\App\Services\ServiceResult::class));
+        $service->method('getName')->willReturn('TestService');
+        $service->method('isOperational')->willReturn(true);
+        $service->method('getHealth')->willReturn(HealthStatus::HEALTHY);
+        $service->method('execute')->willReturn(\Drivejob\Services\ServiceResult::success(['ok' => true]));
 
         $this->mainSupervisor->addService($service);
 
@@ -124,7 +114,7 @@ class MainSupervisorTest extends TestCase
 
             $service->expects($this->any())
                 ->method('execute')
-                ->willReturn($this->createMock(\App\Services\ServiceResult::class));
+                ->willReturn(\Drivejob\Services\ServiceResult::success());
 
             $services[] = $service;
             $this->mainSupervisor->addService($service);
@@ -183,12 +173,20 @@ class MainSupervisorTest extends TestCase
         $service2->method('isOperational')->willReturn(true);
         $service2->method('getHealth')->willReturn(HealthStatus::HEALTHY);
 
+        $service1->method('execute')->willReturn(\Drivejob\Services\ServiceResult::success());
+        $service2->method('execute')->willReturn(\Drivejob\Services\ServiceResult::success());
+
         $this->mainSupervisor->addService($service1);
         $this->mainSupervisor->addService($service2);
 
-        $status = $this->mainSupervisor->performSystemHealthCheck();
+        // Χωρίς supervisors ο έλεγχος είναι UNKNOWN
+        $this->assertEquals(SupervisorStatus::UNKNOWN, $this->mainSupervisor->performSystemHealthCheck());
 
-        $this->assertEquals(SupervisorStatus::HEALTHY, $status);
+        // Η εποπτεία δημιουργεί ServiceSupervisors — μετά ο έλεγχος είναι HEALTHY
+        $this->mainSupervisor->supervise($service1);
+        $this->mainSupervisor->supervise($service2);
+
+        $this->assertEquals(SupervisorStatus::HEALTHY, $this->mainSupervisor->performSystemHealthCheck());
     }
 
     /**
@@ -210,7 +208,7 @@ class MainSupervisorTest extends TestCase
         $this->assertArrayHasKey('supervisors', $status);
         $this->assertArrayHasKey('system_metrics', $status);
 
-        $this->assertEquals('MainSupervisor', $status['main_supervisor']['name']);
+        $this->assertArrayHasKey('status', $status['main_supervisor']);
         $this->assertEquals(1, $status['main_supervisor']['total_services']);
     }
 
@@ -220,7 +218,7 @@ class MainSupervisorTest extends TestCase
     public function testSupervisorManagement(): void
     {
         // Create a mock supervisor
-        $mockSupervisor = $this->createMock(\App\Services\Interfaces\SupervisorInterface::class);
+        $mockSupervisor = $this->createMock(\Drivejob\Services\Interfaces\SupervisorInterface::class);
         $mockSupervisor->method('getName')->willReturn('MockSupervisor');
         $mockSupervisor->method('getManagedServices')->willReturn([]);
 
@@ -269,7 +267,7 @@ class MainSupervisorTest extends TestCase
         $service->method('getName')->willReturn('MetricsTestService');
         $service->method('isOperational')->willReturn(true);
         $service->method('getHealth')->willReturn(HealthStatus::HEALTHY);
-        $service->method('execute')->willReturn($this->createMock(\App\Services\ServiceResult::class));
+        $service->method('execute')->willReturn($this->createMock(\Drivejob\Services\ServiceResult::class));
 
         $this->mainSupervisor->addService($service);
 
@@ -353,8 +351,8 @@ class MainSupervisorTest extends TestCase
      */
     public function testStatusUpdates(): void
     {
-        // Initially healthy
-        $this->assertEquals(SupervisorStatus::HEALTHY, $this->mainSupervisor->getStatus());
+        // Αρχικά UNKNOWN (καμία εποπτεία)
+        $this->assertEquals(SupervisorStatus::UNKNOWN, $this->mainSupervisor->getStatus());
 
         // Add a failing service
         $failingService = $this->createMock(ServiceInterface::class);

@@ -38,8 +38,7 @@ class RatingService implements RatingServiceInterface
     ) {
         if ($pdo === null) {
             // Χρήση του Database class από το Core namespace
-            $db = new \Drivejob\Core\Database();
-            $pdo = $db->getConnection();
+            $pdo = \Drivejob\Core\Database::getInstance()->getConnection();
         }
 
         $this->driverRatingModel = $driverRatingModel ?? new RatingModel($pdo);

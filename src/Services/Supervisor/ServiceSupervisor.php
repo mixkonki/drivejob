@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Supervisor;
+namespace Drivejob\Services\Supervisor;
 
-use App\Services\Interfaces\ServiceInterface;
-use App\Services\ServiceResult;
-use App\Services\SupervisorResult;
-use App\Services\SupervisorStatus;
+use Drivejob\Services\Interfaces\ServiceInterface;
+use Drivejob\Services\ServiceResult;
+use Drivejob\Services\SupervisorResult;
+use Drivejob\Services\SupervisorStatus;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -107,7 +107,7 @@ class ServiceSupervisor extends AbstractSupervisor
                 // Convert ServiceResult to SupervisorResult
                 if ($result->isSuccessful()) {
                     return SupervisorResult::success(
-                        $result->data,
+                        (array) ($result->data ?? []),
                         $result->executionTime,
                         $result->metadata
                     );

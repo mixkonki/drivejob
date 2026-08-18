@@ -168,7 +168,7 @@ class OpenAIMatchingService
         return $systemPrompt . "\n\n" .
             "ΠΡΟΦΙΛ ΟΔΗΓΟΥ:\n" .
             "- Όνομα: {$driverData['first_name']} {$driverData['last_name']}\n" .
-            "- Εμπειρία: {$driverData['years_experience']} έτη\n" .
+            "- Εμπειρία: " . ($driverData['experience_years'] ?? $driverData['years_experience'] ?? '—') . " έτη\n" .
             "- Τοποθεσία: {$driverData['city']}\n" .
             "- Άδειες: " . implode(', ', $driverData['licenses'] ?? []) . "\n\n" .
 

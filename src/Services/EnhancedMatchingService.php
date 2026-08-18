@@ -671,7 +671,7 @@ class EnhancedMatchingService implements MatchingServiceInterface
                 LEFT JOIN matching_scores ms ON j.id = ms.job_id AND ms.driver_id = ?
                 WHERE j.is_active = 1
                 AND j.id NOT IN (
-                    SELECT COALESCE(job_id, 0) FROM job_applications WHERE driver_id = ? AND job_id IS NOT NULL
+                    SELECT job_listing_id FROM job_applications WHERE driver_id = ?
                 )
                 ORDER BY ms.overall_score DESC, j.created_at DESC
                 LIMIT ?
@@ -712,7 +712,7 @@ class EnhancedMatchingService implements MatchingServiceInterface
                 WHERE d.available_for_work = 1
                 AND d.is_verified = 1
                 AND d.id NOT IN (
-                    SELECT driver_id FROM job_applications WHERE job_id = ?
+                    SELECT driver_id FROM job_applications WHERE job_listing_id = ?
                 )
                 ORDER BY ms.overall_score DESC, d.last_login DESC
                 LIMIT ?

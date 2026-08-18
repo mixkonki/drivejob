@@ -34,16 +34,15 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
-    # Τα παρακάτω είναι report-only μέχρι το Πακέτο 6 (επισκευή test suite)
-    # — τότε αφαιρούμε τα continue-on-error για να μπλοκάρουν το merge.
-    - name: Run PHPStan
-      continue-on-error: true
-      run: vendor/bin/phpstan analyse --no-progress
+    # ENFORCING (Πακέτο 6): level 0 = μηδέν ανύπαρκτες κλάσεις/μεθόδους/μεταβλητές
+    - name: Run PHPStan (level 0 — enforcing)
+      run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
-    - name: Run PHPCS
+    # ENFORCING (Πακέτο 6): το suite τρέχει — τα DB tests κάνουν skip χωρίς βάση
+    - name: Run PHPUnit tests
+      run: vendor/bin/phpunit --testsuite Unit
+
+    # Report-only: style (θα σφίξει όταν περάσει phpcbf σε όλο το δέντρο)
+    - name: Run PHPCS (report-only)
       continue-on-error: true
       run: vendor/bin/phpcs
-
-    - name: Run PHPUnit tests
-      continue-on-error: true
-      run: vendor/bin/phpunit

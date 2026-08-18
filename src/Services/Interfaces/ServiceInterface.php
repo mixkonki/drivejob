@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Interfaces;
+namespace Drivejob\Services\Interfaces;
 
-use App\Services\HealthStatus;
-use App\Services\ServiceResult;
+use Drivejob\Services\HealthStatus;
+use Drivejob\Services\ServiceResult;
 
 /**
  * Core service interface for supervised service operations.

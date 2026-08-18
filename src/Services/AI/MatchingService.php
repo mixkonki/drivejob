@@ -74,7 +74,7 @@ class MatchingService
                 FROM job_listings j
                 WHERE j.is_active = 1
                 AND j.id NOT IN (
-                    SELECT job_id FROM job_applications WHERE driver_id = ?
+                    SELECT job_listing_id FROM job_applications WHERE driver_id = ?
                 )
                 ORDER BY j.created_at DESC
                 LIMIT 100
@@ -120,7 +120,7 @@ class MatchingService
                 FROM drivers d
                 WHERE d.is_available = 1
                 AND d.id NOT IN (
-                    SELECT driver_id FROM job_applications WHERE job_id = ?
+                    SELECT driver_id FROM job_applications WHERE job_listing_id = ?
                 )
                 ORDER BY d.last_login DESC
                 LIMIT 200

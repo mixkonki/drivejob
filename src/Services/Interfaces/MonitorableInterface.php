@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Interfaces;
+namespace Drivejob\Services\Interfaces;
 
-use App\Services\HealthStatus;
+use Drivejob\Services\HealthStatus;
 
 /**
  * Interface for components that can be monitored for health and metrics.

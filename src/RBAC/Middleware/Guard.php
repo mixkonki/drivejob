@@ -10,7 +10,7 @@ final class Guard
 {
     public static function requirePermission(int $userId, string $permission, array $ctx = []): void
     {
-        if (!RBAC::userCan($userId, $permission)) {
+        if (!RBAC::hasPermission($userId, $permission)) {
             Logger::deny("missing_permission", ["uid" => $userId, "required" => $permission] + $ctx);
             Http::jsonError("Missing permission", ["required" => $permission] + $ctx, 403);
             exit;
@@ -20,7 +20,7 @@ final class Guard
     public static function requireAny(int $userId, array $permissions, array $ctx = []): void
     {
         foreach ($permissions as $perm) {
-            if (RBAC::userCan($userId, $perm)) return;
+            if (RBAC::hasPermission($userId, $perm)) return;
         }
         Logger::deny("missing_any", ["uid" => $userId, "required_any" => $permissions] + $ctx);
         Http::jsonError("Missing any of required permissions", ["required_any" => $permissions] + $ctx, 403);
@@ -30,7 +30,7 @@ final class Guard
     public static function requireAll(int $userId, array $permissions, array $ctx = []): void
     {
         foreach ($permissions as $perm) {
-            if (!RBAC::userCan($userId, $perm)) {
+            if (!RBAC::hasPermission($userId, $perm)) {
                 Logger::deny("missing_all", ["uid" => $userId, "missing" => $perm, "required_all" => $permissions] + $ctx);
                 Http::jsonError("Missing permission", ["missing" => $perm, "required_all" => $permissions] + $ctx, 403);
                 exit;
@@ -45,9 +45,9 @@ final class Guard
      */
     public static function requireOwnerOrAny(int $userId, string $permOwn, string $permAny, callable $ownerCheck, array $ctx = []): void
     {
-        if (RBAC::userCan($userId, $permAny)) return;
+        if (RBAC::hasPermission($userId, $permAny)) return;
         $isOwner = $ownerCheck($userId);
-        if (!RBAC::userCan($userId, $permOwn) || !$isOwner) {
+        if (!RBAC::hasPermission($userId, $permOwn) || !$isOwner) {
             Logger::deny("owner_or_any_failed", ["uid" => $userId, "perm_own" => $permOwn, "perm_any" => $permAny, "owner" => $isOwner] + $ctx);
             Http::jsonError("Owner or any permission required", [
                 "required_any" => $permAny,

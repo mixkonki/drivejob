@@ -6,6 +6,7 @@ use Drivejob\Core\Controller;
 use Drivejob\Core\Database;
 use Drivejob\Core\JsonResponse;
 use Drivejob\Core\Auth;
+use Drivejob\Core\Session;
 
 class CompanyFeaturesController extends Controller
 {
@@ -13,11 +14,10 @@ class CompanyFeaturesController extends Controller
 
     public function __construct()
     {
-        parent::__construct();
         $this->db = Database::getInstance()->getConnection();
 
-        // Ensure user is authenticated and is a company
-        if (!Auth::check() || Auth::user()['role'] !== 'company') {
+        // Πρόσβαση μόνο για συνδεδεμένες εταιρείες (πραγματικό Auth API — Πακέτο 6)
+        if (!Auth::isLoggedIn() || !Auth::hasRole('company')) {
             JsonResponse::error('Unauthorized', 401);
             exit;
         }
@@ -29,7 +29,7 @@ class CompanyFeaturesController extends Controller
     public function getFleetVehicles()
     {
         try {
-            $companyId = Auth::user()['company_id'];
+            $companyId = (int) Session::get('user_id');
 
             $stmt = $this->db->prepare("
                 SELECT * FROM company_fleet_vehicles 
@@ -51,7 +51,7 @@ class CompanyFeaturesController extends Controller
     public function getDriverStats()
     {
         try {
-            $companyId = Auth::user()['company_id'];
+            $companyId = (int) Session::get('user_id');
 
             $stmt = $this->db->prepare("
                 SELECT 
@@ -85,7 +85,7 @@ class CompanyFeaturesController extends Controller
                 return;
             }
 
-            $companyId = Auth::user()['company_id'];
+            $companyId = (int) Session::get('user_id');
 
             // Calculate expiry date (1 year from now)
             $expiryDate = date('Y-m-d H:i:s', strtotime('+1 year'));
@@ -125,7 +125,7 @@ class CompanyFeaturesController extends Controller
     public function getFleetAnalytics()
     {
         try {
-            $companyId = Auth::user()['company_id'];
+            $companyId = (int) Session::get('user_id');
 
             // Get vehicle utilization
             $stmt = $this->db->prepare("
@@ -171,7 +171,7 @@ class CompanyFeaturesController extends Controller
     {
         try {
             $data = json_decode(file_get_contents('php://input'), true);
-            $companyId = Auth::user()['company_id'];
+            $companyId = (int) Session::get('user_id');
 
             // Validate required fields
             $required = ['vehicle_type', 'license_plate', 'brand', 'model', 'year'];
@@ -238,7 +238,7 @@ class CompanyFeaturesController extends Controller
     public function getComplianceDocuments()
     {
         try {
-            $companyId = Auth::user()['company_id'];
+            $companyId = (int) Session::get('user_id');
 
             $stmt = $this->db->prepare("
                 SELECT * FROM company_compliance_tracking

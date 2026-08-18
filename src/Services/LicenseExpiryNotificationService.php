@@ -398,8 +398,12 @@ class LicenseExpiryNotificationService
 
     private function log(string $message, string $level = 'INFO'): void
     {
-        if (class_exists('Drivejob\Core\Logger') && method_exists('Drivejob\Core\Logger', 'log')) {
-            \Drivejob\Core\Logger::log($level, $message, 'LicenseExpiryNotification');
+        $method = strtolower($level);
+        if (!in_array($method, ['debug', 'info', 'warning', 'error', 'critical'], true)) {
+            $method = 'info';
+        }
+        if (class_exists('Drivejob\Core\Logger') && method_exists('Drivejob\Core\Logger', $method)) {
+            \Drivejob\Core\Logger::$method('[LicenseExpiryNotification] ' . $message);
         } else {
             error_log('[' . date('Y-m-d H:i:s') . "] {$level} [LicenseExpiryNotification]: {$message}");
         }

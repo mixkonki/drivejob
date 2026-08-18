@@ -279,7 +279,7 @@ class NotificationServices
 // Λήψη στοιχείων χρήστη
             $userModel = $userType === 'driver'
                 ? new \Drivejob\Models\Driver\ProfileModel($this->pdo)
-                : new \Drivejob\Models\CompaniesModel($this->pdo);
+                : new \Drivejob\Models\Company\CompaniesModel($this->pdo);
             $user = $userType === 'driver'
                 ? $userModel->getDriverById($userId)
                 : $userModel->getCompanyById($userId);
@@ -506,16 +506,12 @@ class NotificationServices
      */
     private function log($message, $level = 'INFO')
     {
-        // Έλεγχος αν υπάρχει η κλάση Logger
-        if (class_exists('Drivejob\Core\Logger')) {
-// Έλεγχος αν υπάρχει η μέθοδος log
-            if (method_exists('Drivejob\Core\Logger', 'log')) {
-// Χρήση της μεθόδου της κλάσης Logger
-                \Drivejob\Core\Logger::log($level, $message, 'NotificationServices');
-            } else {
-            // Εναλλακτικά, χρήση της error_log
-                error_log("[" . date('Y-m-d H:i:s') . "] {$level} [NotificationServices]: {$message}");
-            }
+        $method = strtolower($level);
+        if (!in_array($method, ['debug', 'info', 'warning', 'error', 'critical'], true)) {
+            $method = 'info';
+        }
+        if (class_exists('Drivejob\Core\Logger') && method_exists('Drivejob\Core\Logger', $method)) {
+            \Drivejob\Core\Logger::$method('[NotificationServices] ' . $message);
         } else {
         // Χρήση της error_log αν δεν υπάρχει η κλάση Logger
             error_log("[" . date('Y-m-d H:i:s') . "] {$level} [NotificationServices]: {$message}");

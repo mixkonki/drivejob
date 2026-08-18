@@ -64,7 +64,7 @@ class MessagesController extends BaseController
         $driverId = $this->requireRole('driver');
         $conversationId = $_GET['id'] ?? null;
         if (!$conversationId) {
-            $this->redirect('drivers/messages');
+            $this->goTo('drivers/messages');
         }
 
         $stmt = $this->pdo->prepare("
@@ -77,7 +77,7 @@ class MessagesController extends BaseController
         $stmt->execute([$conversationId, $driverId]);
         $conversation = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$conversation) {
-            $this->redirect('drivers/messages');
+            $this->goTo('drivers/messages');
         }
 
         // Απάντηση (PRG: redirect μετά το POST)
@@ -141,7 +141,7 @@ class MessagesController extends BaseController
         $companyId = $this->requireRole('company');
         $conversationId = $_GET['id'] ?? null;
         if (!$conversationId) {
-            $this->redirect('companies/messages');
+            $this->goTo('companies/messages');
         }
 
         $stmt = $this->pdo->prepare("
@@ -156,7 +156,7 @@ class MessagesController extends BaseController
         $stmt->execute([$conversationId, $companyId]);
         $conversation = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$conversation) {
-            $this->redirect('companies/messages');
+            $this->goTo('companies/messages');
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
@@ -191,7 +191,7 @@ class MessagesController extends BaseController
         return (int) Session::get('user_id');
     }
 
-    private function redirect(string $path): void
+    private function goTo(string $path): void
     {
         header('Location: ' . BASE_URL . $path);
         exit;

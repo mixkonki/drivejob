@@ -17,9 +17,9 @@ require_once __DIR__ . "/../../Services/Interfaces/ServiceInterface.php";
 require_once __DIR__ . "/../../Services/Interfaces/MonitorableInterface.php";
 require_once __DIR__ . "/../../Services/HealthStatus.php";
 
-use App\Services\Interfaces\ServiceInterface;
-use App\Services\Interfaces\MonitorableInterface;
-use App\Services\HealthStatus;
+use Drivejob\Services\Interfaces\ServiceInterface;
+use Drivejob\Services\Interfaces\MonitorableInterface;
+use Drivejob\Services\HealthStatus;
 
 /**
  * Hardening:
@@ -130,11 +130,11 @@ final class MatchingWorkerService implements ServiceInterface, MonitorableInterf
     }
 
     // Process one job per tick to avoid blocking main loop
-    public function execute(array $context = []): \App\Services\ServiceResult
+    public function execute(array $context = []): \Drivejob\Services\ServiceResult
     {
         try {
             $this->tick();
-            return \App\Services\ServiceResult::success([
+            return \Drivejob\Services\ServiceResult::success([
                 'processed' => $this->processed,
                 'queue_size' => $this->queue->size(),
                 'errors' => $this->errors,
@@ -145,7 +145,7 @@ final class MatchingWorkerService implements ServiceInterface, MonitorableInterf
             $this->lastError = $e->getMessage();
             $this->healthStatus = HealthStatus::UNHEALTHY;
 
-            return \App\Services\ServiceResult::failure($e, [
+            return \Drivejob\Services\ServiceResult::failure($e, [
                 'processed' => $this->processed,
                 'errors' => $this->errors
             ]);

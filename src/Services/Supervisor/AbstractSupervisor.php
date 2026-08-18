@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Supervisor;
+namespace Drivejob\Services\Supervisor;
 
-use App\Services\Interfaces\ServiceInterface;
-use App\Services\Interfaces\SupervisorInterface;
-use App\Services\SupervisorResult;
-use App\Services\SupervisorStatus;
+use Drivejob\Services\Interfaces\ServiceInterface;
+use Drivejob\Services\Interfaces\SupervisorInterface;
+use Drivejob\Services\SupervisorResult;
+use Drivejob\Services\SupervisorStatus;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -84,6 +84,7 @@ abstract class AbstractSupervisor implements SupervisorInterface
 
             // Pre-execution health check
             if (!$this->performPreExecutionChecks($service)) {
+                $this->metrics['failed_supervisions']++;
                 return SupervisorResult::failure(
                     new \RuntimeException("Pre-execution checks failed for service: {$service->getName()}")
                 );
