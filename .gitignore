@@ -9,13 +9,15 @@
 composer.phar
 
 # Αρχεία ρυθμίσεων που περιέχουν ευαίσθητα δεδομένα
+# ΠΡΟΣΟΧΗ: η κάθετος στην αρχή περιορίζει το μοτίβο στη ρίζα του έργου.
+# Χωρίς αυτήν, το «config.php» έκρυβε και το config/config.php από το git,
+# με αποτέλεσμα η εφαρμογή να μην ξεκινά μετά από clone (Πακέτο 9).
 .env
 .env.testing.local
-config.php
-config/openai.php
-config/email.php
-!config/openai.example.php
-!config/email.example.php
+/config.php
+
+# Ρυθμίσεις PHP του host (τις γράφει το panel, δεν ανήκουν στο έργο)
+/public/.user.ini
 
 # Προσωρινά αρχεία
 *.log

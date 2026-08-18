@@ -22,3 +22,11 @@ Options -Indexes
 <IfModule mod_headers.c>
     Header set Content-Security-Policy "default-src 'self'; connect-src 'self' https://maps.googleapis.com blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; object-src 'none'; base-uri 'self';"
 </IfModule>
+
+# ── Έκδοση PHP σε Apache/StackCP (netmind) ──────────────────
+# Το document root δείχνει εδώ, οπότε ο handler πρέπει να βρίσκεται
+# σε αυτόν τον φάκελο. Ο Herd τοπικά τρέχει nginx και το αγνοεί.
+#+PHPVersion
+#=php83
+AddHandler x-httpd-php83 .php
+#-PHPVersion
