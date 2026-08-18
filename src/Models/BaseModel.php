@@ -323,39 +323,9 @@ class BaseModel
         }
     }
 
-    /**
-     * Ελέγχει αν μια στήλη υπάρχει στον πίνακα
-     * 
-     * @param string $column Το όνομα της στήλης
-     * @return bool Αν υπάρχει η στήλη
-     */
-    protected function checkColumnExists(string $column)
-    {
-        try {
-            $columnsResult = $this->pdo->query("SHOW COLUMNS FROM {$this->table} LIKE '{$column}'");
-            return $columnsResult->rowCount() > 0;
-        } catch (PDOException $e) {
-            Logger::error("Σφάλμα ελέγχου στήλης {$column} στον πίνακα {$this->table}: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Ελέγχει αν ένας πίνακας υπάρχει στη βάση δεδομένων
-     * 
-     * @param string $table Το όνομα του πίνακα
-     * @return bool Αν υπάρχει ο πίνακας
-     */
-    protected function checkTableExists(string $table)
-    {
-        try {
-            $tableCheck = $this->pdo->query("SHOW TABLES LIKE '{$table}'");
-            return $tableCheck->rowCount() > 0;
-        } catch (PDOException $e) {
-            Logger::error("Σφάλμα ελέγχου πίνακα {$table}: " . $e->getMessage());
-            return false;
-        }
-    }
+    // Πακέτο 5.2: τα checkColumnExists/checkTableExists αφαιρέθηκαν —
+    // το σχήμα της βάσης είναι σταθερό και διαχειρίζεται ΜΟΝΟ από τα
+    // migrations στο database/migrations/, όχι από runtime ελέγχους.
 
     /**
      * Ξεκινά μια συναλλαγή

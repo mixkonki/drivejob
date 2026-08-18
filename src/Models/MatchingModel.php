@@ -480,25 +480,8 @@ class MatchingModel
     public function saveMatchingScores($matchingScores)
     {
         try {
-            // Έλεγχος αν υπάρχει ο πίνακας στη βάση δεδομένων
-            $tableCheck = $this->pdo->query("SHOW TABLES LIKE 'matching_scores'");
-
-            if ($tableCheck->rowCount() == 0) {
-                // Δημιουργία του πίνακα αν δεν υπάρχει
-                $createTable = "CREATE TABLE matching_scores (
-                    id INT NOT NULL AUTO_INCREMENT,
-                    driver_id INT NOT NULL,
-                    job_listing_id INT NULL,
-                    match_percentage INT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY (id),
-                    KEY (driver_id),
-                    KEY (job_listing_id)
-                )";
-
-                $this->pdo->exec($createTable);
-            }
-
+            // Πακέτο 5.2: ο πίνακας matching_scores υπάρχει πάντα (migrations) —
+            // χωρίς runtime SHOW TABLES / CREATE TABLE.
             // Εισαγωγή των σκορ ταιριάσματος
             $stmt = $this->pdo->prepare("INSERT INTO matching_scores (driver_id, job_listing_id, match_percentage) VALUES (?, ?, ?)");
 

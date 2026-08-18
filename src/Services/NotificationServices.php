@@ -432,13 +432,8 @@ class NotificationServices
     public function recordNotification($type, $userId, $userType, $data, $method)
     {
         try {
-// Έλεγχος για την ύπαρξη του πίνακα ειδοποιήσεων
-            $tableCheck = $this->pdo->query("SHOW TABLES LIKE 'notifications'");
-// Αν ο πίνακας δεν υπάρχει, τον δημιουργούμε
-            if ($tableCheck->rowCount() == 0) {
-                $this->createNotificationsTable();
-            }
-
+            // Πακέτο 5.2: ο πίνακας notifications υπάρχει πάντα (migrations) —
+            // χωρίς runtime SHOW TABLES / CREATE TABLE.
             // Μετατροπή του πίνακα data σε JSON
             $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
 // Εισαγωγή της εγγραφής στη βάση
@@ -464,53 +459,6 @@ class NotificationServices
             return false;
         } catch (Exception $e) {
             $this->log("Γενικό σφάλμα κατά την καταγραφή ειδοποίησης: " . $e->getMessage() .
-                      " (Τύπος: " . get_class($e) . ")", 'ERROR');
-            return false;
-        }
-    }
-
-    /**
-     * Δημιουργία του πίνακα ειδοποιήσεων αν δεν υπάρχει
-     *
-     * @return bool Επιτυχία/αποτυχία
-     */
-    private function createNotificationsTable()
-    {
-        try {
-            $sql = "
-                CREATE TABLE IF NOT EXISTS notifications (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    type VARCHAR(50) NOT NULL,
-                    user_id INT NOT NULL,
-                    user_type VARCHAR(20) NOT NULL,
-                    data JSON,
-                    method VARCHAR(10) NOT NULL,
-                    sent_at DATETIME NOT NULL,
-                    read_at DATETIME NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    INDEX (user_id, user_type),
-                    INDEX (type),
-                    INDEX (sent_at)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-            ";
-            $result = $this->pdo->exec($sql) !== false;
-            if ($result) {
-                $this->log("Επιτυχής δημιουργία πίνακα notifications", 'INFO');
-            } else {
-                $this->log("Αποτυχία δημιουργίας πίνακα notifications", 'ERROR');
-            }
-            return $result;
-        } catch (PDOException $e) {
-            $this->log("Σφάλμα βάσης δεδομένων κατά τη δημιουργία του πίνακα ειδοποιήσεων: " . $e->getMessage() .
-                      " (Κωδικός: " . $e->getCode() . ")", 'ERROR');
-            if (isset($e->errorInfo)) {
-                $this->log("SQL State: " . $e->errorInfo[0] .
-                          ", Driver error code: " . (isset($e->errorInfo[1]) ? $e->errorInfo[1] : 'N/A'), 'ERROR');
-            }
-
-            return false;
-        } catch (Exception $e) {
-            $this->log("Γενικό σφάλμα κατά τη δημιουργία του πίνακα ειδοποιήσεων: " . $e->getMessage() .
                       " (Τύπος: " . get_class($e) . ")", 'ERROR');
             return false;
         }

@@ -512,51 +512,15 @@ class CertificationModel extends BaseModel
     public function getDriverOperatorSubSpecialities($operatorLicenseId)
     {
         try {
-            $table = 'driver_operator_sub_specialities';
-            // Έλεγχος ύπαρξης πίνακα
-            $tableCheck = $this->pdo->query("SHOW TABLES LIKE '$table'");
-            if ($tableCheck->rowCount() == 0) {
-                Logger::warning("Ο πίνακας $table δεν υπάρχει", "CertificationModel");
-                return [];
-            }
-
-            // Έλεγχος αν η στήλη group_type υπάρχει στον πίνακα
-            $columns = $this->pdo->query("SHOW COLUMNS FROM $table LIKE 'group_type'");
-            $hasGroupTypeColumn = $columns->rowCount() > 0;
-
-            // Έλεγχος ύπαρξης πίνακα groups
-            $groupsTable = 'driver_operator_sub_speciality_groups';
-            $hasGroupsTable = $this->checkTableExists($groupsTable);
-
-            if ($hasGroupTypeColumn) {
-                // Χρήση της στήλης group_type
-                $sql = "SELECT id, sub_speciality, group_type FROM $table WHERE operator_license_id = ? ORDER BY sub_speciality";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([$operatorLicenseId]);
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                return $result;
-            } else if ($hasGroupsTable) {
-                // Συνδυασμός με τον πίνακα ομάδων
-                $sql = "SELECT dos.id, dos.sub_speciality, COALESCE(dosg.group_type, 'A') as group_type 
-                    FROM $table dos
-                    LEFT JOIN $groupsTable dosg ON dos.id = dosg.sub_speciality_id
-                    WHERE dos.operator_license_id = ?
-                    ORDER BY dos.sub_speciality";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([$operatorLicenseId]);
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                return $result;
-            } else {
-                // Χωρίς πληροφορίες ομάδας
-                $sql = "SELECT id, sub_speciality, 'A' as group_type FROM $table WHERE operator_license_id = ? ORDER BY sub_speciality";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([$operatorLicenseId]);
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                return $result;
-            }
+            // Πακέτο 5.2: το σχήμα είναι σταθερό — ο πίνακας και η στήλη
+            // group_type υπάρχουν πάντα, χωρίς runtime SHOW TABLES/COLUMNS.
+            $sql = "SELECT id, sub_speciality, group_type
+                    FROM driver_operator_sub_specialities
+                    WHERE operator_license_id = ?
+                    ORDER BY sub_speciality";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$operatorLicenseId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             Logger::error("Σφάλμα λήψης υποειδικοτήτων: " . $e->getMessage(), "CertificationModel");
             return [];
@@ -573,36 +537,22 @@ class CertificationModel extends BaseModel
     {
         try {
             $table = 'driver_operator_sub_specialities';
-            // Έλεγχος ύπαρξης πίνακα υποειδικοτήτων
-            $tableCheck = $this->pdo->query("SHOW TABLES LIKE '$table'");
-            if ($tableCheck->rowCount() == 0) {
-                return true; // Θεωρούμε επιτυχία αφού δεν υπάρχει τίποτα για διαγραφή
-            }
-
-            // Έλεγχος ύπαρξης πίνακα ομάδων
             $groupsTable = 'driver_operator_sub_speciality_groups';
-            $hasGroupsTable = $this->checkTableExists($groupsTable);
 
-            // Αν υπάρχει ο πίνακας ομάδων και δεν έχουμε foreign key constraint
-            if ($hasGroupsTable) {
-                try {
-                    // Πρώτα βρίσκουμε τα IDs των υποειδικοτήτων
-                    $findSql = "SELECT id FROM $table WHERE operator_license_id = ?";
-                    $findStmt = $this->pdo->prepare($findSql);
-                    $findStmt->execute([$operatorLicenseId]);
-                    $subSpecialityIds = $findStmt->fetchAll(PDO::FETCH_COLUMN);
+            // Πακέτο 5.2: οι πίνακες υπάρχουν πάντα — χωρίς runtime SHOW TABLES.
+            // Ρητή διαγραφή από τον πίνακα ομάδων (πέρα από το FK CASCADE).
+            try {
+                $findStmt = $this->pdo->prepare("SELECT id FROM $table WHERE operator_license_id = ?");
+                $findStmt->execute([$operatorLicenseId]);
+                $subSpecialityIds = $findStmt->fetchAll(PDO::FETCH_COLUMN);
 
-                    if (!empty($subSpecialityIds)) {
-                        // Διαγραφή από τον πίνακα ομάδων
-                        $idList = implode(',', array_fill(0, count($subSpecialityIds), '?'));
-                        $groupDeleteSql = "DELETE FROM $groupsTable WHERE sub_speciality_id IN ($idList)";
-
-                        $groupDeleteStmt = $this->pdo->prepare($groupDeleteSql);
-                        $groupDeleteStmt->execute($subSpecialityIds);
-                    }
-                } catch (PDOException $e) {
-                    Logger::error("Σφάλμα διαγραφής από τον πίνακα ομάδων: " . $e->getMessage(), "CertificationModel");
+                if (!empty($subSpecialityIds)) {
+                    $idList = implode(',', array_fill(0, count($subSpecialityIds), '?'));
+                    $groupDeleteStmt = $this->pdo->prepare("DELETE FROM $groupsTable WHERE sub_speciality_id IN ($idList)");
+                    $groupDeleteStmt->execute($subSpecialityIds);
                 }
+            } catch (PDOException $e) {
+                Logger::error("Σφάλμα διαγραφής από τον πίνακα ομάδων: " . $e->getMessage(), "CertificationModel");
             }
 
             // Διαγραφή των υποειδικοτήτων
@@ -649,85 +599,13 @@ class CertificationModel extends BaseModel
                 $deleteStmt->execute([$operatorLicenseId, $subSpeciality]);
             }
 
-            // Έλεγχος αν η στήλη group_type υπάρχει στον πίνακα
-            $columns = $this->pdo->query("SHOW COLUMNS FROM $table LIKE 'group_type'");
-            $hasGroupTypeColumn = $columns->rowCount() > 0;
-
-            // Αν δεν υπάρχει η στήλη group_type, προσπάθησε να την προσθέσεις
-            if (!$hasGroupTypeColumn) {
-                try {
-                    $alterSql = "ALTER TABLE $table 
-                            ADD COLUMN group_type CHAR(1) DEFAULT 'A' AFTER sub_speciality";
-                    $this->pdo->exec($alterSql);
-                    $hasGroupTypeColumn = true;
-                } catch (PDOException $e) {
-                    Logger::error("Σφάλμα προσθήκης στήλης group_type: " . $e->getMessage(), "CertificationModel");
-                }
-            }
-
-            // Εισαγωγή της υποειδικότητας
-            if ($hasGroupTypeColumn) {
-                $sql = "INSERT INTO $table 
-                    (operator_license_id, sub_speciality, group_type) 
-                    VALUES (?, ?, ?)";
-                $stmt = $this->pdo->prepare($sql);
-                $result = $stmt->execute([$operatorLicenseId, $subSpeciality, $groupType]);
-
-                return $result;
-            } else {
-                // Παλιός τρόπος με χωριστό πίνακα για τις ομάδες
-                // Προσθήκη της υποειδικότητας
-                $sql = "INSERT INTO $table 
-                    (operator_license_id, sub_speciality) 
-                    VALUES (?, ?)";
-                $stmt = $this->pdo->prepare($sql);
-                $result = $stmt->execute([$operatorLicenseId, $subSpeciality]);
-
-                if ($result) {
-                    $subSpecialityId = $this->pdo->lastInsertId();
-
-                    // Έλεγχος ύπαρξης πίνακα ομάδων
-                    $groupsTable = 'driver_operator_sub_speciality_groups';
-                    $hasGroupsTable = $this->checkTableExists($groupsTable);
-
-                    if (!$hasGroupsTable) {
-                        // Δημιουργία του πίνακα ομάδων αν δεν υπάρχει
-                        try {
-                            $createTableSql = "
-                                CREATE TABLE IF NOT EXISTS $groupsTable (
-                                    id INT NOT NULL AUTO_INCREMENT,
-                                    sub_speciality_id INT NOT NULL,
-                                    group_type CHAR(1) NOT NULL DEFAULT 'A',
-                                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                                    PRIMARY KEY (id),
-                                    KEY (sub_speciality_id),
-                                    FOREIGN KEY (sub_speciality_id) REFERENCES $table(id) ON DELETE CASCADE
-                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-                            ";
-                            $this->pdo->exec($createTableSql);
-                            $hasGroupsTable = true;
-                        } catch (PDOException $e) {
-                            Logger::error("Σφάλμα δημιουργίας πίνακα ομάδων: " . $e->getMessage(), "CertificationModel");
-                        }
-                    }
-
-                    // Προσθήκη της ομάδας
-                    if ($hasGroupsTable) {
-                        try {
-                            $groupSql = "INSERT INTO $groupsTable 
-                                     (sub_speciality_id, group_type) 
-                                     VALUES (?, ?)";
-                            $groupStmt = $this->pdo->prepare($groupSql);
-                            $groupResult = $groupStmt->execute([$subSpecialityId, $groupType]);
-                        } catch (PDOException $e) {
-                            Logger::error("Σφάλμα προσθήκης στον πίνακα ομάδων: " . $e->getMessage(), "CertificationModel");
-                        }
-                    }
-                }
-
-                return $result;
-            }
+            // Πακέτο 5.2: η στήλη group_type υπάρχει πάντα — χωρίς runtime
+            // SHOW COLUMNS / ALTER TABLE μέσα σε web request.
+            $sql = "INSERT INTO $table
+                (operator_license_id, sub_speciality, group_type)
+                VALUES (?, ?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$operatorLicenseId, $subSpeciality, $groupType]);
         } catch (PDOException $e) {
             Logger::error("Γενικό σφάλμα προσθήκης υποειδικότητας: " . $e->getMessage(), "CertificationModel");
             return false;
