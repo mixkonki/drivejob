@@ -53,7 +53,7 @@ class AuthController extends BaseUserController
             'has_password' => isset($_POST['password']) && !empty($_POST['password']),
             'has_csrf' => isset($_POST['csrf_token']),
             'session_id' => session_id(),
-            'session_data' => $_SESSION
+            'session_keys' => array_keys($_SESSION),
         ]);
 
         // Έλεγχος CSRF token

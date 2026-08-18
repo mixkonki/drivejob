@@ -32,16 +32,18 @@ class CSRF
     {
         Session::start();
         // Καταγραφή για αποσφαλμάτωση
+        // ΠΡΟΣΟΧΗ: εδώ καταγραφόταν ολόκληρο το $_SESSION, που περιέχει το
+        // old_input των φορμών — δηλαδή συνθηματικά σε καθαρό κείμενο, IP και
+        // user agent. Αφαιρέθηκε (GDPR άρθρο 32).
         Logger::debug('CSRF validateToken called', [
             'session_id' => session_id(),
-            'session_data' => $_SESSION,
-            'has_csrf_token' => Session::has('csrf_token')
+            'has_csrf_token' => Session::has('csrf_token'),
         ]);
 
         if (!Session::has('csrf_token')) {
             Logger::warning('CSRF token not found in session', [
                 'session_id' => session_id(),
-                'session_data' => $_SESSION
+                'session_keys' => array_keys($_SESSION),
             ]);
             return false;
         }

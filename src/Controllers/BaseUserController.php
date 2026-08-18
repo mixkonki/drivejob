@@ -156,7 +156,7 @@ class BaseUserController extends BaseController
 
         if (!empty($errors)) {
             Session::set('errors', $errors);
-            Session::set('old_input', $_POST);
+            Session::set('old_input', $this->oldInputWithoutSecrets());
             $this->redirect(BASE_URL . ($userType === 'company' ? 'companies/register' : 'drivers/register'));
         }
 
@@ -173,7 +173,7 @@ class BaseUserController extends BaseController
             } else {
                 // Αποτυχία εγγραφής
                 Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την εγγραφή σας. Παρακαλώ δοκιμάστε ξανά.');
-                Session::set('old_input', $_POST);
+                Session::set('old_input', $this->oldInputWithoutSecrets());
                 $this->redirect(BASE_URL . ($userType === 'company' ? 'companies/register' : 'drivers/register'));
             }
         } catch (\Exception $e) {
@@ -183,7 +183,7 @@ class BaseUserController extends BaseController
                 'trace' => $e->getTraceAsString()
             ]);
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            Session::set('old_input', $_POST);
+            Session::set('old_input', $this->oldInputWithoutSecrets());
             $this->redirect(BASE_URL . ($userType === 'company' ? 'companies/register' : 'drivers/register'));
         }
     }
@@ -432,6 +432,21 @@ class BaseUserController extends BaseController
      * @param string $userType Ο τύπος του χρήστη (driver ή company)
      * @return array Τα δεδομένα εγγραφής
      */
+    /**
+     * Τα δεδομένα της φόρμας χωρίς τα συνθηματικά, για επαναφορά στη φόρμα.
+     *
+     * Η συνεδρία αποθηκεύεται στη βάση και καταγράφεται στα logs, οπότε ό,τι
+     * μπει εδώ γίνεται μόνιμο. Τα συνθηματικά δεν επιτρέπεται να μπουν.
+     */
+    protected function oldInputWithoutSecrets(): array
+    {
+        return array_diff_key($_POST, array_flip([
+            'password', 'confirm_password', 'password_confirmation',
+            'current_password', 'new_password', 'new_password_confirmation',
+            'csrf_token',
+        ]));
+    }
+
     protected function collectRegistrationData($userType)
     {
         $data = [

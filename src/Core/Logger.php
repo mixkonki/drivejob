@@ -39,9 +39,17 @@ class Logger
      * @param string $minLevel Το ελάχιστο επίπεδο καταγραφής
      * @return void
      */
-    public static function init($logFile = null, $minLevel = self::DEBUG)
+    public static function init($logFile = null, $minLevel = null)
     {
         self::$logFile = $logFile ?: ROOT_DIR . '/logs/app.log';
+
+        // Σε παραγωγή το debug είναι θόρυβος και κίνδυνος: τα context arrays
+        // περιέχουν δεδομένα συνεδρίας και φορμών. Προεπιλογή INFO εκεί.
+        if ($minLevel === null) {
+            $minLevel = (defined('ENVIRONMENT') && ENVIRONMENT === 'production')
+                ? self::INFO
+                : self::DEBUG;
+        }
         self::$minLevel = $minLevel;
 
         // Δημιουργία του καταλόγου logs αν δεν υπάρχει
