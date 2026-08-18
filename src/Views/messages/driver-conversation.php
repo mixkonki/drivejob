@@ -1,78 +1,9 @@
 <?php
-require_once __DIR__ . '/../../src/bootstrap.php';
-
-use Drivejob\Core\Session;
-use Drivejob\Core\Database;
-use Drivejob\Services\MessagingService;
-
-// Check if user is logged in and is a driver
-if (!Session::has('user_id') || Session::get('user_role') !== 'driver') {
-    header('Location: ' . BASE_URL . 'auth/login');
-    exit();
-}
-
-$driverId = Session::get('user_id');
-$conversationId = $_GET['id'] ?? null;
-
-if (!$conversationId) {
-    header('Location: ' . BASE_URL . 'drivers/messages');
-    exit();
-}
-
-$pdo = Database::getInstance()->getConnection();
-
-// Verify conversation belongs to driver
-$stmt = $pdo->prepare("
-    SELECT 
-        c.*,
-        comp.company_name,
-        comp.company_logo,
-        j.title as job_title
-    FROM conversations c
-    JOIN companies comp ON c.company_id = comp.id
-    JOIN job_listings j ON c.job_id = j.id
-    WHERE c.id = ? AND c.driver_id = ?
-");
-$stmt->execute([$conversationId, $driverId]);
-$conversation = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$conversation) {
-    header('Location: ' . BASE_URL . 'drivers/messages');
-    exit();
-}
-
-// Mark messages as read
-$stmt = $pdo->prepare("
-    UPDATE messages 
-    SET is_read = 1 
-    WHERE conversation_id = ? 
-    AND sender_type = 'company' 
-    AND is_read = 0
-");
-$stmt->execute([$conversationId]);
-
-// Get all messages
-$stmt = $pdo->prepare("
-    SELECT * FROM messages 
-    WHERE conversation_id = ? 
-    ORDER BY created_at ASC
-");
-$stmt->execute([$conversationId]);
-$messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Handle message submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
-    $messagingService = new MessagingService();
-    $messagingService->sendMessage($conversationId, 'driver', $driverId, $_POST['message']);
-
-    // Redirect to prevent form resubmission
-    header('Location: ' . $_SERVER['REQUEST_URI']);
-    exit();
-}
-
-$pageTitle = $conversation['subject'];
+/**
+ * View μηνυμάτων — μεταφέρθηκε αυτούσιο από το src/Legacy/drivers-conversation.php (Πακέτο 5.5).
+ * Μεταβλητές από MessagesController.
+ */
 ?>
-
 <!DOCTYPE html>
 <html lang="el">
 

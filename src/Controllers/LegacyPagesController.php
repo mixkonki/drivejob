@@ -3,35 +3,15 @@
 namespace Drivejob\Controllers;
 
 /**
- * Σερβίρει τις legacy σελίδες μηνυμάτων/συνομιλιών μέσω routes.
+ * Σερβίρει τα εναπομείναντα legacy admin εργαλεία & api μέσω routes.
  *
- * Οι σελίδες στο src/Legacy/ είναι αυτόνομες (κάνουν δικό τους έλεγχο
- * σύνδεσης/ρόλου και δικά τους queries). Μεταφέρθηκαν εκτός public/
- * ώστε κάθε αίτημα να περνά από τον router — η πλήρης μετάπτωσή τους
- * σε κανονικά Controller/Views προγραμματίζεται στο Πακέτο 5.
+ * Πακέτο 5.5: οι σελίδες μηνυμάτων μεταφέρθηκαν σε κανονικό MVC
+ * (MessagesController + src/Views/messages). Εδώ μένουν ΜΟΝΟ τα admin
+ * εργαλεία και τα legacy api endpoints (guarded, αυτόνομα) — η μετάπτωσή
+ * τους προγραμματίζεται σε επόμενο πακέτο.
  */
 class LegacyPagesController extends BaseController
 {
-    public function driverMessages()
-    {
-        $this->renderLegacy('drivers-messages.php');
-    }
-
-    public function driverConversation()
-    {
-        $this->renderLegacy('drivers-conversation.php');
-    }
-
-    public function companyMessages()
-    {
-        $this->renderLegacy('companies-messages.php');
-    }
-
-    public function companyConversation()
-    {
-        $this->renderLegacy('companies-conversation.php');
-    }
-
     // ---- Admin panel & εργαλεία (Πακέτο 4) ------------------------------
 
     public function adminPanel()

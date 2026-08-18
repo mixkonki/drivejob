@@ -121,8 +121,9 @@ $router->group(['prefix' => 'drivers'], function ($router) {
 
     // Διαδρομές για το σύστημα αξιολόγησης οδηγών
     $router->get('/driver-rating', [DriversController::class, 'driverRating'])->name('drivers.driver-rating');
-    $router->get('/messages', [\Drivejob\Controllers\LegacyPagesController::class, 'driverMessages'])->name('drivers.messages');
-    $router->get('/conversation', [\Drivejob\Controllers\LegacyPagesController::class, 'driverConversation'])->name('drivers.conversation');
+    $router->get('/messages', [\Drivejob\Controllers\MessagesController::class, 'driverMessages'])->name('drivers.messages');
+    $router->get('/conversation', [\Drivejob\Controllers\MessagesController::class, 'driverConversation'])->name('drivers.conversation');
+    $router->post('/conversation', [\Drivejob\Controllers\MessagesController::class, 'driverConversation']);
     $router->get('/refresh-rating', [DriversController::class, 'refreshRating'])->name('drivers.refresh-rating');
 
     // Διαδρομές για τα περιστατικά
@@ -152,8 +153,9 @@ $router->group(['prefix' => 'companies'], function ($router) {
     $router->post('/change-password', [CompaniesController::class, 'changePassword'])->name('companies.change-password');
     $router->get('/search', [CompaniesController::class, 'search'])->name('companies.search');
     $router->post('/add-review/{id}', [CompaniesController::class, 'addReview'])->name('companies.add-review');
-    $router->get('/messages', [\Drivejob\Controllers\LegacyPagesController::class, 'companyMessages'])->name('companies.messages');
-    $router->get('/conversation', [\Drivejob\Controllers\LegacyPagesController::class, 'companyConversation'])->name('companies.conversation');
+    $router->get('/messages', [\Drivejob\Controllers\MessagesController::class, 'companyMessages'])->name('companies.messages');
+    $router->get('/conversation', [\Drivejob\Controllers\MessagesController::class, 'companyConversation'])->name('companies.conversation');
+    $router->post('/conversation', [\Drivejob\Controllers\MessagesController::class, 'companyConversation']);
 });
 
 // Σελίδες πληροφοριών (top-level: /about, /contact, /terms, /privacy, /faq)
