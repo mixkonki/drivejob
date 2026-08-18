@@ -215,7 +215,7 @@ class NotificationRepository extends BaseRepository implements NotificationRepos
         try {
             $notificationTitle = 'Νέα αίτηση εργασίας';
             $notificationMessage = "Ο οδηγός {$driverName} έκανε αίτηση για την αγγελία σας";
-            $notificationLink = BASE_URL . "job-applications/show/{$jobApplicationId}";
+            $notificationLink = BASE_URL . "job-applications/view/{$jobApplicationId}";
 
             $data = [
                 'user_id' => $companyId,
@@ -281,7 +281,7 @@ class NotificationRepository extends BaseRepository implements NotificationRepos
         try {
             $notificationTitle = 'Αποδοχή αίτησης εργασίας';
             $notificationMessage = "Η εταιρεία {$companyName} αποδέχτηκε την αίτησή σας";
-            $notificationLink = BASE_URL . "job-applications/show/{$jobApplicationId}";
+            $notificationLink = BASE_URL . "job-applications/view/{$jobApplicationId}";
 
             $data = [
                 'user_id' => $driverId,
@@ -314,7 +314,7 @@ class NotificationRepository extends BaseRepository implements NotificationRepos
         try {
             $notificationTitle = 'Απόρριψη αίτησης εργασίας';
             $notificationMessage = "Η εταιρεία {$companyName} απέρριψε την αίτησή σας";
-            $notificationLink = BASE_URL . "job-applications/show/{$jobApplicationId}";
+            $notificationLink = BASE_URL . "job-applications/view/{$jobApplicationId}";
 
             $data = [
                 'user_id' => $driverId,

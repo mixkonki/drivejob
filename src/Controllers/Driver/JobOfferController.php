@@ -122,7 +122,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
 
             if (!$driver) {
                 Session::set('error_message', 'Ο οδηγός δεν βρέθηκε');
-                header('Location: ' . BASE_URL . 'drivers');
+                header('Location: ' . BASE_URL . 'drivers/search');
                 exit;
             }
 

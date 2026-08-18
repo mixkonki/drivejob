@@ -37,6 +37,20 @@ $router->group(['prefix' => 'auth'], function ($router) {
     $router->get('/verification-required', [AuthController::class, 'verificationRequired'])->name('auth.verification-required');
 });
 
+// ── Συντομεύσεις πρώτου επιπέδου ────────────────────────────────────────
+// Ο κώδικας και τα views παραπέμπουν σε /login (33 σημεία), /logout,
+// /access-denied, /forgot-password και /reset-password/{token}. Χωρίς αυτές
+// τις διαδρομές κάθε τέτοια ανακατεύθυνση κατέληγε σε 404 — π.χ. αμέσως
+// μετά από επιτυχημένη εγγραφή.
+$router->get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+$router->post('/login', [AuthController::class, 'login']);
+$router->get('/logout', [AuthController::class, 'logout'])->name('logout');
+$router->get('/access-denied', [AuthController::class, 'accessDenied'])->name('access-denied');
+$router->get('/forgot-password', [AuthController::class, 'showPasswordResetForm'])->name('forgot-password');
+$router->post('/forgot-password', [AuthController::class, 'sendPasswordResetLink']);
+$router->get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('reset-password');
+$router->post('/reset-password/{token}', [AuthController::class, 'resetPassword']);
+
 // Ομαδοποίηση διαδρομών για τις αγγελίες
 $router->group(['prefix' => 'job-listings'], function ($router) {
     // Βασικές διαδρομές αγγελιών

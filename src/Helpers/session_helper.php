@@ -26,12 +26,11 @@ function checkCookiesEnabled()
 {
     if (!isset($_COOKIE['cookie_test'])) {
         setcookie('cookie_test', '1', time() + 3600);
+        // Παλαιότερα γινόταν ανακατεύθυνση σε check_cookies.php — αρχείο που
+        // δεν υπάρχει πλέον, οπότε ο χρήστης κατέληγε σε 404. Το cookie
+        // δοκιμής τίθεται και η ροή συνεχίζεται κανονικά.
         if (isset($_SERVER['HTTP_REFERER'])) {
-        // Αποθήκευση της αρχικής σελίδας στη συνεδρία
             Session::set('original_page', $_SERVER['HTTP_REFERER']);
-        // Ανακατεύθυνση στη σελίδα ελέγχου cookies
-            header('Location: ' . BASE_URL . 'check_cookies.php');
-            exit();
         }
     }
     return true;

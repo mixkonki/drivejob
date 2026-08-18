@@ -69,7 +69,7 @@ class AuthMailer
                 return true;
             }
 
-            $resetLink = BASE_URL . 'auth/reset-password/' . $resetCode;
+            $resetLink = BASE_URL . 'auth/password-reset/' . $resetCode;
             $subject = 'Επαναφορά Κωδικού Πρόσβασης - DriveJob';
 
             $body = "
