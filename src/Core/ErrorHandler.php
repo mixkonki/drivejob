@@ -328,7 +328,7 @@ class ErrorHandler
         // Φόρτωση του προτύπου σφάλματος
         $errorTemplate = ROOT_DIR . '/src/Views/errors/error.php';
         if (\file_exists($errorTemplate)) {
-            \include $errorTemplate;
+            include $errorTemplate;
         } else {
             // Αν δεν υπάρχει το πρότυπο, εμφάνιση απλού μηνύματος σφάλματος
             echo '<!DOCTYPE html>
@@ -367,7 +367,7 @@ class ErrorHandler
                     </div>';
             }
 
-            echo '<a href="' . (\isset($_SERVER['HTTP_REFERER']) ? \htmlspecialchars($_SERVER['HTTP_REFERER']) : '/') . '" class="back-link">Go Back</a>
+            echo '<a href="' . (isset($_SERVER['HTTP_REFERER']) ? \htmlspecialchars($_SERVER['HTTP_REFERER']) : '/') . '" class="back-link">Go Back</a>
                 </div>
             </body>
             </html>';

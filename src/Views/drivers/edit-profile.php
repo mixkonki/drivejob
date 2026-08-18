@@ -28,7 +28,6 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 <script src="<?php echo BASE_URL; ?>js/license-validation.js"></script>
 <script src="<?php echo BASE_URL; ?>js/country-phone-codes.js"></script>
 <script src="<?php echo BASE_URL; ?>js/vehicle-experience.js"></script>
-<script src="<?php echo BASE_URL; ?>js/update-profile-experience.js"></script>
 <script>
     // Αρχικοποίηση δεδομένων από τη βάση
     window.driverOperatorSubSpecialities = [];

@@ -5,8 +5,6 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
 <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-rating.css">
-<script src="<?php echo BASE_URL; ?>js/driver-rating-fix.js"></script>
-<script src="<?php echo BASE_URL; ?>js/driver-rating-update.js"></script>
 
 <main>
     <div class="container">
@@ -170,8 +168,6 @@ include ROOT_DIR . '/src/Views/partials/header.php';
             $roundedPassengerYears = round($passengerDecimalYears);
 
             // Εμφάνιση διαγνωστικών μηνυμάτων
-            echo "<!-- Διαγνωστικά: freightYears = $freightYears, freightMonths = $freightMonths, freightDays = $freightDays, freightDecimalYears = $freightDecimalYears, roundedFreightYears = $roundedFreightYears -->";
-            echo "<!-- Διαγνωστικά: passengerYears = $passengerYears, passengerMonths = $passengerMonths, passengerDays = $passengerDays, passengerDecimalYears = $passengerDecimalYears, roundedPassengerYears = $roundedPassengerYears -->";
 
             // Υπολογισμός βαθμολογίας για προϋπηρεσία εμπορευματικών μεταφορών
             $freightExperiencePoints = 0;

@@ -56,9 +56,6 @@ if (isset($driverVehicleExperience) && !empty($driverVehicleExperience)) :
     $roundedPassengerYears = round($passengerDecimalYears);
     
     // Εμφάνιση διαγνωστικών μηνυμάτων
-    echo "<!-- Διαγνωστικά: totalDecimalYears = $totalDecimalYears, roundedTotalYears = $roundedTotalYears -->";
-    echo "<!-- Διαγνωστικά: freightDecimalYears = $freightDecimalYears, roundedFreightYears = $roundedFreightYears -->";
-    echo "<!-- Διαγνωστικά: passengerDecimalYears = $passengerDecimalYears, roundedPassengerYears = $roundedPassengerYears -->";
     
     // Ενημέρωση του πεδίου experience_years στα δεδομένα του οδηγού
     if (isset($driverData) && is_array($driverData)) {
