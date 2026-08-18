@@ -12,12 +12,13 @@
  * Idempotent: ασφαλές να τρέξει πολλές φορές.
  */
 
+$envCfg = require __DIR__ . '/_config.php';
 $config = [
-    'host' => '127.0.0.1',
-    'dbname' => 'drivejob',
-    'username' => 'root',
-    'password' => '',
-    'charset' => 'utf8mb4'
+    'host' => $envCfg['host'],
+    'dbname' => $envCfg['database'],
+    'username' => $envCfg['username'],
+    'password' => $envCfg['password'],
+    'charset' => 'utf8mb4',
 ];
 
 try {

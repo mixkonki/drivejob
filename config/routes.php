@@ -158,6 +158,9 @@ $router->group(['prefix' => 'companies'], function ($router) {
     $router->post('/conversation', [\Drivejob\Controllers\MessagesController::class, 'companyConversation']);
 });
 
+// Health check για monitors/πλατφόρμες (Πακέτο 9)
+$router->get('/health', [\Drivejob\Controllers\HealthController::class, 'index'])->name('health');
+
 // GDPR — δικαιώματα υποκειμένων (Πακέτο 7)
 $router->get('/gdpr/export', [\Drivejob\Controllers\GdprController::class, 'export'])->name('gdpr.export');
 $router->get('/gdpr/delete', [\Drivejob\Controllers\GdprController::class, 'deleteConfirm'])->name('gdpr.delete');

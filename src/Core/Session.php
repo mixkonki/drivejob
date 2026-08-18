@@ -50,7 +50,7 @@ class Session
                 'lifetime' => 86400, // 24 ώρες
                 'path' => '/', // Root path για να λειτουργεί σε όλο το site
                 'domain' => '',     // Άδειο σημαίνει το τρέχον domain
-                'secure' => false,  // Θέστε το σε true σε παραγωγικό περιβάλλον με HTTPS
+                'secure' => defined('SESSION_SECURE') ? SESSION_SECURE : false, // αυτόματο σε HTTPS
                 'httponly' => true, // Προστασία από XSS
                 'samesite' => 'Lax' // Lax για καλύτερη συμβατότητα
             ]);

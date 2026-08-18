@@ -10,9 +10,7 @@
  * Εκτέλεση:  php database/migrations/add_terms_accepted_at.php   (idempotent)
  */
 
-$pdo = new PDO('mysql:host=127.0.0.1;dbname=drivejob;charset=utf8mb4', 'root', '', [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-]);
+$pdo = require __DIR__ . '/_bootstrap.php';
 
 echo "⚖️  Migration: terms_accepted_at (GDPR)\n\n";
 

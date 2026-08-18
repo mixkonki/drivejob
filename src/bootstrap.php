@@ -26,8 +26,8 @@ require_once __DIR__ . '/../config/config.php';
 // Ρυθμίσεις email (SMTP σταθερές) — διαθέσιμες σε όλη την εφαρμογή
 require_once __DIR__ . '/../config/email.php';
 
-// Ορισμός περιβάλλοντος
-defined('ENVIRONMENT') or define('ENVIRONMENT', 'development');
+// Το ENVIRONMENT ορίζεται στο config/config.php από το APP_ENV του .env
+defined('ENVIRONMENT') or define('ENVIRONMENT', 'production');
 
 // Ρυθμίσεις για το περιβάλλον
 if (ENVIRONMENT === 'development') {
