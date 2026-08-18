@@ -85,5 +85,5 @@ foreach ($admins as $admin) {
     echo "✅ Νέος κωδικός ορίστηκε για: {$label}\n";
 }
 
-echo "\nΣύνδεση: http://drivejob.test/auth/login με το παραπάνω email και τον κωδικό που έδωσες.\n";
+echo "\nΣύνδεση: ", (defined('BASE_URL') ? BASE_URL : 'http://drivejob.test/'), "auth/login με το παραπάνω email και τον κωδικό που έδωσες.\n";
 echo "⚠️ Το εργαλείο είναι μόνο για τοπική χρήση — ΜΗΝ ανέβει ποτέ σε production server.\n";

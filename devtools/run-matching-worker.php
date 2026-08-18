@@ -74,4 +74,4 @@ while ($processed + $errors < $maxJobs) {
 }
 
 echo "\n🏁 Ολοκληρώθηκε: {$processed} επεξεργασμένα, {$errors} σφάλματα.\n";
-echo "Δες τα KPIs: http://drivejob.test/admin/dashboard\n";
+echo "Δες τα KPIs: ", (defined('BASE_URL') ? BASE_URL : 'http://drivejob.test/'), "admin/dashboard\n";
