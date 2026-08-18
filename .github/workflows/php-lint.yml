@@ -10,13 +10,21 @@ jobs:
   php-lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        coverage: none
+        tools: composer:v2
+
     - name: Validate composer.json and composer.lock
       run: composer validate --strict
-      
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
-      
-    - name: PHP Syntax Check
-      run: find . -type f -name '*.php' -exec php -l {} \;
+
+    - name: PHP Syntax Check (χωρίς vendor/node_modules)
+      run: |
+        set -e
+        find src config public database routes -type f -name '*.php' -print0 \
+          | xargs -0 -n1 -P4 php -l > /dev/null
+        echo "✅ Όλα τα αρχεία πέρασαν syntax check"
