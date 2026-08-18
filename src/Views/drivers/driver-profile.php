@@ -803,7 +803,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                 <h3>Ποινικό Μητρώο</h3>
                             </div>
                             <?php if (isset($driverData['legal_status']) && $driverData['legal_status']) : ?>
-                                <div class="skill-tag"><?php echo ($driverData['legal_status'] == 'yes') ? 'Διαθέσιμο Ποινικό Μητρώο' : 'Όχι'; ?></div>
+                                <div class="skill-tag"><?php echo ($driverData['legal_status'] == 'yes') ? 'Υπεύθυνη δήλωση λευκού μητρώου' : 'Όχι'; ?></div>
                             <?php else : ?>
                                 <p class="no-skills">Δεν είναι διαθέσιμο</p>
                             <?php endif; ?>
