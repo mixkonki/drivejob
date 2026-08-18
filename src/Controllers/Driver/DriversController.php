@@ -690,6 +690,18 @@ class DriversController extends BaseUserController
     /**
      * Εμφανίζει τη φόρμα εγγραφής για νέους οδηγούς
      */
+    /**
+     * Επεξεργασία της φόρμας εγγραφής.
+     *
+     * Υπάρχει ώστε ο τύπος χρήστη να είναι ρητός: η κληρονομούμενη
+     * BaseUserController::processRegistration() έχει προεπιλογή 'driver',
+     * που για τις εταιρείες θα ήταν λάθος.
+     */
+    public function processRegistration($userType = 'driver')
+    {
+        parent::processRegistration('driver');
+    }
+
     public function showRegistrationForm()
     {
         // Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος

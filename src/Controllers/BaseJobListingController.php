@@ -545,7 +545,7 @@ class BaseJobListingController extends BaseController
             // Αλλιώς, φόρτωση του view
             $listings = $result['results'];
             $pagination = $result['pagination'];
-            include ROOT_DIR . '/src/Views/job-listings/company-listings.php';
+            include ROOT_DIR . '/src/Views/job-listings/Company/listings.php';
         } catch (DatabaseException $e) {
             Logger::error('Database exception in company listings', [
                 'company_id' => $id,
@@ -618,7 +618,7 @@ class BaseJobListingController extends BaseController
             // Αλλιώς, φόρτωση του view
             $listings = $result['results'];
             $pagination = $result['pagination'];
-            include ROOT_DIR . '/src/Views/job-listings/driver-listings.php';
+            include ROOT_DIR . '/src/Views/job-listings/Driver/listings.php';
         } catch (DatabaseException $e) {
             Logger::error('Database exception in driver listings', [
                 'driver_id' => $id,

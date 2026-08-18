@@ -125,9 +125,9 @@ class BaseUserController extends BaseController
 
         // Φόρτωση της σελίδας εγγραφής ανάλογα με τον τύπο του χρήστη
         if ($userType === 'company') {
-            $this->view('companies/register');
+            $this->view('companies/company-registration');
         } else {
-            $this->view('drivers/register');
+            $this->view('drivers/drivers-registration');
         }
     }
 
@@ -232,7 +232,7 @@ class BaseUserController extends BaseController
     public function forgotPassword()
     {
         // Φόρτωση της σελίδας επαναφοράς κωδικού πρόσβασης
-        $this->view('forgot-password');
+        $this->view('auth/password-reset');
     }
 
     /**
@@ -297,7 +297,7 @@ class BaseUserController extends BaseController
         }
 
         // Φόρτωση της σελίδας επαναφοράς κωδικού πρόσβασης
-        $this->view('reset-password', ['code' => $code]);
+        $this->view('auth/password-reset-token', ['code' => $code]);
     }
 
     /**

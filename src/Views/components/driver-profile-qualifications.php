@@ -27,7 +27,7 @@ class DriverResumePDF
     {
         // Φόρτωση του FPDF αν δεν έχει φορτωθεί ήδη
         if (!class_exists('FPDF')) {
-            require_once ROOT_DIR . '/vendor/fpdf/fpdf.php';
+            require_once ROOT_DIR . '/vendor/setasign/fpdf/fpdf.php';
         }
 
         $this->pdf = new FPDF('P', 'mm', 'A4');
@@ -86,7 +86,7 @@ class DriverResumePDF
         $this->pdf->AddPage();
         $this->pdf->SetMargins(20, 20, 20);
 // Προσθήκη ελληνικών γραμματοσειρών αν υπάρχουν
-        if (file_exists(ROOT_DIR . '/vendor/fpdf/font/DejaVu.php')) {
+        if (file_exists(ROOT_DIR . '/vendor/setasign/fpdf/font/DejaVu.php')) {
             $this->pdf->AddFont('DejaVu', '', 'DejaVu.php');
             $this->pdf->AddFont('DejaVu', 'B', 'DejaVuB.php');
             $this->pdf->SetFont('DejaVu', '', 12);

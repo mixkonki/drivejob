@@ -89,7 +89,7 @@ $router->group(['prefix' => 'job-listings'], function ($router) {
 $router->group(['prefix' => 'drivers'], function ($router) {
     // Διαδρομές εγγραφής και προφίλ
     $router->get('/register', [DriversController::class, 'showRegistrationForm'])->name('drivers.register');
-    $router->post('/register', [DriversController::class, 'register']);
+    $router->post('/register', [DriversController::class, 'processRegistration']);
     $router->get('/profile', [DriversController::class, 'profile'])->name('drivers.profile');
     $router->get('/profile/{id}', [DriversController::class, 'publicProfile'])->name('drivers.profile.public');
     $router->get('/edit-profile', [DriversController::class, 'edit'])->name('drivers.edit-profile');
@@ -145,7 +145,7 @@ $router->group(['prefix' => 'drivers'], function ($router) {
 // Ομαδοποίηση διαδρομών για τις εταιρείες
 $router->group(['prefix' => 'companies'], function ($router) {
     $router->get('/register', [CompaniesController::class, 'showRegistrationForm'])->name('companies.register');
-    $router->post('/register', [CompaniesController::class, 'register']);
+    $router->post('/register', [CompaniesController::class, 'processRegistration']);
     $router->get('/profile', [CompaniesController::class, 'profile'])->name('companies.profile');
     $router->get('/profile/{id}', [CompaniesController::class, 'publicProfile'])->name('companies.profile.public');
     $router->get('/edit-profile', [CompaniesController::class, 'edit'])->name('companies.edit-profile');

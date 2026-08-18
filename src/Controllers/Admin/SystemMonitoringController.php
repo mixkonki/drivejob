@@ -64,7 +64,7 @@ class SystemMonitoringController extends Controller
         error_log("SystemStats keys: " . implode(', ', array_keys($systemStats)));
         error_log("Has system_status: " . (isset($systemStats['system_status']) ? 'YES' : 'NO'));
 
-        $this->view('Admin/monitoring/dashboard', [
+        $this->view('admin/monitoring/dashboard', [
             'title' => 'System Monitoring - DriveJob',
             'systemStats' => $systemStats
         ]);
@@ -88,7 +88,7 @@ class SystemMonitoringController extends Controller
             $_SESSION['error_message'] = 'Σφάλμα κατά την ανάκτηση των σφαλμάτων: ' . $e->getMessage();
         }
 
-        $this->view('Admin/monitoring/errors', [
+        $this->view('admin/monitoring/errors', [
             'title' => 'System Errors - DriveJob',
             'errors' => $errors,
             'period' => $period,
@@ -110,7 +110,7 @@ class SystemMonitoringController extends Controller
             $_SESSION['error_message'] = 'Σφάλμα κατά την ανάκτηση των δεδομένων απόδοσης: ' . $e->getMessage();
         }
 
-        $this->view('Admin/monitoring/performance', [
+        $this->view('admin/monitoring/performance', [
             'title' => 'System Performance - DriveJob',
             'performanceData' => $performanceData,
             'period' => $period
@@ -130,7 +130,7 @@ class SystemMonitoringController extends Controller
             $_SESSION['error_message'] = 'Σφάλμα κατά την ανάκτηση των δεδομένων χρήσης: ' . $e->getMessage();
         }
 
-        $this->view('Admin/monitoring/usage', [
+        $this->view('admin/monitoring/usage', [
             'title' => 'System Usage - DriveJob',
             'usageData' => $usageData,
             'period' => $period
@@ -157,7 +157,7 @@ class SystemMonitoringController extends Controller
             $_SESSION['error_message'] = 'Σφάλμα κατά την ανάκτηση των αρχείων καταγραφής: ' . $e->getMessage();
         }
 
-        $this->view('Admin/monitoring/logs', [
+        $this->view('admin/monitoring/logs', [
             'title' => 'System Logs - DriveJob',
             'logs' => $logs,
             'type' => $type,

@@ -72,6 +72,18 @@ class CompaniesController extends BaseUserController
     /**
      * Εμφανίζει τη φόρμα εγγραφής για νέες εταιρείες
      */
+    /**
+     * Επεξεργασία της φόρμας εγγραφής.
+     *
+     * Υπάρχει ώστε ο τύπος χρήστη να είναι ρητός: η κληρονομούμενη
+     * BaseUserController::processRegistration() έχει προεπιλογή 'driver',
+     * που για τις εταιρείες θα ήταν λάθος.
+     */
+    public function processRegistration($userType = 'company')
+    {
+        parent::processRegistration('company');
+    }
+
     public function showRegistrationForm()
     {
         // Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος

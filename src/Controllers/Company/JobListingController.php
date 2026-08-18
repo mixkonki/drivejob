@@ -469,7 +469,7 @@ class JobListingController extends BaseJobListingController
             $driverOperatorSubSpecialities = [];
 
             // Φόρτωση του view
-            include ROOT_DIR . '/src/Views/job-listings/edit-driver.php';
+            include ROOT_DIR . '/src/Views/job-listings/Driver/edit.php';
         } catch (DatabaseException $e) {
             Logger::error('Database exception in driver job listing edit', [
                 'id' => $id,
@@ -808,7 +808,7 @@ class JobListingController extends BaseJobListingController
             // Αλλιώς, φόρτωση του view
             $listings = $result['results'];
             $pagination = $result['pagination'];
-            include ROOT_DIR . '/src/Views/job-listings/company-listings.php';
+            include ROOT_DIR . '/src/Views/job-listings/Company/listings.php';
         } catch (DatabaseException $e) {
             Logger::error('Database exception in company listings', [
                 'company_id' => $id,
@@ -881,7 +881,7 @@ class JobListingController extends BaseJobListingController
             // Αλλιώς, φόρτωση του view
             $listings = $result['results'];
             $pagination = $result['pagination'];
-            include ROOT_DIR . '/src/Views/job-listings/driver-listings.php';
+            include ROOT_DIR . '/src/Views/job-listings/Driver/listings.php';
         } catch (DatabaseException $e) {
             Logger::error('Database exception in driver listings', [
                 'driver_id' => $id,
