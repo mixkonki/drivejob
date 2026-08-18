@@ -1,24 +1,41 @@
-# Εικόνα PHP + Apache
-FROM php:8.2-apache
+# DriveJob — εικόνα παραγωγής (Render / οποιοδήποτε Docker host)
+# PHP 8.4 + Apache, docroot: public/ (μοναδικό entry point)
+FROM php:8.4-apache
 
-RUN apt-get update && apt-get install -y zip unzip git
+# Επεκτάσεις PHP: pdo_mysql (MySQL), gd (fpdf/εικόνες), zip
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git unzip libzip-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql gd zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Τα env vars της πλατφόρμας (Render κλπ.) να φτάνουν στο $_ENV
+RUN echo 'variables_order = "EGPCS"' > /usr/local/etc/php/conf.d/env-order.ini
+
+# Composer από το επίσημο image
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+WORKDIR /var/www/html
+
+# 1. Εξαρτήσεις πρώτα (κάνουν cache ως layer)
 COPY composer.json composer.lock ./
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-RUN php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-RUN composer install
+RUN composer install --no-dev --no-interaction --no-progress --no-scripts
 
-
-# Αντιγραφή όλων των αρχείων στο φάκελο του Apache
+# 2. Κώδικας εφαρμογής (βλ. .dockerignore — ΧΩΡΙΣ .env/backups/κάδο)
 COPY . /var/www/html/
 
-# Ενεργοποίηση rewrite module (αν χρειάζεται .htaccess)
-RUN a2enmod rewrite
+# 3. Βελτιστοποιημένος autoloader τώρα που υπάρχει το src/
+RUN composer dump-autoload --optimize --no-dev
 
-# Ορισμός φακέλου εργασίας
-WORKDIR /var/www/html/
+# Docroot: public/ — τίποτα άλλο δεν σερβίρεται
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}/!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
+    && a2enmod rewrite
 
-# Άνοιγμα θύρας 80
+# Φάκελοι εγγραφής (uploads/logs/ουρά) — σε Render θέλουν persistent disk
+RUN mkdir -p storage logs \
+    && chown -R www-data:www-data storage logs
+
 EXPOSE 80
-
-# Εκτέλεση Apache
 CMD ["apache2-foreground"]

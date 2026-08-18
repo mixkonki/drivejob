@@ -1,0 +1,24 @@
+# Secrets — ΠΟΤΕ μέσα στην εικόνα (ορίζονται ως env vars στην πλατφόρμα)
+.env
+.env.*
+!.env.example
+
+# Κάδοι / backups / dev
+_to_delete/
+_backup/
+.git/
+.github/
+node_modules/
+tests/
+devtools/
+docs/
+
+# Τοπικά δεδομένα χρηστών & logs (σε production: persistent disk)
+storage/
+logs/
+
+# Build cache
+vendor/
+composer.phar
+*.log
+.DS_Store
