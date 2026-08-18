@@ -507,6 +507,15 @@
                                 <?php endif; ?>
                             </ul>
                         </section>
+                        <!-- Απόρρητο & δεδομένα (GDPR — Πακέτο 7) -->
+                        <section class="profile-section privacy-section">
+                            <h2>Απόρρητο &amp; Δεδομένα</h2>
+                            <p style="margin:6px 0 12px; color:#555;">Διαχειριστείτε τα προσωπικά σας δεδομένα (GDPR).</p>
+                            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                                <a href="<?php echo BASE_URL; ?>gdpr/export" class="btn-secondary" style="padding:8px 16px; border-radius:6px; text-decoration:none; background:#eceff1; color:#333;">⬇️ Εξαγωγή δεδομένων (JSON)</a>
+                                <a href="<?php echo BASE_URL; ?>gdpr/delete" style="padding:8px 16px; border-radius:6px; text-decoration:none; background:#fdecea; color:#b71c1c;">🗑️ Διαγραφή λογαριασμού</a>
+                            </div>
+                        </section>
                         <!-- Ενότητα Τοποθεσίας -->
                         <?php if (isset($driverData['address']) && $driverData['address'] && isset($driverData['city']) && $driverData['city']) : ?>
                             <section class="profile-section">

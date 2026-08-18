@@ -95,7 +95,7 @@ $extraJs = ['drivers_registration.js'];
                         </label>
                         <label>
                             <input type="checkbox" name="terms_check" required>
-                            Αποδέχομαι τους <a href="<?= BASE_URL ?>info/terms">όρους χρήσης</a>
+                            Αποδέχομαι τους <a href="<?= BASE_URL ?>terms" target="_blank">Όρους Χρήσης</a> και την <a href="<?= BASE_URL ?>privacy" target="_blank">Πολιτική Απορρήτου</a>
                         </label>
                     </div>
 

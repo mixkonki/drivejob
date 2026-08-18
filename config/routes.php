@@ -158,6 +158,11 @@ $router->group(['prefix' => 'companies'], function ($router) {
     $router->post('/conversation', [\Drivejob\Controllers\MessagesController::class, 'companyConversation']);
 });
 
+// GDPR — δικαιώματα υποκειμένων (Πακέτο 7)
+$router->get('/gdpr/export', [\Drivejob\Controllers\GdprController::class, 'export'])->name('gdpr.export');
+$router->get('/gdpr/delete', [\Drivejob\Controllers\GdprController::class, 'deleteConfirm'])->name('gdpr.delete');
+$router->post('/gdpr/delete', [\Drivejob\Controllers\GdprController::class, 'delete']);
+
 // Σελίδες πληροφοριών (top-level: /about, /contact, /terms, /privacy, /faq)
 $router->get('/about', [HomeController::class, 'about'])->name('info.about');
 $router->get('/contact', [HomeController::class, 'contact'])->name('info.contact');

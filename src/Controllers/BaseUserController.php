@@ -437,7 +437,9 @@ class BaseUserController extends BaseController
         $data = [
             'email' => $this->sanitizeEmail($_POST['email'] ?? ''),
             'password' => $_POST['password'] ?? '',
-            'created_at' => date('Y-m-d H:i:s')
+            'created_at' => date('Y-m-d H:i:s'),
+            // GDPR (Πακέτο 7): χρόνος αποδοχής όρων & πολιτικής απορρήτου
+            'terms_accepted_at' => date('Y-m-d H:i:s'),
         ];
 
         if ($userType === 'company') {
@@ -485,7 +487,9 @@ class BaseUserController extends BaseController
             ->email('email', 'Παρακαλώ εισάγετε ένα έγκυρο email.')
             ->required('password', 'Ο κωδικός πρόσβασης είναι υποχρεωτικός.')
             ->minLength('password', 8, 'Ο κωδικός πρόσβασης πρέπει να έχει τουλάχιστον 8 χαρακτήρες.')
-            ->matches('password', 'confirm_password', 'Οι κωδικοί πρόσβασης δεν ταιριάζουν.');
+            ->matches('password', 'confirm_password', 'Οι κωδικοί πρόσβασης δεν ταιριάζουν.')
+            // GDPR (Πακέτο 7): η αποδοχή όρων ελέγχεται και server-side
+            ->required('terms_check', 'Πρέπει να αποδεχθείτε τους Όρους Χρήσης και την Πολιτική Απορρήτου.');
 
         // Ειδικοί έλεγχοι ανάλογα με τον τύπο του χρήστη
         if ($userType === 'company') {

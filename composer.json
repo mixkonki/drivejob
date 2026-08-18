@@ -56,6 +56,10 @@
       "@phpcpd",
       "@test"
     ]
+  },
+  "config": {
+    "platform": {
+      "php": "8.3.0"
+    }
   }
-  
 }
