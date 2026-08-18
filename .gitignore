@@ -55,3 +55,4 @@ phpunit.cache
 
 # Αρχεία χρηστών — ΠΟΤΕ στο git
 /storage/uploads/
+public/img/Screenshot*
