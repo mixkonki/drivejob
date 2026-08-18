@@ -219,7 +219,7 @@ class CompaniesController extends BaseUserController
         // Έλεγχος αν το ID είναι έγκυρο
         if (!$id || !is_numeric($id)) {
             Session::set('error_message', 'Μη έγκυρο αναγνωριστικό εταιρείας');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit;
         }
 
@@ -228,7 +228,7 @@ class CompaniesController extends BaseUserController
 
         if (!$companyData) {
             Session::set('error_message', 'Η εταιρεία δεν βρέθηκε');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit;
         }
 
@@ -359,7 +359,7 @@ class CompaniesController extends BaseUserController
             }
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in company search', [
@@ -375,7 +375,7 @@ class CompaniesController extends BaseUserController
             }
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit();
         }
     }
@@ -393,7 +393,7 @@ class CompaniesController extends BaseUserController
         // Έλεγχος αν το ID είναι έγκυρο
         if (!$id || !is_numeric($id)) {
             Session::set('error_message', 'Μη έγκυρο αναγνωριστικό εταιρείας');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit;
         }
 

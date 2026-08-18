@@ -295,7 +295,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
                 $result = $this->jobOfferRepository->findByDriver($userId, $page, $limit);
             } else {
                 Session::set('error_message', 'Δεν έχετε δικαίωμα πρόσβασης σε αυτή τη σελίδα.');
-                header('Location: ' . BASE_URL . 'home');
+                header('Location: ' . BASE_URL);
                 exit();
             }
 
@@ -322,7 +322,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             }
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in my offers', [
@@ -338,7 +338,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             }
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit();
         }
     }
@@ -387,7 +387,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
 
             if (!$hasAccess) {
                 Session::set('error_message', 'Δεν έχετε δικαίωμα προβολής αυτής της προσφοράς');
-                header('Location: ' . BASE_URL . 'home');
+                header('Location: ' . BASE_URL);
                 exit;
             }
 

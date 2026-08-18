@@ -474,7 +474,7 @@ class DriversController extends BaseUserController
         // Έλεγχος αν το ID είναι έγκυρο
         if (!$id || !is_numeric($id)) {
             Session::set('error_message', 'Μη έγκυρο αναγνωριστικό οδηγού');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit;
         }
 
@@ -483,7 +483,7 @@ class DriversController extends BaseUserController
 
         if (!$driverProfile) {
             Session::set('error_message', 'Ο οδηγός δεν βρέθηκε');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit;
         }
 

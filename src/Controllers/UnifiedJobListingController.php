@@ -255,7 +255,7 @@ class UnifiedJobListingController extends BaseJobListingController
             }
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in job listings', [
@@ -270,7 +270,7 @@ class UnifiedJobListingController extends BaseJobListingController
             }
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit();
         }
     }
@@ -343,7 +343,7 @@ class UnifiedJobListingController extends BaseJobListingController
                 include ROOT_DIR . '/src/Views/job-listings/Driver/create.php';
             } else {
                 Session::set('error_message', 'Δεν έχετε δικαίωμα δημιουργίας αγγελίας.');
-                header('Location: ' . BASE_URL . 'home');
+                header('Location: ' . BASE_URL);
                 exit();
             }
         } catch (DatabaseException $e) {
@@ -355,7 +355,7 @@ class UnifiedJobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in job listing create', [
@@ -366,7 +366,7 @@ class UnifiedJobListingController extends BaseJobListingController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit();
         }
     }
@@ -476,7 +476,7 @@ class UnifiedJobListingController extends BaseJobListingController
                 Logger::info('Starting company job listing creation', ['company_id' => $userId]);
             } else {
                 Session::set('error_message', 'Δεν έχετε δικαίωμα δημιουργίας αγγελίας.');
-                header('Location: ' . BASE_URL . 'home');
+                header('Location: ' . BASE_URL);
                 exit();
             }
 

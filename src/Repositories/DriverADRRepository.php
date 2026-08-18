@@ -35,7 +35,7 @@ class DriverADRRepository
     public function findByDriver(int $driverId): ?array
     {
         try {
-            $sql = "SELECT * FROM driver_adr WHERE driver_id = :driver_id";
+            $sql = "SELECT * FROM driver_adr_certificates WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
             $stmt = $this->db->prepare($sql);
@@ -58,7 +58,7 @@ class DriverADRRepository
     public function find(int $id): ?array
     {
         try {
-            $sql = "SELECT * FROM driver_adr WHERE id = :id";
+            $sql = "SELECT * FROM driver_adr_certificates WHERE id = :id";
             $params = [':id' => $id];
 
             $stmt = $this->db->prepare($sql);
@@ -81,15 +81,14 @@ class DriverADRRepository
     public function create(array $data): int
     {
         try {
-            $sql = "INSERT INTO driver_adr (driver_id, certificate_number, issue_date, expiry_date, adr_classes, created_at, updated_at)
-                    VALUES (:driver_id, :certificate_number, :issue_date, :expiry_date, :adr_classes, NOW(), NOW())";
+            $sql = "INSERT INTO driver_adr_certificates (driver_id, certificate_number, expiry_date, adr_type, created_at, updated_at)
+                    VALUES (:driver_id, :certificate_number, :expiry_date, :adr_type, NOW(), NOW())";
 
             $params = [
                 ':driver_id' => $data['driver_id'],
                 ':certificate_number' => $data['certificate_number'] ?? null,
-                ':issue_date' => $data['issue_date'] ?? null,
                 ':expiry_date' => $data['expiry_date'] ?? null,
-                ':adr_classes' => $data['adr_classes'] ?? null
+                ':adr_type' => $data['adr_type'] ?? $data['adr_classes'] ?? null
             ];
 
             $stmt = $this->db->prepare($sql);
@@ -111,20 +110,18 @@ class DriverADRRepository
     public function update(int $id, array $data): bool
     {
         try {
-            $sql = "UPDATE driver_adr SET
+            $sql = "UPDATE driver_adr_certificates SET
                     certificate_number = :certificate_number,
-                    issue_date = :issue_date,
                     expiry_date = :expiry_date,
-                    adr_classes = :adr_classes,
+                    adr_type = :adr_type,
                     updated_at = NOW()
                     WHERE id = :id";
 
             $params = [
                 ':id' => $id,
                 ':certificate_number' => $data['certificate_number'] ?? null,
-                ':issue_date' => $data['issue_date'] ?? null,
                 ':expiry_date' => $data['expiry_date'] ?? null,
-                ':adr_classes' => $data['adr_classes'] ?? null
+                ':adr_type' => $data['adr_type'] ?? $data['adr_classes'] ?? null
             ];
 
             $stmt = $this->db->prepare($sql);
@@ -145,7 +142,7 @@ class DriverADRRepository
     public function delete(int $id): bool
     {
         try {
-            $sql = "DELETE FROM driver_adr WHERE id = :id";
+            $sql = "DELETE FROM driver_adr_certificates WHERE id = :id";
             $params = [':id' => $id];
 
             $stmt = $this->db->prepare($sql);
@@ -166,7 +163,7 @@ class DriverADRRepository
     public function deleteByDriver(int $driverId): bool
     {
         try {
-            $sql = "DELETE FROM driver_adr WHERE driver_id = :driver_id";
+            $sql = "DELETE FROM driver_adr_certificates WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
             $stmt = $this->db->prepare($sql);

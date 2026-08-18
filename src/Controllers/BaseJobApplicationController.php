@@ -114,7 +114,7 @@ class BaseJobApplicationController extends BaseController
 
             if (!$hasAccess) {
                 Session::set('error_message', 'Δεν έχετε δικαίωμα προβολής αυτής της αίτησης');
-                header('Location: ' . BASE_URL . 'home');
+                header('Location: ' . BASE_URL);
                 exit;
             }
 

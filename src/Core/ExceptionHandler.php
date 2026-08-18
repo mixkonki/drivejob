@@ -181,7 +181,7 @@ class ExceptionHandler
             Session::set('error_message', $message);
 
             // Ανακατεύθυνση στην αρχική σελίδα
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit;
         }
     }
@@ -249,7 +249,7 @@ class ExceptionHandler
             Session::set('error_message', $exception->getMessage());
 
             // Ανακατεύθυνση στην αρχική σελίδα
-            header('Location: ' . BASE_URL . 'home');
+            header('Location: ' . BASE_URL);
             exit;
         }
     }

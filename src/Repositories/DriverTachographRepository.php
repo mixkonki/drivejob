@@ -35,7 +35,7 @@ class DriverTachographRepository
     public function findByDriver(int $driverId): ?array
     {
         try {
-            $sql = "SELECT * FROM driver_tachograph WHERE driver_id = :driver_id";
+            $sql = "SELECT * FROM driver_tachograph_cards WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
             $stmt = $this->db->prepare($sql);
@@ -58,7 +58,7 @@ class DriverTachographRepository
     public function find(int $id): ?array
     {
         try {
-            $sql = "SELECT * FROM driver_tachograph WHERE id = :id";
+            $sql = "SELECT * FROM driver_tachograph_cards WHERE id = :id";
             $params = [':id' => $id];
 
             $stmt = $this->db->prepare($sql);
@@ -81,13 +81,12 @@ class DriverTachographRepository
     public function create(array $data): int
     {
         try {
-            $sql = "INSERT INTO driver_tachograph (driver_id, card_number, issue_date, expiry_date, created_at, updated_at)
-                    VALUES (:driver_id, :card_number, :issue_date, :expiry_date, NOW(), NOW())";
+            $sql = "INSERT INTO driver_tachograph_cards (driver_id, card_number, expiry_date, created_at, updated_at)
+                    VALUES (:driver_id, :card_number, :expiry_date, NOW(), NOW())";
 
             $params = [
                 ':driver_id' => $data['driver_id'],
                 ':card_number' => $data['card_number'] ?? null,
-                ':issue_date' => $data['issue_date'] ?? null,
                 ':expiry_date' => $data['expiry_date'] ?? null
             ];
 
@@ -110,9 +109,8 @@ class DriverTachographRepository
     public function update(int $id, array $data): bool
     {
         try {
-            $sql = "UPDATE driver_tachograph SET
+            $sql = "UPDATE driver_tachograph_cards SET
                     card_number = :card_number,
-                    issue_date = :issue_date,
                     expiry_date = :expiry_date,
                     updated_at = NOW()
                     WHERE id = :id";
@@ -120,7 +118,6 @@ class DriverTachographRepository
             $params = [
                 ':id' => $id,
                 ':card_number' => $data['card_number'] ?? null,
-                ':issue_date' => $data['issue_date'] ?? null,
                 ':expiry_date' => $data['expiry_date'] ?? null
             ];
 
@@ -142,7 +139,7 @@ class DriverTachographRepository
     public function delete(int $id): bool
     {
         try {
-            $sql = "DELETE FROM driver_tachograph WHERE id = :id";
+            $sql = "DELETE FROM driver_tachograph_cards WHERE id = :id";
             $params = [':id' => $id];
 
             $stmt = $this->db->prepare($sql);
@@ -163,7 +160,7 @@ class DriverTachographRepository
     public function deleteByDriver(int $driverId): bool
     {
         try {
-            $sql = "DELETE FROM driver_tachograph WHERE driver_id = :driver_id";
+            $sql = "DELETE FROM driver_tachograph_cards WHERE driver_id = :driver_id";
             $params = [':driver_id' => $driverId];
 
             $stmt = $this->db->prepare($sql);

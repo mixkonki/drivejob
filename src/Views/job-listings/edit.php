@@ -39,6 +39,6 @@ if ($userRole === 'company') {
     include ROOT_DIR . '/src/Views/job-listings/Driver/edit.php';
 } else {
     // Αν ο χρήστης δεν είναι ούτε οδηγός ούτε εταιρεία, ανακατεύθυνση στην αρχική σελίδα
-    header('Location: ' . BASE_URL . 'home');
+    header('Location: ' . BASE_URL);
     exit();
 }
