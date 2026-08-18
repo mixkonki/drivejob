@@ -250,6 +250,16 @@ $router->group(['prefix' => 'admin'], function ($router) {
 // Include API routes
 require_once ROOT_DIR . '/routes/api.php';
 
+// Legacy admin panel & εργαλεία (Πακέτο 4 — αρχεία στο src/Legacy/admin)
+$router->get('/admin/panel', [\Drivejob\Controllers\LegacyPagesController::class, 'adminPanel'])->name('admin.panel');
+$router->get('/admin/tools/{tool}', [\Drivejob\Controllers\LegacyPagesController::class, 'adminTool'])->name('admin.tools');
+
+// Legacy API endpoints (αρχεία στο src/Legacy/api)
+$router->get('/api/legacy/{endpoint}', [\Drivejob\Controllers\LegacyPagesController::class, 'api'])->name('api.legacy');
+$router->post('/api/legacy/{endpoint}', [\Drivejob\Controllers\LegacyPagesController::class, 'api']);
+$router->get('/api/admin/{endpoint}', [\Drivejob\Controllers\LegacyPagesController::class, 'adminApi'])->name('api.admin');
+$router->post('/api/admin/{endpoint}', [\Drivejob\Controllers\LegacyPagesController::class, 'adminApi']);
+
 // Σερβίρισμα αρχείων uploads με έλεγχο πρόσβασης (τα αρχεία ζουν στο storage/uploads)
 $router->get("/uploads/{folder}/{filename}", [\Drivejob\Controllers\FileController::class, "serve"])->name("files.serve");
 

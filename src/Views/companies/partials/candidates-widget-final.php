@@ -133,7 +133,7 @@ $availableListings = $listings['results'] ?? [];
         `;
 
             // Χρήση του fixed endpoint με σωστά credentials
-            fetch(`<?php echo BASE_URL; ?>api/matching/job/candidates/get.php?job_id=${jobId}&limit=5`, {
+            fetch(`<?php echo BASE_URL; ?>api/legacy/candidates-get?job_id=${jobId}&limit=5`, {
                     method: 'GET',
                     credentials: 'same-origin',
                     headers: {

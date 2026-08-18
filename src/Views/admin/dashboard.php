@@ -18,9 +18,9 @@ $uid = (int)($_SESSION["user_id"] ?? 0);
 
 $base = rtrim(defined('BASE_URL') ? BASE_URL : '/', '/');
 $q = "?uid=" . $uid;
-$API_METRICS = $base . "/api/admin/matching_metrics.php" . $q;
-$API_PROM    = $base . "/api/admin/matching_metrics_prom.php" . $q;
-$API_ENQ10   = $base . "/api/admin/matching_enqueue_demo.php" . $q . "&n=10";
+$API_METRICS = $base . "/api/admin/metrics" . $q;
+$API_PROM    = $base . "/api/admin/metrics-prom" . $q;
+$API_ENQ10   = $base . "/api/admin/enqueue-demo" . $q . "&n=10";
 
 ?>
 <!doctype html>

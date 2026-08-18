@@ -5,7 +5,7 @@
  * Καλεί απευθείας το MatchingService
  */
 
-require_once __DIR__ . '/../../../../src/bootstrap.php';
+require_once dirname(__DIR__, 3) . '/src/bootstrap.php';
 
 use Drivejob\Core\Database;
 use Drivejob\Core\Session;

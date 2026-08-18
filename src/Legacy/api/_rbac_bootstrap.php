@@ -1,13 +1,13 @@
 <?php
 // Minimal bootstrap for endpoints that need RBAC checks.
-require_once __DIR__ . "/../../src/RBAC/DB.php";
-require_once __DIR__ . "/../../src/RBAC/RBAC.php";
-require_once __DIR__ . "/../../src/RBAC/Util/Http.php";
-require_once __DIR__ . "/../../src/RBAC/Util/Security.php";
-require_once __DIR__ . "/../../src/RBAC/Util/RateLimiter.php";
-require_once __DIR__ . "/../../src/RBAC/Logger.php";
-require_once __DIR__ . "/../../src/RBAC/Middleware/Guard.php";
-require_once __DIR__ . "/../../src/RBAC/Middleware/HttpGuard.php";
+require_once dirname(__DIR__, 3) . "/src/RBAC/DB.php";
+require_once dirname(__DIR__, 3) . "/src/RBAC/RBAC.php";
+require_once dirname(__DIR__, 3) . "/src/RBAC/Util/Http.php";
+require_once dirname(__DIR__, 3) . "/src/RBAC/Util/Security.php";
+require_once dirname(__DIR__, 3) . "/src/RBAC/Util/RateLimiter.php";
+require_once dirname(__DIR__, 3) . "/src/RBAC/Logger.php";
+require_once dirname(__DIR__, 3) . "/src/RBAC/Middleware/Guard.php";
+require_once dirname(__DIR__, 3) . "/src/RBAC/Middleware/HttpGuard.php";
 
 use DriveJob\RBAC\RBAC;
 use DriveJob\RBAC\Util\Http;

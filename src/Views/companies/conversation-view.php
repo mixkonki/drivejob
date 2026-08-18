@@ -88,7 +88,7 @@
                     <?php endforeach; ?>
                 </div>
                 
-                <form method="POST" action="<?php echo BASE_URL; ?>api/messaging/send.php" class="reply-form">
+                <form method="POST" action="<?php echo BASE_URL; ?>api/legacy/messaging-send" class="reply-form">
                     <input type="hidden" name="conversation_id" value="<?php echo $conversationId; ?>">
                     <input type="hidden" name="driver_id" value="<?php echo $conversation['driver_id']; ?>">
                     <input type="hidden" name="job_id" value="<?php echo $conversation['job_id']; ?>">

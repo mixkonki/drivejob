@@ -299,7 +299,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'driver') {
     }
 
     function loadAllMatches() {
-        fetch('<?php echo BASE_URL; ?>api/matching/driver/matches-simple.php?limit=100&driver_id=<?php echo $_SESSION['user_id']; ?>')
+        fetch('<?php echo BASE_URL; ?>api/legacy/matches-simple?limit=100&driver_id=<?php echo $_SESSION['user_id']; ?>')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
