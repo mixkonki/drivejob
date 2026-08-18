@@ -13,11 +13,19 @@ class OpenAIService
     private $baseUrl;
     private $config;
 
+    private $usageGuard;
+
     public function __construct()
     {
         $this->config = include ROOT_DIR . '/config/openai.php';
         $this->apiKey = $this->config['api_key'];
         $this->baseUrl = $this->config['base_url'];
+        try {
+            $pdo = \Drivejob\Core\Database::getInstance()->getConnection();
+            $this->usageGuard = new \Drivejob\Services\AI\AIUsageGuard($pdo);
+        } catch (\Throwable $e) {
+            $this->usageGuard = null; // χωρίς βάση, χωρίς όρια — μόνο log
+        }
     }
 
     /**
@@ -159,6 +167,13 @@ class OpenAIService
      */
     private function callOpenAI($data)
     {
+        if (empty($this->apiKey)) {
+            throw new \Exception('OpenAI API key is not configured');
+        }
+        if ($this->usageGuard && !$this->usageGuard->allow()) {
+            throw new \Exception('AI usage limit reached');
+        }
+
         $ch = curl_init();
 
         curl_setopt_array($ch, [
@@ -171,8 +186,8 @@ class OpenAIService
                 'Authorization: Bearer ' . $this->apiKey
             ],
             CURLOPT_TIMEOUT => $this->config['timeout'],
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2
         ]);
 
         $response = curl_exec($ch);
@@ -192,6 +207,10 @@ class OpenAIService
 
         if (!$decoded || !isset($decoded['choices'][0]['message']['content'])) {
             throw new \Exception('Invalid OpenAI API response');
+        }
+
+        if ($this->usageGuard) {
+            $this->usageGuard->record($data['model'] ?? 'unknown', $decoded);
         }
 
         return $decoded['choices'][0]['message']['content'];

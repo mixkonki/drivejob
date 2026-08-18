@@ -159,7 +159,7 @@ class RealTimeMatchingService
                 SELECT d.*, u.email
                 FROM drivers d
                 JOIN users u ON d.user_id = u.id
-                WHERE d.is_active = 1 AND d.available_for_work = 1
+                WHERE d.is_verified = 1 AND d.available_for_work = 1
                 ORDER BY d.last_login DESC
             ");
             $stmt->execute();

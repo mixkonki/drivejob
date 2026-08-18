@@ -83,7 +83,13 @@ class EnhancedMatchingService implements MatchingServiceInterface
             }
 
             // Try OpenAI Advanced Matching first
+            // ΜΟΝΟ σε CLI (cron/scripts): το AI παίρνει ~10s/αγγελία και δεν πρέπει
+            // να μπλοκάρει web requests (αποθήκευση προφίλ κ.λπ.). Στο web τρέχει
+            // ο γρήγορος rule-based και το cron εμπλουτίζει τα σκορ στο παρασκήνιο.
             try {
+                if (PHP_SAPI !== 'cli') {
+                    throw new \Exception('AI matching deferred to background (web request)');
+                }
                 $openAIService = new \Drivejob\Services\AI\OpenAIMatchingService();
                 $aiResult = $openAIService->calculateAdvancedMatchScore($driverId, $jobListingId);
 
@@ -344,9 +350,17 @@ class EnhancedMatchingService implements MatchingServiceInterface
             return 1.0;
         }
 
-        $driverCity = strtolower(trim($driver['city'] ?? ''));
-        $driverCountry = strtolower(trim($driver['country'] ?? ''));
-        $listingLocation = strtolower(trim($jobListing['location']));
+        // Αμυντικά: τα features μπορεί να δίνουν location ως array (π.χ. από FeatureExtractor)
+        $rawDriverCity = $driver['city'] ?? '';
+        $rawDriverCountry = $driver['country'] ?? '';
+        $rawLocation = $jobListing['location'];
+        if (is_array($rawDriverCity)) { $rawDriverCity = implode(' ', array_filter(array_map('strval', $rawDriverCity))); }
+        if (is_array($rawDriverCountry)) { $rawDriverCountry = implode(' ', array_filter(array_map('strval', $rawDriverCountry))); }
+        if (is_array($rawLocation)) { $rawLocation = implode(' ', array_filter(array_map('strval', $rawLocation))); }
+
+        $driverCity = strtolower(trim((string) $rawDriverCity));
+        $driverCountry = strtolower(trim((string) $rawDriverCountry));
+        $listingLocation = strtolower(trim((string) $rawLocation));
 
         // Normalize Greek city names
         $cityNormalizations = [
@@ -696,7 +710,7 @@ class EnhancedMatchingService implements MatchingServiceInterface
                 FROM drivers d
                 LEFT JOIN matching_scores ms ON d.id = ms.driver_id AND ms.job_id = ?
                 WHERE d.available_for_work = 1
-                AND d.is_active = 1
+                AND d.is_verified = 1
                 AND d.id NOT IN (
                     SELECT driver_id FROM job_applications WHERE job_id = ?
                 )

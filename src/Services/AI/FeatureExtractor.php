@@ -57,7 +57,7 @@ class FeatureExtractor
             $certifications = [];
             try {
                 $stmt = $this->pdo->prepare("
-                    SELECT certification_type, certification_name, issue_date, expiry_date
+                    SELECT title AS certification_type, title AS certification_name, `date` AS issue_date, expiry AS expiry_date
                     FROM driver_certifications
                     WHERE driver_id = ?
                 ");

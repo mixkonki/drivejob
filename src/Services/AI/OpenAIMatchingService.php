@@ -19,12 +19,15 @@ class OpenAIMatchingService
     private string $apiKey;
     private string $baseUrl;
 
+    private AIUsageGuard $usageGuard;
+
     public function __construct()
     {
         $this->pdo = Database::getInstance()->getConnection();
         $this->config = require __DIR__ . '/../../../config/openai.php';
         $this->apiKey = $this->config['api_key'];
         $this->baseUrl = $this->config['base_url'];
+        $this->usageGuard = new AIUsageGuard($this->pdo);
     }
 
     /**
@@ -106,24 +109,32 @@ class OpenAIMatchingService
     {
         $systemPrompt = $this->config['prompts']['matching_system'];
 
+        // Αμυντική ανάγνωση: τα ονόματα στηλών διαφέρουν ανά σχήμα, ποτέ fatal για ελλιπή δεδομένα
+        $experience = $driverData['experience_years'] ?? $driverData['years_experience'] ?? 'Άγνωστη';
+        $availability = $driverData['availability']
+            ?? $driverData['availability_status']
+            ?? ((isset($driverData['available_for_work']) && $driverData['available_for_work']) ? 'Διαθέσιμος/η' : 'Μη διαθέσιμος/η');
+        $salaryMin = $driverData['min_salary'] ?? $driverData['salary_min'] ?? '—';
+        $salaryMax = $driverData['max_salary'] ?? $driverData['salary_max'] ?? '—';
+
         return $systemPrompt . "\n\n" .
             "ΠΡΟΦΙΛ ΟΔΗΓΟΥ:\n" .
-            "- Όνομα: {$driverData['first_name']} {$driverData['last_name']}\n" .
-            "- Τοποθεσία: {$driverData['city']}, {$driverData['country']}\n" .
-            "- Εμπειρία: {$driverData['years_experience']} έτη\n" .
+            "- Όνομα: " . ($driverData['first_name'] ?? '') . " " . ($driverData['last_name'] ?? '') . "\n" .
+            "- Τοποθεσία: " . ($driverData['city'] ?? '—') . ", " . ($driverData['country'] ?? '') . "\n" .
+            "- Εμπειρία: {$experience} έτη\n" .
             "- Άδειες: " . implode(', ', $driverData['licenses'] ?? []) . "\n" .
             "- Πιστοποιήσεις: " . implode(', ', $driverData['certifications'] ?? []) . "\n" .
-            "- Διαθεσιμότητα: {$driverData['availability']}\n" .
-            "- Προτιμώμενος μισθός: {$driverData['min_salary']}-{$driverData['max_salary']} €\n\n" .
+            "- Διαθεσιμότητα: {$availability}\n" .
+            "- Προτιμώμενος μισθός: {$salaryMin}-{$salaryMax} €\n\n" .
 
             "ΘΕΣΗ ΕΡΓΑΣΙΑΣ:\n" .
-            "- Τίτλος: {$jobData['title']}\n" .
-            "- Εταιρία: {$jobData['company_name']}\n" .
-            "- Τοποθεσία: {$jobData['location']}\n" .
-            "- Τύπος οχήματος: {$jobData['vehicle_type']}\n" .
-            "- Μισθός: {$jobData['salary_min']}-{$jobData['salary_max']} €\n" .
-            "- Περιγραφή: {$jobData['description']}\n" .
-            "- Απαιτήσεις: {$jobData['requirements']}\n\n" .
+            "- Τίτλος: " . ($jobData['title'] ?? '') . "\n" .
+            "- Εταιρία: " . ($jobData['company_name'] ?? '') . "\n" .
+            "- Τοποθεσία: " . ($jobData['location'] ?? '—') . "\n" .
+            "- Τύπος οχήματος: " . ($jobData['vehicle_type'] ?? '—') . "\n" .
+            "- Μισθός: " . ($jobData['salary_min'] ?? '—') . "-" . ($jobData['salary_max'] ?? '—') . " €\n" .
+            "- Περιγραφή: " . ($jobData['description'] ?? '') . "\n" .
+            "- Απαιτήσεις: " . ($jobData['requirements'] ?? '—') . "\n\n" .
 
             "ΑΝΑΛΥΣΗ:\n" .
             "Χρησιμοποιώντας προηγμένη λογική, αναλύεις όλους τους παράγοντες και υπολογίζεις:\n" .
@@ -207,6 +218,26 @@ class OpenAIMatchingService
      */
     private function callOpenAI(string $prompt, string $model): array
     {
+        // Έλεγχος ορίων ΠΡΙΝ από κάθε κλήση — αν κοπεί, ο caller πέφτει στο rule-based fallback
+        if (empty($this->apiKey)) {
+            throw new Exception('OpenAI API key is not configured');
+        }
+        if (!$this->usageGuard->allow()) {
+            throw new Exception('AI usage limit reached — falling back to rule-based matching');
+        }
+
+        // Επιλογή provider από τη βάση (ai_configuration.ai_provider): openai | anthropic
+        $provider = strtolower((string) $this->usageGuard->getSetting('ai_provider', 'openai'));
+        if ($provider === 'anthropic') {
+            $anthropicModel = (string) $this->usageGuard->getSetting('anthropic_model', 'claude-haiku-4-5');
+            $client = new AnthropicClient((int) ($this->config['timeout'] ?? 60));
+            $jsonOnly = $prompt . "\n\nΚΡΙΣΙΜΟ: Απάντησε ΜΟΝΟ με ένα έγκυρο JSON object, χωρίς markdown, με ΑΚΡΙΒΩΣ αυτά τα κλειδιά:\n"
+                . '{"overall_score": <0-100>, "location_compatibility": <0-100>, "experience_match": <0-100>, "license_compatibility": <0-100>, "salary_alignment": <0-100>, "schedule_compatibility": <0-100>, "growth_potential": <0-100>, "risk_assessment": "Low|Medium|High", "recommendation_strength": "Weak|Moderate|Strong", "key_insights": ["..."], "improvement_suggestions": ["..."]}';
+            $decoded = $client->chat($jsonOnly, $anthropicModel, 1500);
+            $this->usageGuard->record($anthropicModel, $decoded);
+            return $decoded;
+        }
+
         $headers = [
             'Authorization: Bearer ' . $this->apiKey,
             'Content-Type: application/json'
@@ -241,6 +272,9 @@ class OpenAIMatchingService
         if (!isset($decoded['choices'][0]['message']['content'])) {
             throw new Exception("Invalid OpenAI response format");
         }
+
+        // Καταγραφή χρήσης/κόστους για τα ημερήσια όρια
+        $this->usageGuard->record($model, $decoded);
 
         return $decoded;
     }
@@ -328,11 +362,11 @@ class OpenAIMatchingService
         $stmt = $this->pdo->prepare("
             SELECT d.*, 
                    GROUP_CONCAT(DISTINCT dl.license_type) as licenses,
-                   GROUP_CONCAT(DISTINCT dc.certification_name) as certifications
+                   GROUP_CONCAT(DISTINCT dc.title) as certifications
             FROM drivers d
             LEFT JOIN driver_licenses dl ON d.id = dl.driver_id
             LEFT JOIN driver_certifications dc ON d.id = dc.driver_id
-            WHERE d.id = ? AND d.is_active = 1
+            WHERE d.id = ? AND d.is_verified = 1
             GROUP BY d.id
         ");
         $stmt->execute([$driverId]);

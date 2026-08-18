@@ -18,12 +18,15 @@ class EnterpriseAIService
     private $models;
     private $analytics;
 
+    private $usageGuard;
+
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
         $this->loadConfiguration();
         $this->loadModels();
         $this->analytics = [];
+        $this->usageGuard = new \Drivejob\Services\AI\AIUsageGuard($pdo);
     }
 
     /**
@@ -380,6 +383,10 @@ class EnterpriseAIService
             throw new Exception('OpenAI API key not configured');
         }
 
+        if (!$this->usageGuard->allow()) {
+            throw new Exception('AI usage limit reached');
+        }
+
         $ch = curl_init();
 
         $requestData = array_merge([
@@ -398,8 +405,8 @@ class EnterpriseAIService
                 'Authorization: Bearer ' . $apiKey
             ],
             CURLOPT_TIMEOUT => 60,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2
         ]);
 
         $response = curl_exec($ch);
@@ -421,6 +428,8 @@ class EnterpriseAIService
         if (!$decoded || !isset($decoded['choices'][0]['message']['content'])) {
             throw new Exception('Invalid OpenAI API response');
         }
+
+        $this->usageGuard->record($model['model_name'] ?? 'unknown', $decoded);
 
         return $decoded['choices'][0]['message']['content'];
     }
