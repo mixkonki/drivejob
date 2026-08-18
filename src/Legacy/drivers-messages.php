@@ -8,7 +8,7 @@ use Drivejob\Core\Database;
 
 // Check if user is logged in and is a driver
 if (!Session::has('user_id') || Session::get('user_role') !== 'driver') {
-    header('Location: ' . BASE_URL . 'login.php');
+    header('Location: ' . BASE_URL . 'auth/login');
     exit();
 }
 
@@ -147,7 +147,7 @@ $pageTitle = 'Τα Μηνύματά μου';
                     <div class="conversations-list">
                         <?php foreach ($conversations as $conversation): ?>
                             <div class="conversation-item <?php echo $conversation['unread_count'] > 0 ? 'unread' : ''; ?>"
-                                onclick="window.location.href='<?php echo BASE_URL; ?>drivers/conversation.php?id=<?php echo $conversation['id']; ?>'">
+                                onclick="window.location.href='<?php echo BASE_URL; ?>drivers/conversation?id=<?php echo $conversation['id']; ?>'">
                                 <div class="row align-items-center">
                                     <div class="col-auto">
                                         <?php if ($conversation['company_logo']): ?>

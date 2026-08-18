@@ -122,6 +122,8 @@ $router->group(['prefix' => 'drivers'], function ($router) {
 
     // Διαδρομές για το σύστημα αξιολόγησης οδηγών
     $router->get('/driver-rating', [DriversController::class, 'driverRating'])->name('drivers.driver-rating');
+    $router->get('/messages', [\Drivejob\Controllers\LegacyPagesController::class, 'driverMessages'])->name('drivers.messages');
+    $router->get('/conversation', [\Drivejob\Controllers\LegacyPagesController::class, 'driverConversation'])->name('drivers.conversation');
     $router->get('/refresh-rating', [DriversController::class, 'refreshRating'])->name('drivers.refresh-rating');
 
     // Διαδρομές για τα περιστατικά
@@ -151,6 +153,8 @@ $router->group(['prefix' => 'companies'], function ($router) {
     $router->post('/change-password', [CompaniesController::class, 'changePassword'])->name('companies.change-password');
     $router->get('/search', [CompaniesController::class, 'search'])->name('companies.search');
     $router->post('/add-review/{id}', [CompaniesController::class, 'addReview'])->name('companies.add-review');
+    $router->get('/messages', [\Drivejob\Controllers\LegacyPagesController::class, 'companyMessages'])->name('companies.messages');
+    $router->get('/conversation', [\Drivejob\Controllers\LegacyPagesController::class, 'companyConversation'])->name('companies.conversation');
 });
 
 // Σελίδες πληροφοριών (top-level: /about, /contact, /terms, /privacy, /faq)
@@ -251,5 +255,6 @@ $router->get("/uploads/{folder}/{filename}", [\Drivejob\Controllers\FileControll
 
 // Διαδρομή για 404 Not Found
 $router->notFound(function () {
+    http_response_code(404); // σωστό status για SEO/monitoring (πριν έστελνε 200)
     require_once ROOT_DIR . '/src/Views/errors/404.php';
 });

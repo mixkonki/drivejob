@@ -5,42 +5,39 @@ use Drivejob\Core\Session;
 use Drivejob\Core\Database;
 use Drivejob\Services\MessagingService;
 
-// Check if user is logged in and is a company
-if (!Session::has('user_id') || Session::get('user_role') !== 'company') {
-    header('Location: ' . BASE_URL . 'login.php');
+// Check if user is logged in and is a driver
+if (!Session::has('user_id') || Session::get('user_role') !== 'driver') {
+    header('Location: ' . BASE_URL . 'auth/login');
     exit();
 }
 
-$companyId = Session::get('user_id');
+$driverId = Session::get('user_id');
 $conversationId = $_GET['id'] ?? null;
 
 if (!$conversationId) {
-    header('Location: ' . BASE_URL . 'companies/messages');
+    header('Location: ' . BASE_URL . 'drivers/messages');
     exit();
 }
 
 $pdo = Database::getInstance()->getConnection();
 
-// Verify conversation belongs to company
+// Verify conversation belongs to driver
 $stmt = $pdo->prepare("
     SELECT 
         c.*,
-        d.first_name,
-        d.last_name,
-        d.profile_image,
-        d.email as driver_email,
-        d.phone as driver_phone,
+        comp.company_name,
+        comp.company_logo,
         j.title as job_title
     FROM conversations c
-    JOIN drivers d ON c.driver_id = d.id
+    JOIN companies comp ON c.company_id = comp.id
     JOIN job_listings j ON c.job_id = j.id
-    WHERE c.id = ? AND c.company_id = ?
+    WHERE c.id = ? AND c.driver_id = ?
 ");
-$stmt->execute([$conversationId, $companyId]);
+$stmt->execute([$conversationId, $driverId]);
 $conversation = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$conversation) {
-    header('Location: ' . BASE_URL . 'companies/messages');
+    header('Location: ' . BASE_URL . 'drivers/messages');
     exit();
 }
 
@@ -49,7 +46,7 @@ $stmt = $pdo->prepare("
     UPDATE messages 
     SET is_read = 1 
     WHERE conversation_id = ? 
-    AND sender_type = 'driver' 
+    AND sender_type = 'company' 
     AND is_read = 0
 ");
 $stmt->execute([$conversationId]);
@@ -66,7 +63,7 @@ $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // Handle message submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     $messagingService = new MessagingService();
-    $messagingService->sendMessage($conversationId, 'company', $companyId, $_POST['message']);
+    $messagingService->sendMessage($conversationId, 'driver', $driverId, $_POST['message']);
 
     // Redirect to prevent form resubmission
     header('Location: ' . $_SERVER['REQUEST_URI']);
@@ -156,34 +153,17 @@ $pageTitle = $conversation['subject'];
             border: 1px solid #dee2e6;
         }
 
-        .driver-info {
+        .company-info {
             display: flex;
             align-items: center;
             gap: 15px;
         }
 
-        .driver-image-small {
+        .company-logo-small {
             width: 50px;
             height: 50px;
             object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .driver-details {
-            background-color: #e9ecef;
-            padding: 15px;
             border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .driver-details h6 {
-            margin-bottom: 10px;
-            color: #495057;
-        }
-
-        .driver-details p {
-            margin-bottom: 5px;
-            font-size: 14px;
         }
     </style>
 </head>
@@ -194,51 +174,33 @@ $pageTitle = $conversation['subject'];
     <div class="container mt-4">
         <div class="conversation-header">
             <div class="d-flex justify-content-between align-items-center">
-                <div class="driver-info">
-                    <?php if ($conversation['profile_image']): ?>
-                        <img src="<?php echo BASE_URL . $conversation['profile_image']; ?>"
-                            alt="<?php echo htmlspecialchars($conversation['first_name'] . ' ' . $conversation['last_name']); ?>"
-                            class="driver-image-small">
+                <div class="company-info">
+                    <?php if ($conversation['company_logo']): ?>
+                        <img src="<?php echo BASE_URL . $conversation['company_logo']; ?>"
+                            alt="<?php echo htmlspecialchars($conversation['company_name']); ?>"
+                            class="company-logo-small">
                     <?php else: ?>
-                        <div class="driver-image-small bg-secondary d-flex align-items-center justify-content-center text-white">
-                            <i class="fas fa-user"></i>
+                        <div class="company-logo-small bg-secondary d-flex align-items-center justify-content-center text-white">
+                            <i class="fas fa-building"></i>
                         </div>
                     <?php endif; ?>
                     <div>
                         <h4 class="mb-0"><?php echo htmlspecialchars($conversation['subject']); ?></h4>
                         <p class="mb-0 text-muted">
-                            <?php echo htmlspecialchars($conversation['first_name'] . ' ' . $conversation['last_name']); ?> -
+                            <?php echo htmlspecialchars($conversation['company_name']); ?> -
                             <?php echo htmlspecialchars($conversation['job_title']); ?>
                         </p>
                     </div>
                 </div>
-                <a href="<?php echo BASE_URL; ?>companies/messages" class="btn btn-secondary">
+                <a href="<?php echo BASE_URL; ?>drivers/messages" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Πίσω
                 </a>
-            </div>
-
-            <!-- Driver contact details -->
-            <div class="driver-details">
-                <h6><i class="fas fa-user-circle"></i> Στοιχεία Οδηγού</h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><i class="fas fa-envelope"></i> <strong>Email:</strong> <?php echo htmlspecialchars($conversation['driver_email']); ?></p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><i class="fas fa-phone"></i> <strong>Τηλέφωνο:</strong> <?php echo htmlspecialchars($conversation['driver_phone']); ?></p>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <a href="<?php echo BASE_URL; ?>drivers/profile/<?php echo $conversation['driver_id']; ?>" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-user"></i> Προβολή Προφίλ
-                    </a>
-                </div>
             </div>
         </div>
 
         <div class="messages-container">
             <?php foreach ($messages as $message): ?>
-                <div class="message <?php echo $message['sender_type'] === 'company' ? 'sent' : 'received'; ?>">
+                <div class="message <?php echo $message['sender_type'] === 'driver' ? 'sent' : 'received'; ?>">
                     <div class="message-bubble">
                         <div class="message-content">
                             <?php echo nl2br(htmlspecialchars($message['message'])); ?>
@@ -262,17 +224,9 @@ $pageTitle = $conversation['subject'];
                         <textarea class="form-control" name="message" rows="4"
                             placeholder="Γράψτε το μήνυμά σας..." required></textarea>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i> Αποστολή
-                        </button>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="closeConversation">
-                            <label class="form-check-label" for="closeConversation">
-                                Κλείσιμο συνομιλίας μετά την αποστολή
-                            </label>
-                        </div>
-                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Αποστολή
+                    </button>
                 </form>
             </div>
         <?php else: ?>
