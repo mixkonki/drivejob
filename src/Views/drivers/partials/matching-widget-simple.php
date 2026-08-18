@@ -18,8 +18,8 @@ try {
     require_once ROOT_DIR . '/src/Services/MatchingService.php';
 
     $pdo = \Drivejob\Core\Database::getInstance()->getConnection();
-    $matchingService = new \Drivejob\Services\MatchingService($pdo);
-    $result = $matchingService->findDriverMatches($driverId, 1, 3);
+    $matchingService = new \Drivejob\Services\Matching\MatchingEngine($pdo);
+    $result = $matchingService->driverMatches($driverId, 1, 3);
 
     $matches = $result['results'] ?? [];
 } catch (Exception $e) {

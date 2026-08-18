@@ -9,7 +9,7 @@ require_once __DIR__ . '/../../../../src/bootstrap.php';
 
 use Drivejob\Core\Database;
 use Drivejob\Core\Session;
-use Drivejob\Services\EnhancedMatchingService;
+use Drivejob\Services\Matching\MatchingEngine;
 
 // Set JSON header
 header('Content-Type: application/json');
@@ -33,10 +33,10 @@ try {
     $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 20;
     $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 
-    $enhancedService = new EnhancedMatchingService();
+    $enhancedService = new MatchingEngine();
 
     // Get enhanced matches for driver
-    $enhancedMatches = $enhancedService->getTopMatchesForDriver($driverId, $limit);
+    $enhancedMatches = $enhancedService->topMatchesForDriver($driverId, $limit);
 
     // Format response with realistic factors
     $formattedMatches = [];

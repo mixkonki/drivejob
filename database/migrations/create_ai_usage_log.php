@@ -30,6 +30,19 @@ $pdo->exec("
 ");
 echo "  ✅ Πίνακας ai_usage_log έτοιμος.\n";
 
+// 1β. Πίνακας μετρικών matching (τον περιμένουν τα admin KPIs & ο worker)
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS matching_metrics (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        job_id INT NOT NULL,
+        duration_ms INT NOT NULL DEFAULT 0,
+        cache_hit TINYINT(1) NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_created (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+");
+echo "  ✅ Πίνακας matching_metrics έτοιμος.\n";
+
 // 2. Προεπιλογές ορίων στο ai_configuration (αν δεν υπάρχουν ήδη)
 $defaults = [
     'ai_enabled' => 'true',

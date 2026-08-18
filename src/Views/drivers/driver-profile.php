@@ -1399,8 +1399,8 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     // Χρήση του EnhancedMatchingService για να πάρουμε τα matches
                     try {
                         require_once ROOT_DIR . '/src/Services/EnhancedMatchingService.php';
-                        $enhancedService = new \Drivejob\Services\EnhancedMatchingService();
-                        $enhancedMatches = $enhancedService->getTopMatchesForDriver($_SESSION['user_id'], 10);
+                        $enhancedService = new \Drivejob\Services\Matching\MatchingEngine();
+                        $enhancedMatches = $enhancedService->topMatchesForDriver($_SESSION['user_id'], 10);
 
                         // Convert to expected format
                         $matches = [];

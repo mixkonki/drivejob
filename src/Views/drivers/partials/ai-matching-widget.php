@@ -9,10 +9,10 @@
 // Χρήση του EnhancedMatchingService για πραγματικό AI matching
 try {
     require_once ROOT_DIR . '/src/Services/EnhancedMatchingService.php';
-    $enhancedService = new \Drivejob\Services\EnhancedMatchingService();
+    $enhancedService = new \Drivejob\Services\Matching\MatchingEngine();
 
     // Λήψη top matches
-    $matches = $enhancedService->getTopMatchesForDriver($_SESSION['user_id'], 5);
+    $matches = $enhancedService->topMatchesForDriver($_SESSION['user_id'], 5);
 
     // Format για AI widget
     $aiMatches = [];

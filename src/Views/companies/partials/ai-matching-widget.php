@@ -10,11 +10,11 @@
 try {
     require_once ROOT_DIR . '/src/Services/AIMatchingService.php';
     $pdo = \Drivejob\Core\Database::getInstance()->getConnection();
-    $aiMatchingService = new \Drivejob\Services\AIMatchingService($pdo);
+    $aiMatchingService = new \Drivejob\Services\Matching\MatchingEngine($pdo);
 
     // Για εταιρείες, βρίσκουμε οδηγούς που ταιριάζουν με τις ανοιχτές θέσεις τους
     $companyId = $_SESSION['user_id'];
-    $aiMatches = $aiMatchingService->findCompanyDriverMatches($companyId, 1, 5);
+    $aiMatches = $aiMatchingService->companyDriverMatches($companyId, 1, 5);
 } catch (Exception $e) {
     error_log("AI Matching Widget Error: " . $e->getMessage());
     $aiMatches = ['matches' => [], 'total' => 0];
