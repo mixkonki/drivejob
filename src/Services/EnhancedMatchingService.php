@@ -87,8 +87,8 @@ class EnhancedMatchingService implements MatchingServiceInterface
             // να μπλοκάρει web requests (αποθήκευση προφίλ κ.λπ.). Στο web τρέχει
             // ο γρήγορος rule-based και το cron εμπλουτίζει τα σκορ στο παρασκήνιο.
             try {
-                if (PHP_SAPI !== 'cli') {
-                    throw new \Exception('AI matching deferred to background (web request)');
+                if (PHP_SAPI !== 'cli' || defined('DRIVEJOB_DISABLE_AI')) {
+                    throw new \Exception('AI matching deferred (web request or bulk mode)');
                 }
                 $openAIService = new \Drivejob\Services\AI\OpenAIMatchingService();
                 $aiResult = $openAIService->calculateAdvancedMatchScore($driverId, $jobListingId);

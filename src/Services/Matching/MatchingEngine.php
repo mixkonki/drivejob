@@ -101,6 +101,34 @@ class MatchingEngine
         }
     }
 
+    /**
+     * Αναλυτικό ταίριασμα οδηγού-αγγελίας (breakdown σκορ, από αποθηκευμένα/υπολογισμένα).
+     */
+    public function matchDetails(int $driverId, int $jobId): array
+    {
+        try {
+            $svc = new \Drivejob\Services\AI\MatchingService();
+            return $svc->calculateMatch($driverId, $jobId);
+        } catch (\Throwable $e) {
+            Logger::error('MatchingEngine::matchDetails: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Επανυπολογισμός όλων των matches μιας αγγελίας. Επιστρέφει πλήθος.
+     */
+    public function recomputeJobMatches(int $jobId): int
+    {
+        try {
+            $svc = new \Drivejob\Services\AI\MatchingService();
+            return (int) $svc->calculateMatchesForJob($jobId);
+        } catch (\Throwable $e) {
+            Logger::error('MatchingEngine::recomputeJobMatches: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
     // ---- lazy internals -------------------------------------------------
 
     private function enhanced(): \Drivejob\Services\EnhancedMatchingService

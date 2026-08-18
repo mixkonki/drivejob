@@ -5,7 +5,7 @@ namespace Drivejob\Controllers\Api;
 use Drivejob\Core\Controller;
 use Drivejob\Core\JsonResponse;
 use Drivejob\Core\Session;
-use Drivejob\Services\AI\MatchingService;
+use Drivejob\Services\Matching\MatchingEngine;
 use Drivejob\Services\AI\MatchingCacheService;
 use Drivejob\Middleware\AuthenticationMiddleware as Auth;
 
@@ -16,7 +16,7 @@ class MatchingController extends Controller
 
     public function __construct()
     {
-        $this->matchingService = new MatchingService();
+        $this->matchingService = new MatchingEngine();
         $this->cacheService = new MatchingCacheService();
     }
 
@@ -249,7 +249,7 @@ class MatchingController extends Controller
         }
 
         try {
-            $result = $this->matchingService->calculateMatch($driverId, $jobId);
+            $result = $this->matchingService->matchDetails($driverId, $jobId);
 
             if ($result['success']) {
                 return JsonResponse::success($result);
@@ -296,7 +296,7 @@ class MatchingController extends Controller
         }
 
         try {
-            $result = $this->matchingService->calculateMatch($driverId, $jobId);
+            $result = $this->matchingService->matchDetails($driverId, $jobId);
 
             if (!$result['success']) {
                 return JsonResponse::error($result['error'], 500);
@@ -350,7 +350,7 @@ class MatchingController extends Controller
 
             foreach ($jobs as $jobId) {
                 // Υπολογισμός matches για κάθε αγγελία
-                $matches = $this->matchingService->calculateMatchesForJob($jobId);
+                $matches = $this->matchingService->recomputeJobMatches($jobId);
                 $totalMatches += $matches;
                 $processedJobs++;
 

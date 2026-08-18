@@ -8,7 +8,6 @@ if (!isset($router)) {
 use Drivejob\Core\Router;
 use Drivejob\Controllers\HomeController;
 use Drivejob\Controllers\AuthController;
-use Drivejob\Controllers\MatchingController;
 
 // Controllers με Repository pattern
 use Drivejob\Controllers\Driver\DriversController;
@@ -166,14 +165,8 @@ $router->get('/privacy', [HomeController::class, 'privacy'])->name('info.privacy
 $router->get('/faq', [HomeController::class, 'faq'])->name('info.faq');
 
 // Ομαδοποίηση διαδρομών για τα ταιριάσματα
-$router->group(['prefix' => 'matching'], function ($router) {
-    $router->get('/driver-matches', [MatchingController::class, 'driverMatches'])->name('matching.driver-matches');
-    $router->get('/company-matches', [MatchingController::class, 'companyMatches'])->name('matching.company-matches');
-    $router->get('/job-listing-matches/{id}', [MatchingController::class, 'jobListingMatches'])->name('matching.job-listing-matches');
-    $router->get('/preferences', [MatchingController::class, 'preferences'])->name('matching.preferences');
-    $router->post('/save-preferences', [MatchingController::class, 'savePreferences'])->name('matching.save-preferences');
-    $router->post('/log-action', [MatchingController::class, 'logAction'])->name('matching.log-action');
-});
+// Το group /matching/* αποσύρθηκε (Πακέτο 4): καλούσε ανύπαρκτες μεθόδους από την εποχή WAMP.
+// Οι λειτουργίες ζουν στα widgets προφίλ και στη σελίδα job-matches.
 
 // Ομαδοποίηση διαδρομών για τις αιτήσεις εργασίας
 $router->group(['prefix' => 'job-applications'], function ($router) {
