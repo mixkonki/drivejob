@@ -15,7 +15,7 @@ use Drivejob\Repositories\CompaniesRepository;
 return function (Container $container) {
     // Καταχώρηση του PDO
     $container->set('pdo', function () {
-        return require_once ROOT_DIR . '/config/database.php';
+        return require ROOT_DIR . '/config/database.php';
     });
 
     // Καταχώρηση των repositories
