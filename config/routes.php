@@ -175,6 +175,11 @@ $router->group(['prefix' => 'companies'], function ($router) {
 // Health check για monitors/πλατφόρμες (Πακέτο 9)
 $router->get('/health', [\Drivejob\Controllers\HealthController::class, 'index'])->name('health');
 
+// Εκτέλεση προγραμματισμένων εργασιών μέσω HTTP (εφεδρεία όταν το cron του
+// παρόχου δεν λειτουργεί). Προστατεύεται από το CRON_TOKEN του .env — χωρίς
+// αυτό η διαδρομή απαντά 404.
+$router->get('/cron/{task}', [\Drivejob\Controllers\CronController::class, 'run'])->name('cron.run');
+
 // GDPR — δικαιώματα υποκειμένων (Πακέτο 7)
 $router->get('/gdpr/export', [\Drivejob\Controllers\GdprController::class, 'export'])->name('gdpr.export');
 $router->get('/gdpr/delete', [\Drivejob\Controllers\GdprController::class, 'deleteConfirm'])->name('gdpr.delete');

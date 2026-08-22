@@ -57,4 +57,7 @@ phpunit.cache
 
 # Αρχεία χρηστών — ΠΟΤΕ στο git
 /storage/uploads/
+
+# Κλειδώματα προγραμματισμένων εργασιών
+/storage/locks/
 public/img/Screenshot*
