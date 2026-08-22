@@ -172,6 +172,8 @@ $router->group(['prefix' => 'companies'], function ($router) {
     $router->post('/conversation', [\Drivejob\Controllers\MessagesController::class, 'companyConversation']);
 });
 
+$router->get('/robots.txt', [\Drivejob\Controllers\RobotsController::class, 'index'])->name('robots');
+
 // Health check για monitors/πλατφόρμες (Πακέτο 9)
 $router->get('/health', [\Drivejob\Controllers\HealthController::class, 'index'])->name('health');
 

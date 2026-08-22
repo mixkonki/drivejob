@@ -1,3 +1,11 @@
+<?php
+// Όσο το ALLOW_INDEXING είναι false, καμία σελίδα δεν ευρετηριάζεται. Η
+// κεφαλίδα καλύπτει και μη-HTML απαντήσεις (PDF, JSON), που το meta tag δεν
+// μπορεί να φτάσει.
+if (defined('ALLOW_INDEXING') && !ALLOW_INDEXING && !headers_sent()) {
+    header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet');
+}
+?>
 <!DOCTYPE html>
 <html lang="el">
 

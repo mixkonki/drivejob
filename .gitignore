@@ -58,6 +58,15 @@ phpunit.cache
 # Αρχεία χρηστών — ΠΟΤΕ στο git
 /storage/uploads/
 
+# Αντίγραφα ασφαλείας βάσης — ΠΟΤΕ στο git.
+# Περιέχουν ολόκληρη τη βάση παραγωγής: emails, τηλέφωνα, hash συνθηματικών.
+# Το παλιό μοτίβο «*.sql» ΔΕΝ έπιανε τα .sql.gz — ένα λάθος «git add -A»
+# στον διακομιστή τα είχε ήδη προσθέσει σε commit.
+/storage/backups/
+*.sql.gz
+*.sql.bz2
+*.dump
+
 # Κλειδώματα προγραμματισμένων εργασιών
 /storage/locks/
 public/img/Screenshot*

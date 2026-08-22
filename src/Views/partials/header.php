@@ -10,6 +10,14 @@ header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
 
+// Όσο το ALLOW_INDEXING είναι false, καμία σελίδα δεν ευρετηριάζεται. Η
+// κεφαλίδα καλύπτει και μη-HTML απαντήσεις (PDF, JSON), που το meta tag δεν
+// μπορεί να φτάσει.
+if (defined('ALLOW_INDEXING') && !ALLOW_INDEXING && !headers_sent()) {
+    header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet');
+}
+
+
 
 // Βοηθητική συνάρτηση για να ελέγχουμε την τρέχουσα σελίδα
 if (!function_exists('isCurrentPage')) {
@@ -39,6 +47,9 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
     <meta name="description" content="DriveJob - Ψηφιακή Πλατφόρμα Πρόσληψης Οδηγών και Επιχειρήσεων.">
     <meta name="keywords" content="εργασία, οδηγοί, εταιρείες, πρόσληψη, πλατφόρμα">
     <meta name="author" content="DriveJob">
+<?php if (defined('ALLOW_INDEXING') && !ALLOW_INDEXING): ?>
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<?php endif; ?>
     <meta name="csrf-token" content="<?php echo \Drivejob\Core\CSRF::getCurrentToken(); ?>">
 
     <!-- PWA Meta Tags -->

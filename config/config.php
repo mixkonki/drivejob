@@ -41,6 +41,18 @@ if ($appUrl !== '') {
 }
 
 // Είναι το τρέχον αίτημα ασφαλές; (για cookies συνεδρίας)
+/**
+ * Ορατότητα στις μηχανές αναζήτησης.
+ *
+ * Όσο το site δεν έχει ανακοινωθεί, δεν πρέπει να ευρετηριάζεται. Η προεπιλογή
+ * είναι «όχι» — η ευρετηρίαση ανοίγει ρητά με ALLOW_INDEXING=true στο .env.
+ * Έτσι μια νέα εγκατάσταση δεν βρίσκεται ποτέ κατά λάθος στο Google.
+ */
+defined('ALLOW_INDEXING') or define(
+    'ALLOW_INDEXING',
+    filter_var($_ENV['ALLOW_INDEXING'] ?? getenv('ALLOW_INDEXING') ?: 'false', FILTER_VALIDATE_BOOLEAN)
+);
+
 define('IS_HTTPS', strpos(BASE_URL, 'https://') === 0);
 
 define('SESSION_NAMESPACE', 'drivejob'); // Namespace για τη συνεδρία
