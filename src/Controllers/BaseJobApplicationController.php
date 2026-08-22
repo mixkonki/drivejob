@@ -101,6 +101,11 @@ class BaseJobApplicationController extends BaseController
                 exit;
             }
 
+            // Ανάκτηση της αγγελίας — από εκεί προκύπτει η εταιρεία,
+            // ο πίνακας job_applications δεν έχει στήλη company_id.
+            $listing = $this->jobListingRepository->find($application['job_listing_id']);
+            $listingCompanyId = $listing['company_id'] ?? null;
+
             // Έλεγχος αν ο χρήστης έχει δικαίωμα προβολής της αίτησης
             $userRole = Session::get('user_role');
             $userId = Session::get('user_id');
@@ -108,7 +113,7 @@ class BaseJobApplicationController extends BaseController
             $hasAccess = false;
             if ($userRole === 'driver' && $application['driver_id'] == $userId) {
                 $hasAccess = true;
-            } else if ($userRole === 'company' && $application['company_id'] == $userId) {
+            } else if ($userRole === 'company' && $listingCompanyId !== null && $listingCompanyId == $userId) {
                 $hasAccess = true;
             }
 
@@ -118,14 +123,13 @@ class BaseJobApplicationController extends BaseController
                 exit;
             }
 
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($application['job_listing_id']);
-
             // Ανάκτηση του οδηγού
             $driver = $this->driversRepository->find($application['driver_id']);
 
             // Ανάκτηση της εταιρείας
-            $company = $this->companiesRepository->find($application['company_id']);
+            $company = $listingCompanyId !== null
+                ? $this->companiesRepository->find($listingCompanyId)
+                : null;
 
             // Φόρτωση του view
             include ROOT_DIR . '/src/Views/job-applications/view.php';
@@ -201,10 +205,34 @@ class BaseJobApplicationController extends BaseController
 
         if ($userRole === 'driver' && $application['driver_id'] == $userId) {
             return true;
-        } else if ($userRole === 'company' && $application['company_id'] == $userId) {
-            return true;
+        }
+
+        if ($userRole === 'company') {
+            $companyId = $this->companyIdOfApplication($application);
+
+            return $companyId !== null && $companyId == $userId;
         }
 
         return false;
+    }
+
+    /**
+     * Επιστρέφει το ID της εταιρείας στην οποία ανήκει μια αίτηση.
+     *
+     * Ο πίνακας job_applications δεν έχει στήλη company_id — η εταιρεία
+     * προκύπτει μόνο μέσω της αγγελίας (job_listings.company_id).
+     *
+     * @param array $application Η αίτηση
+     * @return int|null Το ID της εταιρείας ή null αν η αγγελία δεν υπάρχει
+     */
+    protected function companyIdOfApplication($application): ?int
+    {
+        if (empty($application['job_listing_id'])) {
+            return null;
+        }
+
+        $listing = $this->jobListingRepository->find($application['job_listing_id']);
+
+        return isset($listing['company_id']) ? (int) $listing['company_id'] : null;
     }
 }

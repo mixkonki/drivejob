@@ -15,6 +15,7 @@ use Drivejob\Controllers\Driver\JobApplicationController;
 use Drivejob\Controllers\Driver\JobOfferController;
 use Drivejob\Controllers\Driver\DriverResumeController;
 use Drivejob\Controllers\Company\CompaniesController;
+use Drivejob\Controllers\Company\JobApplicationController as CompanyJobApplicationController;
 use Drivejob\Controllers\UnifiedJobListingController;
 
 // Αρχική σελίδα
@@ -203,8 +204,15 @@ $router->get('/faq', [HomeController::class, 'faq'])->name('info.faq');
 $router->group(['prefix' => 'job-applications'], function ($router) {
     $router->post('/apply/{id}', [JobApplicationController::class, 'apply'])->name('job-applications.apply');
     $router->get('/my-applications', [JobApplicationController::class, 'myApplications'])->name('job-applications.my-applications');
-    $router->get('/view/{id}', [JobApplicationController::class, 'view'])->name('job-applications.view');
+    // Η μέθοδος λέγεται viewApplication — το 'view' δεν υπήρχε ποτέ.
+    $router->get('/view/{id}', [JobApplicationController::class, 'viewApplication'])->name('job-applications.view');
     $router->post('/withdraw/{id}', [JobApplicationController::class, 'withdraw'])->name('job-applications.withdraw');
+
+    // Πλευρά εταιρείας — οι μέθοδοι υπήρχαν αλλά καμία διαδρομή δεν έδειχνε σε αυτές.
+    $router->get('/company-applications', [CompanyJobApplicationController::class, 'myApplications'])->name('job-applications.company');
+    $router->get('/listing/{id}', [CompanyJobApplicationController::class, 'listingApplications'])->name('job-applications.listing');
+    $router->post('/accept/{id}', [CompanyJobApplicationController::class, 'accept'])->name('job-applications.accept');
+    $router->post('/reject/{id}', [CompanyJobApplicationController::class, 'reject'])->name('job-applications.reject');
 });
 
 // Ομαδοποίηση διαδρομών για τις προσφορές εργασίας

@@ -318,6 +318,20 @@ class JobApplicationController extends BaseJobApplicationController
                 exit;
             }
 
+            // Η αγγελία πρώτα: ο πίνακας job_applications ΔΕΝ έχει στήλη
+            // company_id — η εταιρεία προκύπτει αποκλειστικά μέσω της αγγελίας.
+            // Ο προηγούμενος έλεγχος διάβαζε $application['company_id'], που
+            // ήταν πάντα undefined: καμία εταιρεία δεν μπορούσε να δει αίτηση.
+            $listing = $this->jobListingRepository->find($application['job_listing_id']);
+
+            if (!$listing) {
+                Session::set('error_message', 'Η αγγελία της αίτησης δεν βρέθηκε');
+                header('Location: ' . BASE_URL . 'job-applications/my-applications');
+                exit;
+            }
+
+            $companyId = $listing['company_id'] ?? null;
+
             // Έλεγχος αν ο χρήστης έχει δικαίωμα προβολής της αίτησης
             $userRole = Session::get('user_role');
             $userId = Session::get('user_id');
@@ -325,7 +339,7 @@ class JobApplicationController extends BaseJobApplicationController
             $hasAccess = false;
             if ($userRole === 'driver' && $application['driver_id'] == $userId) {
                 $hasAccess = true;
-            } else if ($userRole === 'company' && $application['company_id'] == $userId) {
+            } elseif ($userRole === 'company' && $companyId !== null && $companyId == $userId) {
                 $hasAccess = true;
             }
 
@@ -335,14 +349,11 @@ class JobApplicationController extends BaseJobApplicationController
                 exit;
             }
 
-            // Ανάκτηση της αγγελίας
-            $listing = $this->jobListingRepository->find($application['job_listing_id']);
-
             // Ανάκτηση του οδηγού
             $driver = $this->driversRepository->find($application['driver_id']);
 
             // Ανάκτηση της εταιρείας
-            $company = $this->companiesRepository->find($application['company_id']);
+            $company = $companyId !== null ? $this->companiesRepository->find($companyId) : null;
 
             // Φόρτωση του view
             include ROOT_DIR . '/src/Views/job-applications/view.php';

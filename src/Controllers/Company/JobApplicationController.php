@@ -208,14 +208,14 @@ class JobApplicationController extends BaseJobApplicationController
         if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job application accept');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-applications/my-applications');
+            header('Location: ' . BASE_URL . 'job-applications/company-applications');
             exit();
         }
 
         // Έλεγχος αν το ID είναι έγκυρο
         if (!$id || !is_numeric($id)) {
             Session::set('error_message', 'Μη έγκυρο αναγνωριστικό αίτησης');
-            header('Location: ' . BASE_URL . 'job-applications/my-applications');
+            header('Location: ' . BASE_URL . 'job-applications/company-applications');
             exit;
         }
 
@@ -225,27 +225,31 @@ class JobApplicationController extends BaseJobApplicationController
 
             if (!$application) {
                 Session::set('error_message', 'Η αίτηση δεν βρέθηκε');
-                header('Location: ' . BASE_URL . 'job-applications/my-applications');
+                header('Location: ' . BASE_URL . 'job-applications/company-applications');
                 exit;
             }
 
-            // Έλεγχος αν ο χρήστης είναι ο ιδιοκτήτης της αγγελίας
+            // Έλεγχος αν ο χρήστης είναι ο ιδιοκτήτης της αγγελίας.
+            // Η εταιρεία προκύπτει μέσω της αγγελίας — δεν υπάρχει
+            // στήλη company_id στον πίνακα job_applications.
             $companyId = Session::get('user_id');
-            if ($application['company_id'] != $companyId) {
+            $ownerCompanyId = $this->companyIdOfApplication($application);
+            if ($ownerCompanyId === null || $ownerCompanyId != $companyId) {
                 Session::set('error_message', 'Δεν έχετε δικαίωμα αποδοχής αυτής της αίτησης');
-                header('Location: ' . BASE_URL . 'job-applications/my-applications');
+                header('Location: ' . BASE_URL . 'job-applications/company-applications');
                 exit;
             }
 
             // Έλεγχος αν η αίτηση μπορεί να γίνει αποδεκτή
             if ($application['status'] !== 'pending') {
                 Session::set('error_message', 'Δεν μπορείτε να αποδεχτείτε αυτή την αίτηση');
-                header('Location: ' . BASE_URL . 'job-applications/viewApplication/' . $id);
+                header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
                 exit;
             }
 
             // Ενημέρωση της κατάστασης της αίτησης
-            $updateResult = $this->updateApplicationStatus($id, 'accepted');
+            // 'accepted' δεν υπάρχει στο enum της στήλης — το 'hired' εκφράζει το ίδιο.
+            $updateResult = $this->updateApplicationStatus($id, 'hired');
 
             if ($updateResult) {
                 Logger::info('Job application accepted', [
@@ -254,7 +258,7 @@ class JobApplicationController extends BaseJobApplicationController
                 ]);
 
                 Session::set('success_message', 'Η αίτηση έγινε αποδεκτή με επιτυχία.');
-                header('Location: ' . BASE_URL . 'job-applications/viewApplication/' . $id);
+                header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
                 exit();
             } else {
                 Logger::error('Job application accept failed', [
@@ -263,7 +267,7 @@ class JobApplicationController extends BaseJobApplicationController
                 ]);
 
                 Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την αποδοχή της αίτησης. Παρακαλώ δοκιμάστε ξανά.');
-                header('Location: ' . BASE_URL . 'job-applications/viewApplication/' . $id);
+                header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
                 exit();
             }
         } catch (DatabaseException $e) {
@@ -275,7 +279,7 @@ class JobApplicationController extends BaseJobApplicationController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-applications/viewApplication/' . $id);
+            header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in job application accept', [
@@ -286,7 +290,7 @@ class JobApplicationController extends BaseJobApplicationController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-applications/viewApplication/' . $id);
+            header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
             exit();
         }
     }
@@ -311,14 +315,14 @@ class JobApplicationController extends BaseJobApplicationController
         if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job application reject');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-applications/my-applications');
+            header('Location: ' . BASE_URL . 'job-applications/company-applications');
             exit();
         }
 
         // Έλεγχος αν το ID είναι έγκυρο
         if (!$id || !is_numeric($id)) {
             Session::set('error_message', 'Μη έγκυρο αναγνωριστικό αίτησης');
-            header('Location: ' . BASE_URL . 'job-applications/my-applications');
+            header('Location: ' . BASE_URL . 'job-applications/company-applications');
             exit;
         }
 
@@ -328,22 +332,25 @@ class JobApplicationController extends BaseJobApplicationController
 
             if (!$application) {
                 Session::set('error_message', 'Η αίτηση δεν βρέθηκε');
-                header('Location: ' . BASE_URL . 'job-applications/my-applications');
+                header('Location: ' . BASE_URL . 'job-applications/company-applications');
                 exit;
             }
 
-            // Έλεγχος αν ο χρήστης είναι ο ιδιοκτήτης της αγγελίας
+            // Έλεγχος αν ο χρήστης είναι ο ιδιοκτήτης της αγγελίας.
+            // Η εταιρεία προκύπτει μέσω της αγγελίας — δεν υπάρχει
+            // στήλη company_id στον πίνακα job_applications.
             $companyId = Session::get('user_id');
-            if ($application['company_id'] != $companyId) {
+            $ownerCompanyId = $this->companyIdOfApplication($application);
+            if ($ownerCompanyId === null || $ownerCompanyId != $companyId) {
                 Session::set('error_message', 'Δεν έχετε δικαίωμα απόρριψης αυτής της αίτησης');
-                header('Location: ' . BASE_URL . 'job-applications/my-applications');
+                header('Location: ' . BASE_URL . 'job-applications/company-applications');
                 exit;
             }
 
             // Έλεγχος αν η αίτηση μπορεί να απορριφθεί
             if ($application['status'] !== 'pending') {
                 Session::set('error_message', 'Δεν μπορείτε να απορρίψετε αυτή την αίτηση');
-                header('Location: ' . BASE_URL . 'job-applications/viewApplication/' . $id);
+                header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
                 exit;
             }
 
@@ -357,7 +364,7 @@ class JobApplicationController extends BaseJobApplicationController
                 ]);
 
                 Session::set('success_message', 'Η αίτηση απορρίφθηκε με επιτυχία.');
-                header('Location: ' . BASE_URL . 'job-applications/viewApplication/' . $id);
+                header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
                 exit();
             } else {
                 Logger::error('Job application reject failed', [
@@ -366,7 +373,7 @@ class JobApplicationController extends BaseJobApplicationController
                 ]);
 
                 Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την απόρριψη της αίτησης. Παρακαλώ δοκιμάστε ξανά.');
-                header('Location: ' . BASE_URL . 'job-applications/viewApplication/' . $id);
+                header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
                 exit();
             }
         } catch (DatabaseException $e) {
@@ -378,7 +385,7 @@ class JobApplicationController extends BaseJobApplicationController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-applications/viewApplication/' . $id);
+            header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in job application reject', [
@@ -389,7 +396,7 @@ class JobApplicationController extends BaseJobApplicationController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-applications/viewApplication/' . $id);
+            header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
             exit();
         }
     }

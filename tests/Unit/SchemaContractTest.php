@@ -28,8 +28,8 @@ class SchemaContractTest extends TestCase
         'drivers' => ['id', 'email', 'password', 'first_name', 'last_name', 'is_verified', 'experience_years', 'updated_at'],
         'companies' => ['id', 'email', 'password', 'company_name', 'is_verified'],
         'users' => ['id', 'email'],
-        'job_listings' => ['id', 'title', 'company_id', 'is_active', 'created_at'],
-        'job_applications' => ['id', 'driver_id', 'job_listing_id', 'status'],
+        'job_listings' => ['id', 'title', 'company_id', 'is_active', 'is_approved', 'applications', 'created_at'],
+        'job_applications' => ['id', 'driver_id', 'job_listing_id', 'message', 'status'],
         'driver_licenses' => ['id', 'driver_id', 'license_type', 'expiry_date', 'has_pei', 'pei_expiry_c', 'pei_expiry_d'],
         'driver_adr_certificates' => ['id', 'driver_id', 'adr_type', 'expiry_date'],
         'driver_tachograph_cards' => ['id', 'driver_id', 'card_number', 'expiry_date'],
@@ -76,6 +76,20 @@ class SchemaContractTest extends TestCase
             'show_skills',
             'show_experience',
             'show_special_licenses',
+        ],
+
+        /**
+         * job_applications.cover_letter: το repository έγραφε σε αυτή τη
+         * στήλη ενώ ο πίνακας έχει `message`. Αποτέλεσμα: η υποβολή αίτησης,
+         * η απόσυρση και η αποδοχή/απόρριψη απέτυχαν σιωπηλά για μήνες.
+         *
+         * job_applications.company_id: η εταιρεία προκύπτει ΜΟΝΟ μέσω
+         * job_listings.company_id. Όσο ο κώδικας διάβαζε ανύπαρκτο
+         * $application['company_id'], κάθε έλεγχος ιδιοκτησίας απέτυχε.
+         */
+        'job_applications' => [
+            'cover_letter',
+            'company_id',
         ],
     ];
 
