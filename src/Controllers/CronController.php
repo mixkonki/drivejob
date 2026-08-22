@@ -109,7 +109,19 @@ class CronController
         $started = microtime(true);
 
         // Οι περισσότερες εργασίες είναι PHP· το αντίγραφο ασφαλείας είναι bash.
-        $interpreter = ($config['bin'] ?? 'php') === 'bash' ? '/bin/bash' : PHP_BINARY;
+        if (($config['bin'] ?? 'php') === 'bash') {
+            $interpreter = '/bin/bash';
+        } else {
+            $interpreter = $this->resolvePhpCli();
+            if ($interpreter === null) {
+                flock($lock, LOCK_UN);
+                fclose($lock);
+                http_response_code(500);
+                echo "Δεν βρέθηκε εκτελέσιμο PHP CLI. Όρισε PHP_CLI στο .env "
+                   . "(π.χ. PHP_CLI=/usr/php83/usr/bin/php).\n";
+                exit;
+            }
+        }
         $command = escapeshellcmd($interpreter) . ' ' . escapeshellarg(ROOT_DIR . '/' . $config['script']);
         foreach ($config['args'] as $arg) {
             $command .= ' ' . escapeshellarg($arg);
@@ -143,6 +155,41 @@ class CronController
         http_response_code($exitCode === 0 ? 200 : 500);
         echo "[{$config['label']}] exit={$exitCode} σε {$seconds}s\n\n{$body}\n";
         exit;
+    }
+
+    /**
+     * Εντοπισμός του εκτελέσιμου PHP της γραμμής εντολών.
+     *
+     * ΠΡΟΣΟΧΗ: σε web αίτημα η PHP_BINARY δείχνει στο php-fpm, ΟΧΙ στο CLI.
+     * Αν περαστεί script σε php-fpm, τυπώνει το usage του και τερματίζει με
+     * exit 64 — ακριβώς αυτό συνέβαινε πριν.
+     *
+     * Σειρά αναζήτησης: PHP_CLI από .env → PHP_BINDIR/php → PHP_BINARY (μόνο
+     * αν δεν είναι fpm).
+     */
+    private function resolvePhpCli(): ?string
+    {
+        $candidates = [];
+
+        $fromEnv = (string) ($_ENV['PHP_CLI'] ?? getenv('PHP_CLI') ?: '');
+        if ($fromEnv !== '') {
+            $candidates[] = $fromEnv;
+        }
+
+        $candidates[] = PHP_BINDIR . '/php';
+        $candidates[] = PHP_BINARY;
+
+        foreach ($candidates as $candidate) {
+            if ($candidate === '' || !is_executable($candidate)) {
+                continue;
+            }
+            if (str_contains(basename($candidate), 'fpm')) {
+                continue;
+            }
+            return $candidate;
+        }
+
+        return null;
     }
 
     /** Απάντηση 404 ώστε το endpoint να μη διαφημίζει την ύπαρξή του. */
