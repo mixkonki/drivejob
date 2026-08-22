@@ -55,6 +55,28 @@ class SchemaContractTest extends TestCase
      */
     private const FORBIDDEN = [
         'drivers' => ['criminal_record', 'criminal_record_file'],
+
+        /**
+         * job_listings.vehicle_types: διπλή πηγή αλήθειας. Η μοναδική έγκυρη
+         * πηγή είναι ο πίνακας job_listing_vehicle_types. Όσο υπήρχε η στήλη,
+         * τέσσερις αγγελίες είχαν δεδομένα μόνο εκεί και κανένα query δεν τα
+         * έβλεπε.
+         *
+         * show_*: διακόπτες εμφάνισης που καμία φόρμα δεν έθετε και κανένα
+         * view δεν διάβαζε — οδηγοί είχαν επιλέξει «μην εμφανίζεις το ADR μου»
+         * και η επιλογή αγνοούνταν σιωπηλά. Επιστρέφουν μόνο μαζί με την
+         * αντίστοιχη εμφάνιση στο Driver/show.php.
+         */
+        'job_listings' => [
+            'vehicle_types',
+            'show_rating',
+            'show_adr',
+            'show_operator_license',
+            'show_tachograph',
+            'show_skills',
+            'show_experience',
+            'show_special_licenses',
+        ],
     ];
 
     public static function setUpBeforeClass(): void
