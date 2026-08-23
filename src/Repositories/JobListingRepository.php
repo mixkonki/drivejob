@@ -3,6 +3,7 @@
 namespace Drivejob\Repositories;
 
 use PDO;
+use Drivejob\Core\Logger;
 use Drivejob\Core\Exceptions\DatabaseException;
 
 /**
@@ -131,7 +132,14 @@ class JobListingRepository extends BaseRepository implements JobListingRepositor
                 ]
             ];
         } catch (\PDOException $e) {
-            throw DatabaseException::fromPDOException($e, $query ?? null, $params ?? []);
+            // Η fromPDOException δέχεται ΕΝΑ όρισμα· τα υπόλοιπα χάνονταν
+            // σιωπηλά και το σφάλμα έφτανε χωρίς το ερώτημα που το προκάλεσε.
+            Logger::error('Αποτυχία αναζήτησης αγγελιών', [
+                'query' => $query ?? null,
+                'params' => $params ?? [],
+                'message' => $e->getMessage(),
+            ]);
+            throw DatabaseException::fromPDOException($e);
         }
     }
 
@@ -214,9 +222,42 @@ class JobListingRepository extends BaseRepository implements JobListingRepositor
                 $params['job_type'] = $criteria['job_type'];
             }
 
+            /*
+             * ══════════════════════════════════════════════════════════════
+             *  ΤΥΠΟΣ ΑΓΓΕΛΙΑΣ — έλειπε εντελώς
+             * ══════════════════════════════════════════════════════════════
+             *
+             * Η στήλη `listing_type` ξεχωρίζει τις δύο κατευθύνσεις της
+             * πλατφόρμας: `job_offer` (εταιρεία ζητά οδηγό) και `job_search`
+             * (οδηγός ζητά δουλειά). Το φίλτρο υπήρχε στη φόρμα από την αρχή
+             * και ΚΑΜΙΑ γραμμή εδώ δεν το διάβαζε: επέλεγες «Αναζήτηση
+             * Εργασίας» και έπαιρνες πίσω και τις 29 αγγελίες.
+             */
+            if (isset($criteria['listing_type']) && $criteria['listing_type']) {
+                $conditions[] = "j.listing_type = :listing_type";
+                $params['listing_type'] = $criteria['listing_type'];
+            }
+
+            /*
+             * ΤΥΠΟΣ ΟΧΗΜΑΤΟΣ — με τα παλιά συνώνυμα.
+             *
+             * Στη ζωντανή βάση συνυπάρχουν `truck_articulated` και `trailer`,
+             * `truck_tanker` και `tanker`. Σύγκριση με «=» θα έκρυβε τα μισά
+             * αποτελέσματα σιωπηλά. Βλ. VehicleTypes::storedValuesFor().
+             */
             if (isset($criteria['vehicle_type']) && $criteria['vehicle_type']) {
-                $conditions[] = "j.vehicle_type = :vehicle_type";
-                $params['vehicle_type'] = $criteria['vehicle_type'];
+                $accepted = \Drivejob\Helpers\VehicleTypes::storedValuesFor(
+                    (string) $criteria['vehicle_type']
+                );
+
+                if (!empty($accepted)) {
+                    $placeholders = [];
+                    foreach ($accepted as $i => $value) {
+                        $placeholders[] = ":vehicle_type_$i";
+                        $params["vehicle_type_$i"] = $value;
+                    }
+                    $conditions[] = 'j.vehicle_type IN (' . implode(', ', $placeholders) . ')';
+                }
             }
 
             if (isset($criteria['experience_years']) && $criteria['experience_years'] > 0) {
@@ -226,27 +267,46 @@ class JobListingRepository extends BaseRepository implements JobListingRepositor
 
             if (isset($criteria['license_types']) && !empty($criteria['license_types'])) {
                 $licenseConditions = [];
-                foreach ($criteria['license_types'] as $index => $licenseType) {
-                    $licenseConditions[] = "j.license_types LIKE :license_type_$index";
+                foreach ((array) $criteria['license_types'] as $index => $licenseType) {
+                    // Η στήλη λέγεται `required_license`, όχι `license_types`.
+                    $licenseConditions[] = "j.required_license LIKE :license_type_$index";
                     $params["license_type_$index"] = '%' . $licenseType . '%';
                 }
                 $conditions[] = '(' . implode(' OR ', $licenseConditions) . ')';
             }
 
-            if (isset($criteria['pei_required']) && $criteria['pei_required']) {
-                $conditions[] = "j.pei_required = 1";
-            }
+            /*
+             * ══════════════════════════════════════════════════════════════
+             *  ΤΑ ΤΕΣΣΕΡΑ ΠΙΣΤΟΠΟΙΗΤΙΚΑ — έψαχναν στήλες που δεν υπάρχουν
+             * ══════════════════════════════════════════════════════════════
+             *
+             * Ο κώδικας ζητούσε `adr_required`, `pei_required`,
+             * `tachograph_required`, `operator_license_required`. Οι στήλες
+             * λέγονται `adr_certificate`, `requires_pei`,
+             * `requires_tachograph`, `operator_license`.
+             *
+             * Καμία από τις τέσσερις δεν υπήρχε στον πίνακα. Αν κάποιο από
+             * αυτά τα κριτήρια έφτανε ποτέ εδώ, το ερώτημα θα έσκαγε με
+             * «Unknown column». Δεν έσκασε ποτέ — γιατί ο controller δεν τα
+             * περνούσε καν. Δύο σφάλματα που αλληλοκαλύπτονταν.
+             *
+             * Δέχονται και τα δύο ονόματα κλειδιού, ώστε να μη σπάσει όποιος
+             * καλεί τη μέθοδο με το παλιό λεξιλόγιο.
+             */
+            $flags = [
+                'adr_certificate'  => ['adr_certificate', 'adr_required'],
+                'requires_pei'     => ['requires_pei', 'pei_required'],
+                'requires_tachograph' => ['requires_tachograph', 'tachograph_required'],
+                'operator_license' => ['operator_license', 'operator_license_required'],
+            ];
 
-            if (isset($criteria['adr_required']) && $criteria['adr_required']) {
-                $conditions[] = "j.adr_required = 1";
-            }
-
-            if (isset($criteria['tachograph_required']) && $criteria['tachograph_required']) {
-                $conditions[] = "j.tachograph_required = 1";
-            }
-
-            if (isset($criteria['operator_license_required']) && $criteria['operator_license_required']) {
-                $conditions[] = "j.operator_license_required = 1";
+            foreach ($flags as $column => $keys) {
+                foreach ($keys as $key) {
+                    if (!empty($criteria[$key])) {
+                        $conditions[] = "j.$column = 1";
+                        break;
+                    }
+                }
             }
 
             if (isset($criteria['salary_min']) && $criteria['salary_min'] > 0) {
@@ -275,7 +335,8 @@ class JobListingRepository extends BaseRepository implements JobListingRepositor
                 $sortDirection = isset($criteria['sort_direction']) && strtoupper($criteria['sort_direction']) === 'DESC' ? 'DESC' : 'ASC';
 
                 // Έλεγχος για έγκυρο πεδίο ταξινόμησης
-                $validSortFields = ['title', 'location', 'salary_min', 'created_at', 'views', 'applications'];
+                // `views` δεν υπάρχει ως στήλη — λέγεται `views_count`.
+                $validSortFields = ['title', 'location', 'salary_min', 'created_at', 'views_count', 'applications'];
                 if (in_array($sortField, $validSortFields)) {
                     $query .= " ORDER BY j.$sortField $sortDirection";
                 } else {
@@ -306,7 +367,21 @@ class JobListingRepository extends BaseRepository implements JobListingRepositor
                 ]
             ];
         } catch (\PDOException $e) {
-            throw DatabaseException::fromPDOException($e, $query ?? null, $params ?? []);
+            /*
+             * Το ερώτημα ΚΑΤΑΓΡΑΦΕΤΑΙ πριν φύγει η εξαίρεση.
+             *
+             * Η fromPDOException δέχεται ΕΝΑ όρισμα· τα $query και $params
+             * που περνούσαν εδώ χάνονταν σιωπηλά. Ένα «Unknown column» σε
+             * σύνθετο δυναμικό ερώτημα χωρίς το ίδιο το ερώτημα είναι
+             * σχεδόν αδύνατο να εντοπιστεί.
+             */
+            Logger::error('Αποτυχία αναζήτησης αγγελιών', [
+                'query' => $query ?? null,
+                'params' => $params ?? [],
+                'message' => $e->getMessage(),
+            ]);
+
+            throw DatabaseException::fromPDOException($e);
         }
     }
 
@@ -316,6 +391,56 @@ class JobListingRepository extends BaseRepository implements JobListingRepositor
      * @param int $id Το ID της αγγελίας
      * @return bool Επιτυχία ή αποτυχία
      */
+    /**
+     * Οι τοποθεσίες που έχουν πραγματικά αγγελίες, για την αυτόματη
+     * συμπλήρωση του φίλτρου.
+     *
+     * ══════════════════════════════════════════════════════════════════════
+     *  ΓΙΑΤΙ ΑΥΤΟ ΚΑΙ ΟΧΙ GOOGLE PLACES
+     * ══════════════════════════════════════════════════════════════════════
+     *
+     * Η σελίδα φόρτωνε το Google Maps JS API σε κάθε επίσκεψη — κόστος ανά
+     * φόρτωση, τρίτος αποδέκτης δεδομένων, κλειδί ορατό στο HTML — για να
+     * προτείνει ΟΠΟΙΑΔΗΠΟΤΕ πόλη του κόσμου. Και ο χρήστης που διάλεγε
+     * «Καστοριά» έπαιρνε πανηγυρικά μηδέν αποτελέσματα.
+     *
+     * Το σωστό λεξιλόγιο προτάσεων δεν είναι «οι πόλεις της Γης»· είναι
+     * «οι πόλεις όπου υπάρχει δουλειά». Αυτό το ξέρει μόνο η δική μας βάση.
+     *
+     * Κρατιέται το κομμάτι πριν από το πρώτο κόμμα («Θεσσαλονίκη, Ελλάδα» →
+     * «Θεσσαλονίκη»), γιατί έτσι πληκτρολογεί ο χρήστης και έτσι ψάχνει το
+     * LIKE του φίλτρου.
+     *
+     * @return string[] μοναδικές πόλεις, αλφαβητικά
+     */
+    public function distinctLocations(): array
+    {
+        try {
+            $rows = $this->pdo->query(
+                "SELECT DISTINCT location FROM {$this->table}
+                 WHERE is_active = 1
+                   AND (expires_at IS NULL OR expires_at > NOW())
+                   AND location IS NOT NULL AND location <> ''"
+            )->fetchAll(PDO::FETCH_COLUMN);
+
+            $cities = [];
+            foreach ($rows as $row) {
+                $city = trim(explode(',', (string) $row)[0]);
+                if ($city !== '') {
+                    $cities[$city] = true;
+                }
+            }
+
+            $list = array_keys($cities);
+            sort($list, SORT_LOCALE_STRING);
+
+            return $list;
+        } catch (\PDOException $e) {
+            // Οι προτάσεις είναι ευκολία — αν λείψουν, το φίλτρο δουλεύει.
+            return [];
+        }
+    }
+
     public function incrementViews($id)
     {
         try {

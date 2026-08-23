@@ -268,6 +268,12 @@ class JobApplicationController extends BaseJobApplicationController
             $updateResult = $this->updateApplicationStatus($id, 'hired');
 
             if ($updateResult) {
+                (new \Drivejob\Services\Notifier($this->pdo))->applicationHired(
+                    (int) $id,
+                    (int) $application['driver_id'],
+                    $this->listingTitleOf($application)
+                );
+
                 Logger::info('Job application accepted', [
                     'company_id' => $companyId,
                     'application_id' => $id
@@ -394,6 +400,13 @@ class JobApplicationController extends BaseJobApplicationController
             }
 
             if ($this->updateApplicationStatus($id, 'shortlisted')) {
+                // Ο οδηγός μαθαίνει ότι προχώρησε — αυτό το email αξίζει να φτάσει.
+                (new \Drivejob\Services\Notifier($this->pdo))->applicationShortlisted(
+                    (int) $id,
+                    (int) $application['driver_id'],
+                    $this->listingTitleOf($application)
+                );
+
                 Logger::info('Job application shortlisted', [
                     'company_id' => $companyId,
                     'application_id' => $id,
@@ -478,6 +491,13 @@ class JobApplicationController extends BaseJobApplicationController
             $updateResult = $this->updateApplicationStatus($id, 'rejected');
 
             if ($updateResult) {
+                // Μόνο καμπανάκι — η απόρριψη δεν στέλνεται με email (βλ. Notifier).
+                (new \Drivejob\Services\Notifier($this->pdo))->applicationRejected(
+                    (int) $id,
+                    (int) $application['driver_id'],
+                    $this->listingTitleOf($application)
+                );
+
                 Logger::info('Job application rejected', [
                     'company_id' => $companyId,
                     'application_id' => $id
@@ -519,5 +539,24 @@ class JobApplicationController extends BaseJobApplicationController
             header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
             exit();
         }
+    }
+    /**
+     * Ο τίτλος της αγγελίας μιας αίτησης — για τα κείμενα των ειδοποιήσεων.
+     * Αν κάτι λείπει, γυρίζει γενική ετικέτα αντί να ρίξει την ενέργεια.
+     */
+    private function listingTitleOf(array $application): string
+    {
+        try {
+            if (!empty($application['job_listing_id'])) {
+                $listing = $this->jobListingRepository->find((int) $application['job_listing_id']);
+                if ($listing && !empty($listing['title'])) {
+                    return (string) $listing['title'];
+                }
+            }
+        } catch (\Throwable $e) {
+            // Η ειδοποίηση θα βγει με γενικό τίτλο — δεν αξίζει σφάλμα.
+        }
+
+        return 'τη θέση εργασίας';
     }
 }

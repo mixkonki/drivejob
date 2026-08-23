@@ -152,6 +152,7 @@ PATHS="
 /job-applications/my-applications
 /job-applications/company-applications
 /job-offers/my-offers
+/notifications/unread-count
 "
 
 for p in $PATHS; do

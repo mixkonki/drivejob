@@ -23,6 +23,22 @@ use Drivejob\Services\JobListing\JobListingServiceInterface;
 class UnifiedJobListingController extends BaseJobListingController
 {
     /**
+     * Οι τύποι απασχόλησης που δέχεται η στήλη job_listings.job_type.
+     *
+     * ΠΡΕΠΕΙ να συμφωνούν με το ENUM της βάσης. Το JobListingService δεχόταν
+     * επιπλέον `seasonal`, `freelance` και `internship`, η φόρμα δημιουργίας
+     * πρόσφερε το «Εποχική» — και η MySQL σε strict mode απέρριπτε ολόκληρη
+     * την εγγραφή. Η αγγελία δεν αποθηκευόταν καθόλου.
+     *
+     * Το migration extend_job_type_enum.php προσθέτει τις τρεις τιμές στη
+     * βάση· ώσπου να τρέξει, ο πίνακας δέχεται μόνο τις τέσσερις πρώτες.
+     */
+    private const JOB_TYPES = [
+        'full_time', 'part_time', 'contract', 'temporary',
+        'seasonal', 'freelance', 'internship',
+    ];
+
+    /**
      * @var \Drivejob\Repositories\DriverLicenseRepositoryInterface
      */
     protected $driverLicenseRepository;
@@ -290,21 +306,79 @@ class UnifiedJobListingController extends BaseJobListingController
      */
     public function index()
     {
-        // Συλλογή των κριτηρίων αναζήτησης
+        /*
+         * ══════════════════════════════════════════════════════════════════
+         *  ΤΑ ΚΡΙΤΗΡΙΑ ΔΙΑΒΑΖΟΝΤΑΙ ΜΕ ΤΑ ΟΝΟΜΑΤΑ ΠΟΥ ΣΤΕΛΝΕΙ Η ΦΟΡΜΑ
+         * ══════════════════════════════════════════════════════════════════
+         *
+         * Η φόρμα στέλνει `vehicle_type`. Εδώ διαβαζόταν `vehicle_types` —
+         * άλλο όνομα — και μετατρεπόταν σε πίνακα που το repository δεν
+         * κοιτούσε ποτέ. Τα `adr_certificate` και `operator_license` δεν
+         * διαβάζονταν καθόλου.
+         *
+         * Αποτέλεσμα: από τα έξι φίλτρα της σελίδας λειτουργούσαν ΔΥΟ.
+         * Τα υπόλοιπα τέσσερα άλλαζαν το URL και τίποτα άλλο — που είναι
+         * χειρότερο από το να μην υπάρχουν, γιατί ο χρήστης νομίζει ότι
+         * είδε φιλτραρισμένα αποτελέσματα.
+         *
+         * ΛΙΣΤΑ ΕΠΙΤΡΕΠΤΩΝ ΤΙΜΩΝ: ό,τι δεν αναγνωρίζεται αγνοείται αντί να
+         * ταξιδέψει μέχρι το SQL. Οι τιμές είναι ήδη παραμετροποιημένες,
+         * αλλά ένα άγνωστο `job_type` απλώς επιστρέφει κενή λίστα και ο
+         * χρήστης νομίζει ότι δεν υπάρχουν αγγελίες.
+         */
+        $pick = static function (string $key, array $allowed): ?string {
+            $value = isset($_GET[$key]) ? trim((string) $_GET[$key]) : '';
+
+            return ($value !== '' && in_array($value, $allowed, true)) ? $value : null;
+        };
+
+        $flag = static function (string $key): bool {
+            // Το κουτάκι στέλνει «1». Το «0» ή το κενό ΔΕΝ είναι επιλογή.
+            return isset($_GET[$key]) && (string) $_GET[$key] !== '' && (string) $_GET[$key] !== '0';
+        };
+
+        $location = isset($_GET['location']) ? trim((string) $_GET['location']) : '';
+
         $criteria = [
-            'title' => $_GET['title'] ?? null,
-            'location' => $_GET['location'] ?? null,
-            'job_type' => $_GET['job_type'] ?? null,
-            'job_category' => $_GET['job_category'] ?? null,
-            'vehicle_types' => isset($_GET['vehicle_types']) ? explode(',', $_GET['vehicle_types']) : null,
-            'listing_type' => $_GET['listing_type'] ?? null, // job_offer ή job_search
-            'sort_by' => $_GET['sort_by'] ?? 'created_at',
-            'sort_direction' => $_GET['sort_direction'] ?? 'DESC'
+            'title'            => isset($_GET['title']) ? trim((string) $_GET['title']) : null,
+            'location'         => $location !== '' ? $location : null,
+            'job_type'         => $pick('job_type', self::JOB_TYPES),
+            'job_category'     => $_GET['job_category'] ?? null,
+            'vehicle_type'     => $pick('vehicle_type', \Drivejob\Helpers\VehicleTypes::codes()),
+            'listing_type'     => $pick('listing_type', ['job_offer', 'job_search']),
+            'adr_certificate'  => $flag('adr_certificate'),
+            'operator_license' => $flag('operator_license'),
+            'sort_by'          => $_GET['sort_by'] ?? 'created_at',
+            'sort_direction'   => $_GET['sort_direction'] ?? 'DESC',
         ];
 
-        // Λήψη της τρέχουσας σελίδας και του ορίου
-        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-        $limit = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 10;
+        /*
+         * Τι ζήτησε ο χρήστης, σε μορφή που καταλαβαίνει το view.
+         *
+         * Το view το χρειάζεται για δύο πράγματα: να κρατήσει τα φίλτρα
+         * στους συνδέσμους σελιδοποίησης (η σελίδα 2 τα έχανε όλα εκτός από
+         * τρία) και να δείξει τι είναι ενεργό.
+         */
+        $activeFilters = array_filter([
+            'listing_type'     => $criteria['listing_type'],
+            'job_type'         => $criteria['job_type'],
+            'vehicle_type'     => $criteria['vehicle_type'],
+            'location'         => $criteria['location'],
+            'adr_certificate'  => $criteria['adr_certificate'] ? '1' : null,
+            'operator_license' => $criteria['operator_license'] ? '1' : null,
+        ], static fn($v) => $v !== null && $v !== '' && $v !== false);
+
+        /*
+         * ΣΕΛΙΔΑ ΚΑΙ ΟΡΙΟ — με ανώτατο φράγμα.
+         *
+         * Το `limit` διαβαζόταν χωρίς ανώτατο όριο: ένα `?limit=100000`
+         * ζητούσε από τη βάση όλες τις αγγελίες και τις κατέβαζε σε μία
+         * σελίδα. Δεν είναι υποθετικό — οι ανιχνευτές δοκιμάζουν τέτοιες
+         * παραμέτρους αυτόματα.
+         */
+        $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+        $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
+        $limit = max(1, min(50, $limit));
 
         try {
             // Αναζήτηση αγγελιών με το service
@@ -340,8 +414,35 @@ class UnifiedJobListingController extends BaseJobListingController
             }
 
             // Αλλιώς, φόρτωση του view
+            /*
+             * ΣΕΛΙΔΑ ΠΕΡΑ ΑΠΟ ΤΟ ΤΕΛΟΣ.
+             *
+             * Το `?page=999` έδειχνε «26 αγγελίες» στην επικεφαλίδα και από
+             * κάτω «Δεν υπάρχουν ενεργές αγγελίες» — δύο δηλώσεις που
+             * αναιρούσαν η μία την άλλη στην ίδια οθόνη. Συμβαίνει και
+             * φυσιολογικά: κάποιος έχει ανοιχτή τη σελίδα 4, λήγουν αγγελίες,
+             * πατάει ανανέωση.
+             *
+             * Επιστροφή στην τελευταία πραγματική σελίδα, κρατώντας τα
+             * φίλτρα.
+             */
+            $lastPage = (int) ($result['pagination']['pages'] ?? 1);
+
+            if ($page > 1 && $lastPage > 0 && $page > $lastPage) {
+                $params = $activeFilters;
+                $params['page'] = $lastPage;
+                header('Location: ' . BASE_URL . 'job-listings?' . http_build_query($params), true, 302);
+                exit();
+            }
+
             $listings = $result['results'];
             $pagination = $result['pagination'];
+
+            // Προτάσεις για το πεδίο τοποθεσίας: οι πόλεις που έχουν
+            // πραγματικά αγγελίες — όχι όλες οι πόλεις του κόσμου.
+            $locationOptions = $this->jobListingRepository->distinctLocations();
+
+            // $activeFilters ορίστηκε παραπάνω — το view το χρειάζεται.
             include ROOT_DIR . '/src/Views/job-listings/index.php';
         } catch (DatabaseException $e) {
             Logger::error('Database exception in job listings', [

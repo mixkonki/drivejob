@@ -266,6 +266,37 @@ footer .footer-right img:hover {
         align-items: flex-start;
     }
 
+    /*
+     * ΤΟ ΜΕΝΟΥ ΞΕΧΕΙΛΙΖΕ ΣΕ ΚΑΘΕ ΣΕΛΙΔΑ.
+     *
+     * Τέσσερα στοιχεία σε μία σειρά με 15px περιθώριο δεξιά κι αριστερά
+     * πιάνουν 400px. Σε οθόνη 390px αυτό σημαίνει οριζόντια κύλιση —
+     * ολόκληρη η σελίδα κουνιέται στο πλάι όταν ο χρήστης σκρολάρει με τον
+     * αντίχειρα, και το δεξί άκρο κάθε κάρτας κόβεται.
+     *
+     * Δεν φαινόταν στον έλεγχο με το μάτι: το μενού ήταν λευκό σε κόκκινο
+     * φόντο που έφτανε ούτως ή άλλως ως την άκρη.
+     *
+     * Οι οδηγοί μπαίνουν από κινητό. Αυτή είναι η πρώτη εντύπωση.
+     */
+    .header .nav-menu {
+        width: 100%;
+    }
+
+    .header .nav-menu ul {
+        flex-wrap: wrap;
+        gap: 8px 4px;
+        justify-content: flex-start;
+    }
+
+    .header .nav-menu ul li {
+        margin: 0 10px 0 0;
+    }
+
+    .header .nav-menu ul li a {
+        font-size: 16px;
+    }
+
     .header .user-actions {
         flex-direction: column;
         gap: 10px;
@@ -456,4 +487,39 @@ footer .footer-right img:hover {
     margin-top: 5px;
     min-width: 250px;
     z-index: 1000;
+}
+
+/* Το καμπανάκι των ειδοποιήσεων */
+.dj-bell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: #fff;
+    border-radius: 50%;
+    margin-right: 10px;
+    text-decoration: none;
+}
+
+.dj-bell:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.dj-bell-badge {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #fff;
+    color: #b3261e;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 17px;
+    text-align: center;
+    box-sizing: border-box;
 }

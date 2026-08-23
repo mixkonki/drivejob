@@ -289,7 +289,37 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
         <!-- Ενέργειες χρήστη -->
         <div class="user-actions">
             <?php if ($isLoggedIn) :
+                /*
+                 * ΤΟ ΚΑΜΠΑΝΑΚΙ — φορτώνει το πλήθος από τη βάση, όχι με AJAX.
+                 *
+                 * Ένα ερώτημα COUNT σε ευρετηριασμένο πίνακα ανά φόρτωση
+                 * σελίδας είναι φθηνότερο από ένα επιπλέον HTTP αίτημα ανά
+                 * φόρτωση σελίδας. Το /notifications/unread-count υπάρχει
+                 * για μελλοντική ανανέωση χωρίς reload, αν χρειαστεί.
+                 */
+                $unreadNotifications = 0;
+                try {
+                    $notifRole = Session::get('user_role');
+                    if (in_array($notifRole, ['driver', 'company'], true)) {
+                        $unreadNotifications = (new \Drivejob\Repositories\NotificationRepository(
+                            \Drivejob\Core\Container::getInstance()->get('pdo')
+                        ))->countUnread((int) Session::get('user_id'), $notifRole);
+                    }
+                } catch (\Throwable $e) {
+                    // Το καμπανάκι δεν αξίζει να ρίξει το header.
+                }
             ?>
+                <a href="<?php echo BASE_URL; ?>notifications" class="dj-bell"
+                   title="Ειδοποιήσεις" aria-label="Ειδοποιήσεις<?= $unreadNotifications > 0 ? ', ' . $unreadNotifications . ' αδιάβαστες' : '' ?>">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/>
+                        <path d="M13.7 20a2 2 0 0 1-3.4 0"/>
+                    </svg>
+                    <?php if ($unreadNotifications > 0) : ?>
+                        <span class="dj-bell-badge"><?= $unreadNotifications > 99 ? '99+' : $unreadNotifications ?></span>
+                    <?php endif; ?>
+                </a>
                 <!-- Dropdown για τον συνδεδεμένο χρήστη -->
                 <div class="dropdown">
                     <button class="btn btn-dark dropdown-toggle">

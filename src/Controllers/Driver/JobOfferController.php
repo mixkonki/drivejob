@@ -368,6 +368,16 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             $offerId = $this->jobOfferRepository->create($data);
 
             if ($offerId) {
+                /*
+                 * Ο οδηγός μαθαίνει ότι κάποιος τον θέλει — καμπανάκι + email.
+                 * Χωρίς αυτό, η προσφορά περίμενε να ξαναμπεί κατά τύχη.
+                 */
+                (new \Drivejob\Services\Notifier($this->pdo))->offerSent(
+                    (int) $offerId,
+                    (int) $id,
+                    (string) ($data['title'] ?? 'Προσφορά εργασίας')
+                );
+
                 Logger::info('Job offer sent successfully', [
                     'company_id' => $companyId,
                     'driver_id' => $id,
@@ -738,6 +748,14 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             $updateResult = $this->jobOfferRepository->update($id, $data);
 
             if ($updateResult) {
+                // Η εταιρεία μαθαίνει ότι η προσφορά έγινε δεκτή — και ότι
+                // τα στοιχεία του οδηγού ξεκλείδωσαν.
+                (new \Drivejob\Services\Notifier($this->pdo))->offerAccepted(
+                    (int) $id,
+                    (int) $offer['company_id'],
+                    (string) ($offer['title'] ?? 'Προσφορά εργασίας')
+                );
+
                 Logger::info('Job offer accepted', [
                     'driver_id' => $driverId,
                     'offer_id' => $id
@@ -853,6 +871,13 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             $updateResult = $this->jobOfferRepository->update($id, $data);
 
             if ($updateResult) {
+                // Μόνο καμπανάκι — η απόρριψη δεν αξίζει email (βλ. Notifier).
+                (new \Drivejob\Services\Notifier($this->pdo))->offerRejected(
+                    (int) $id,
+                    (int) $offer['company_id'],
+                    (string) ($offer['title'] ?? 'Προσφορά εργασίας')
+                );
+
                 Logger::info('Job offer rejected', [
                     'driver_id' => $driverId,
                     'offer_id' => $id

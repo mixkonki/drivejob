@@ -7,6 +7,7 @@ if (!isset($router)) {
 
 use Drivejob\Core\Router;
 use Drivejob\Controllers\HomeController;
+use Drivejob\Controllers\NotificationController;
 use Drivejob\Controllers\AuthController;
 
 // Controllers με Repository pattern
@@ -222,6 +223,14 @@ $router->group(['prefix' => 'job-applications'], function ($router) {
     $router->post('/shortlist/{id}', [CompanyJobApplicationController::class, 'shortlist'])->name('job-applications.shortlist');
     $router->post('/accept/{id}', [CompanyJobApplicationController::class, 'accept'])->name('job-applications.accept');
     $router->post('/reject/{id}', [CompanyJobApplicationController::class, 'reject'])->name('job-applications.reject');
+});
+
+// Οι ειδοποιήσεις — το καμπανάκι. Ο πίνακας και το repository υπήρχαν·
+// αυτές οι τρεις διαδρομές είναι ό,τι έλειπε για να τα δει ο χρήστης.
+$router->group(['prefix' => 'notifications'], function ($router) {
+    $router->get('/', [NotificationController::class, 'index'])->name('notifications.index');
+    $router->get('/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    $router->post('/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
 });
 
 // Ομαδοποίηση διαδρομών για τις προσφορές εργασίας

@@ -18,16 +18,31 @@ class NotificationRepository extends BaseRepository implements NotificationRepos
     /**
      * @var array Τα πεδία που μπορούν να ενημερωθούν
      */
+    /*
+     * ΤΑ ΠΕΔΙΑ ΑΝΤΙΣΤΟΙΧΟΥΝ ΣΤΙΣ ΠΡΑΓΜΑΤΙΚΕΣ ΣΤΗΛΕΣ ΤΟΥ ΠΙΝΑΚΑ.
+     *
+     * Η προηγούμενη λίστα περιείχε `link` και `updated_at` — στήλες που ΔΕΝ
+     * υπάρχουν στον πίνακα notifications — και τής έλειπαν τα `data`,
+     * `method`, `sent_at`, από τα οποία τα δύο τελευταία είναι NOT NULL.
+     *
+     * Η BaseRepository::create() κρατά μόνο ό,τι είναι στο $fillable, οπότε
+     * ΚΑΘΕ εισαγωγή ειδοποίησης ήταν καταδικασμένη διπλά: έστελνε άγνωστες
+     * στήλες και παρέλειπε υποχρεωτικές. Δεν το είχε προσέξει κανείς, γιατί
+     * καμία από τις επτά notify* μεθόδους δεν καλούνταν από πουθενά — ο
+     * κώδικας που δεν τρέχει δεν αποκαλύπτει τα λάθη του.
+     */
     protected $fillable = [
         'user_id',
         'user_type',
         'type',
         'title',
         'message',
-        'link',
+        'data',
+        'method',
+        'sent_at',
         'is_read',
-        'created_at',
-        'updated_at'
+        'read_at',
+        'created_at'
     ];
 
     /**
@@ -92,7 +107,7 @@ class NotificationRepository extends BaseRepository implements NotificationRepos
     public function markAsRead($id)
     {
         try {
-            $query = "UPDATE {$this->table} SET is_read = 1, updated_at = NOW() WHERE id = :id";
+            $query = "UPDATE {$this->table} SET is_read = 1, read_at = NOW() WHERE id = :id";
             return $this->execute($query, ['id' => $id]) > 0;
         } catch (\PDOException $e) {
             throw DatabaseException::fromPDOException($e, $query ?? null, ['id' => $id]);
@@ -105,7 +120,7 @@ class NotificationRepository extends BaseRepository implements NotificationRepos
     public function markAllAsRead($userId, $userType)
     {
         try {
-            $query = "UPDATE {$this->table} SET is_read = 1, updated_at = NOW() WHERE user_id = :user_id AND user_type = :user_type AND is_read = 0";
+            $query = "UPDATE {$this->table} SET is_read = 1, read_at = NOW() WHERE user_id = :user_id AND user_type = :user_type AND is_read = 0";
             $params = [
                 'user_id' => $userId,
                 'user_type' => $userType
@@ -121,10 +136,12 @@ class NotificationRepository extends BaseRepository implements NotificationRepos
      */
     public function createNotification(array $data)
     {
-        // Προσθήκη των προεπιλεγμένων τιμών
+        // Προεπιλογές για τις υποχρεωτικές στήλες — το `updated_at` που
+        // έμπαινε εδώ δεν υπάρχει στον πίνακα και έριχνε το INSERT.
         $data['is_read'] = $data['is_read'] ?? 0;
+        $data['method'] = $data['method'] ?? 'app';
+        $data['sent_at'] = $data['sent_at'] ?? date('Y-m-d H:i:s');
         $data['created_at'] = $data['created_at'] ?? date('Y-m-d H:i:s');
-        $data['updated_at'] = $data['updated_at'] ?? date('Y-m-d H:i:s');
 
         return $this->create($data);
     }

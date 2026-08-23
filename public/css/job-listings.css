@@ -31,6 +31,10 @@ h1 {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    /* Χωρίς αυτό, το «100%» σημαίνει 100% ΣΥΝ 20px γέμισμα ΣΥΝ 2px πλαίσιο:
+       το πεδίο ξεπερνούσε το γονικό του κατά 22px και έσπρωχνε ολόκληρη τη
+       σελίδα σε οριζόντια κύλιση στο κινητό. */
+    box-sizing: border-box;
 }
 
 .checkbox-group {
@@ -130,6 +134,10 @@ h1 {
     font-weight: bold;
     color: white;
     text-transform: uppercase;
+    /* Εφεδρικό: τύπος χωρίς δικό του χρώμα έβγαινε λευκό σε διάφανο —
+       δηλαδή αόρατος. Ο κανόνας πρέπει να είναι ΕΔΩ, πριν από τις
+       εξειδικεύσεις· στο τέλος του αρχείου θα τις ακύρωνε όλες. */
+    background-color: #6b7280;
 }
 
 .job-type.full_time {
@@ -614,3 +622,204 @@ h1 {
 }
 
 .dj-contact-locked svg { flex: 0 0 auto; margin-top: 2px; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Προσθήκες φίλτρων και σελιδοποίησης (23/08/2026)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Οι νέοι τύποι απασχόλησης χρειάζονται δικό τους χρώμα. Χωρίς κανόνα, το
+   σήμα έβγαινε λευκό κείμενο σε διάφανο φόντο — δηλαδή αόρατο. */
+.job-type.seasonal {
+    background-color: #d97706;
+}
+
+.job-type.freelance {
+    background-color: #0891b2;
+}
+
+.job-type.internship {
+    background-color: #7c3aed;
+}
+
+/* Επείγουσα αγγελία */
+.listing-urgent {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #b3261e;
+    text-transform: uppercase;
+    margin-right: 8px;
+}
+
+/* Απαιτήσεις πιστοποίησης στην κάρτα */
+.listing-req {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #92400e;
+    background-color: #fef3c7;
+    border: 1px solid #fcd34d;
+}
+
+/* Η επικεφαλίδα κρατά πλέον τρία στοιχεία: πλήθος, φίλτρα, κουμπί.
+   Το πλήθος και το κουμπί μοιράζονται την πρώτη γραμμή· η περίληψη των
+   φίλτρων πέφτει από κάτω σε όλο το πλάτος. Χωρίς το `order`, η περίληψη
+   έμπαινε ΑΝΑΜΕΣΑ στα δύο και έσπρωχνε το κουμπί σε δική του γραμμή. */
+.job-listings-header {
+    flex-wrap: wrap;
+    gap: 10px 20px;
+}
+
+.job-listings-header h2 {
+    order: 1;
+    margin: 0;
+}
+
+.job-listings-header > a {
+    order: 2;
+    margin-left: auto;
+}
+
+.job-listings-filter-summary {
+    order: 3;
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.job-listings-filter-summary a {
+    color: #b3261e;
+    font-weight: 600;
+}
+
+/* Η ταυτότητα που δεν έχει ξεκλειδώσει: ορατή ως τέτοια, όχι σαν κανονικό όνομα. */
+.job-listing-company-masked {
+    color: #6b7280;
+    border-bottom: 1px dotted #9ca3af;
+    cursor: help;
+}
+
+/* Σελιδοποίηση με παράθυρο σελίδων */
+.pagination {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.pagination-gap {
+    padding: 5px 4px;
+    color: #9ca3af;
+}
+
+.pagination-btn.active {
+    cursor: default;
+}
+
+/* Τα optgroup του τύπου οχήματος */
+.filter-group select optgroup {
+    font-style: normal;
+    font-weight: 700;
+    color: #6b7280;
+}
+
+.filter-group select option {
+    font-weight: 400;
+    color: #111827;
+}
+
+/* Η τοποθεσία δεν χρειάζεται να καταπίνει τη σειρά — τα κουμπιά αναζήτησης
+   έμεναν κολλημένα δίπλα της αντί να πηγαίνουν στο τέλος. */
+.search-filters .filter-group:has(#location) {
+    flex: 1 1 220px;
+    max-width: 320px;
+}
+
+.search-filters .checkbox-group {
+    flex: 0 1 auto;
+    align-self: end;
+    padding-bottom: 10px;
+    white-space: nowrap;
+}
+
+/* Τα κουμπιά στο τέλος της σειράς, όχι στη μέση της. */
+.search-filters .filter-actions {
+    flex: 0 0 auto;
+    margin-left: auto;
+    align-self: end;
+    display: flex;
+    gap: 10px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ΚΙΝΗΤΟ — ΤΕΛΕΥΤΑΙΟ ΣΤΟ ΑΡΧΕΙΟ, ΚΑΙ ΟΧΙ ΤΥΧΑΙΑ
+   ══════════════════════════════════════════════════════════════════════════
+
+   Τα media query ΔΕΝ έχουν μεγαλύτερη βαρύτητα από τους απλούς κανόνες.
+   Με ίδια εξειδίκευση, κερδίζει ό,τι γράφτηκε τελευταίο. Το υπάρχον
+   `@media (max-width: 768px)` βρίσκεται στη μέση του αρχείου, οπότε κάθε
+   κανόνας που προστίθεται στο τέλος τον ακυρώνει — και στο κινητό.
+
+   Γι' αυτό όλες οι διορθώσεις για μικρές οθόνες ζουν εδώ, στο τέλος. Κάθε
+   νέος κανόνας για κινητό μπαίνει ΣΕ ΑΥΤΟ το μπλοκ, όχι παραπάνω.
+   ══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    /*
+     * ΤΟ ΚΕΝΟ ΤΩΝ 200 PIXEL ΑΝΑΜΕΣΑ ΣΕ ΚΑΘΕ ΦΙΛΤΡΟ.
+     *
+     * Ο κανόνας `.filter-group { flex: 1 1 200px }` δίνει flex-basis 200px.
+     * Σε οριζόντια διάταξη αυτό είναι ΠΛΑΤΟΣ και είναι σωστό. Μόλις όμως το
+     * κινητό γυρίσει τη φόρμα σε στήλη, ο ίδιος αριθμός γίνεται ΥΨΟΣ: κάθε
+     * κουτάκι έπιανε 200 pixel ύψος αντί για 60 και η φόρμα φούσκωνε στα
+     * 1005. Ο χρήστης έβλεπε ένα φίλτρο ανά οθόνη και σκρόλαρε τρεις φορές
+     * για να φτάσει στο κουμπί «Αναζήτηση».
+     *
+     * Η ίδια τιμή σημαίνει άλλο πράγμα ανάλογα με την κατεύθυνση: κάθε
+     * αλλαγή flex-direction πρέπει να συνοδεύεται από επανεξέταση του basis.
+     */
+    .search-filters .filter-group {
+        flex: 0 0 auto;
+        max-width: none;
+    }
+
+    /*
+     * Το `align-self: end` σημαίνει «κάτω» σε οριζόντια διάταξη και «δεξιά»
+     * σε κατακόρυφη. Τα κουτάκια πετάγονταν στη δεξιά άκρη της οθόνης,
+     * μακριά από τις ετικέτες τους, σαν να ανήκουν αλλού.
+     */
+    .search-filters .checkbox-group,
+    .search-filters .filter-actions {
+        align-self: stretch;
+        margin-left: 0;
+        padding-bottom: 0;
+        white-space: normal;
+    }
+
+    .search-filters .checkbox-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-filters .filter-actions {
+        width: 100%;
+    }
+
+    .search-filters .filter-actions .btn-primary,
+    .search-filters .filter-actions .btn-secondary {
+        flex: 1 1 auto;
+        text-align: center;
+    }
+
+    .job-listings-header > a {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+    }
+}

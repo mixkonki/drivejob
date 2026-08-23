@@ -178,6 +178,19 @@ class JobApplicationController extends BaseJobApplicationController
                 // Ενημέρωση του μετρητή αιτήσεων της αγγελίας
                 $this->jobListingRepository->incrementApplications($id);
 
+                /*
+                 * Η εταιρεία μαθαίνει ότι ήρθε αίτηση — καμπανάκι + email.
+                 *
+                 * ΜΕΤΑ την επιτυχή εγγραφή και ποτέ πριν: η ειδοποίηση δεν
+                 * επιτρέπεται να ρίξει την αίτηση, και ο Notifier καταπίνει
+                 * κάθε δικό του σφάλμα.
+                 */
+                (new \Drivejob\Services\Notifier($this->pdo))->applicationSubmitted(
+                    (int) $applicationId,
+                    (int) $listing['company_id'],
+                    (string) ($listing['title'] ?? 'Αγγελία')
+                );
+
                 Logger::info('Job application successful', [
                     'driver_id' => $driverId,
                     'listing_id' => $id,
