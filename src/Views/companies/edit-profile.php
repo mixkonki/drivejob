@@ -328,7 +328,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                         </div>
 
                         <div class="info-box">
-                            <h4>⚖️ DriveJobs Legal Hub</h4>
+                            <h4>⚖️ DriveJob Legal Hub</h4>
                             <p>Παραμείνετε συμμορφωμένοι με:</p>
                             <ul>
                                 <li>Regulatory Updates & Compliance Tools</li>

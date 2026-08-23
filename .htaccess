@@ -12,8 +12,29 @@
     RewriteRule ^(src|config|database|logs|templates|tests|vendor)/.*$ - [F,L]
 </IfModule>
 
-# Απαγόρευση πρόσβασης σε αρχεία .env, .log, .json, .lock, .xml
-<FilesMatch "\.(env|log|json|lock|xml)$">
+# Απαγόρευση πρόσβασης σε αρχεία ρυθμίσεων και καταγραφών.
+#
+# ΠΡΟΣΟΧΗ: ο παλιός κανόνας απαγόρευε ΚΑΘΕ αρχείο .json — και μαζί τους
+# το public/manifest.json, που είναι δημόσιο εξ ορισμού (το ζητά ο
+# browser για να εγκαταστήσει την εφαρμογή). Αυτή ήταν η αιτία του
+# 403 στο manifest και του λόγου που το PWA δεν εγκαθίστατο ποτέ.
+#
+# Τώρα απαγορεύονται ΟΝΟΜΑΣΤΙΚΑ τα ευαίσθητα αρχεία, όχι όλη η κατάληξη.
+<FilesMatch "\.(env|log|lock|xml|ini|sql|md|dist)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</FilesMatch>
+
+<FilesMatch "^(composer|package|package-lock|phpunit|phpstan|\.env.*)\.(json|xml|neon|dist)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</FilesMatch>
+
+# Κρυφά αρχεία (.git, .env.local, .DS_Store) — εκτός του .well-known
+# που χρειάζεται το Let's Encrypt για την ανανέωση του πιστοποιητικού.
+<FilesMatch "^\.(?!well-known)">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>

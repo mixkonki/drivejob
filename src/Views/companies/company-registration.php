@@ -49,7 +49,7 @@ $extraJs = ['company_registration.js'];
         <div class="form-container">
             <?php include ROOT_DIR . '/src/Views/partials/brand-logo.php'; ?>
             <h1>Εγγραφή Επιχείρησης</h1>
-            <p>Δημιουργήστε το προφίλ της επιχείρησής σας στο <br><a href="<?= BASE_URL ?>" class="dj-brand-link"><strong>DriveJobs</strong></a> μέσα σε λίγα λεπτά!</p>
+            <p>Δημιουργήστε το προφίλ της επιχείρησής σας στο <br><a href="<?= BASE_URL ?>" class="dj-brand-link"><strong>DriveJob</strong></a> μέσα σε λίγα λεπτά!</p>
 
             <?php if (\Drivejob\Core\Session::has('error_message')) : ?>
                 <div class="error-message">
@@ -121,7 +121,7 @@ $extraJs = ['company_registration.js'];
         </div>
 
         <div class="info-box">
-            <p>Με την εγγραφή σας σήμερα, θα έχετε πρόσβαση σε όλα τα προϊόντα DriveJobs. Δεν απαιτείται πιστωτική κάρτα!</p>
+            <p>Με την εγγραφή σας σήμερα, θα έχετε πρόσβαση σε όλα τα προϊόντα DriveJob. Δεν απαιτείται πιστωτική κάρτα!</p>
         </div>
     </div>
 

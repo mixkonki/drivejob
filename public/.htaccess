@@ -23,10 +23,69 @@ Options -Indexes
     Header set Content-Security-Policy "default-src 'self'; connect-src 'self' https://maps.googleapis.com blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; object-src 'none'; base-uri 'self';"
 </IfModule>
 
-# ── Έκδοση PHP σε Apache/StackCP (netmind) ──────────────────
-# Το document root δείχνει εδώ, οπότε ο handler πρέπει να βρίσκεται
-# σε αυτόν τον φάκελο. Ο Herd τοπικά τρέχει nginx και το αγνοεί.
-#+PHPVersion
-#=php83
-AddHandler x-httpd-php83 .php
-#-PHPVersion
+# ═══════════════════════════════════════════════════════════════════════
+#  ΠΟΛΙΤΙΚΗ CACHE — Η ΜΟΝΙΜΗ ΛΥΣΗ
+# ═══════════════════════════════════════════════════════════════════════
+#
+# ΤΙ ΠΗΓΕ ΣΤΡΑΒΑ: το site μπήκε σε Maintenance Mode. Το edge cache του
+# παρόχου αποθήκευσε τη σελίδα «This Site is Under Maintenance» ΣΤΗ ΘΕΣΗ
+# αρχείων CSS. Μετά την επαναφορά, το /css/drivers-registration.css
+# εξακολουθούσε να επιστρέφει HTML — status 200, content-type text/html.
+# Η φόρμα εγγραφής φόρτωνε γυμνή και δεν υπήρχε τρόπος να το καταλάβει
+# κανείς: το αρχείο ήταν σωστό στον server.
+#
+# ΓΙΑΤΙ ΣΥΝΕΒΗ: δεν στέλναμε ΚΑΝΕΝΑ Cache-Control. Όταν ο server δεν λέει
+# τι να κρατηθεί και για πόσο, ο πάροχος αποφασίζει μόνος του — και ό,τι
+# μαντέψει, το κρατάει όσο θέλει.
+#
+# Η ΛΥΣΗ ΕΧΕΙ ΤΡΙΑ ΣΚΕΛΗ, ΚΑΙ ΤΑ ΤΡΙΑ ΧΡΕΙΑΖΟΝΤΑΙ:
+#   1) Asset::url() → κάθε αρχείο φέρει ?v=<mtime>. Αλλάζει το αρχείο,
+#      αλλάζει το URL. Κανένα cache δεν μπορεί να δώσει παλιό περιεχόμενο.
+#   2) sw.js → network-first για σελίδες (ο browser του χρήστη).
+#   3) ΑΥΤΟ ΕΔΩ → ρητές οδηγίες προς τον πάροχο (το edge cache).
+#
+<IfModule mod_headers.c>
+
+    # ── Σελίδες: ΠΟΤΕ σε cache ──────────────────────────────────────
+    # Μια σελίδα σε cache μπορεί να είναι σελίδα συντήρησης, σελίδα
+    # άλλου χρήστη, ή περιεχόμενο πίσω από σύνδεση. Καμία δεν αξίζει
+    # τον κίνδυνο.
+    <FilesMatch "\.php$">
+        Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header always set Pragma "no-cache"
+    </FilesMatch>
+
+    # ── Service worker & manifest: πάντα φρέσκα ─────────────────────
+    # Ένας sw.js σε cache κλειδώνει τον browser του χρήστη σε παλιά
+    # λογική για μέρες. Είναι το χειρότερο αρχείο για να παλιώσει.
+    <FilesMatch "^(sw\.js|manifest\.json)$">
+        Header always set Cache-Control "no-cache, must-revalidate, max-age=0"
+    </FilesMatch>
+
+    # ── Στατικά ΜΕ αποτύπωμα (?v=…): για πάντα ──────────────────────
+    # Το URL αλλάζει μόλις αλλάξει το αρχείο, οπότε το cache δεν
+    # μπορεί ποτέ να δώσει λάθος περιεχόμενο. Ένας χρόνος, immutable.
+    <FilesMatch "\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot)$">
+        Header always set Cache-Control "public, max-age=31536000, immutable" "expr=%{QUERY_STRING} =~ /v=/"
+        # Στατικά ΧΩΡΙΣ αποτύπωμα (παλιοί σύνδεσμοι, εξωτερικές αναφορές):
+        # μία ώρα, και πάντα επαλήθευση με τον server μετά.
+        Header always set Cache-Control "public, max-age=3600, must-revalidate" "expr=%{QUERY_STRING} !~ /v=/"
+    </FilesMatch>
+
+    # ── Ό,τι δεν ταιριάζει πουθενά ──────────────────────────────────
+    # Οι διαδρομές της εφαρμογής δεν έχουν κατάληξη (/drivers/register),
+    # οπότε δεν πιάνονται από το <FilesMatch "\.php$"> παραπάνω. Ο
+    # κανόνας μπαίνει από την PHP (SecurityHeaders), αλλά τον
+    # επαναλαμβάνουμε εδώ ως δίχτυ για την περίπτωση σφάλματος 500.
+    <IfModule mod_setenvif.c>
+        SetEnvIf Request_URI "\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot|json)$" DJ_STATIC=1
+    </IfModule>
+    Header always set Cache-Control "no-store, must-revalidate" env=!DJ_STATIC
+</IfModule>
+
+# ── Μη συμπιέζεις ό,τι είναι ήδη συμπιεσμένο, συμπίεσε τα υπόλοιπα ──
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>

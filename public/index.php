@@ -27,6 +27,25 @@ if (!headers_sent()) {
     if (defined('IS_HTTPS') && IS_HTTPS) {
         header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
     }
+
+    /*
+     * ΚΑΜΙΑ ΣΕΛΙΔΑ ΤΗΣ ΕΦΑΡΜΟΓΗΣ ΔΕΝ ΜΠΑΙΝΕΙ ΣΕ CACHE.
+     *
+     * Οι διαδρομές μας δεν έχουν κατάληξη (/drivers/register), οπότε ο
+     * κανόνας <FilesMatch "\.php$"> του .htaccess ΔΕΝ τις πιάνει. Χωρίς
+     * ρητή οδηγία, το edge cache του παρόχου αποφασίζει μόνο του — και
+     * ακριβώς έτσι κράτησε τη σελίδα «Under Maintenance» στη θέση
+     * κανονικών αποκρίσεων επί ώρες μετά την επαναφορά του site.
+     *
+     * Δεύτερος λόγος, εξίσου σοβαρός: κάθε σελίδα εδώ είναι
+     * εξατομικευμένη (σύνδεση, ρόλος, CSRF token). Μια σελίδα σε
+     * κοινόχρηστο cache μπορεί να σερβιριστεί σε ΑΛΛΟΝ χρήστη.
+     *
+     * Τα στατικά αρχεία εξαιρούνται: τα σερβίρει ο Apache απευθείας,
+     * χωρίς να περάσουν από εδώ, και έχουν δικούς τους κανόνες.
+     */
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
 }
 
 // Εκτέλεση των middleware

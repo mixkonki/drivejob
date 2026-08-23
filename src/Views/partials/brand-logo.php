@@ -18,7 +18,22 @@ $GLOBALS['__dj_brand_logo_loaded'] = true;
 
 <a href="<?php echo BASE_URL; ?>" class="dj-brand-home"
    aria-label="Επιστροφή στην αρχική σελίδα του DriveJob">
-    <img src="<?= \Drivejob\Helpers\Asset::url('img/logo.png') ?>" alt="DriveJob" width="180" height="52">
+    <?php
+    /*
+     * Οι διαστάσεις είναι ΥΠΟΛΟΓΙΣΜΕΝΕΣ, όχι μαντεμένες. Το logo.png είναι
+     * 2800×1000 (αναλογία 2.8:1). Το σταθερό width="180" height="52" που
+     * ήταν εδώ δήλωνε αναλογία 3.46:1 — ο browser κράτησε χώρο σε λάθος
+     * σχήμα και η σελίδα «πηδούσε» μόλις φόρτωνε η εικόνα.
+     */
+    $logoFile = (defined('ROOT_DIR') ? ROOT_DIR : dirname(__DIR__, 3)) . '/public/img/logo.png';
+    $logoH = 52;
+    $logoW = 146; // εφεδρεία αν το αρχείο δεν διαβάζεται
+    if (is_file($logoFile) && ($dim = @getimagesize($logoFile))) {
+        $logoW = (int) round($logoH * ($dim[0] / max(1, $dim[1])));
+    }
+    ?>
+    <img src="<?= \Drivejob\Helpers\Asset::url('img/logo.png') ?>" alt="DriveJob"
+         width="<?= $logoW ?>" height="<?= $logoH ?>">
 </a>
 
 <?php if ($firstUse) : ?>
@@ -74,3 +89,7 @@ $GLOBALS['__dj_brand_logo_loaded'] = true;
     }
 </style>
 <?php endif; ?>
+<?php
+// Καθαρισμός ώστε το partial να μην αφήνει μεταβλητές στο view που το κάλεσε.
+unset($firstUse, $logoFile, $logoH, $logoW, $dim);
+?>
