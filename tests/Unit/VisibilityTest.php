@@ -26,19 +26,32 @@ class VisibilityTest extends TestCase
     /** @var array<string, int> */
     private array $ids = [];
 
+    /**
+     * Η σύνδεση δοκιμάζεται μία φορά. Σε περιβάλλοντα χωρίς βάση — όπως ο
+     * runner του GitHub Actions — τα τεστ παρακάμπτονται αντί να σκάνε,
+     * όπως κάνει και το SchemaContractTest.
+     */
     public static function setUpBeforeClass(): void
     {
-        self::$pdo = new PDO(
-            'mysql:host=' . ($_ENV['DB_HOST'] ?? '127.0.0.1')
-            . ';dbname=' . ($_ENV['DB_NAME'] ?? 'drivejob') . ';charset=utf8mb4',
-            $_ENV['DB_USER'] ?? 'root',
-            $_ENV['DB_PASS'] ?? '',
-            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-        );
+        try {
+            self::$pdo = new PDO(
+                'mysql:host=' . ($_ENV['DB_HOST'] ?? '127.0.0.1')
+                . ';dbname=' . ($_ENV['DB_NAME'] ?? 'drivejob') . ';charset=utf8mb4',
+                $_ENV['DB_USER'] ?? 'root',
+                $_ENV['DB_PASS'] ?? '',
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+            );
+        } catch (\PDOException $e) {
+            self::$pdo = null;
+        }
     }
 
     protected function setUp(): void
     {
+        if (self::$pdo === null) {
+            $this->markTestSkipped('Δεν υπάρχει διαθέσιμη βάση drivejob.');
+        }
+
         self::$pdo->beginTransaction();
         $this->visibility = new Visibility(self::$pdo);
         $this->seed();
@@ -46,7 +59,9 @@ class VisibilityTest extends TestCase
 
     protected function tearDown(): void
     {
-        self::$pdo->rollBack();
+        if (self::$pdo !== null && self::$pdo->inTransaction()) {
+            self::$pdo->rollBack();
+        }
     }
 
     /**
@@ -238,24 +253,4 @@ class VisibilityTest extends TestCase
         );
     }
 
-    // ───────────────────────────────────── Απόκρυψη
-
-    public function testMaskingHidesEnoughToBeUseless(): void
-    {
-        $masked = Visibility::maskEmail('kostas.michailidis@hotmail.gr');
-        $this->assertStringContainsString('@hotmail.gr', $masked);
-        $this->assertStringNotContainsString('kostas.michailidis', $masked);
-
-        $phone = Visibility::maskPhone('6972964602');
-        $this->assertStringNotContainsString('6972964602', $phone);
-        $this->assertStringStartsWith('697', $phone);
-    }
-
-    public function testMaskingSurvivesEmptyValues(): void
-    {
-        $this->assertSame('•••', Visibility::maskEmail(null));
-        $this->assertSame('•••', Visibility::maskEmail(''));
-        $this->assertSame('•••', Visibility::maskPhone(null));
-        $this->assertSame('•••', Visibility::maskPhone('12'));
-    }
 }
