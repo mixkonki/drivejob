@@ -171,6 +171,7 @@ $router->group(['prefix' => 'companies'], function ($router) {
     $router->post('/change-password', [CompaniesController::class, 'changePassword'])->name('companies.change-password');
     $router->get('/search', [CompaniesController::class, 'search'])->name('companies.search');
     $router->post('/add-review/{id}', [CompaniesController::class, 'addReview'])->name('companies.add-review');
+
     $router->get('/messages', [\Drivejob\Controllers\MessagesController::class, 'companyMessages'])->name('companies.messages');
     $router->get('/conversation', [\Drivejob\Controllers\MessagesController::class, 'companyConversation'])->name('companies.conversation');
     $router->post('/conversation', [\Drivejob\Controllers\MessagesController::class, 'companyConversation']);
@@ -225,9 +226,13 @@ $router->group(['prefix' => 'job-applications'], function ($router) {
 
 // Ομαδοποίηση διαδρομών για τις προσφορές εργασίας
 $router->group(['prefix' => 'job-offers'], function ($router) {
+    // Το {id} εδώ είναι η ΑΓΓΕΛΙΑ του οδηγού· η create() το μεταφράζει σε οδηγό.
+    $router->get('/create/{id}', [JobOfferController::class, 'create'])->name('job-offers.create');
     $router->post('/send/{id}', [JobOfferController::class, 'send'])->name('job-offers.send');
     $router->get('/my-offers', [JobOfferController::class, 'myOffers'])->name('job-offers.my-offers');
-    $router->get('/view/{id}', [JobOfferController::class, 'view'])->name('job-offers.view');
+    // Η μέθοδος λέγεται viewOffer — το «view» είναι δεσμευμένο σε πολλά MVC.
+    // Η διαδρομή έδειχνε σε μέθοδο που δεν υπάρχει και έβγαζε 500.
+    $router->get('/view/{id}', [JobOfferController::class, 'viewOffer'])->name('job-offers.view');
     $router->post('/accept/{id}', [JobOfferController::class, 'accept'])->name('job-offers.accept');
     $router->post('/reject/{id}', [JobOfferController::class, 'reject'])->name('job-offers.reject');
 });

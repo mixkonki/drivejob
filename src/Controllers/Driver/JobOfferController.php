@@ -48,6 +48,21 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
      *
      * @param PDO|null $pdo Η σύνδεση με τη βάση δεδομένων
      */
+    /** @var \Drivejob\Repositories\JobListingRepository */
+    private $jobListingRepository;
+
+    /*
+     * ΚΑΜΙΑ ΕΠΑΝΑΔΗΛΩΣΗ ΤΟΥ $pdo.
+     *
+     * Ο BaseController το έχει ήδη ως protected. Μια δεύτερη δήλωση εδώ —
+     * private ή έστω protected με τύπο — ρίχνει την κλάση με fatal error
+     * πριν καν τρέξει μέθοδος:
+     *
+     *   Access level to …::$pdo must be protected … or weaker
+     *
+     * Ακριβώς το ίδιο λάθος είχε ρίξει και τον FleetController.
+     */
+
     public function __construct($pdo = null)
     {
         // Λήψη του container
@@ -58,10 +73,16 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             $pdo = $container->get('pdo');
         }
 
+        // Η σύνδεση κρατιέται: η create() τη χρειάζεται για το Visibility.
+        $this->pdo = $pdo;
+
         // Αρχικοποίηση των repositories
         $this->jobOfferRepository = new JobOfferRepository($pdo);
         $this->driversRepository = new DriversRepository($pdo);
         $this->companiesRepository = new CompaniesRepository($pdo);
+
+        // Χρειάζεται για τη μετάφραση «αγγελία → οδηγός» στην create().
+        $this->jobListingRepository = new \Drivejob\Repositories\JobListingRepository($pdo);
 
         // Αρχικοποίηση του FileService
         $this->fileService = new FileService();
@@ -97,6 +118,114 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
      * 
      * @param int $id Το ID του οδηγού
      */
+    /**
+     * Φόρμα προσφοράς προς οδηγό που δημοσίευσε «ζητώ εργασία».
+     *
+     * ══════════════════════════════════════════════════════════════════════
+     *  Η ΓΕΦΥΡΑ ΠΟΥ ΕΛΕΙΠΕ
+     * ══════════════════════════════════════════════════════════════════════
+     *
+     * Η σελίδα μιας αγγελίας οδηγού έχει κουμπί «Αποστολή Προσφοράς» που
+     * δείχνει στο /job-offers/create/{id} — διαδρομή που ΔΕΝ υπήρχε, με
+     * αποτέλεσμα 404. Ολόκληρη η αντίστροφη κατεύθυνση της πλατφόρμας
+     * (οδηγός ψάχνει → εταιρεία προσφέρει) σταματούσε εδώ.
+     *
+     * ΠΡΟΣΟΧΗ ΣΤΟ ΑΝΑΓΝΩΡΙΣΤΙΚΟ: το κουμπί στέλνει το id της ΑΓΓΕΛΙΑΣ, ενώ
+     * η send() περιμένει το id του ΟΔΗΓΟΥ. Η μετάφραση γίνεται εδώ, μία
+     * φορά — αλλιώς θα έπρεπε κάθε view που δείχνει αγγελία οδηγού να
+     * ξέρει και τα δύο.
+     */
+    /*
+     * Η παράμετρος ΠΡΕΠΕΙ να λέγεται $id.
+     *
+     * Ο Router περνάει τα placeholders της διαδρομής ως ΟΝΟΜΑΤΙΣΜΕΝΑ
+     * ορίσματα: το {id} γίνεται id:. Αν η μέθοδος τη λέει αλλιώς, η PHP
+     * απαντάει «Unknown named parameter $id» και η σελίδα βγάζει 500 —
+     * χωρίς καμία ένδειξη ότι φταίει το όνομα.
+     */
+    public function create($id)
+    {
+        $listingId = $id;
+        try {
+            AuthMiddleware::hasRole('company');
+        } catch (AuthException $e) {
+            Session::set('error_message', 'Πρέπει να συνδεθείτε ως εταιρεία για να στείλετε προσφορά.');
+            header('Location: ' . BASE_URL . 'login');
+            exit();
+        }
+
+        if (!$listingId || !is_numeric($listingId)) {
+            Session::set('error_message', 'Μη έγκυρη αγγελία.');
+            header('Location: ' . BASE_URL . 'job-listings');
+            exit();
+        }
+
+        try {
+            $listing = $this->jobListingRepository->find((int) $listingId);
+
+            if (!$listing || empty($listing['driver_id'])) {
+                Session::set('error_message', 'Η αγγελία δεν βρέθηκε ή δεν ανήκει σε οδηγό.');
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit();
+            }
+
+            $driver = $this->driversRepository->find((int) $listing['driver_id']);
+
+            if (!$driver) {
+                Session::set('error_message', 'Ο οδηγός δεν βρέθηκε.');
+                header('Location: ' . BASE_URL . 'job-listings');
+                exit();
+            }
+
+            if (empty($driver['available_for_work'])) {
+                Session::set('error_message', 'Ο οδηγός δεν είναι διαθέσιμος για εργασία αυτή τη στιγμή.');
+                header('Location: ' . BASE_URL . 'job-listings/show/' . (int) $listingId);
+                exit();
+            }
+
+            /*
+             * Μία εκκρεμής προσφορά τη φορά.
+             *
+             * Χωρίς αυτόν τον έλεγχο, μια εταιρεία μπορεί να γεμίσει τα
+             * εισερχόμενα του οδηγού με δεκάδες προσφορές — το ίδιο
+             * πρόβλημα που λύνει το unique_application στις αιτήσεις.
+             */
+            $companyId = (int) Session::get('user_id');
+            $existing = $this->jobOfferRepository->findByCompanyAndDriver($companyId, (int) $driver['id']);
+
+            if ($existing && ($existing['status'] ?? '') === 'pending') {
+                Session::set('error_message',
+                    'Έχεις ήδη στείλει προσφορά σε αυτόν τον οδηγό και είναι σε αναμονή.');
+                header('Location: ' . BASE_URL . 'job-offers/my-offers');
+                exit();
+            }
+
+            /*
+             * Ο οδηγός δεν ταυτοποιείται πριν δεχτεί.
+             *
+             * Η εταιρεία στέλνει προσφορά χωρίς να ξέρει ονοματεπώνυμο ή
+             * στοιχεία επικοινωνίας — ακριβώς όπως και στο ταίριασμα. Αυτά
+             * ξεκλειδώνουν όταν ο οδηγός αποδεχθεί.
+             */
+            $visibility = new \Drivejob\Services\Visibility($this->pdo);
+            $driverLabel = $visibility->canViewDriverContact('company', $companyId, (int) $driver['id'])
+                ? trim(($driver['first_name'] ?? '') . ' ' . ($driver['last_name'] ?? ''))
+                : 'Οδηγός #' . (int) $driver['id'];
+
+            $pageTitle = 'Αποστολή προσφοράς';
+
+            include ROOT_DIR . '/src/Views/job-offers/create.php';
+        } catch (\Exception $e) {
+            Logger::error('Σφάλμα στη φόρμα προσφοράς', [
+                'listing_id' => $listingId,
+                'message' => $e->getMessage(),
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'job-listings');
+            exit();
+        }
+    }
+
     public function send($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως εταιρεία
@@ -108,11 +237,27 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             exit();
         }
 
+        /*
+         * ΠΟΥ ΓΥΡΝΑΕΙ Ο ΧΡΗΣΤΗΣ ΟΤΑΝ ΚΑΤΙ ΠΑΕΙ ΣΤΡΑΒΑ.
+         *
+         * Η μέθοδος έστελνε πάντα στο προφίλ του οδηγού — σελίδα που δεν
+         * έχει φόρμα. Αποτέλεσμα: τα μηνύματα λάθους και το old_input
+         * αποθηκεύονταν και δεν τα έβλεπε ποτέ κανείς, ενώ ό,τι είχε
+         * γράψει η εταιρεία χανόταν.
+         *
+         * Η φόρμα στέλνει κρυφά το id της αγγελίας ώστε να μπορούμε να
+         * επιστρέψουμε ακριβώς εκεί απ' όπου ήρθε.
+         */
+        $listingId = isset($_POST['listing_id']) ? (int) $_POST['listing_id'] : 0;
+        $backUrl = $listingId > 0
+            ? BASE_URL . 'job-offers/create/' . $listingId
+            : BASE_URL . 'drivers/profile/' . (int) $id;
+
         // Έλεγχος για CSRF token
         if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job offer send');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
+            header('Location: ' . $backUrl);
             exit();
         }
 
@@ -129,7 +274,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             // Έλεγχος αν ο οδηγός είναι διαθέσιμος για εργασία
             if (!$driver['available_for_work']) {
                 Session::set('error_message', 'Ο οδηγός δεν είναι διαθέσιμος για εργασία');
-                header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
+                header('Location: ' . $backUrl);
                 exit;
             }
 
@@ -139,7 +284,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
 
             if ($existingOffer && $existingOffer['status'] === 'pending') {
                 Session::set('error_message', 'Έχετε ήδη στείλει προσφορά εργασίας σε αυτόν τον οδηγό');
-                header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
+                header('Location: ' . $backUrl);
                 exit;
             }
 
@@ -157,7 +302,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
                 ]);
                 Session::set('errors', $validator->getErrors());
                 Session::set('old_input', $_POST);
-                header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
+                header('Location: ' . $backUrl);
                 exit();
             }
 
@@ -192,7 +337,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
                     ]);
                 } else {
                     Session::set('error_message', 'Υπήρξε ένα πρόβλημα κατά το ανέβασμα του εγγράφου προσφοράς.');
-                    header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
+                    header('Location: ' . $backUrl);
                     exit();
                 }
             }
@@ -230,7 +375,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
                 ]);
 
                 Session::set('success_message', 'Η προσφορά εργασίας στάλθηκε με επιτυχία.');
-                header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
+                header('Location: ' . BASE_URL . 'job-offers/my-offers');
                 exit();
             } else {
                 Logger::error('Job offer send failed', [
@@ -239,7 +384,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
                 ]);
 
                 Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την αποστολή της προσφοράς. Παρακαλώ δοκιμάστε ξανά.');
-                header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
+                header('Location: ' . $backUrl);
                 exit();
             }
         } catch (DatabaseException $e) {
@@ -251,7 +396,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
+            header('Location: ' . $backUrl);
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in job offer send', [
@@ -262,7 +407,7 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'drivers/profile/' . $id);
+            header('Location: ' . $backUrl);
             exit();
         }
     }
@@ -299,14 +444,83 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
                 exit();
             }
 
-            // Αν είναι AJAX αίτημα, επιστροφή JSON
+            /*
+             * ══════════════════════════════════════════════════════════════
+             *  Η JSON ΑΠΟΚΡΙΣΗ ΠΕΡΝΑΕΙ ΑΠΟ ΛΙΣΤΑ ΕΠΙΤΡΕΠΤΩΝ ΠΕΔΙΩΝ
+             * ══════════════════════════════════════════════════════════════
+             *
+             * Το ερώτημα κάνει JOIN με drivers/companies και επιστρέφει
+             * ονοματεπώνυμο. Στην HTML το κρύβει το view — στο JSON τίποτα
+             * δεν το έκρυβε. Ακριβώς έτσι διέρρευσαν και οι τρεις
+             * προηγούμενες περιπτώσεις: η σελίδα ήταν καθαρή, η απόκριση όχι.
+             *
+             * ΛΙΣΤΑ ΕΠΙΤΡΕΠΤΩΝ, ΟΧΙ ΑΦΑΙΡΕΣΗ: το unset() των «κακών» πεδίων
+             * αποτυγχάνει σιωπηλά την πρώτη φορά που θα προστεθεί στήλη.
+             */
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-                JsonHelper::response($result);
+                $public = [
+                    'id', 'company_id', 'driver_id', 'title', 'location',
+                    'job_type', 'vehicle_type', 'salary_min', 'salary_max',
+                    'salary_period', 'start_date', 'status', 'created_at',
+                ];
+
+                $visibility = $userRole === 'company'
+                    ? new \Drivejob\Services\Visibility($this->pdo)
+                    : null;
+
+                $safe = [];
+                foreach (($result['results'] ?? []) as $row) {
+                    $item = array_intersect_key($row, array_flip($public));
+
+                    if ($userRole === 'company') {
+                        $did = (int) ($row['driver_id'] ?? 0);
+                        $reveal = ($row['status'] ?? '') === 'accepted'
+                            || ($did && $visibility->canViewDriverContact('company', $userId, $did));
+
+                        $item['driver_label'] = $reveal
+                            ? trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''))
+                            : 'Οδηγός #' . $did;
+                    } else {
+                        // Η επωνυμία της εταιρείας είναι εμπορική πληροφορία.
+                        $item['company_name'] = $row['company_name'] ?? null;
+                    }
+
+                    $safe[] = $item;
+                }
+
+                JsonHelper::response([
+                    'results' => $safe,
+                    'pagination' => $result['pagination'] ?? [],
+                ]);
             }
 
             // Αλλιώς, φόρτωση του view
             $offers = $result['results'];
             $pagination = $result['pagination'];
+
+            /*
+             * ΠΟΙΟΙ ΟΔΗΓΟΙ ΕΧΟΥΝ ΗΔΗ ΞΕΚΛΕΙΔΩΣΕΙ.
+             *
+             * Η αποδοχή της προσφοράς δεν είναι ο μόνος τρόπος: αν ο οδηγός
+             * έχει ήδη προσληφθεί από αυτή την εταιρεία μέσω αίτησης, η
+             * ταυτότητά του είναι ήδη γνωστή. Να τον δείχνει η μία σελίδα
+             * ονομαστικά και η άλλη ως «Οδηγός #84» δεν προστατεύει κανέναν
+             * — απλώς μπερδεύει.
+             *
+             * Η απόφαση παίρνεται σε ΕΝΑ σημείο, το Visibility, και τα views
+             * απλώς την εφαρμόζουν.
+             */
+            $revealedDriverIds = [];
+            if ($userRole === 'company') {
+                $visibility = new \Drivejob\Services\Visibility($this->pdo);
+                foreach ($offers as $offer) {
+                    $did = (int) ($offer['driver_id'] ?? 0);
+                    if ($did && $visibility->canViewDriverContact('company', $userId, $did)) {
+                        $revealedDriverIds[$did] = true;
+                    }
+                }
+            }
+
             include ROOT_DIR . '/src/Views/job-offers/my-offers.php';
         } catch (DatabaseException $e) {
             Logger::error('Database exception in my offers', [
@@ -397,6 +611,36 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             // Ανάκτηση της εταιρείας
             $company = $this->companiesRepository->find($offer['company_id']);
 
+            /*
+             * Η ΠΡΟΣΦΟΡΑ ΠΟΥ ΔΙΑΒΑΣΤΗΚΕ ΤΟ ΛΕΕΙ.
+             *
+             * Το enum έχει «viewed» και καμία γραμμή κώδικα δεν το έθετε:
+             * κάθε προσφορά έμενε «Σε αναμονή» για πάντα, ακόμη κι όταν ο
+             * οδηγός την είχε ανοίξει. Η εταιρεία δεν μπορούσε να ξεχωρίσει
+             * τη σιωπή από τη μη ανάγνωση — που είναι δύο πολύ διαφορετικά
+             * πράγματα όταν αποφασίζεις αν θα ξαναστείλεις.
+             *
+             * Ίδια συμπεριφορά με τις αιτήσεις: το βλέμμα καταγράφεται, δεν
+             * δεσμεύει.
+             */
+            if ($userRole === 'driver' && ($offer['status'] ?? '') === 'pending') {
+                try {
+                    $this->jobOfferRepository->updateStatus($id, 'viewed');
+                    $offer['status'] = 'viewed';
+                } catch (\Exception $e) {
+                    // Η ένδειξη ανάγνωσης δεν αξίζει να ρίξει τη σελίδα.
+                    Logger::error('Αποτυχία σήμανσης προσφοράς ως αναγνωσμένης', [
+                        'offer_id' => $id,
+                        'message' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Ίδιος κανόνας με τη λίστα: αποδοχή Ή προϋπάρχουσα σχέση.
+            $visibility = new \Drivejob\Services\Visibility($this->pdo);
+            $canRevealDriver = ($offer['status'] ?? '') === 'accepted'
+                || $visibility->canViewDriverContact($userRole, $userId, (int) $offer['driver_id']);
+
             // Φόρτωση του view
             include ROOT_DIR . '/src/Views/job-offers/view.php';
         } catch (DatabaseException $e) {
@@ -472,7 +716,14 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             }
 
             // Έλεγχος αν η προσφορά μπορεί να γίνει αποδεκτή
-            if ($offer['status'] !== 'pending') {
+            /*
+             * Δεκτή και η «viewed».
+             *
+             * Μόλις το άνοιγμα της προσφοράς άρχισε να τη σημαίνει ως
+             * αναγνωσμένη, ο έλεγχος «μόνο pending» έκλεινε την πόρτα σε
+             * κάθε οδηγό που είχε την ευγένεια να τη διαβάσει πρώτα.
+             */
+            if (!in_array($offer['status'], ['pending', 'viewed'], true)) {
                 Session::set('error_message', 'Δεν μπορείτε να αποδεχτείτε αυτή την προσφορά');
                 header('Location: ' . BASE_URL . 'job-offers/view/' . $id);
                 exit;
@@ -580,7 +831,14 @@ class JobOfferController extends \Drivejob\Controllers\BaseController
             }
 
             // Έλεγχος αν η προσφορά μπορεί να απορριφθεί
-            if ($offer['status'] !== 'pending') {
+            /*
+             * Δεκτή και η «viewed».
+             *
+             * Μόλις το άνοιγμα της προσφοράς άρχισε να τη σημαίνει ως
+             * αναγνωσμένη, ο έλεγχος «μόνο pending» έκλεινε την πόρτα σε
+             * κάθε οδηγό που είχε την ευγένεια να τη διαβάσει πρώτα.
+             */
+            if (!in_array($offer['status'], ['pending', 'viewed'], true)) {
                 Session::set('error_message', 'Δεν μπορείτε να απορρίψετε αυτή την προσφορά');
                 header('Location: ' . BASE_URL . 'job-offers/view/' . $id);
                 exit;

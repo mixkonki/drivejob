@@ -101,6 +101,25 @@ class FileController extends BaseController
 
         try {
             $pdo = Container::getInstance()->get('pdo');
+
+            /*
+             * Συνημμένα προσφοράς εργασίας.
+             *
+             * Αυτά τα ανεβάζει η ΕΤΑΙΡΕΙΑ, όχι ο οδηγός — σύμβαση, περιγραφή
+             * θέσης, εταιρικό έντυπο. Ο έλεγχος παρακάτω ψάχνει σε ποιον
+             * ΟΔΗΓΟ ανήκει το αρχείο, δεν βρίσκει κανέναν, και κλείνει την
+             * πόρτα (fail-closed). Σωστή προεπιλογή, λάθος απάντηση εδώ:
+             * χωρίς αυτόν τον έλεγχο η εταιρεία δεν βλέπει ούτε το έγγραφο
+             * που έστειλε η ίδια.
+             *
+             * Δικαίωμα έχουν ακριβώς δύο: αυτός που το έστειλε και αυτός που
+             * το έλαβε.
+             */
+            $offerAccess = $this->offerAttachmentAccess($pdo, $filename, $role, $userId);
+            if ($offerAccess !== null) {
+                return $offerAccess;
+            }
+
             $ownerDriverId = $this->findOwnerDriverId($pdo, $filename);
 
             if ($ownerDriverId === null) {
@@ -129,6 +148,48 @@ class FileController extends BaseController
             }
         } catch (\Throwable $e) {
             Logger::error('FileController authorize error: ' . $e->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
+     * Πρόσβαση σε συνημμένο προσφοράς εργασίας.
+     *
+     * @return bool|null true/false αν το αρχείο ανήκει σε προσφορά,
+     *                   null αν δεν ανήκει σε καμία (συνεχίζει ο κανονικός έλεγχος).
+     */
+    private function offerAttachmentAccess(\PDO $pdo, string $filename, ?string $role, int $userId): ?bool
+    {
+        $columns = ['document_path', 'contract_template_path', 'job_description_path', 'company_brochure_path'];
+
+        $conditions = [];
+        $params = ['p' => '%' . $filename];
+        foreach ($columns as $col) {
+            $conditions[] = "$col LIKE :p";
+        }
+
+        try {
+            $st = $pdo->prepare(
+                'SELECT company_id, driver_id FROM job_offers WHERE ' . implode(' OR ', $conditions) . ' LIMIT 1'
+            );
+            $st->execute($params);
+            $row = $st->fetch(\PDO::FETCH_ASSOC);
+        } catch (\Throwable $e) {
+            // Ο πίνακας δεν υπάρχει ακόμη σε αυτό το περιβάλλον.
+            return null;
+        }
+
+        if (!$row) {
+            return null;
+        }
+
+        if ($role === 'company') {
+            return (int) $row['company_id'] === $userId;
+        }
+
+        if ($role === 'driver') {
+            return (int) $row['driver_id'] === $userId;
         }
 
         return false;

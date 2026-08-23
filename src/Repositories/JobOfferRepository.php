@@ -81,7 +81,7 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'message' => $e->getMessage(),
                 'data' => $data
             ]);
-            throw new DatabaseException('Failed to create job offer', (int)$e->getCode(), $e, $data);
+            throw new DatabaseException('Failed to create job offer', $data, (int) $e->getCode(), $e);
         }
     }
 
@@ -120,10 +120,10 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'id' => $id,
                 'data' => $data
             ]);
-            throw new DatabaseException('Failed to update job offer', (int)$e->getCode(), $e, [
+            throw new DatabaseException('Failed to update job offer', [
                 'id' => $id,
                 'data' => $data
-            ]);
+            ], (int) $e->getCode(), $e);
         }
     }
 
@@ -156,7 +156,7 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'message' => $e->getMessage(),
                 'id' => $id
             ]);
-            throw new DatabaseException('Failed to delete job offer', (int)$e->getCode(), $e, ['id' => $id]);
+            throw new DatabaseException('Failed to delete job offer', ['id' => $id], (int) $e->getCode(), $e);
         }
     }
 
@@ -183,7 +183,7 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'message' => $e->getMessage(),
                 'id' => $id
             ]);
-            throw new DatabaseException('Failed to find job offer', (int)$e->getCode(), $e, ['id' => $id]);
+            throw new DatabaseException('Failed to find job offer', ['id' => $id], (int) $e->getCode(), $e);
         }
     }
 
@@ -212,10 +212,10 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'company_id' => $companyId,
                 'driver_id' => $driverId
             ]);
-            throw new DatabaseException('Failed to find job offer by company and driver', (int)$e->getCode(), $e, [
+            throw new DatabaseException('Failed to find job offer by company and driver', [
                 'company_id' => $companyId,
                 'driver_id' => $driverId
-            ]);
+            ], (int) $e->getCode(), $e);
         }
     }
 
@@ -240,7 +240,7 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
             $totalCount = $countStmt->fetchColumn();
 
             // Δημιουργία του SQL ερωτήματος για τις προσφορές
-            $sql = "SELECT o.*, c.name as company_name, c.logo as company_logo
+            $sql = "SELECT o.*, c.company_name, c.company_logo
                     FROM {$this->table} o
                     JOIN companies c ON o.company_id = c.id
                     WHERE o.driver_id = ?
@@ -273,11 +273,11 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'page' => $page,
                 'limit' => $limit
             ]);
-            throw new DatabaseException('Failed to find job offers by driver', (int)$e->getCode(), $e, [
+            throw new DatabaseException('Failed to find job offers by driver', [
                 'driver_id' => $driverId,
                 'page' => $page,
                 'limit' => $limit
-            ]);
+            ], (int) $e->getCode(), $e);
         }
     }
 
@@ -335,11 +335,11 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'page' => $page,
                 'limit' => $limit
             ]);
-            throw new DatabaseException('Failed to find job offers by company', (int)$e->getCode(), $e, [
+            throw new DatabaseException('Failed to find job offers by company', [
                 'company_id' => $companyId,
                 'page' => $page,
                 'limit' => $limit
-            ]);
+            ], (int) $e->getCode(), $e);
         }
     }
 
@@ -375,10 +375,10 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'id' => $id,
                 'status' => $status
             ]);
-            throw new DatabaseException('Failed to update job offer status', (int)$e->getCode(), $e, [
+            throw new DatabaseException('Failed to update job offer status', [
                 'id' => $id,
                 'status' => $status
-            ]);
+            ], (int) $e->getCode(), $e);
         }
     }
 
@@ -392,7 +392,7 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
             $offset = ($page - 1) * $limit;
 
             // Δημιουργία του βασικού SQL ερωτήματος
-            $sql = "SELECT o.*, c.company_name, c.logo as company_logo, d.first_name, d.last_name, d.profile_image
+            $sql = "SELECT o.*, c.company_name, c.company_logo, d.first_name, d.last_name, d.profile_image
                     FROM {$this->table} o
                     LEFT JOIN companies c ON o.company_id = c.id
                     LEFT JOIN drivers d ON o.driver_id = d.id
@@ -515,11 +515,11 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'page' => $page,
                 'limit' => $limit
             ]);
-            throw new DatabaseException('Failed to search job offers', (int)$e->getCode(), $e, [
+            throw new DatabaseException('Failed to search job offers', [
                 'criteria' => $criteria,
                 'page' => $page,
                 'limit' => $limit
-            ]);
+            ], (int) $e->getCode(), $e);
         }
     }
 
@@ -553,7 +553,7 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
     public function getExpiringOffers($days = 7)
     {
         try {
-            $sql = "SELECT o.*, c.company_name, c.logo as company_logo, d.first_name, d.last_name, d.profile_image
+            $sql = "SELECT o.*, c.company_name, c.company_logo, d.first_name, d.last_name, d.profile_image
                     FROM {$this->table} o
                     LEFT JOIN companies c ON o.company_id = c.id
                     LEFT JOIN drivers d ON o.driver_id = d.id
@@ -570,7 +570,7 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'message' => $e->getMessage(),
                 'days' => $days
             ]);
-            throw new DatabaseException('Failed to get expiring job offers', (int)$e->getCode(), $e, ['days' => $days]);
+            throw new DatabaseException('Failed to get expiring job offers', ['days' => $days], (int) $e->getCode(), $e);
         }
     }
 
@@ -580,7 +580,7 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
     public function getRecentOffers($limit = 10)
     {
         try {
-            $sql = "SELECT o.*, c.company_name, c.logo as company_logo, d.first_name, d.last_name, d.profile_image
+            $sql = "SELECT o.*, c.company_name, c.company_logo, d.first_name, d.last_name, d.profile_image
                     FROM {$this->table} o
                     LEFT JOIN companies c ON o.company_id = c.id
                     LEFT JOIN drivers d ON o.driver_id = d.id
@@ -596,7 +596,7 @@ class JobOfferRepository extends BaseRepository implements JobOfferRepositoryInt
                 'message' => $e->getMessage(),
                 'limit' => $limit
             ]);
-            throw new DatabaseException('Failed to get recent job offers', (int)$e->getCode(), $e, ['limit' => $limit]);
+            throw new DatabaseException('Failed to get recent job offers', ['limit' => $limit], (int) $e->getCode(), $e);
         }
     }
 }

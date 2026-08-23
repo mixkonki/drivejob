@@ -151,6 +151,7 @@ PATHS="
 /api/drivers/stats
 /job-applications/my-applications
 /job-applications/company-applications
+/job-offers/my-offers
 "
 
 for p in $PATHS; do

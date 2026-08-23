@@ -16,8 +16,34 @@ class JsonHelper
      */
     public static function response($data, $options = 0)
     {
-        header('Content-Type: application/json');
+        if (!headers_sent()) {
+            header('Content-Type: application/json');
+        }
+
         echo self::encode($data, $options);
+
+        /*
+         * ══════════════════════════════════════════════════════════════════
+         *  Η ΑΠΟΚΡΙΣΗ ΤΕΛΕΙΩΝΕΙ ΕΔΩ
+         * ══════════════════════════════════════════════════════════════════
+         *
+         * Χωρίς αυτό, η εκτέλεση συνέχιζε και ο controller φόρτωνε από πάνω
+         * ΟΛΟΚΛΗΡΗ τη σελίδα HTML. Η απόκριση έβγαινε:
+         *
+         *     {"results":[…]}<!DOCTYPE html><html lang="el">…
+         *
+         * με Content-Type: application/json. Κάθε JSON.parse στον browser
+         * έσκαγε με «Unexpected token <».
+         *
+         * Χειρότερα: η HTML που κολλούσε από πίσω ήταν πλήρης σελίδα —
+         * μενού, δεδομένα χρήστη, CSRF token — σε απόκριση που ο κώδικας
+         * θεωρούσε ασφαλή γιατί «είναι JSON». Ο έλεγχος διαρροών κοιτάζει
+         * μόνο το JSON κομμάτι· ό,τι ακολουθεί περνάει απαρατήρητο.
+         *
+         * Μόνο 6 από τα 77 σημεία κλήσης έβαζαν exit μόνα τους. Η σωστή
+         * θέση του ελέγχου είναι εδώ, μία φορά, όχι 77.
+         */
+        exit;
     }
 
     /**
