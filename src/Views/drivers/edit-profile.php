@@ -1,4 +1,3 @@
-```php
 <?php
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/partials/header.php';

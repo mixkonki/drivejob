@@ -130,18 +130,51 @@ class UserAuthenticator
             $stmt->execute([$email, $email]);
             $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            $adminRole = $admin['role'] ?? $admin['user_type'] ?? null;
-            if ($admin && $adminRole === null) {
+            /*
+             * ══════════════════════════════════════════════════════════════
+             *  ΤΟ RBAC ΕΙΝΑΙ Η ΠΗΓΗ ΑΛΗΘΕΙΑΣ — ΟΧΙ Η ΣΤΗΛΗ user_type
+             * ══════════════════════════════════════════════════════════════
+             *
+             * Ο κώδικας ρωτούσε πρώτα τις στήλες του πίνακα:
+             *
+             *     $adminRole = $admin['role'] ?? $admin['user_type'] ?? null;
+             *     if ($adminRole === null) { ...τότε μόνο RBAC lookup... }
+             *
+             * Ο πίνακας `users` ΔΕΝ έχει στήλη `role` (η αρχιτεκτονική το
+             * λέει ρητά: οι ρόλοι ζουν στα `user_roles` + `roles`). Έχει
+             * όμως μια παλιά στήλη `user_type` — και για τον λογαριασμό
+             * admin@drivejob.gr αυτή περιείχε **'driver'**.
+             *
+             * Αποτέλεσμα: το `$adminRole` γινόταν 'driver', δεν ήταν null,
+             * άρα το RBAC lookup ΔΕΝ ΕΚΤΕΛΟΥΝΤΑΝ ΠΟΤΕ. Ο επόμενος έλεγχος
+             * («είναι admin ή super_admin;») απέτυχε, και ο διαχειριστής
+             * δεν μπορούσε να συνδεθεί — με σωστό email, σωστό συνθηματικό
+             * και σωστή εγγραφή `admin` στον πίνακα user_roles.
+             *
+             * Η σειρά αντιστράφηκε: ρωτάμε ΠΡΩΤΑ το RBAC, που είναι η
+             * επίσημη πηγή, και πέφτουμε στις στήλες μόνο αν δεν υπάρχει
+             * καμία εγγραφή ρόλου εκεί.
+             */
+            $adminRole = null;
+
+            if ($admin) {
                 try {
                     $roleStmt = $this->pdo->prepare(
                         'SELECT r.name FROM user_roles ur
                          JOIN roles r ON r.id = ur.role_id
-                         WHERE ur.user_id = ? LIMIT 1'
+                         WHERE ur.user_id = ?
+                         ORDER BY FIELD(r.name, "super_admin", "admin") DESC
+                         LIMIT 1'
                     );
                     $roleStmt->execute([$admin['id']]);
                     $adminRole = $roleStmt->fetchColumn() ?: null;
                 } catch (\PDOException $rbacError) {
                     Logger::debug('RBAC role lookup failed: ' . $rbacError->getMessage());
+                }
+
+                // Εφεδρεία μόνο όταν το RBAC δεν έχει τίποτα να πει.
+                if ($adminRole === null) {
+                    $adminRole = $admin['role'] ?? $admin['user_type'] ?? null;
                 }
             }
             if ($admin && !in_array($adminRole, ['admin', 'super_admin'], true)) {
