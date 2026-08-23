@@ -109,6 +109,9 @@ $router->group(['prefix' => 'drivers'], function ($router) {
     $router->get('/profile/{id}', [DriversController::class, 'publicProfile'])->name('drivers.profile.public');
     $router->get('/edit-profile', [DriversController::class, 'edit'])->name('drivers.edit-profile');
     $router->post('/update-profile', [DriversController::class, 'update'])->name('drivers.update-profile');
+    // Το κουμπί «Διαχείριση Προϋπηρεσίας σε Οχήματα» έδειχνε εδώ, αλλά η
+    // διαδρομή δεν υπήρχε ποτέ — ο οδηγός έπαιρνε 404.
+    $router->get('/vehicle-experience', [DriversController::class, 'vehicleExperience'])->name('drivers.vehicle-experience');
     $router->post('/change-password', [DriversController::class, 'changePassword'])->name('drivers.change-password');
 
     // Διαδρομές αναζήτησης και αξιολόγησης

@@ -192,6 +192,62 @@ class DriversController extends BaseUserController
     }
 
     /**
+     * Προϋπηρεσία σε οχήματα.
+     *
+     * ΓΙΑΤΙ ΠΡΟΣΤΕΘΗΚΕ: το κουμπί «Διαχείριση Προϋπηρεσίας σε Οχήματα» στη
+     * φόρμα επεξεργασίας έδειχνε στο /drivers/vehicle-experience — διαδρομή
+     * που ΔΕΝ υπήρχε ούτε στα routes ούτε ως μέθοδος. Ο οδηγός πατούσε το
+     * κουμπί και έπαιρνε 404, ενώ το view (`vehicle-experience.php`) και ο
+     * πίνακας (`driver_vehicle_experience`) υπήρχαν κανονικά.
+     *
+     * Το view είναι partial — γράφτηκε για να ενσωματωθεί σε φόρμα, όχι ως
+     * αυτόνομη σελίδα. Εδώ τυλίγεται σε header/footer ώστε να στέκει μόνο
+     * του, με τα ίδια δεδομένα που έχει και η φόρμα επεξεργασίας.
+     */
+    public function vehicleExperience()
+    {
+        AuthMiddleware::hasRole('driver');
+
+        $driverId = Session::get('user_id');
+
+        try {
+            $driverProfile = $this->driverProfileService->getDriverProfile($driverId);
+
+            if (!$driverProfile) {
+                Session::set('error_message', 'Τα στοιχεία του οδηγού δεν βρέθηκαν.');
+                header('Location: ' . BASE_URL . 'drivers/edit-profile');
+                exit();
+            }
+
+            $viewData = $this->prepareDriverProfileViewData($driverProfile);
+            $this->calculateExperienceYears($viewData);
+            $pageTitle = 'Προϋπηρεσία σε Οχήματα';
+
+            extract($viewData);
+
+            include ROOT_DIR . '/src/Views/partials/header.php';
+            echo '<main class="container"><form method="POST" action="'
+                . BASE_URL . 'drivers/update-profile">';
+            echo \Drivejob\Core\CSRF::tokenField();
+            include ROOT_DIR . '/src/Views/drivers/vehicle-experience.php';
+            echo '<div class="form-actions" style="margin:1.5rem 0">'
+                . '<button type="submit" class="btn-primary">Αποθήκευση Αλλαγών</button> '
+                . '<a href="' . BASE_URL . 'drivers/edit-profile" class="btn-secondary">Επιστροφή στο προφίλ</a>'
+                . '</div>';
+            echo '</form></main>';
+            include ROOT_DIR . '/src/Views/partials/footer.php';
+        } catch (\Exception $e) {
+            Logger::error('Error in vehicle experience page', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'drivers/edit-profile');
+            exit();
+        }
+    }
+
+    /**
      * Προβάλλει τη φόρμα επεξεργασίας προφίλ
      */
     public function edit()
@@ -529,23 +585,132 @@ class DriversController extends BaseUserController
      * 
      * @return array Τα καθαρισμένα δεδομένα της φόρμας
      */
+    /**
+     * Τα δεδομένα της φόρμας επεξεργασίας προφίλ.
+     *
+     * ══════════════════════════════════════════════════════════════════════
+     *  ΕΝΤΕΚΑ ΠΕΔΙΑ ΠΕΤΙΟΝΤΑΝ ΣΙΩΠΗΛΑ
+     * ══════════════════════════════════════════════════════════════════════
+     *
+     * Η φόρμα ζητούσε ηλικία, οικογενειακή κατάσταση, στρατιωτικές
+     * υποχρεώσεις, μόρφωση, χρόνια εμπειρίας, σύντομο βιογραφικό, σταθερό
+     * τηλέφωνο, αριθμό οικίας και τέσσερα κοινωνικά δίκτυα. Ο χρήστης τα
+     * συμπλήρωνε, πατούσε «Αποθήκευση Αλλαγών», έβλεπε μήνυμα επιτυχίας —
+     * και τα πεδία γύριζαν κενά.
+     *
+     * Η αιτία: αυτή η μέθοδος συνέλεγε ΜΟΝΟ έντεκα από τα εικοσιδύο πεδία.
+     * Τα υπόλοιπα δεν έφταναν ποτέ στο μοντέλο. Οι στήλες υπήρχαν κανονικά
+     * στη βάση — απλά δεν τις έγραφε κανείς.
+     *
+     * ΚΑΙ ΕΝΑ ΔΕΥΤΕΡΟ, ΠΙΟ ΥΠΟΥΛΟ: η ημερομηνία γέννησης γραφόταν στη
+     * στήλη `date_of_birth`, ενώ η φόρμα τη διάβαζε από τη στήλη
+     * `birth_date`. Δύο στήλες, ίδιο νόημα. Η τιμή αποθηκευόταν σωστά και
+     * δεν ξαναεμφανιζόταν ποτέ. Πλέον γράφονται ΚΑΙ ΟΙ ΔΥΟ, ώσπου να
+     * καταργηθεί η μία με migration.
+     *
+     * ΚΑΝΟΝΑΣ ΓΙΑ ΤΟ ΜΕΛΛΟΝ: κάθε `name="..."` που προσθέτεις στη φόρμα
+     * πρέπει να εμφανιστεί και εδώ. Αλλιώς το πεδίο υπάρχει μόνο οπτικά.
+     */
     private function collectFormData()
     {
-        // Βασικά δεδομένα προφίλ
-        $data = [
+        $birthDate = $this->sanitizeDate($_POST['birth_date'] ?? null);
+
+        $raw = [
+            // ── Ταυτότητα & επικοινωνία ──────────────────────────────
             'email' => $this->sanitize($_POST['email'] ?? null),
             'first_name' => $this->sanitize($_POST['first_name'] ?? null),
             'last_name' => $this->sanitize($_POST['last_name'] ?? null),
             'phone' => $this->sanitize($_POST['phone'] ?? null),
+            'landline' => $this->sanitize($_POST['landline'] ?? null),
             'address' => $this->sanitize($_POST['address'] ?? null),
+            'house_number' => $this->sanitize($_POST['house_number'] ?? null),
             'city' => $this->sanitize($_POST['city'] ?? null),
             'country' => $this->sanitize($_POST['country'] ?? null),
             'postal_code' => $this->sanitize($_POST['postal_code'] ?? null),
-            'date_of_birth' => $this->sanitizeDate($_POST['birth_date'] ?? null),
+
+            // ── Προσωπικά στοιχεία ───────────────────────────────────
+            // Και οι δύο στήλες: η φόρμα διαβάζει birth_date, ο παλιός
+            // κώδικας έγραφε date_of_birth.
+            'birth_date' => $birthDate,
+            'date_of_birth' => $birthDate,
+            'marital_status' => $this->sanitize($_POST['marital_status'] ?? null),
+            'military_service' => $this->sanitize($_POST['military_service'] ?? null),
+            'education_level' => $this->sanitize($_POST['education_level'] ?? null),
+            'about_me' => $this->sanitize($_POST['about_me'] ?? null),
+
+            // Τα χρόνια εμπειρίας είναι αριθμός· κενό σημαίνει «δεν δήλωσε»,
+            // όχι μηδέν — γι' αυτό μένει null αντί για 0.
+            'experience_years' => ($_POST['experience_years'] ?? '') === ''
+                ? null
+                : max(0, (int) $_POST['experience_years']),
+
+            // ── Κοινωνικά δίκτυα ─────────────────────────────────────
+            'social_facebook' => $this->sanitizeUrl($_POST['social_facebook'] ?? null),
+            'social_instagram' => $this->sanitizeUrl($_POST['social_instagram'] ?? null),
+            'social_linkedin' => $this->sanitizeUrl($_POST['social_linkedin'] ?? null),
+            'social_twitter' => $this->sanitizeUrl($_POST['social_twitter'] ?? null),
+
+            // ── Κατάσταση ────────────────────────────────────────────
             'legal_status' => (($_POST['legal_status'] ?? '') === 'yes') ? 'yes' : 'no',
             'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
-            'updated_at' => date('Y-m-d H:i:s')
+            'updated_at' => date('Y-m-d H:i:s'),
         ];
+
+        /*
+         * ══════════════════════════════════════════════════════════════════
+         *  ΠΕΔΙΟ ΠΟΥ ΔΕΝ ΣΤΑΛΘΗΚΕ ΔΕΝ ΣΗΜΑΙΝΕΙ «ΣΒΗΣΕ ΤΟ»
+         * ══════════════════════════════════════════════════════════════════
+         *
+         * Η φόρμα έχει ΟΚΤΩ καρτέλες. Ο χρήστης ανοίγει μία, αλλάζει κάτι,
+         * πατάει «Αποθήκευση». Τα πεδία των υπόλοιπων καρτελών δεν είναι
+         * πάντα στο POST — και ο παλιός κώδικας τα έστελνε όλα ως `null`.
+         *
+         * Το αποτέλεσμα ήταν καταστροφικό και σιωπηλό:
+         *
+         *     SQLSTATE[23000]: Column 'email' cannot be null
+         *
+         * Η στήλη `email` είναι NOT NULL, οπότε ΟΛΟΚΛΗΡΗ η ενημέρωση
+         * ματαιωνόταν. Ο χρήστης συμπλήρωνε ηλικία, οικογενειακή
+         * κατάσταση, στρατιωτικές υποχρεώσεις, πατούσε αποθήκευση — και
+         * τίποτα δεν γραφόταν. Ούτε ένα πεδίο.
+         *
+         * Και για τις στήλες που ΔΕΧΟΝΤΑΙ null, η ζημιά ήταν χειρότερη:
+         * αποθήκευση από την καρτέλα «Προσωπικά» ΕΣΒΗΝΕ τη διεύθυνση, την
+         * πόλη και τον ταχυδρομικό κώδικα που είχαν συμπληρωθεί αλλού.
+         *
+         * Ο κανόνας τώρα: γράφουμε μόνο ό,τι ΗΡΘΕ. Ό,τι λείπει μένει
+         * ανέγγιχτο στη βάση.
+         */
+        $alwaysWrite = [
+            // Checkbox: όταν δεν είναι τσεκαρισμένο ΔΕΝ έρχεται στο POST,
+            // και τότε η τιμή 0 είναι η σωστή — όχι «μην το αγγίξεις».
+            'available_for_work' => true,
+            'legal_status' => true,
+            'updated_at' => true,
+        ];
+
+        $data = [];
+
+        foreach ($raw as $field => $value) {
+            if (isset($alwaysWrite[$field])) {
+                $data[$field] = $value;
+                continue;
+            }
+
+            // Η ημερομηνία γέννησης γράφεται σε δύο στήλες από ένα πεδίο.
+            $source = ($field === 'date_of_birth') ? 'birth_date' : $field;
+
+            if (!array_key_exists($source, $_POST)) {
+                continue; // δεν ήρθε — δεν το πειράζουμε
+            }
+
+            // Κενό κείμενο σε πεδίο NOT NULL θα έσπαγε την ενημέρωση.
+            if ($value === null && ($_POST[$source] ?? '') === '') {
+                continue;
+            }
+
+            $data[$field] = $value;
+        }
 
         return $data;
     }
