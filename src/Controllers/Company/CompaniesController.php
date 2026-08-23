@@ -382,59 +382,81 @@ class CompaniesController extends BaseUserController
             // Αναζήτηση εταιρειών με το repository
             $result = $this->companiesRepository->searchCompanies($criteria, $page, $limit);
 
+            /*
+             * ══════════════════════════════════════════════════════════════
+             *  ΕΔΩ ΔΙΕΡΡΕΕ ΟΛΟΚΛΗΡΟΣ Ο ΠΙΝΑΚΑΣ companies
+             * ══════════════════════════════════════════════════════════════
+             *
+             * Το ερώτημα είναι `SELECT c.*`. Ο παλιός κώδικας έχτιζε το JSON
+             * χειροκίνητα με έναν βρόχο `foreach ($company as $key => $value)`
+             * — δηλαδή σέρβιρε ΚΑΘΕ στήλη της εγγραφής. Χωρίς σύνδεση, με
+             * μία εντολή:
+             *
+             *     curl -H "X-Requested-With: XMLHttpRequest" \
+             *          https://drivejob.gr/companies/search
+             *
+             * Στην απόκριση υπήρχαν:
+             *
+             *     "password"            → το bcrypt hash του συνθηματικού
+             *     "reset_token"         → το token επαναφοράς συνθηματικού
+             *     "verification_token"  → το token επαλήθευσης email
+             *     "vat_number"          → ΑΦΜ
+             *     email, τηλέφωνο, διεύθυνση, συντεταγμένες
+             *
+             * Το `reset_token` είναι το σοβαρότερο: αρκεί για να αλλάξει
+             * κάποιος το συνθηματικό ενός λογαριασμού εταιρείας χωρίς να
+             * γνωρίζει τίποτε άλλο.
+             *
+             * Η ΔΙΟΡΘΩΣΗ ΕΙΝΑΙ ΛΙΣΤΑ ΕΠΙΤΡΕΠΤΩΝ, ΟΧΙ ΑΦΑΙΡΕΣΗ.
+             *
+             * Το να σβήνει κανείς τα «κακά» πεδία (unset password, unset
+             * token…) αποτυγχάνει την πρώτη φορά που θα προστεθεί νέα στήλη
+             * στον πίνακα: το νέο πεδίο φεύγει σιωπηλά προς τα έξω, γιατί
+             * κανείς δεν θυμήθηκε να το προσθέσει στη λίστα αφαίρεσης.
+             * Με λίστα επιτρεπτών, το προεπιλεγμένο είναι η σιωπή.
+             *
+             * Και το JSON παράγεται πλέον με json_encode: ο χειροποίητος
+             * βρόχος έσπαγε σε κάθε τιμή που δεν ήταν string/number/bool
+             * (πίνακες, JSON στήλες, ημερομηνίες), παράγοντας άκυρο JSON.
+             */
+            $publicFields = [
+                'id', 'company_name', 'city', 'country', 'industry',
+                'description', 'company_logo', 'website', 'fleet_size',
+                'founded_year', 'rating', 'rating_count', 'is_verified',
+                'transport_types', 'specializations',
+            ];
+
+            $visibility = new \Drivejob\Services\Visibility($this->container->get('pdo'));
+            $viewerRole = Session::get('user_role') ?? Session::get('role');
+            $viewerId = Session::get('user_id');
+
+            $safeCompanies = [];
+            foreach ($result['results'] ?? [] as $company) {
+                $row = array_intersect_key($company, array_flip($publicFields));
+
+                // Η επωνυμία και η τοποθεσία περνούν από τους ίδιους κανόνες
+                // ορατότητας με τη λίστα αγγελιών.
+                $row['company_name'] = $visibility->companyNameFor($viewerRole, $viewerId, $company);
+                $row['location'] = $visibility->locationFor(
+                    $viewerRole,
+                    $viewerId,
+                    isset($company['id']) ? (int) $company['id'] : null,
+                    $company
+                );
+                unset($row['city'], $row['country']);
+
+                $safeCompanies[] = $row;
+            }
+
+            $result['results'] = $safeCompanies;
+
             // Αν είναι AJAX αίτημα, επιστροφή JSON
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-                header('Content-Type: application/json');
-                // Δημιουργία JSON χειροκίνητα
-                $jsonResults = '[]';
-                $jsonPagination = '{}';
-
-                if (!empty($result['results'])) {
-                    $jsonResults = '[';
-                    foreach ($result['results'] as $index => $company) {
-                        if ($index > 0) {
-                            $jsonResults .= ',';
-                        }
-                        $jsonResults .= '{';
-                        foreach ($company as $key => $value) {
-                            if (is_string($value)) {
-                                $value = str_replace('"', '\"', $value);
-                                $jsonResults .= '"' . $key . '":"' . $value . '",';
-                            } else if (is_numeric($value)) {
-                                $jsonResults .= '"' . $key . '":' . $value . ',';
-                            } else if (is_null($value)) {
-                                $jsonResults .= '"' . $key . '":null,';
-                            } else if (is_bool($value)) {
-                                $jsonResults .= '"' . $key . '":' . ($value ? 'true' : 'false') . ',';
-                            }
-                        }
-                        // Αφαίρεση του τελευταίου κόμματος
-                        $jsonResults = rtrim($jsonResults, ',');
-                        $jsonResults .= '}';
-                    }
-                    $jsonResults .= ']';
-                }
-
-                if (!empty($result['pagination'])) {
-                    $jsonPagination = '{';
-                    foreach ($result['pagination'] as $key => $value) {
-                        if (is_numeric($value)) {
-                            $jsonPagination .= '"' . $key . '":' . $value . ',';
-                        } else if (is_string($value)) {
-                            $value = str_replace('"', '\"', $value);
-                            $jsonPagination .= '"' . $key . '":"' . $value . '",';
-                        } else if (is_null($value)) {
-                            $jsonPagination .= '"' . $key . '":null,';
-                        } else if (is_bool($value)) {
-                            $jsonPagination .= '"' . $key . '":' . ($value ? 'true' : 'false') . ',';
-                        }
-                    }
-                    // Αφαίρεση του τελευταίου κόμματος
-                    $jsonPagination = rtrim($jsonPagination, ',');
-                    $jsonPagination .= '}';
-                }
-
-                echo '{"results": ' . $jsonResults . ', "pagination": ' . $jsonPagination . '}';
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode([
+                    'results' => $result['results'],
+                    'pagination' => $result['pagination'] ?? new \stdClass(),
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 exit();
             }
 
