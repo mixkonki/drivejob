@@ -103,7 +103,9 @@ check_cache_header() {
             printf '%s ✗ %s%s  → ΚΟΛΛΗΜΕΝΟ ΣΤΟ EDGE CACHE ΤΟΥ ΠΑΡΟΧΟΥ\n' "$RED" "$path" "$OFF"
             printf '   %sη ρύθμιση είναι ΣΩΣΤΗ — με ?dj-cachebust=1 επιστρέφει: %s\n' "$DIM" "$fresh"
             printf '   ο πάροχος σερβίρει αντίγραφο αποθηκευμένο πριν την αλλαγή.\n'
-            printf '   ➜ StackCP → Cache → Purge, και ξανατρέξε αυτό το script.%s\n' "$OFF"
+            printf '   ➜ Το StackCP του netmind ΔΕΝ έχει κουμπί Purge. Άλλαξε το\n'
+            printf '     ΠΕΡΙΕΧΟΜΕΝΟ του αρχείου (π.χ. CACHE_VERSION στο sw.js) —\n'
+            printf '     νέο ETag σημαίνει ότι το cache υποχρεώνεται να το ξαναπάρει.%s\n' "$OFF"
         else
             printf '%s ✗ %s%s  → ΚΑΜΙΑ κεφαλίδα Cache-Control (%s)\n' "$RED" "$path" "$OFF" "$label"
             printf '   %sούτε με παράκαμψη cache — ο κανόνας στο .htaccess δεν εφαρμόζεται.%s\n' "$DIM" "$OFF"
