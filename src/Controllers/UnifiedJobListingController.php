@@ -131,17 +131,101 @@ class UnifiedJobListingController extends BaseJobListingController
                 }
             }
 
+            /*
+             * ΟΡΑΤΟΤΗΤΑ ΣΤΗ ΣΕΛΙΔΑ ΑΓΓΕΛΙΑΣ.
+             *
+             * Το `$listing` έρχεται με `SELECT j.*`, άρα φέρει contact_email
+             * και contact_phone. Ο καθαρισμός είναι ο ίδιος με τη λίστα.
+             */
+            $visibility = new \Drivejob\Services\Visibility(
+                \Drivejob\Core\Container::getInstance()->get('pdo')
+            );
+            $viewerRole = Session::get('user_role') ?? Session::get('role');
+            $viewerId = Session::get('user_id');
+
+            $listing = $visibility->sanitiseListing($viewerRole, $viewerId, $listing);
+
             // Ανάκτηση της εταιρείας ή του οδηγού ανάλογα με τον τύπο της αγγελίας
             $company = null;
             $driver = null;
             $author = null;
 
             if (!empty($listing['company_id'])) {
-                $company = $this->companiesRepository->find($listing['company_id']);
+                $companyId = (int) $listing['company_id'];
+                $company = $this->companiesRepository->find($companyId);
+
+                /*
+                 * Ο repository επιστρέφει ΟΛΟΚΛΗΡΗ την εγγραφή: email,
+                 * τηλέφωνο, ακριβή διεύθυνση, ΑΦΜ, συντεταγμένες, ακόμη και
+                 * το hash του συνθηματικού. Το σημερινό view δείχνει μόνο
+                 * την επωνυμία — αλλά τα υπόλοιπα κάθονται στη μνήμη, ένα
+                 * `<?php echo ?>` μακριά από το να δημοσιευτούν.
+                 *
+                 * Κρατάμε ρητά ΜΟΝΟ όσα επιτρέπεται να φανούν. Ό,τι δεν
+                 * είναι στη λίστα δεν φτάνει ποτέ στο view.
+                 */
+                if ($company) {
+                    $mayContact = $visibility->canViewCompanyContact($viewerRole, $viewerId, $companyId);
+
+                    $safe = [
+                        'id' => $company['id'] ?? null,
+                        'company_name' => $visibility->companyNameFor($viewerRole, $viewerId, $company),
+                        'company_logo' => $company['company_logo'] ?? null,
+                        'logo' => $company['logo'] ?? $company['company_logo'] ?? null,
+                        'description' => $company['description'] ?? null,
+                        'industry' => $company['industry'] ?? null,
+                        'fleet_size' => $company['fleet_size'] ?? null,
+                        'founded_year' => $company['founded_year'] ?? $company['foundation_year'] ?? null,
+                        'rating' => $company['rating'] ?? null,
+                        'rating_count' => $company['rating_count'] ?? null,
+                        'is_verified' => $company['is_verified'] ?? null,
+                        'location' => $visibility->locationFor($viewerRole, $viewerId, $companyId, $company),
+                        'identity_hidden' => !$visibility->canRevealCompanyIdentity($viewerRole, $viewerId),
+                        'contact_locked' => !$mayContact,
+                    ];
+
+                    if ($mayContact) {
+                        $safe['email'] = $company['email'] ?? null;
+                        $safe['phone'] = $company['phone'] ?? null;
+                        $safe['address'] = $company['address'] ?? null;
+                        $safe['website'] = $company['website'] ?? null;
+                    } else {
+                        $safe['contact_hint'] = $visibility->companyContactHint($viewerRole, $viewerId, $companyId);
+                    }
+
+                    $company = $safe;
+                }
+
                 $author = $company;
             } elseif (!empty($listing['driver_id'])) {
-                $driver = $this->driversRepository->find($listing['driver_id']);
+                $driverId = (int) $listing['driver_id'];
+                $driver = $this->driversRepository->find($driverId);
+
+                // Το ίδιο για αγγελίες που δημοσιεύει οδηγός («ζητώ εργασία»).
+                if ($driver && !$visibility->canViewDriverContact($viewerRole, $viewerId, $driverId)) {
+                    unset(
+                        $driver['email'], $driver['phone'], $driver['landline'],
+                        $driver['address'], $driver['password'], $driver['postal_code']
+                    );
+                    $driver['contact_locked'] = true;
+                }
+
                 $author = $driver;
+            }
+
+            /*
+             * ΕΧΕΙ ΗΔΗ ΚΑΝΕΙ ΑΙΤΗΣΗ;
+             *
+             * Ήταν σχολιασμένο με «Προσωρινά απενεργοποιημένο μέχρι να
+             * υλοποιηθεί η μέθοδος hasApplied» — και έμενε μόνιμα false.
+             * Ο οδηγός έβλεπε πάντα το κουμπί «Υποβολή αίτησης», ακόμη κι
+             * αν είχε ήδη κάνει αίτηση, και μπορούσε να υποβάλει ξανά.
+             *
+             * Η μέθοδος υπάρχει: Visibility::driverHasAppliedTo().
+             */
+            $hasApplied = false;
+            if ($viewerRole === 'driver' && $viewerId && !empty($listing['company_id'])) {
+                $hasApplied = $visibility->driverHasAppliedTo((int) $viewerId, (int) $id);
             }
 
             // Αύξηση των προβολών με το service (αγνοούμε το αποτέλεσμα)
@@ -161,13 +245,7 @@ class UnifiedJobListingController extends BaseJobListingController
                 $vehicleTypes = explode(',', $listing['vehicle_types']);
             }
 
-            // Έλεγχος αν ο χρήστης έχει ήδη υποβάλει αίτηση (για αγγελίες εταιρειών)
-            $hasApplied = false;
-            if (Session::has('user_id') && Session::get('user_role') === 'driver' && !empty($listing['company_id'])) {
-                // Έλεγχος αν υπάρχει αίτηση από τον οδηγό για αυτή την αγγελία
-                // Προσωρινά απενεργοποιημένο μέχρι να υλοποιηθεί η μέθοδος hasApplied
-                // $hasApplied = $this->jobApplicationRepository->hasApplied(Session::get('user_id'), $id);
-            }
+            // (ο έλεγχος αίτησης έγινε παραπάνω, μαζί με την ορατότητα)
 
             // Παρόμοιες αγγελίες
             $similarListings = ['results' => []];

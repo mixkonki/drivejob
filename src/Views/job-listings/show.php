@@ -241,7 +241,60 @@ require_once ROOT_DIR . '/src/Views/partials/header.php';
                                 <?php if (!empty($company['description'])): ?>
                                     <p><?php echo nl2br(htmlspecialchars($company['description'])); ?></p>
                                 <?php endif; ?>
-                                <a href="<?php echo BASE_URL; ?>companies/profile/<?php echo $company['id']; ?>" class="btn-secondary">Προφίλ Εταιρείας</a>
+
+                                <?php if (!empty($company['location']) && $company['location'] !== 'Δεν καθορίστηκε'): ?>
+                                    <p class="dj-company-place">
+                                        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+                                             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M12 21s-6.5-5.4-6.5-10a6.5 6.5 0 1 1 13 0c0 4.6-6.5 10-6.5 10Z"/>
+                                            <circle cx="12" cy="10.6" r="2.4"/>
+                                        </svg>
+                                        <?php echo htmlspecialchars($company['location']); ?>
+                                    </p>
+                                <?php endif; ?>
+
+                                <?php
+                                /*
+                                 * ΣΤΟΙΧΕΙΑ ΕΠΙΚΟΙΝΩΝΙΑΣ — ΤΟ ΤΕΛΟΣ ΤΗΣ ΔΙΑΔΡΟΜΗΣ.
+                                 *
+                                 * Το view δεν εμφάνιζε ΚΑΘΟΛΟΥ τρόπο επικοινωνίας — ούτε
+                                 * καν στον οδηγό που είχε προσληφθεί. Όλη η σταδιακή
+                                 * αποκάλυψη κατέληγε πουθενά: ο οδηγός περνούσε αίτηση,
+                                 * προεπιλογή, πρόσληψη, και δεν έβρισκε ποτέ τηλέφωνο.
+                                 *
+                                 * Η απόφαση τι φαίνεται έχει ΗΔΗ παρθεί στον controller
+                                 * (Visibility). Εδώ απλώς το δείχνουμε — ή εξηγούμε τι
+                                 * λείπει και γιατί, ώστε το κλείδωμα να μη μοιάζει με
+                                 * σφάλμα.
+                                 */
+                                ?>
+                                <?php if (empty($company['contact_locked'])): ?>
+                                    <div class="dj-contact-open">
+                                        <h4>Στοιχεία επικοινωνίας</h4>
+                                        <?php if (!empty($company['phone'])): ?>
+                                            <p><a href="tel:<?php echo htmlspecialchars($company['phone']); ?>"><?php echo htmlspecialchars($company['phone']); ?></a></p>
+                                        <?php endif; ?>
+                                        <?php if (!empty($company['email'])): ?>
+                                            <p><a href="mailto:<?php echo htmlspecialchars($company['email']); ?>"><?php echo htmlspecialchars($company['email']); ?></a></p>
+                                        <?php endif; ?>
+                                        <?php if (!empty($company['address'])): ?>
+                                            <p><?php echo htmlspecialchars($company['address']); ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php elseif (!empty($company['contact_hint'])): ?>
+                                    <p class="dj-contact-locked">
+                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                                             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <rect x="4.5" y="10.5" width="15" height="9.5" rx="2"/>
+                                            <path d="M8 10.5V7.6a4 4 0 0 1 8 0v2.9"/>
+                                        </svg>
+                                        <?php echo htmlspecialchars($company['contact_hint']); ?>
+                                    </p>
+                                <?php endif; ?>
+
+                                <?php if (empty($company['identity_hidden']) && !empty($company['id'])): ?>
+                                    <a href="<?php echo BASE_URL; ?>companies/profile/<?php echo (int) $company['id']; ?>" class="btn-secondary">Προφίλ Εταιρείας</a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php elseif (isset($driver) && !empty($driver)): ?>

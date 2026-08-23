@@ -566,3 +566,51 @@ h1 {
     border-radius: 10px;
     cursor: help;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ΣΤΟΙΧΕΙΑ ΕΠΙΚΟΙΝΩΝΙΑΣ ΣΤΗ ΣΕΛΙΔΑ ΑΓΓΕΛΙΑΣ
+
+   Το κλείδωμα πρέπει να διαβάζεται ως ΚΑΤΑΣΤΑΣΗ, όχι ως σφάλμα: ο
+   οδηγός βλέπει ότι υπάρχει τρόπος επικοινωνίας και τι θα τον
+   ξεκλειδώσει. Ένα κενό πεδίο χωρίς εξήγηση μοιάζει με χαλασμένη
+   σελίδα και σταματά τη διαδικασία.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.dj-company-place {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #555;
+    font-size: 14px;
+    margin: 8px 0;
+}
+
+.dj-company-place svg { flex: 0 0 auto; color: #C62828; }
+
+.dj-contact-open {
+    margin: 14px 0;
+    padding: 12px 14px;
+    background: #f1f8f2;
+    border-left: 3px solid #2e7d32;
+    border-radius: 6px;
+}
+
+.dj-contact-open h4 { margin: 0 0 6px; font-size: 15px; color: #1b5e20; }
+.dj-contact-open p { margin: 3px 0; font-size: 14px; }
+.dj-contact-open a { color: #1b5e20; font-weight: 600; }
+
+.dj-contact-locked {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 14px 0;
+    padding: 11px 13px;
+    background: #f6f6f6;
+    border-left: 3px solid #bdbdbd;
+    border-radius: 6px;
+    color: #616161;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.dj-contact-locked svg { flex: 0 0 auto; margin-top: 2px; }

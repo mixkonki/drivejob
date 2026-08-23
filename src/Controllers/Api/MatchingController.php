@@ -148,7 +148,25 @@ class MatchingController extends Controller
             $cacheKey = $this->cacheService->getJobCandidatesKey($jobId, $limit);
             $cachedCandidates = $this->cacheService->get($cacheKey);
 
+            /*
+             * Ο καθαρισμός ορατότητας εφαρμόζεται ΚΑΙ στα δεδομένα από cache.
+             *
+             * Το cache γεμίζει μία φορά και σερβίρεται σε κάθε επόμενο
+             * αίτημα. Αν ο καθαρισμός γινόταν μόνο στο «cache miss»
+             * μονοπάτι, η πρώτη κλήση θα ήταν καθαρή και όλες οι επόμενες
+             * θα σέρβιραν τα ίδια δεδομένα από τη μνήμη — δηλαδή η
+             * προστασία θα δούλευε μία στις εκατό φορές.
+             *
+             * Επιπλέον η σχέση εταιρείας–οδηγού ΑΛΛΑΖΕΙ με τον χρόνο: μια
+             * αίτηση που έρχεται σήμερα ξεκλειδώνει στοιχεία που χθες ήταν
+             * κρυφά. Ο καθαρισμός πρέπει να τρέχει στην ώρα του αιτήματος,
+             * όχι στην ώρα που γέμισε το cache.
+             */
+            $visibility = new \Drivejob\Services\Visibility($pdo);
+
             if ($cachedCandidates !== null) {
+                $cachedCandidates = $visibility->sanitiseCandidates((int) $companyId, $cachedCandidates);
+
                 return JsonResponse::success([
                     'candidates' => $cachedCandidates,
                     'count' => count($cachedCandidates),
@@ -200,11 +218,13 @@ class MatchingController extends Controller
                 ];
             }
 
-            // Αποθήκευση στο cache
+            // Στο cache μπαίνουν τα ΠΛΗΡΗ δεδομένα· ο καθαρισμός γίνεται
+            // στην έξοδο, ώστε μια νέα αίτηση να ξεκλειδώνει αμέσως τα
+            // στοιχεία χωρίς να χρειάζεται να λήξει το cache.
             $this->cacheService->set($cacheKey, $formattedCandidates);
 
             return JsonResponse::success([
-                'candidates' => $formattedCandidates,
+                'candidates' => $visibility->sanitiseCandidates((int) $companyId, $formattedCandidates),
                 'count' => count($formattedCandidates),
                 'cached' => false
             ]);
