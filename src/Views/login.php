@@ -17,7 +17,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <?php include ROOT_DIR . '/src/Views/partials/alerts.php'; ?>
 
                     <form action="<?= BASE_URL ?>auth/login" method="post">
-                        <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::generateToken() ?>">
+                        <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::token() ?>">
 
                         <div class="form-group mb-3">
                             <label for="email">Διεύθυνση Email</label>

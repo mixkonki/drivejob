@@ -241,8 +241,24 @@ class JobApplicationController extends BaseJobApplicationController
             }
 
             // Έλεγχος αν η αίτηση μπορεί να γίνει αποδεκτή
-            if ($application['status'] !== 'pending') {
-                Session::set('error_message', 'Δεν μπορείτε να αποδεχτείτε αυτή την αίτηση');
+            /*
+             * ΠΟΙΕΣ ΚΑΤΑΣΤΑΣΕΙΣ ΜΠΟΡΟΥΝ ΝΑ ΓΙΝΟΥΝ ΠΡΟΣΛΗΨΗ.
+             *
+             * Ο έλεγχος ήταν `!== 'pending'` — δηλαδή μόνο μια αίτηση που
+             * κανείς δεν είχε αγγίξει μπορούσε να γίνει αποδεκτή. Μόλις η
+             * εταιρεία την άνοιγε και την έβαζε σε προεπιλογή, η αποδοχή
+             * κλείδωνε: «Δεν μπορείτε να αποδεχτείτε αυτή την αίτηση».
+             *
+             * Δηλαδή η φυσική διαδρομή —βλέπω, με ενδιαφέρει, μιλάμε,
+             * προσλαμβάνω— οδηγούσε σε αδιέξοδο, ενώ η βιαστική —προσλαμβάνω
+             * χωρίς να μιλήσω— ήταν η μόνη που δούλευε.
+             *
+             * Απορριφθείσα ή αποσυρμένη αίτηση σωστά δεν γίνεται αποδεκτή.
+             */
+            if (!in_array($application['status'], ['pending', 'viewed', 'shortlisted'], true)) {
+                Session::set('error_message', $application['status'] === 'hired'
+                    ? 'Η αίτηση έχει ήδη γίνει αποδεκτή.'
+                    : 'Δεν μπορείτε να αποδεχτείτε αυτή την αίτηση.');
                 header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
                 exit;
             }
@@ -300,6 +316,108 @@ class JobApplicationController extends BaseJobApplicationController
      * 
      * @param int $id Το ID της αίτησης
      */
+    /**
+     * Προεπιλογή υποψηφίου — «με ενδιαφέρει, ας μιλήσουμε».
+     *
+     * ══════════════════════════════════════════════════════════════════════
+     *  ΤΟ ΒΗΜΑ ΠΟΥ ΕΛΕΙΠΕ ΑΠΟ ΟΛΗ ΤΗ ΔΙΑΔΙΚΑΣΙΑ
+     * ══════════════════════════════════════════════════════════════════════
+     *
+     * Η στήλη `status` δέχεται έξι τιμές: pending, viewed, shortlisted,
+     * rejected, hired, withdrawn. Η διεπαφή όμως πρόσφερε μόνο ΔΥΟ ενέργειες
+     * — αποδοχή και απόρριψη. Αναζήτηση σε ολόκληρο τον κώδικα έδειξε ότι το
+     * `shortlisted` δεν οριζόταν σε ΚΑΝΕΝΑ σημείο· υπήρχε μόνο ως χρωματιστή
+     * ετικέτα στο partial εμφάνισης.
+     *
+     * Αυτό είχε δύο συνέπειες, και η δεύτερη είναι σοβαρή:
+     *
+     *   1) Η εταιρεία δεν είχε ενδιάμεσο βήμα. Ή προσλάμβανε κάποιον που
+     *      δεν είχε μιλήσει ποτέ, ή τον απέρριπτε. Καμία πραγματική
+     *      πρόσληψη δεν γίνεται έτσι.
+     *
+     *   2) Το Visibility::ENGAGED_STATUSES είναι ['shortlisted', 'hired'] —
+     *      οι δύο καταστάσεις που ξεκλειδώνουν τα στοιχεία επικοινωνίας.
+     *      Με το `shortlisted` ανέφικτο, ο ΜΟΝΟΣ τρόπος να δει ο οδηγός
+     *      τηλέφωνο ήταν να τον προσλάβουν χωρίς καμία επικοινωνία πρώτα.
+     *      Ολόκληρο το μοντέλο σταδιακής αποκάλυψης στηριζόταν σε μια
+     *      κατάσταση που δεν μπορούσε να συμβεί.
+     *
+     * Η προεπιλογή είναι το σημείο όπου ανοίγει η επικοινωνία και για τις
+     * δύο πλευρές — ακριβώς όπως στο Booking η κράτηση ανοίγει το κανάλι
+     * με το κατάλυμα.
+     */
+    public function shortlist($id)
+    {
+        try {
+            AuthMiddleware::hasRole('company');
+        } catch (AuthException $e) {
+            Session::set('error_message', 'Πρέπει να συνδεθείτε ως εταιρεία.');
+            header('Location: ' . BASE_URL . 'login');
+            exit();
+        }
+
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'job-applications/company-applications');
+            exit();
+        }
+
+        if (!$id || !is_numeric($id)) {
+            Session::set('error_message', 'Μη έγκυρο αναγνωριστικό αίτησης');
+            header('Location: ' . BASE_URL . 'job-applications/company-applications');
+            exit;
+        }
+
+        try {
+            $application = $this->jobApplicationRepository->find($id);
+
+            if (!$application) {
+                Session::set('error_message', 'Η αίτηση δεν βρέθηκε');
+                header('Location: ' . BASE_URL . 'job-applications/company-applications');
+                exit;
+            }
+
+            $companyId = Session::get('user_id');
+            $ownerCompanyId = $this->companyIdOfApplication($application);
+
+            if ($ownerCompanyId === null || $ownerCompanyId != $companyId) {
+                Session::set('error_message', 'Δεν έχετε δικαίωμα σε αυτή την αίτηση');
+                header('Location: ' . BASE_URL . 'job-applications/company-applications');
+                exit;
+            }
+
+            // Προεπιλογή γίνεται μόνο από τις καταστάσεις που προηγούνται.
+            if (!in_array($application['status'], ['pending', 'viewed'], true)) {
+                Session::set('error_message', 'Η αίτηση έχει ήδη προχωρήσει.');
+                header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
+                exit;
+            }
+
+            if ($this->updateApplicationStatus($id, 'shortlisted')) {
+                Logger::info('Job application shortlisted', [
+                    'company_id' => $companyId,
+                    'application_id' => $id,
+                ]);
+                Session::set('success_message',
+                    'Ο υποψήφιος μπήκε στην προεπιλογή. Τα στοιχεία επικοινωνίας '
+                    . 'είναι πλέον διαθέσιμα και στις δύο πλευρές.');
+            } else {
+                Session::set('error_message', 'Η ενέργεια δεν ολοκληρώθηκε. Δοκιμάστε ξανά.');
+            }
+
+            header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
+            exit();
+        } catch (\Exception $e) {
+            Logger::error('Error shortlisting application', [
+                'application_id' => $id,
+                'message' => $e->getMessage(),
+            ]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'job-applications/company-applications');
+            exit();
+        }
+    }
+
     public function reject($id)
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος ως εταιρεία
@@ -348,8 +466,10 @@ class JobApplicationController extends BaseJobApplicationController
             }
 
             // Έλεγχος αν η αίτηση μπορεί να απορριφθεί
-            if ($application['status'] !== 'pending') {
-                Session::set('error_message', 'Δεν μπορείτε να απορρίψετε αυτή την αίτηση');
+            // Ίδιος κανόνας με την αποδοχή: μια αίτηση σε προεπιλογή μπορεί
+            // κάλλιστα να απορριφθεί μετά τη συνέντευξη.
+            if (!in_array($application['status'], ['pending', 'viewed', 'shortlisted'], true)) {
+                Session::set('error_message', 'Δεν μπορείτε να απορρίψετε αυτή την αίτηση.');
                 header('Location: ' . BASE_URL . 'job-applications/view/' . $id);
                 exit;
             }

@@ -199,7 +199,7 @@ use Drivejob\Core\CSRF;
                             <?php endif; ?>
 
                             <form action="<?php echo BASE_URL; ?>companies/add-review/<?php echo $companyData['id']; ?>" method="post" class="review-form">
-                                <input type="hidden" name="csrf_token" value="<?php echo CSRF::generateToken(); ?>">
+                                <input type="hidden" name="csrf_token" value="<?php echo CSRF::token(); ?>">
 
                                 <div class="form-group">
                                     <label for="rating">Συνολική Βαθμολογία:</label>

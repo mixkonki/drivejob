@@ -99,7 +99,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
         <form action="<?php echo BASE_URL; ?>job-listings/update/<?php echo (int) $listing['id']; ?>"
               method="post" class="listing-form">
 
-            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(\Drivejob\Core\CSRF::generateToken()); ?>">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(\Drivejob\Core\CSRF::token()); ?>">
             <input type="hidden" name="listing_type" value="job_offer">
 
             <!-- ─────────────────────────── Βασικά ─────────────────────────── -->

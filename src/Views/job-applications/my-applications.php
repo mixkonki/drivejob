@@ -65,7 +65,7 @@ $applications = $applications ?? [];
                                 <form method="post"
                                       action="<?= BASE_URL ?>job-applications/withdraw/<?= (int) $app['id'] ?>"
                                       onsubmit="return confirm('Να αποσυρθεί η αίτηση; Η ενέργεια δεν αναιρείται.');">
-                                    <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
                                     <button type="submit" class="app-btn app-btn-no">Απόσυρση</button>
                                 </form>
                             <?php endif; ?>

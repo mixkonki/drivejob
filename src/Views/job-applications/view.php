@@ -23,7 +23,25 @@ $company = $company ?? [];
 $viewerRole = Session::get('user_role');
 $isDriver = $viewerRole === 'driver';
 $isCompany = $viewerRole === 'company';
-$isPending = ($application['status'] ?? '') === 'pending';
+$status = (string) ($application['status'] ?? '');
+$isPending = $status === 'pending';
+
+/*
+ * ΠΟΙΕΣ ΕΝΕΡΓΕΙΕΣ ΕΙΝΑΙ ΑΚΟΜΗ ΔΥΝΑΤΕΣ.
+ *
+ * Τα κουμπιά εμφανίζονταν μόνο όταν η αίτηση ήταν `pending`. Μόλις η
+ * εταιρεία άνοιγε τη σελίδα και η αίτηση περνούσε σε άλλη κατάσταση, ΟΛΑ
+ * τα κουμπιά εξαφανίζονταν — η σελίδα γινόταν αδιέξοδο χωρίς εξήγηση.
+ *
+ * Η διαδικασία έχει τρία στάδια που μπορούν να συνεχίσουν: μια αίτηση σε
+ * αναμονή, μια που είδε η εταιρεία, και μια σε προεπιλογή. Οι δύο τελικές
+ * καταστάσεις — πρόσληψη και απόρριψη — δεν έχουν επόμενο βήμα.
+ */
+$openStatuses = ['pending', 'viewed', 'shortlisted'];
+$isOpen = in_array($status, $openStatuses, true);
+$canShortlist = $isCompany && in_array($status, ['pending', 'viewed'], true);
+$canDecide = $isCompany && $isOpen;
+$canWithdraw = $isDriver && $isOpen;
 $applicationId = (int) ($application['id'] ?? 0);
 $driverName = trim(($driver['first_name'] ?? '') . ' ' . ($driver['last_name'] ?? ''));
 $message = trim((string) ($application['message'] ?? ''));
@@ -100,23 +118,41 @@ $message = trim((string) ($application['message'] ?? ''));
     </section>
 
     <div class="app-actions" style="margin-top:1.5rem;">
-        <?php if ($isCompany && $isPending): ?>
+        <?php if ($canShortlist): ?>
+            <form method="post" action="<?= BASE_URL ?>job-applications/shortlist/<?= $applicationId ?>"
+                  onsubmit="return confirm('Να μπει ο υποψήφιος σε προεπιλογή; Τα στοιχεία επικοινωνίας θα γίνουν αμοιβαία ορατά.');">
+                <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
+                <button type="submit" class="app-btn app-btn-mid">Προεπιλογή &amp; επικοινωνία</button>
+            </form>
+        <?php endif; ?>
+
+        <?php if ($canDecide): ?>
             <form method="post" action="<?= BASE_URL ?>job-applications/accept/<?= $applicationId ?>"
                   onsubmit="return confirm('Να γίνει αποδεκτή η αίτηση;');">
-                <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
-                <button type="submit" class="app-btn app-btn-ok">Αποδοχή αίτησης</button>
+                <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
+                <button type="submit" class="app-btn app-btn-ok">Πρόσληψη</button>
             </form>
             <form method="post" action="<?= BASE_URL ?>job-applications/reject/<?= $applicationId ?>"
                   onsubmit="return confirm('Να απορριφθεί η αίτηση;');">
-                <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
+                <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
                 <button type="submit" class="app-btn app-btn-no">Απόρριψη</button>
             </form>
         <?php endif; ?>
 
-        <?php if ($isDriver && $isPending): ?>
+        <?php if ($isCompany && !$isOpen): ?>
+            <p class="muted" style="margin:0 0 .5rem">
+                <?= $status === 'hired'
+                    ? 'Ο υποψήφιος έχει προσληφθεί. Η διαδικασία ολοκληρώθηκε.'
+                    : ($status === 'withdrawn'
+                        ? 'Ο οδηγός απέσυρε την αίτησή του.'
+                        : 'Η αίτηση έχει απορριφθεί.') ?>
+            </p>
+        <?php endif; ?>
+
+        <?php if ($canWithdraw): ?>
             <form method="post" action="<?= BASE_URL ?>job-applications/withdraw/<?= $applicationId ?>"
                   onsubmit="return confirm('Να αποσυρθεί η αίτηση; Η ενέργεια δεν αναιρείται.');">
-                <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
+                <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
                 <button type="submit" class="app-btn app-btn-no">Απόσυρση αίτησης</button>
             </form>
         <?php endif; ?>

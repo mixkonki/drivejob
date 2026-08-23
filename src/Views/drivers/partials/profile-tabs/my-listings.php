@@ -26,7 +26,7 @@
                                     <div class="listing-actions">
                                         <a href="<?php echo BASE_URL; ?>job-listings/edit/<?php echo $listing['id']; ?>" class="btn-secondary">Επεξεργασία</a>
                                         <form action="<?php echo BASE_URL; ?>job-listings/delete/<?php echo $listing['id']; ?>" method="post" style="display:inline;">
-                                            <input type="hidden" name="csrf_token" value="<?php echo \Drivejob\Core\CSRF::generateToken(); ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo \Drivejob\Core\CSRF::token(); ?>">
                                             <button type="submit" class="btn-danger" onclick="return confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την αγγελία;')">Διαγραφή</button>
                                         </form>
                                     </div>

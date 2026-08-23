@@ -214,6 +214,11 @@ $router->group(['prefix' => 'job-applications'], function ($router) {
     // Πλευρά εταιρείας — οι μέθοδοι υπήρχαν αλλά καμία διαδρομή δεν έδειχνε σε αυτές.
     $router->get('/company-applications', [CompanyJobApplicationController::class, 'myApplications'])->name('job-applications.company');
     $router->get('/listing/{id}', [CompanyJobApplicationController::class, 'listingApplications'])->name('job-applications.listing');
+    // Η προεπιλογή ήταν το βήμα που έλειπε: η κατάσταση 'shortlisted' υπήρχε
+    // στο enum της βάσης και στο Visibility::ENGAGED_STATUSES, αλλά καμία
+    // ενέργεια δεν την όριζε — άρα τα στοιχεία επικοινωνίας δεν μπορούσαν να
+    // ξεκλειδώσουν παρά μόνο με απευθείας πρόσληψη.
+    $router->post('/shortlist/{id}', [CompanyJobApplicationController::class, 'shortlist'])->name('job-applications.shortlist');
     $router->post('/accept/{id}', [CompanyJobApplicationController::class, 'accept'])->name('job-applications.accept');
     $router->post('/reject/{id}', [CompanyJobApplicationController::class, 'reject'])->name('job-applications.reject');
 });

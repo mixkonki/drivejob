@@ -29,7 +29,7 @@ if (!empty($listing['vehicle_types'])) {
             <div class="card">
                 <div class="card-body">
                     <form action="<?= BASE_URL ?>job-listings/update/<?= $listing['id'] ?>" method="post" id="job-listing-form">
-                        <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::generateToken() ?>">
+                        <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::token() ?>">
                         <input type="hidden" name="listing_type" value="job_search">
 
                         <!-- Επιλογή τύπου αγγελίας -->

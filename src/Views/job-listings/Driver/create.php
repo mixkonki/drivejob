@@ -42,7 +42,7 @@ $hasTachograph = $_SESSION['driver_has_tachograph'] ?? false;
             <div class="card">
                 <div class="card-body">
                     <form action="<?= BASE_URL ?>job-listings/store" method="post" id="job-listing-form">
-                        <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::generateToken() ?>">
+                        <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::token() ?>">
                         <input type="hidden" name="listing_type" value="job_search">
 
                         <!-- Επιλογή τύπου αγγελίας -->

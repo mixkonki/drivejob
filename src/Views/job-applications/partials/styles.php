@@ -23,6 +23,10 @@
     .app-btn-ok { background: #dcfce7; color: #166534; border-color: #86efac; }
     .app-btn-no { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
     .app-btn-quiet { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
+    /* Προεπιλογή: το ενδιάμεσο βήμα ανάμεσα σε «είδα» και «προσλαμβάνω».
+       Χρώμα ξεχωριστό και από την πρόσληψη (πράσινο) και από την απόρριψη
+       (κόκκινο) — είναι απόφαση συνέχειας, όχι κατάληξη. */
+    .app-btn-mid { background: #f3e8ff; color: #6b21a8; border-color: #d8b4fe; }
 
     .app-empty { padding: 3rem 1rem; text-align: center; color: #6b7280;
                  background: #fff; border: 1px dashed #d1d5db; border-radius: 8px; }

@@ -90,13 +90,13 @@ $listingId = (int) ($listing['id'] ?? 0);
                                 <form method="post"
                                       action="<?= BASE_URL ?>job-applications/accept/<?= (int) $app['id'] ?>"
                                       onsubmit="return confirm('Να γίνει αποδεκτή η αίτηση;');">
-                                    <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
                                     <button type="submit" class="app-btn app-btn-ok">Αποδοχή</button>
                                 </form>
                                 <form method="post"
                                       action="<?= BASE_URL ?>job-applications/reject/<?= (int) $app['id'] ?>"
                                       onsubmit="return confirm('Να απορριφθεί η αίτηση;');">
-                                    <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
                                     <button type="submit" class="app-btn app-btn-no">Απόρριψη</button>
                                 </form>
                             <?php endif; ?>

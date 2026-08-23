@@ -23,7 +23,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             <i class="fas fa-arrow-left"></i> Ακύρωση
                         </a>
                         <form action="<?= BASE_URL ?>job-listings/destroy/<?= $listing['id'] ?>" method="post">
-                            <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::generateToken() ?>">
+                            <input type="hidden" name="csrf_token" value="<?= \Drivejob\Core\CSRF::token() ?>">
                             <button type="submit" class="btn btn-danger">
                                 <i class="fas fa-trash"></i> Διαγραφή
                             </button>

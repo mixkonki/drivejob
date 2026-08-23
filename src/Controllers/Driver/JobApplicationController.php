@@ -349,6 +349,39 @@ class JobApplicationController extends BaseJobApplicationController
                 exit;
             }
 
+            /*
+             * «Η αίτησή σου εμφανίστηκε.»
+             *
+             * Η κατάσταση `viewed` υπάρχει στο enum της βάσης και δεν
+             * οριζόταν σε ΚΑΝΕΝΑ σημείο του κώδικα. Ο οδηγός έβλεπε
+             * «Σε αναμονή» επ' άπειρον, χωρίς να μάθει ποτέ αν κάποιος
+             * άνοιξε καν την αίτησή του.
+             *
+             * Στις μεταφορές, όπου ο οδηγός στέλνει αιτήσεις σε δέκα
+             * εταιρείες, η σιωπή είναι το χειρότερο σήμα. Η ένδειξη δεν
+             * κοστίζει τίποτα: η πληροφορία υπάρχει ήδη τη στιγμή που η
+             * εταιρεία ανοίγει τη σελίδα.
+             *
+             * ΠΡΟΣΟΧΗ ΣΤΗ ΘΕΣΗ: αυτή η μέθοδος εξυπηρετεί ΚΑΙ ΤΙΣ ΔΥΟ
+             * πλευρές — η διαδρομή /job-applications/view/{id} περνά από
+             * τον controller του οδηγού ακόμη κι όταν τη ζητά εταιρεία.
+             * Ο ίδιος κώδικας υπάρχει και στον BaseJobApplicationController
+             * για όποιον κληρονομεί από εκεί.
+             */
+            if ($userRole === 'company' && ($application['status'] ?? '') === 'pending') {
+                try {
+                    if ($this->updateApplicationStatus($id, 'viewed')) {
+                        $application['status'] = 'viewed';
+                    }
+                } catch (\Exception $e) {
+                    // Η σήμανση είναι ευγένεια, όχι προϋπόθεση.
+                    Logger::warning('Δεν σημειώθηκε η προβολή της αίτησης', [
+                        'application_id' => $id,
+                        'message' => $e->getMessage(),
+                    ]);
+                }
+            }
+
             // Ανάκτηση του οδηγού
             $driver = $this->driversRepository->find($application['driver_id']);
 
