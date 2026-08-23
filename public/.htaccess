@@ -44,43 +44,48 @@ Options -Indexes
 #   2) sw.js → network-first για σελίδες (ο browser του χρήστη).
 #   3) ΑΥΤΟ ΕΔΩ → ρητές οδηγίες προς τον πάροχο (το edge cache).
 #
+# ⚠️ ΤΙ ΔΕΝ ΔΟΥΛΕΥΕΙ ΣΕ ΑΥΤΟΝ ΤΟΝ SERVER — μη το ξαναδοκιμάσεις:
+#
+#     Header set Cache-Control "…" "expr=%{QUERY_STRING} =~ /v=/"
+#
+# Η σύνταξη `expr=` είναι κανονικός Apache 2.4, αλλά ο πάροχος τρέχει
+# LiteSpeed, που την αγνοεί ΣΙΩΠΗΛΑ. Δεν βγάζει σφάλμα — απλά δεν
+# στέλνει καμία κεφαλίδα. Το είδαμε ζωντανά: το /sw.js βγήκε ΧΩΡΙΣ
+# Cache-Control ενώ το /manifest.json (που δεν έπεφτε σε αυτόν τον
+# κανόνα) βγήκε σωστά. Η διαφορά τους ήταν ακριβώς το `expr=`.
+#
+# Γι' αυτό η πολιτική παρακάτω είναι ΑΠΛΗ: μία τιμή ανά κατηγορία,
+# καμία συνθήκη. Ό,τι θα έκανε το `immutable` το κάνει ήδη το ?v=.
+#
 <IfModule mod_headers.c>
 
     # ── Σελίδες: ΠΟΤΕ σε cache ──────────────────────────────────────
     # Μια σελίδα σε cache μπορεί να είναι σελίδα συντήρησης, σελίδα
     # άλλου χρήστη, ή περιεχόμενο πίσω από σύνδεση. Καμία δεν αξίζει
-    # τον κίνδυνο.
+    # τον κίνδυνο. (Οι διαδρομές χωρίς κατάληξη καλύπτονται από την
+    # PHP στο public/index.php — εδώ πιάνουμε τα άμεσα .php.)
     <FilesMatch "\.php$">
         Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
         Header always set Pragma "no-cache"
     </FilesMatch>
 
-    # ── Service worker & manifest: πάντα φρέσκα ─────────────────────
-    # Ένας sw.js σε cache κλειδώνει τον browser του χρήστη σε παλιά
-    # λογική για μέρες. Είναι το χειρότερο αρχείο για να παλιώσει.
+    # ── Στατικά: μία εβδομάδα, με υποχρεωτική επαλήθευση ────────────
+    # Δεν χρειάζεται `immutable`: κάθε αρχείο έρχεται με ?v=<mtime>,
+    # οπότε μια αλλαγή παράγει ΝΕΟ URL που κανένα cache δεν έχει δει.
+    # Το must-revalidate καλύπτει τους παλιούς συνδέσμους χωρίς ?v=.
+    <FilesMatch "\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot)$">
+        Header always set Cache-Control "public, max-age=604800, must-revalidate"
+    </FilesMatch>
+
+    # ── Service worker & manifest: ΠΑΝΤΑ φρέσκα ─────────────────────
+    # ΠΡΟΣΟΧΗ ΣΤΗ ΣΕΙΡΑ: αυτό το μπλοκ πρέπει να μένει ΜΕΤΑ το
+    # προηγούμενο. Το sw.js έχει κατάληξη .js, οπότε το πιάνει και ο
+    # γενικός κανόνας — και στο mod_headers νικά ο ΤΕΛΕΥΤΑΙΟΣ που
+    # γράφει την κεφαλίδα. Αν το ανεβάσεις πιο πάνω, ο service worker
+    # θα κλειδωθεί σε cache για μια εβδομάδα σε κάθε browser.
     <FilesMatch "^(sw\.js|manifest\.json)$">
         Header always set Cache-Control "no-cache, must-revalidate, max-age=0"
     </FilesMatch>
-
-    # ── Στατικά ΜΕ αποτύπωμα (?v=…): για πάντα ──────────────────────
-    # Το URL αλλάζει μόλις αλλάξει το αρχείο, οπότε το cache δεν
-    # μπορεί ποτέ να δώσει λάθος περιεχόμενο. Ένας χρόνος, immutable.
-    <FilesMatch "\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot)$">
-        Header always set Cache-Control "public, max-age=31536000, immutable" "expr=%{QUERY_STRING} =~ /v=/"
-        # Στατικά ΧΩΡΙΣ αποτύπωμα (παλιοί σύνδεσμοι, εξωτερικές αναφορές):
-        # μία ώρα, και πάντα επαλήθευση με τον server μετά.
-        Header always set Cache-Control "public, max-age=3600, must-revalidate" "expr=%{QUERY_STRING} !~ /v=/"
-    </FilesMatch>
-
-    # ── Ό,τι δεν ταιριάζει πουθενά ──────────────────────────────────
-    # Οι διαδρομές της εφαρμογής δεν έχουν κατάληξη (/drivers/register),
-    # οπότε δεν πιάνονται από το <FilesMatch "\.php$"> παραπάνω. Ο
-    # κανόνας μπαίνει από την PHP (SecurityHeaders), αλλά τον
-    # επαναλαμβάνουμε εδώ ως δίχτυ για την περίπτωση σφάλματος 500.
-    <IfModule mod_setenvif.c>
-        SetEnvIf Request_URI "\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot|json)$" DJ_STATIC=1
-    </IfModule>
-    Header always set Cache-Control "no-store, must-revalidate" env=!DJ_STATIC
 </IfModule>
 
 # ── Μη συμπιέζεις ό,τι είναι ήδη συμπιεσμένο, συμπίεσε τα υπόλοιπα ──
