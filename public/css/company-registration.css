@@ -481,3 +481,107 @@ body {
     text-decoration: underline;
     text-underline-offset: 2px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ΣΥΜΠΥΚΝΩΣΗ ΦΟΡΜΑΣ — να χωράει σε μία οθόνη χωρίς κύλιση
+   ═══════════════════════════════════════════════════════════════════ */
+
+/*
+ * ΑΠΑΙΤΗΣΕΙΣ ΣΥΝΘΗΜΑΤΙΚΟΥ ΣΕ ΔΥΟ ΣΤΗΛΕΣ.
+ *
+ * Τέσσερις σύντομες φράσεις σε τέσσερις γραμμές έπιαναν όσο χώρο δύο
+ * πεδία. Σε δύο στήλες διαβάζονται εξίσου εύκολα και κερδίζουμε δύο
+ * γραμμές — αρκετές για να μη χρειάζεται κύλιση.
+ */
+.password-hint {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px 14px;
+    margin: 5px 0 12px;
+}
+
+.password-hint li {
+    font-size: 13px;
+    line-height: 1.45;
+    white-space: nowrap;
+}
+
+/* Σε στενή οθόνη μία στήλη — δύο στήλες θα έσπαγαν τις φράσεις. */
+@media (max-width: 380px) {
+    .password-hint { grid-template-columns: 1fr; }
+}
+
+/*
+ * ΣΥΓΚΑΤΑΘΕΣΗ ΣΕ ΜΙΑ ΓΡΑΜΜΗ.
+ *
+ * ΤΙ ΕΙΧΕ ΣΠΑΣΕΙ: ο γενικός κανόνας `label { display: inline-flex }` πιο
+ * πάνω, σε συνδυασμό με `width: 100%` στα πεδία, έσπρωχνε το κουτί
+ * ελέγχου σε δική του γραμμή, κεντραρισμένο, με το κείμενο από κάτω.
+ * Ο χρήστης έβλεπε ένα ορφανό τετραγωνάκι και μια πρόταση χωρίς
+ * προφανή σχέση μεταξύ τους — και δεν καταλάβαινε τι πρέπει να τσεκάρει.
+ *
+ * Το flex με `align-items: flex-start` κρατά το κουτί δίπλα στην πρώτη
+ * γραμμή του κειμένου ακόμη κι όταν το κείμενο αναδιπλώνεται.
+ */
+.checkbox-group .dj-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    width: 100%;
+    margin: .25rem 0 .75rem;
+    text-align: left;
+    white-space: normal;
+    line-height: 1.5;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.checkbox-group .dj-consent input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 17px;
+    height: 17px;
+    margin: 2px 0 0;
+    cursor: pointer;
+}
+
+.checkbox-group .dj-consent span { flex: 1 1 auto; }
+
+/* Οι σύνδεσμοι των όρων μπορούν να αναδιπλωθούν — ο γενικός κανόνας
+   `a { white-space: nowrap }` τους έβγαζε έξω από την κάρτα σε κινητό. */
+.checkbox-group .dj-consent a { white-space: normal; }
+
+/*
+ * ΔΟΛΩΜΑ ΓΙΑ ΑΥΤΟΜΑΤΑ SCRIPTS.
+ *
+ * Κρύβεται ΟΠΤΙΚΑ, όχι με display:none ή type=hidden — τα καλογραμμένα
+ * bots παρακάμπτουν και τα δύο. Έτσι το πεδίο μοιάζει κανονικό στον
+ * κώδικα, ενώ ο άνθρωπος δεν το βλέπει ποτέ και δεν το φτάνει με Tab.
+ */
+.dj-trap {
+    position: absolute !important;
+    left: -9999px !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/*
+ * ΑΥΤΟΜΑΤΗ ΣΥΜΠΛΗΡΩΣΗ ΤΟΥ BROWSER.
+ *
+ * Το Chrome βάφει τα αυτόματα συμπληρωμένα πεδία έντονο κίτρινο, που
+ * μοιάζει με προειδοποίηση σφάλματος και σπάει τη φόρμα οπτικά. Δεν
+ * μπορούμε (ούτε πρέπει) να απενεργοποιήσουμε τον διαχειριστή
+ * συνθηματικών του χρήστη — μπορούμε όμως να τον κάνουμε να δείχνει σαν
+ * κανονικό πεδίο.
+ *
+ * Το κόλπο με το inset shadow είναι ο μόνος τρόπος: το background-color
+ * αγνοείται σε αυτή την ψευδοκλάση.
+ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+    box-shadow: 0 0 0 1000px #fff inset !important;
+    -webkit-text-fill-color: #333 !important;
+    transition: background-color 9999s ease-in-out 0s;
+}

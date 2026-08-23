@@ -26,7 +26,7 @@
 // Ανέβασε το CACHE_VERSION παρακάτω. Δεν είναι χάκ: ούτως ή άλλως
 // θέλουμε νέα έκδοση κάθε φορά που αλλάζει η λογική εδώ, ώστε να
 // καθαρίζουν και τα cache στους browsers των χρηστών.
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const STATIC_CACHE = `drivejob-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `drivejob-pages-${CACHE_VERSION}`;
 
@@ -55,8 +55,31 @@ const NEVER_CACHE = [
   '/job-applications/', '/messages', '/conversation',
 ];
 
+/**
+ * ΤΟ ΣΦΑΛΜΑ ΠΟΥ ΕΙΧΕ ΑΥΤΗ Η ΣΥΝΑΡΤΗΣΗ:
+ *
+ * Ο έλεγχος ήταν `pathname.startsWith(prefix)`. Η λίστα περιέχει
+ * '/register' — αλλά οι πραγματικές μας διαδρομές είναι
+ * '/drivers/register' και '/companies/register'. Δεν ΞΕΚΙΝΟΥΝ με
+ * '/register', οπότε δεν έπιαναν, και οι φόρμες εγγραφής αποθηκεύονταν
+ * κανονικά στο cache του browser.
+ *
+ * Μια σελίδα με φόρμα σε cache σημαίνει ΠΑΛΙΟ CSRF token: ο χρήστης
+ * βλέπει τη χθεσινή σελίδα, υποβάλλει, και το αίτημα απορρίπτεται.
+ *
+ * Τώρα ελέγχουμε αν το τμήμα εμφανίζεται ΟΠΟΥΔΗΠΟΤΕ στη διαδρομή.
+ */
 function isNeverCached(pathname) {
-  return NEVER_CACHE.some((prefix) => pathname.startsWith(prefix));
+  return NEVER_CACHE.some((fragment) => pathname.includes(fragment));
+}
+
+/**
+ * Κάθε σελίδα που περιέχει φόρμα φέρει CSRF token, και κάθε token σε
+ * cache είναι μελλοντική απόρριψη. Ο κανόνας είναι απλός και σκόπιμα
+ * γενναιόδωρος: αν η διαδρομή μυρίζει φόρμα, δεν αποθηκεύεται.
+ */
+function looksLikeForm(pathname) {
+  return /(register|create|edit|apply|new|profile|settings|password|upload)/i.test(pathname);
 }
 
 function isStaticAsset(pathname) {
@@ -109,7 +132,13 @@ self.addEventListener('fetch', (event) => {
 
   if (url.origin !== location.origin) return;
   if (isNeverCached(url.pathname)) return;      // αφήνουμε τον browser να το κάνει κανονικά
-  if (url.search) return;                       // αιτήματα με παραμέτρους: πάντα φρέσκα
+
+  // Σελίδες με φόρμα δεν μπαίνουν ποτέ σε cache: το CSRF token τους παλιώνει
+  // και η υποβολή απορρίπτεται. Τα στατικά (.css/.js) εξαιρούνται από τον
+  // έλεγχο — ένα «profile.css» δεν είναι φόρμα.
+  if (!isStaticAsset(url.pathname) && looksLikeForm(url.pathname)) return;
+
+  if (url.search && !isStaticAsset(url.pathname)) return;  // δυναμικά με παραμέτρους: πάντα φρέσκα
 
   if (isStaticAsset(url.pathname)) {
     event.respondWith(staleWhileRevalidate(request));

@@ -71,7 +71,7 @@ $extraJs = ['company_registration.js'];
                     <input type="text" id="company_name" name="company_name" placeholder="Όνομα Εταιρείας" required
                         value="<?= htmlspecialchars($old['company_name'] ?? '') ?>">
 
-                    <input type="email" id="email" name="email" placeholder="Email Εταιρείας" required
+                    <input type="email" id="email" name="email" placeholder="Email Εταιρείας" required autocomplete="email"
                         value="<?= htmlspecialchars($old['email'] ?? '') ?>">
 
                     <input type="tel" id="phone" name="phone" placeholder="Τηλέφωνο Εταιρείας" required
@@ -81,13 +81,13 @@ $extraJs = ['company_registration.js'];
                         value="<?= htmlspecialchars($old['contact_person'] ?? '') ?>">
 
                     <div class="password-visibility">
-                        <input type="password" id="password" name="password" placeholder="Συνθηματικό" required>
+                        <input type="password" id="password" name="password" placeholder="Συνθηματικό" required autocomplete="new-password">
                         <?php $passwordFieldId = 'password';
                               include ROOT_DIR . '/src/Views/partials/password-toggle.php'; ?>
                     </div>
 
                     <div class="password-visibility">
-                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Επιβεβαίωση Συνθηματικού" required>
+                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Επιβεβαίωση Συνθηματικού" required autocomplete="new-password">
                         <?php $passwordFieldId = 'confirm_password';
                               include ROOT_DIR . '/src/Views/partials/password-toggle.php'; ?>
                     </div>
@@ -102,14 +102,21 @@ $extraJs = ['company_registration.js'];
 
                     <hr class="divider">
 
+                    <?php
+                    // Δόλωμα + χρονικός έλεγχος στη θέση του «Δεν είμαι ρομπότ»,
+                    // που δεν ελεγχόταν ποτέ στον server. Βλ. αναλυτικό σχόλιο
+                    // στο src/Views/drivers/drivers-registration.php.
+                    ?>
+                    <div class="dj-trap" aria-hidden="true">
+                        <label for="website_url">Μην συμπληρώσεις αυτό το πεδίο</label>
+                        <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+                    </div>
+                    <input type="hidden" name="form_started" value="<?= time() ?>">
+
                     <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" name="human_check" required>
-                            Δεν είμαι ρομπότ
-                        </label>
-                        <label>
+                        <label class="dj-consent">
                             <input type="checkbox" name="terms_check" required>
-                            Αποδέχομαι τους <a href="<?= BASE_URL ?>terms" target="_blank">Όρους Χρήσης</a> και την <a href="<?= BASE_URL ?>privacy" target="_blank">Πολιτική Απορρήτου</a>
+                            <span>Αποδέχομαι τους <a href="<?= BASE_URL ?>terms" target="_blank">Όρους Χρήσης</a> και την <a href="<?= BASE_URL ?>privacy" target="_blank">Πολιτική Απορρήτου</a></span>
                         </label>
                     </div>
 

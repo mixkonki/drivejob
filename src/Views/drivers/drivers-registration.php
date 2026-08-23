@@ -68,7 +68,7 @@ $extraJs = ['drivers_registration.js'];
                     <!-- CSRF token -->
                     <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
 
-                    <input type="email" id="email" name="email" placeholder="Email" required
+                    <input type="email" id="email" name="email" placeholder="Email" required autocomplete="email"
                         value="<?= htmlspecialchars($old['email'] ?? '') ?>">
 
                     <input type="text" id="last_name" name="last_name" placeholder="Επώνυμο" required
@@ -81,13 +81,13 @@ $extraJs = ['drivers_registration.js'];
                         value="<?= htmlspecialchars($old['phone'] ?? '') ?>">
 
                     <div class="password-visibility">
-                        <input type="password" id="password" name="password" placeholder="Συνθηματικό" required>
+                        <input type="password" id="password" name="password" placeholder="Συνθηματικό" required autocomplete="new-password">
                         <?php $passwordFieldId = 'password';
                               include ROOT_DIR . '/src/Views/partials/password-toggle.php'; ?>
                     </div>
 
                     <div class="password-visibility">
-                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Επιβεβαίωση Συνθηματικού" required>
+                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Επιβεβαίωση Συνθηματικού" required autocomplete="new-password">
                         <?php $passwordFieldId = 'confirm_password';
                               include ROOT_DIR . '/src/Views/partials/password-toggle.php'; ?>
                     </div>
@@ -102,14 +102,45 @@ $extraJs = ['drivers_registration.js'];
 
                     <hr class="divider">
 
+                    <?php
+                    /*
+                     * ══════════════════════════════════════════════════════════
+                     *  ΓΙΑΤΙ ΕΦΥΓΕ ΤΟ «ΔΕΝ ΕΙΜΑΙ ΡΟΜΠΟΤ»
+                     * ══════════════════════════════════════════════════════════
+                     *
+                     * Το checkbox `human_check` ΔΕΝ ελεγχόταν πουθενά στον
+                     * server — μόνο `required` στο HTML. Ένα bot που στέλνει
+                     * POST απευθείας δεν βλέπει καν τη σελίδα: το πεδίο ήταν
+                     * καθαρά διακοσμητικό, και κόστιζε μια ολόκληρη γραμμή
+                     * στη φόρμα.
+                     *
+                     * Στη θέση του μπαίνουν δύο έλεγχοι που δουλεύουν χωρίς
+                     * να ζητούν τίποτα από τον άνθρωπο:
+                     *
+                     *   1) ΔΟΛΩΜΑ (honeypot): ένα πεδίο αόρατο για τον χρήστη
+                     *      αλλά ορατό στον κώδικα. Τα αυτόματα scripts γεμίζουν
+                     *      ό,τι βρουν· ο άνθρωπος δεν το βλέπει ποτέ. Αν
+                     *      έρθει συμπληρωμένο, είναι bot.
+                     *
+                     *   2) ΧΡΟΝΟΣ: μια υπογεγραμμένη χρονοσήμανση. Καμία
+                     *      ανθρώπινη εγγραφή δεν ολοκληρώνεται σε 2
+                     *      δευτερόλεπτα — 7 πεδία θέλουν χρόνο.
+                     *
+                     * Η αποδοχή των όρων ΜΕΝΕΙ ξεχωριστό, ρητό κουτί: το ΓΚΠΔ
+                     * απαιτεί η συγκατάθεση να είναι συγκεκριμένη και ενεργή.
+                     * Δεν επιτρέπεται να κρύβεται μέσα σε άλλη δήλωση.
+                     */
+                    ?>
+                    <div class="dj-trap" aria-hidden="true">
+                        <label for="website_url">Μην συμπληρώσεις αυτό το πεδίο</label>
+                        <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+                    </div>
+                    <input type="hidden" name="form_started" value="<?= time() ?>">
+
                     <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" name="human_check" required>
-                            Δεν είμαι ρομπότ
-                        </label>
-                        <label>
+                        <label class="dj-consent">
                             <input type="checkbox" name="terms_check" required>
-                            Αποδέχομαι τους <a href="<?= BASE_URL ?>terms" target="_blank">Όρους Χρήσης</a> και την <a href="<?= BASE_URL ?>privacy" target="_blank">Πολιτική Απορρήτου</a>
+                            <span>Αποδέχομαι τους <a href="<?= BASE_URL ?>terms" target="_blank">Όρους Χρήσης</a> και την <a href="<?= BASE_URL ?>privacy" target="_blank">Πολιτική Απορρήτου</a></span>
                         </label>
                     </div>
 

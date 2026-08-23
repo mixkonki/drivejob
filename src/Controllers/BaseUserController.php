@@ -144,11 +144,26 @@ class BaseUserController extends BaseController
             $this->redirect(BASE_URL . ($userType === 'company' ? 'companies/register' : 'drivers/register'));
         }
 
+        $formUrl = BASE_URL . ($userType === 'company' ? 'companies/register' : 'drivers/register');
+
         // Έλεγχος για CSRF token
         if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
-            Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            $this->redirect(BASE_URL . ($userType === 'company' ? 'companies/register' : 'drivers/register'));
+            Session::set('old_input', $this->oldInputWithoutSecrets());
+            Session::set('error_message',
+                'Η σελίδα έμεινε ανοιχτή αρκετή ώρα και η φόρμα έληξε για λόγους '
+                . 'ασφαλείας. Τα στοιχεία σου διατηρήθηκαν — συμπλήρωσε ξανά το '
+                . 'συνθηματικό και πάτα «Εγγραφή».');
+            $this->redirect($formUrl);
         }
+
+        /*
+         * Έλεγχος αυτόματων υποβολών.
+         *
+         * Αντικαθιστά το checkbox «Δεν είμαι ρομπότ», που ήταν `required`
+         * μόνο στο HTML και δεν ελεγχόταν ποτέ εδώ — δηλαδή δεν σταματούσε
+         * κανένα script. Βλ. src/Core/BotGuard.php.
+         */
+        \Drivejob\Core\BotGuard::passes($_POST, $formUrl);
 
         // Συλλογή και επικύρωση των δεδομένων
         $data = $this->collectRegistrationData($userType);
