@@ -232,6 +232,29 @@ class UnifiedJobListingController extends BaseJobListingController
             // Αναζήτηση αγγελιών με το service
             $result = $this->jobListingService->searchJobListings($criteria, $page, $limit);
 
+            /*
+             * ΚΑΘΑΡΙΣΜΟΣ ΠΡΙΝ ΑΠΟ ΚΑΘΕ ΕΞΟΔΟ — δεν είναι προαιρετικός.
+             *
+             * Το ερώτημα κάνει `SELECT j.*`, οπότε το αποτέλεσμα φέρνει μαζί
+             * τα contact_email / contact_phone της αγγελίας. Μέχρι σήμερα
+             * έφευγαν αυτούσια στην απόκριση JSON: ένα curl χωρίς λογαριασμό
+             * επέστρεφε ολόκληρο τον κατάλογο τηλεφώνων.
+             *
+             * Ο καθαρισμός γίνεται ΜΙΑ φορά, εδώ, πριν χωρίσουν οι δρόμοι
+             * JSON και view — ώστε να μην μπορεί να ξεχαστεί στο ένα από τα δύο.
+             */
+            $visibility = new \Drivejob\Services\Visibility(
+                \Drivejob\Core\Container::getInstance()->get('pdo')
+            );
+            $viewerRole = Session::get('user_role') ?? Session::get('role');
+            $viewerId = Session::get('user_id');
+
+            $result['results'] = $visibility->sanitiseListings(
+                $viewerRole,
+                $viewerId,
+                $result['results'] ?? []
+            );
+
             // Αν είναι AJAX αίτημα, επιστροφή JSON
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
                 JsonHelper::response($result);

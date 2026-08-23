@@ -238,6 +238,212 @@ final class Visibility
              . 'προχωρήσει την αίτησή σου σε προεπιλογή ή πρόσληψη.';
     }
 
+    // ─────────────────────────────────────────────── Τοποθεσία
+
+    /**
+     * Πόσο ακριβής επιτρέπεται να είναι η τοποθεσία για αυτόν τον θεατή;
+     *
+     * ΑΠΟΦΑΣΗ (Κώστας, 23/08): μέχρι και την υποβολή αίτησης, ο οδηγός βλέπει
+     * ΝΟΜΟ ή ΠΟΛΗ. Ακριβής διεύθυνση μόνο όταν η εταιρεία τον έχει βάλει σε
+     * προεπιλογή ή τον προσέλαβε.
+     *
+     * ΓΙΑΤΙ ΕΧΕΙ ΣΗΜΑΣΙΑ: η διεύθυνση δεν είναι απλώς «πού πάω για δουλειά».
+     * Στον κλάδο των μεταφορών, «Θέρμη, 6ο χλμ. Θεσσαλονίκης–Μουδανιών»
+     * ταυτοποιεί την εταιρεία σε δέκα δευτερόλεπτα με μια αναζήτηση χάρτη.
+     * Κρύβοντας την επωνυμία αλλά δείχνοντας τη διεύθυνση, δεν κρύβεις
+     * τίποτα — απλώς προσθέτεις ένα βήμα.
+     *
+     * @param array $source εγγραφή εταιρείας ή αγγελίας
+     */
+    public function locationFor(?string $viewerRole, $viewerId, ?int $companyId, array $source): string
+    {
+        $precise = $companyId !== null
+            && $this->canViewCompanyContact($viewerRole, $viewerId, $companyId);
+
+        if ($precise) {
+            $full = trim((string) ($source['address'] ?? ''));
+            if ($full !== '') {
+                $city = trim((string) ($source['city'] ?? ''));
+                // Πολλές διευθύνσεις ξεκινούν ήδη με την πόλη — μη την πούμε δύο φορές.
+                return ($city !== '' && !str_contains($full, $city))
+                    ? $full . ', ' . $city
+                    : $full;
+            }
+        }
+
+        return self::publicLocation($source);
+    }
+
+    /**
+     * Η τοποθεσία σε επίπεδο πόλης/νομού, χωρίς οδό και αριθμό.
+     *
+     * Δέχεται ό,τι σχήμα έχει η εγγραφή: οι εταιρείες κρατούν `city`, οι
+     * αγγελίες ένα ελεύθερο `location` της μορφής «Θέρμη, Ελλάδα». Δεν
+     * εμπιστευόμαστε κανένα από τα δύο τυφλά.
+     */
+    public static function publicLocation(array $source): string
+    {
+        $city = trim((string) ($source['city'] ?? ''));
+        if ($city !== '') {
+            return $city;
+        }
+
+        $location = trim((string) ($source['location'] ?? ''));
+        if ($location === '') {
+            return 'Δεν καθορίστηκε';
+        }
+
+        /*
+         * Το `location` είναι ελεύθερο κείμενο από φόρμα με αυτόματη
+         * συμπλήρωση Google Places. Έρχεται σε δύο σχήματα:
+         *
+         *     «Θέρμη, Ελλάδα»                              ← πόλη πρώτα
+         *     «Λεωφ. Γεωργικής Σχολής 45, Θέρμη, Greece»   ← οδός πρώτα
+         *
+         * Το να κρατάμε πάντα το πρώτο τμήμα δουλεύει στο πρώτο σχήμα και
+         * ΑΠΟΤΥΓΧΑΝΕΙ στο δεύτερο — θα δημοσιεύαμε ακριβώς τη διεύθυνση που
+         * υποτίθεται ότι κρύβουμε. Γι' αυτό αναγνωρίζουμε τα τμήματα που
+         * μοιάζουν με οδό και τα πετάμε.
+         */
+        $parts = array_map('trim', explode(',', $location));
+        $parts = array_values(array_filter($parts, static function ($p) {
+            $lower = mb_strtolower($p);
+            return $p !== ''
+                && $lower !== 'ελλάδα' && $lower !== 'greece' && $lower !== 'ελλας'
+                && !preg_match('/^\d{3}\s?\d{2}$/', $p); // ταχυδρομικός κώδικας
+        }));
+
+        if ($parts === []) {
+            return 'Δεν καθορίστηκε';
+        }
+
+        // Ένα τμήμα είναι διεύθυνση, όχι πόλη, όταν φέρει αριθμό οδού ή
+        // τυπική συντομογραφία δρόμου.
+        $looksLikeStreet = static function (string $p): bool {
+            return (bool) preg_match('/\d/', $p)
+                || (bool) preg_match('/\b(οδ|οδός|λεωφ|λεωφόρος|χλμ|αρ|πλ|πλατεία|str|ave|road)\b\.?/ui', $p);
+        };
+
+        foreach ($parts as $part) {
+            if (!$looksLikeStreet($part)) {
+                return $part;
+            }
+        }
+
+        // Όλα τα τμήματα έμοιαζαν με διεύθυνση: το τελευταίο είναι η πιο
+        // γενική ένδειξη που έχουμε — προτιμότερο από το να δείξουμε οδό.
+        return end($parts) ?: 'Δεν καθορίστηκε';
+    }
+
+    // ─────────────────────────────────────────────── Καθαρισμός αγγελιών
+
+    /**
+     * Πεδία αγγελίας που δεν επιτρέπεται να φύγουν από τον server σε κανέναν
+     * που δεν έχει ξεκλειδώσει την επικοινωνία.
+     */
+    private const LISTING_SECRETS = [
+        'contact_email', 'contact_phone', 'latitude', 'longitude', 'address',
+    ];
+
+    /**
+     * Καθαρίζει μία αγγελία πριν φτάσει σε view ή σε JSON.
+     *
+     * ══════════════════════════════════════════════════════════════════
+     *  Η ΔΙΑΡΡΟΗ ΠΟΥ ΕΚΑΝΕ ΑΥΤΗ ΤΗ ΜΕΘΟΔΟ ΑΠΑΡΑΙΤΗΤΗ (μετρήθηκε 23/08)
+     * ══════════════════════════════════════════════════════════════════
+     *
+     * Το ερώτημα αναζήτησης είναι `SELECT j.*, c.company_name` — και το
+     * `j.*` περιλαμβάνει τα `contact_email` και `contact_phone` της
+     * αγγελίας. Ο controller επέστρεφε το αποτέλεσμα αυτούσιο σε JSON για
+     * κάθε αίτημα AJAX. Μία εντολή, χωρίς λογαριασμό, χωρίς cookie:
+     *
+     *     curl -H "X-Requested-With: XMLHttpRequest" https://drivejob.gr/job-listings
+     *     → "contact_email":"…@…", "contact_phone":"2310555101", …
+     *
+     * Ολόκληρος ο κατάλογος τηλεφώνων, δημόσια.
+     *
+     * ΤΟ ΜΑΘΗΜΑ: μια κάρτα που κρύβει το τηλέφωνο δεν προστατεύει τίποτα
+     * όσο το ίδιο τηλέφωνο ταξιδεύει σε JSON δίπλα της. Ο καθαρισμός
+     * πρέπει να γίνεται στα ΔΕΔΟΜΕΝΑ, όχι στην εμφάνιση — γι' αυτό ζει
+     * εδώ και όχι στο view.
+     */
+    public function sanitiseListing(?string $viewerRole, $viewerId, array $listing): array
+    {
+        $companyId = isset($listing['company_id']) ? (int) $listing['company_id'] : null;
+
+        $mayContact = $companyId !== null
+            && $this->canViewCompanyContact($viewerRole, $viewerId, $companyId);
+
+        // Η τοποθεσία υπολογίζεται ΠΡΙΝ σβηστούν τα πεδία που τη συνθέτουν.
+        $listing['location'] = $this->locationFor($viewerRole, $viewerId, $companyId, $listing);
+
+        if (!$mayContact) {
+            foreach (self::LISTING_SECRETS as $field) {
+                if (array_key_exists($field, $listing)) {
+                    unset($listing[$field]);
+                }
+            }
+
+            // Ένδειξη ότι ΥΠΑΡΧΕΙ τρόπος επικοινωνίας, χωρίς να δοθεί:
+            // αλλιώς η κάρτα μοιάζει ελλιπής και ο οδηγός νομίζει ότι
+            // η αγγελία είναι εγκαταλελειμμένη.
+            $listing['contact_locked'] = true;
+        }
+
+        if (!$this->canRevealCompanyIdentity($viewerRole, $viewerId)) {
+            $listing['company_name'] = $this->companyNameFor($viewerRole, $viewerId, $listing);
+            $listing['company_identity_hidden'] = true;
+        }
+
+        return $listing;
+    }
+
+    /**
+     * Το ίδιο για ολόκληρη λίστα. Χρησιμοποίησέ το ΠΑΝΤΑ πριν από
+     * `JsonHelper::response()` και πριν από κάθε βρόχο εμφάνισης.
+     */
+    public function sanitiseListings(?string $viewerRole, $viewerId, array $listings): array
+    {
+        foreach ($listings as $i => $listing) {
+            if (is_array($listing)) {
+                $listings[$i] = $this->sanitiseListing($viewerRole, $viewerId, $listing);
+            }
+        }
+
+        return $listings;
+    }
+
+    // ─────────────────────────────────────────────── Ταυτότητα εταιρείας
+
+    /**
+     * Το όνομα που επιτρέπεται να δει ο θεατής για την εταιρεία της αγγελίας.
+     *
+     * ΑΠΟΦΑΣΗ (Κώστας, 23/08): ο ΑΝΩΝΥΜΟΣ επισκέπτης βλέπει πλήρη αγγελία
+     * αλλά ΟΧΙ την επωνυμία. Ο συνδεδεμένος οδηγός τη βλέπει.
+     *
+     * Το ζητούμενο δεν είναι μυστικότητα — είναι ότι η συνάντηση οδηγού και
+     * εταιρείας γίνεται μέσα στην πλατφόρμα, όπως στο Booking. Αρκετά για να
+     * τραβήξει τον οδηγό, όχι αρκετά για να τηλεφωνήσει απευθείας.
+     */
+    public function companyNameFor(?string $viewerRole, $viewerId, array $company): string
+    {
+        $name = trim((string) ($company['company_name'] ?? $company['name'] ?? ''));
+
+        if ($viewerRole !== null && $viewerId !== null) {
+            return $name !== '' ? $name : 'Εταιρεία';
+        }
+
+        return 'Εταιρεία μεταφορών';
+    }
+
+    /**
+     * Επιτρέπεται να δείξουμε την επωνυμία και τον σύνδεσμο στο προφίλ;
+     */
+    public function canRevealCompanyIdentity(?string $viewerRole, $viewerId): bool
+    {
+        return $viewerRole !== null && $viewerId !== null;
+    }
+
     /**
      * Αποκρύπτει μερικώς ένα email: kostas@example.gr → k••••s@example.gr
      *

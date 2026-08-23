@@ -81,9 +81,27 @@ class BaseJobListingController extends BaseController
             // Αναζήτηση αγγελιών με το repository
             $result = $this->jobListingRepository->searchListings($criteria, $page, $limit);
 
+            /*
+             * Καθαρισμός στοιχείων επικοινωνίας πριν από κάθε έξοδο.
+             * Το `SELECT j.*` του repository φέρνει contact_email/contact_phone.
+             * Βλ. Visibility::sanitiseListing() για το τι διέρρεε και πώς.
+             */
+            $visibility = new \Drivejob\Services\Visibility(
+                \Drivejob\Core\Container::getInstance()->get('pdo')
+            );
+            $result['results'] = $visibility->sanitiseListings(
+                Session::get('user_role') ?? Session::get('role'),
+                Session::get('user_id'),
+                $result['results'] ?? []
+            );
+
             // Αν είναι AJAX αίτημα, επιστροφή JSON
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
                 JsonHelper::response($result);
+                // ΧΩΡΙΣ ΑΥΤΟ ΤΟ exit() η εκτέλεση συνέχιζε και μετά την
+                // απόκριση JSON: το view φορτωνόταν από κάτω και η απάντηση
+                // έβγαινε JSON + ολόκληρη σελίδα HTML κολλημένα μαζί.
+                exit();
             }
 
             // Αλλιώς, φόρτωση του view

@@ -94,6 +94,15 @@ final class VehicleTypes
         'truck_trailer' => 'truck_articulated',
         'truck_2axle'   => 'truck_medium',
         'truck_3axle'   => 'truck_heavy',
+        // Βρέθηκαν στη ΖΩΝΤΑΝΗ βάση (23/08): 2 αγγελίες «trailer» και 2
+        // «tanker» — τιμές που δεν υπήρχαν σε κανένα λεξιλόγιο και έπεφταν
+        // σιωπηλά στο εφεδρικό εικονίδιο μεσαίου φορτηγού. Ένα βυτιοφόρο
+        // που δείχνει σαν καρότσα δεν είναι καλλωπιστικό λάθος: ο οδηγός
+        // ADR δεν αναγνωρίζει τη θέση που τον αφορά.
+        'trailer'       => 'truck_articulated',
+        'tanker'        => 'truck_tanker',
+        'refrigerated'  => 'truck_refrigerated',
+        'semi'          => 'truck_articulated',
         'taxi'          => 'car',
         'special'       => 'machinery',
         'forklift'      => 'machinery',

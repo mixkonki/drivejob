@@ -63,9 +63,20 @@ class JobListingController extends BaseJobListingController
             // Αναζήτηση αγγελιών με το repository
             $result = $this->jobListingRepository->searchListings($criteria, $page, $limit);
 
+            // Καθαρισμός στοιχείων επικοινωνίας — βλ. Visibility::sanitiseListing()
+            $visibility = new \Drivejob\Services\Visibility(
+                \Drivejob\Core\Container::getInstance()->get('pdo')
+            );
+            $result['results'] = $visibility->sanitiseListings(
+                Session::get('user_role') ?? Session::get('role'),
+                Session::get('user_id'),
+                $result['results'] ?? []
+            );
+
             // Αν είναι AJAX αίτημα, επιστροφή JSON
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
                 JsonHelper::response($result);
+                exit(); // αλλιώς συνεχίζει και κολλάει ολόκληρο HTML μετά το JSON
             }
 
             // Αλλιώς, φόρτωση του view
@@ -800,9 +811,20 @@ class JobListingController extends BaseJobListingController
             // Αναζήτηση αγγελιών της εταιρείας
             $result = $this->jobListingRepository->searchListings(['company_id' => $id], $page, $limit);
 
+            // Καθαρισμός — το $id έρχεται από το URL, δεν είναι κατ' ανάγκη ο θεατής
+            $visibility = new \Drivejob\Services\Visibility(
+                \Drivejob\Core\Container::getInstance()->get('pdo')
+            );
+            $result['results'] = $visibility->sanitiseListings(
+                Session::get('user_role') ?? Session::get('role'),
+                Session::get('user_id'),
+                $result['results'] ?? []
+            );
+
             // Αν είναι AJAX αίτημα, επιστροφή JSON
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
                 JsonHelper::response($result);
+                exit();
             }
 
             // Αλλιώς, φόρτωση του view
@@ -873,9 +895,20 @@ class JobListingController extends BaseJobListingController
             // Αναζήτηση αγγελιών του οδηγού
             $result = $this->jobListingRepository->searchListings(['driver_id' => $id], $page, $limit);
 
+            // Καθαρισμός — το $id έρχεται από το URL, δεν είναι κατ' ανάγκη ο θεατής
+            $visibility = new \Drivejob\Services\Visibility(
+                \Drivejob\Core\Container::getInstance()->get('pdo')
+            );
+            $result['results'] = $visibility->sanitiseListings(
+                Session::get('user_role') ?? Session::get('role'),
+                Session::get('user_id'),
+                $result['results'] ?? []
+            );
+
             // Αν είναι AJAX αίτημα, επιστροφή JSON
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
                 JsonHelper::response($result);
+                exit();
             }
 
             // Αλλιώς, φόρτωση του view

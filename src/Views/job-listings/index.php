@@ -118,6 +118,36 @@ Session::remove('old_input');
                     <div class="job-listing-card">
                         <div class="job-listing-header">
                             <h3><a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>"><?php echo htmlspecialchars($listing['title']); ?></a></h3>
+
+                            <?php
+                            /*
+                             * ΠΟΙΟΣ ΔΗΜΟΣΙΕΥΣΕ ΤΗΝ ΑΓΓΕΛΙΑ.
+                             *
+                             * Το όνομα έχει ήδη περάσει από τον Visibility: ο ανώνυμος
+                             * επισκέπτης παίρνει «Εταιρεία μεταφορών», ο συνδεδεμένος
+                             * οδηγός την πραγματική επωνυμία με σύνδεσμο στο προφίλ.
+                             * Το `company_identity_hidden` το ορίζει ο sanitiser.
+                             */
+                            $companyLabel = trim((string) ($listing['company_name'] ?? ''));
+                            $identityHidden = !empty($listing['company_identity_hidden']);
+                            ?>
+                            <?php if ($companyLabel !== '') : ?>
+                                <p class="job-listing-company">
+                                    <?php if ($identityHidden) : ?>
+                                        <span class="job-listing-company-masked"
+                                              title="Συνδέσου για να δεις ποια εταιρεία δημοσίευσε την αγγελία">
+                                            <?php echo htmlspecialchars($companyLabel, ENT_QUOTES, 'UTF-8'); ?>
+                                        </span>
+                                    <?php elseif (!empty($listing['company_id'])) : ?>
+                                        <a href="<?php echo BASE_URL; ?>companies/profile/<?php echo (int) $listing['company_id']; ?>">
+                                            <?php echo htmlspecialchars($companyLabel, ENT_QUOTES, 'UTF-8'); ?>
+                                        </a>
+                                    <?php else : ?>
+                                        <?php echo htmlspecialchars($companyLabel, ENT_QUOTES, 'UTF-8'); ?>
+                                    <?php endif; ?>
+                                </p>
+                            <?php endif; ?>
+
                             <div>
                                 <span class="job-type <?php echo $listing['job_type']; ?>">
                                     <?php
@@ -144,61 +174,60 @@ Session::remove('old_input');
                         </div>
 
                         <div class="job-listing-details">
+                            <?php
+                            /*
+                             * ΤΥΠΟΣ ΟΧΗΜΑΤΟΣ — εικονίδιο που αλλάζει ανά τύπο.
+                             *
+                             * Εδώ υπήρχε ένα σταθερό PNG φορτηγού για ΚΑΘΕ αγγελία, και
+                             * δίπλα του ένα switch με πέντε μόνο περιπτώσεις (car, van,
+                             * truck, bus, machinery). Η βάση όμως κρατά έντεκα τύπους:
+                             * ό,τι δεν ήταν σε αυτές τις πέντε — βυτιοφόρο, ψυγείο,
+                             * συρμός, μίνι πούλμαν — έβγαινε ΚΕΝΟ. Λεωφορείο και
+                             * νταλίκα ήταν οπτικά ίδια, και ο οδηγός δεν ξεχώριζε με μια
+                             * ματιά τι είδους θέση είναι.
+                             *
+                             * Τώρα η ονοματολογία περνά από τον VehicleTypes (μία πηγή
+                             * αλήθειας, με μετάφραση παλιών τιμών) και το εικονίδιο από
+                             * το partial vehicle-icon.
+                             */
+                            $vType = $listing['vehicle_type']
+                                ?? (is_array($listing['vehicle_types'] ?? null)
+                                    ? ($listing['vehicle_types'][0] ?? '')
+                                    : ($listing['vehicle_types'] ?? ''));
+                            ?>
                             <div class="job-listing-detail">
-                                <img src="<?= \Drivejob\Helpers\Asset::url('img/vehicle_icon.png') ?>" alt="Όχημα">
-                                <span>
-                                    <?php
-                                    // Έλεγχος αν υπάρχει το παλιό πεδίο vehicle_type
-                                    if (isset($listing['vehicle_type']) && $listing['vehicle_type']) {
-                                        switch ($listing['vehicle_type']) {
-                                            case 'car':
-                                                echo 'Αυτοκίνητο';
-                                                break;
-                                            case 'van':
-                                                echo 'Βαν';
-                                                break;
-                                            case 'truck':
-                                                echo 'Φορτηγό';
-                                                break;
-                                            case 'bus':
-                                                echo 'Λεωφορείο';
-                                                break;
-                                            case 'machinery':
-                                                echo 'Μηχάνημα Έργου';
-                                                break;
-                                        }
-                                    }
-                                    // Έλεγχος αν υπάρχει το νέο πεδίο vehicle_types
-                                    elseif (isset($listing['vehicle_types']) && !empty($listing['vehicle_types'])) {
-                                        $vehicleTypeLabels = [
-                                            'car' => 'Αυτοκίνητο',
-                                            'van' => 'Βαν',
-                                            'truck' => 'Φορτηγό',
-                                            'bus' => 'Λεωφορείο',
-                                            'machinery' => 'Μηχάνημα Έργου'
-                                        ];
-
-                                        // Ελέγχουμε αν το vehicle_types είναι string και το μετατρέπουμε σε array
-                                        $vehicleTypes = $listing['vehicle_types'];
-                                        if (is_string($vehicleTypes)) {
-                                            // Αν είναι string, το εμφανίζουμε απευθείας
-                                            echo isset($vehicleTypeLabels[$vehicleTypes]) ? $vehicleTypeLabels[$vehicleTypes] : $vehicleTypes;
-                                        } else if (is_array($vehicleTypes)) {
-                                            // Αν είναι array, εμφανίζουμε τον πρώτο τύπο
-                                            $firstType = $vehicleTypes[0];
-                                            echo isset($vehicleTypeLabels[$firstType]) ? $vehicleTypeLabels[$firstType] : $firstType;
-
-                                            // Προαιρετικά: εμφάνιση περισσότερων τύπων αν υπάρχουν
-                                            if (count($vehicleTypes) > 1) {
-                                                echo ' +' . (count($vehicleTypes) - 1) . ' ακόμα';
-                                            }
-                                        }
-                                    } else {
-                                        echo 'Δεν καθορίστηκε';
-                                    }
-                                    ?>
-                                </span>
+                                <?php
+                                $vehicleIcon = (string) $vType;
+                                $vehicleIconSize = 20;
+                                include ROOT_DIR . '/src/Views/partials/vehicle-icon.php';
+                                ?>
+                                <span><?php echo htmlspecialchars(\Drivejob\Helpers\VehicleTypes::label((string) $vType), ENT_QUOTES, 'UTF-8'); ?></span>
                             </div>
+
+                            <?php
+                            /*
+                             * ΕΔΡΑ ΤΗΣ ΕΤΑΙΡΕΙΑΣ.
+                             *
+                             * Η κάρτα δεν έδειχνε ΚΑΘΟΛΟΥ τοποθεσία — ο οδηγός έπρεπε να
+                             * ανοίξει κάθε αγγελία για να δει αν είναι στην πόλη του.
+                             *
+                             * Η τιμή έρχεται ήδη γενικευμένη σε επίπεδο πόλης από τον
+                             * Visibility::sanitiseListing() στον controller. Το view ΔΕΝ
+                             * αποφασίζει τι επιτρέπεται να φανεί· απλώς το εμφανίζει.
+                             */
+                            $place = trim((string) ($listing['location'] ?? ''));
+                            ?>
+                            <?php if ($place !== '' && $place !== 'Δεν καθορίστηκε') : ?>
+                                <div class="job-listing-detail">
+                                    <svg class="dj-place-icon" viewBox="0 0 24 24" width="20" height="20"
+                                         fill="none" stroke="currentColor" stroke-width="1.6"
+                                         stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Έδρα">
+                                        <path d="M12 21s-6.5-5.4-6.5-10a6.5 6.5 0 1 1 13 0c0 4.6-6.5 10-6.5 10Z"/>
+                                        <circle cx="12" cy="10.6" r="2.4"/>
+                                    </svg>
+                                    <span><?php echo htmlspecialchars($place, ENT_QUOTES, 'UTF-8'); ?></span>
+                                </div>
+                            <?php endif; ?>
 
                             <?php if ($listing['salary_min'] || $listing['salary_max']) : ?>
                                 <div class="job-listing-detail">

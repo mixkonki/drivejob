@@ -512,3 +512,57 @@ h1 {
         align-items: center;
     }
 }
+/* ═══════════════════════════════════════════════════════════════════
+   ΚΑΡΤΑ ΑΓΓΕΛΙΑΣ — εικονίδια τύπου οχήματος, έδρα, εταιρεία
+
+   Τα εικονίδια είναι inline SVG, όχι εικόνες: κληρονομούν το χρώμα του
+   κειμένου, μένουν ευκρινή σε κάθε ανάλυση, και δεν κάνουν αίτημα στον
+   server — άρα δεν μπορεί να τα «χάσει» ένα cache, όπως έγινε με το
+   img/eye.png που δεν υπήρξε ποτέ.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.job-listing-detail .dj-vehicle-icon,
+.job-listing-detail .dj-place-icon {
+    flex: 0 0 auto;
+    margin-right: 6px;
+    color: #C62828;
+}
+
+.job-listing-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin-bottom: 12px;
+}
+
+/* Ποιος δημοσίευσε την αγγελία */
+.job-listing-company {
+    margin: 2px 0 8px;
+    font-size: 14px;
+    color: #555;
+}
+
+.job-listing-company a {
+    color: #C62828;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.job-listing-company a:hover { text-decoration: underline; }
+
+/*
+ * Κρυμμένη ταυτότητα εταιρείας για μη συνδεδεμένους.
+ *
+ * Δεν το κάνουμε να μοιάζει με σφάλμα ή με κενό πεδίο: είναι σαφές ότι
+ * υπάρχει εταιρεία και ότι το όνομά της ξεκλειδώνει με τη σύνδεση. Το
+ * διακριτικό στιλ (πλάγια, ελαφρύ φόντο) το ξεχωρίζει από ένα κανονικό
+ * όνομα χωρίς να τραβά την προσοχή περισσότερο από την ίδια την αγγελία.
+ */
+.job-listing-company-masked {
+    font-style: italic;
+    color: #777;
+    background: #f2f2f2;
+    padding: 1px 8px;
+    border-radius: 10px;
+    cursor: help;
+}

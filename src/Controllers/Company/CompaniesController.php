@@ -235,6 +235,37 @@ class CompaniesController extends BaseUserController
             exit;
         }
 
+        /*
+         * ΟΡΑΤΟΤΗΤΑ — Ο ΕΛΕΓΧΟΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ ΠΡΩΤΟΣ.
+         *
+         * Ήταν γραμμένος στο ΤΕΛΟΣ της μεθόδου, αφού είχαν ήδη εκτελεστεί
+         * όλα τα ερωτήματα: στοιχεία εταιρείας, αγγελίες, αξιολογήσεις,
+         * μέσος όρος βαθμολογίας. Ένας ανώνυμος επισκέπτης απορριπτόταν
+         * σωστά — αλλά μόνο αφού είχε κοστίσει πέντε ερωτήματα, και με τα
+         * δεδομένα ήδη φορτωμένα στη μνήμη. Κάθε μελλοντική προσθήκη πριν
+         * τον έλεγχο (ένα echo, ένα log, μια κεφαλίδα) θα γινόταν διαρροή.
+         *
+         * Ο έλεγχος πρόσβασης μπαίνει ΠΑΝΤΑ πριν τα δεδομένα.
+         *
+         * Το προφίλ (περιγραφή, στόλος, αξιολογήσεις) είναι εμπορική
+         * πληροφορία και ανοίγει σε κάθε συνδεδεμένο χρήστη. Το email, το
+         * τηλέφωνο, η ακριβής διεύθυνση και ο χάρτης αποκαλύπτονται μόνο σε
+         * οδηγό του οποίου κάποια αίτηση έχει προχωρήσει σε προεπιλογή ή
+         * πρόσληψη — αλλιώς αρκούσαν είκοσι αιτήσεις για είκοσι τηλέφωνα.
+         */
+        $visibility = new \Drivejob\Services\Visibility($this->container->get('pdo'));
+        $viewerRole = Session::get('user_role') ?? Session::get('role');
+        $viewerId = Session::get('user_id');
+
+        if (!$visibility->canViewCompanyProfile($viewerRole, $viewerId, (int) $id)) {
+            Session::set('error_message', 'Συνδέσου για να δεις το προφίλ της εταιρείας.');
+            header('Location: ' . BASE_URL . 'login');
+            exit;
+        }
+
+        $canSeeContact = $visibility->canViewCompanyContact($viewerRole, $viewerId, (int) $id);
+        $contactHint = $visibility->companyContactHint($viewerRole, $viewerId, (int) $id);
+
         // Ανάκτηση των στοιχείων της εταιρείας
         $companyData = $this->companiesRepository->find($id);
 
@@ -247,6 +278,14 @@ class CompaniesController extends BaseUserController
         // Λήψη των αγγελιών της εταιρείας
         $jobListingRepository = new \Drivejob\Repositories\JobListingRepository($this->container->get('pdo'));
         $listings = $jobListingRepository->searchListings(['company_id' => $id], 1, 5);
+
+        // Καθαρισμός: το προφίλ δείχνει τις αγγελίες της εταιρείας, και το
+        // `SELECT j.*` φέρνει μαζί contact_email/contact_phone.
+        $listings['results'] = $visibility->sanitiseListings(
+            $viewerRole,
+            $viewerId,
+            $listings['results'] ?? []
+        );
 
         // Λήψη των αξιολογήσεων της εταιρείας
         $companyReviews = $this->ratingService->getCompanyReviews($id);
@@ -270,28 +309,6 @@ class CompaniesController extends BaseUserController
             // Ο οδηγός μπορεί να αξιολογήσει την εταιρεία αν δεν την έχει ήδη αξιολογήσει
             $canReview = !$hasReviewed;
         }
-
-        /*
-         * ΟΡΑΤΟΤΗΤΑ ΣΤΟΙΧΕΙΩΝ ΕΠΙΚΟΙΝΩΝΙΑΣ — πακέτο ορατότητας.
-         *
-         * Το προφίλ (περιγραφή, στόλος, αξιολογήσεις) είναι εμπορική
-         * πληροφορία και ανοίγει σε κάθε συνδεδεμένο χρήστη. Το email, το
-         * τηλέφωνο, η ακριβής διεύθυνση και ο χάρτης όμως αποκαλύπτονται μόνο
-         * σε οδηγό του οποίου κάποια αίτηση έχει προχωρήσει σε προεπιλογή ή
-         * πρόσληψη — αλλιώς αρκούσαν είκοσι αιτήσεις για είκοσι τηλέφωνα.
-         */
-        $visibility = new \Drivejob\Services\Visibility($this->container->get('pdo'));
-        $viewerRole = Session::get('user_role');
-        $viewerId = Session::get('user_id');
-
-        if (!$visibility->canViewCompanyProfile($viewerRole, $viewerId, (int) $id)) {
-            Session::set('error_message', 'Συνδέσου για να δεις το προφίλ της εταιρείας.');
-            header('Location: ' . BASE_URL . 'login');
-            exit;
-        }
-
-        $canSeeContact = $visibility->canViewCompanyContact($viewerRole, $viewerId, (int) $id);
-        $contactHint = $visibility->companyContactHint($viewerRole, $viewerId, (int) $id);
 
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/companies/public-profile.php';
