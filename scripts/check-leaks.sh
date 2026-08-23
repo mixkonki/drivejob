@@ -29,8 +29,12 @@
 #
 # Για έλεγχο και με συνδεδεμένους ρόλους, δώσε διαπιστευτήρια:
 #
-#   DJ_DRIVER="email:password" DJ_COMPANY="email:password" \
+#   DJ_DRIVER='email:password' DJ_COMPANY='email:password' \
 #     bash scripts/check-leaks.sh
+#
+# ΜΟΝΑ εισαγωγικά, όχι διπλά: ένα συνθηματικό που περιέχει «!» μέσα σε
+# διπλά εισαγωγικά το ερμηνεύει το bash ως αναφορά στο ιστορικό εντολών
+# («event not found») και το αίτημα φεύγει με λάθος κωδικό.
 #
 # ΤΡΕΞΕ ΤΟ: μετά από κάθε αλλαγή σε controller ή repository, και οπωσδήποτε
 # πριν από κάθε ανέβασμα στην παραγωγή.
@@ -172,6 +176,20 @@ fi
 printf '%sΚαμία διαρροή σε %s αποκρίσεις JSON%s\n' "$GRN" "$checked" "$OFF"
 
 if [ "$ROLES" = "anon" ]; then
-    printf '%sΕλέγχθηκε μόνο ο ανώνυμος. Για πλήρη έλεγχο:\n' "$YEL"
-    printf '  DJ_DRIVER="email:pass" DJ_COMPANY="email:pass" bash %s%s\n' "$0" "$OFF"
+    printf '%sΕλέγχθηκε μόνο ο ανώνυμος — η δημόσια πλευρά.\n' "$YEL"
+    printf 'Για πλήρη έλεγχο, με ΜΟΝΑ εισαγωγικά:\n\n'
+    printf "  DJ_DRIVER='email:pass' DJ_COMPANY='email:pass' bash %s\n\n" "$0"
+    printf '%s(διπλά εισαγωγικά σπάνε σε συνθηματικά με «!» — το bash τα\n' "$DIM"
+    printf 'διαβάζει ως ιστορικό εντολών)%s\n' "$OFF"
+elif [ -n "${DJ_DRIVER:-}${DJ_COMPANY:-}" ]; then
+    # Αν δόθηκαν διαπιστευτήρια αλλά κάποιος ρόλος λείπει, ο έλεγχος είναι
+    # ελλιπής και ΔΕΝ πρέπει να περάσει για πλήρης.
+    for want in driver company; do
+        var="DJ_$(printf '%s' "$want" | tr '[:lower:]' '[:upper:]')"
+        eval "given=\${$var:-}"
+        case " $ROLES " in
+            *" $want "*) ;;
+            *) [ -n "$given" ] && printf '%s⚠ Η σύνδεση ως %s απέτυχε — ο ρόλος δεν ελέγχθηκε.%s\n' "$YEL" "$want" "$OFF";;
+        esac
+    done
 fi
