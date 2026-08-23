@@ -60,7 +60,7 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
     <meta name="apple-mobile-web-app-title" content="DriveJob">
     <meta name="msapplication-TileColor" content="#3b82f6">
     <meta name="msapplication-config" content="<?php echo BASE_URL; ?>browserconfig.xml">
-    <link rel="manifest" href="<?php echo BASE_URL; ?>manifest.json">
+    <link rel="manifest" href="<?= \Drivejob\Helpers\Asset::url('manifest.json') ?>">
     <link rel="apple-touch-icon" href="<?= \Drivejob\Helpers\Asset::url('img/icons/icon-192x192.png') ?>">
     <link rel="apple-touch-icon" sizes="180x180" href="<?= \Drivejob\Helpers\Asset::url('img/icons/icon-192x192.png') ?>">
     <link rel="icon" type="image/png" sizes="32x32" href="<?= \Drivejob\Helpers\Asset::url('img/icons/icon-96x96.png') ?>">
@@ -103,10 +103,27 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
          * Reload to update?» — στα αγγλικά, και αν πατούσε Άκυρο έμενε
          * κολλημένος στην παλιά έκδοση για πάντα. Τώρα η ενημέρωση
          * εφαρμόζεται σιωπηλά στην επόμενη πλοήγηση.
+         *
+         * ΓΙΑΤΙ ΤΟ URL ΦΕΡΕΙ ?v=<mtime> (Asset::url):
+         *
+         * Το edge cache του παρόχου κρατούσε το /sw.js και ΔΕΝ επικύρωνε
+         * — αγνοούσε το ETag. Το μετρήσαμε: το /sw.js σέρβιρε v2 ενώ το
+         * /sw.js?z=1 σέρβιρε v3, με το ίδιο αρχείο στον δίσκο. Ούτε η
+         * αλλαγή περιεχομένου το ξεκόλλησε, και το StackCP του netmind
+         * δεν έχει κουμπί Purge.
+         *
+         * Η μόνη διέξοδος που δεν εξαρτάται από τον πάροχο είναι να μη
+         * ζητάμε ποτέ δύο φορές το ίδιο URL για διαφορετικό περιεχόμενο
+         * — δηλαδή ακριβώς ό,τι κάνουμε ήδη για κάθε άλλο στατικό. Ο
+         * service worker ήταν το μόνο αρχείο εκτός αυτού του κανόνα.
+         *
+         * Ο browser θεωρεί ένα νέο script URL ως νέα έκδοση του worker,
+         * τον εγκαθιστά και αποσύρει τον προηγούμενο. Το scope μένει η
+         * ρίζα, οπότε τίποτα άλλο δεν αλλάζει.
          */
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {
-                navigator.serviceWorker.register('<?php echo BASE_URL; ?>sw.js')
+                navigator.serviceWorker.register('<?= \Drivejob\Helpers\Asset::url('sw.js') ?>', { scope: '<?php echo BASE_URL; ?>' })
                     .then(function (registration) {
                         // Έλεγχος για νεότερη έκδοση σε κάθε φόρτωση
                         registration.update();

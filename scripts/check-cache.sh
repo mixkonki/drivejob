@@ -120,9 +120,33 @@ check_cache_header() {
     fi
 }
 
-check_cache_header "/"            "no-store"  "σελίδες: ποτέ σε cache"
-check_cache_header "/sw.js"       "no-cache"  "service worker: πάντα φρέσκος"
-check_cache_header "/manifest.json" "no-cache" "manifest: πάντα φρέσκο"
+check_cache_header "/" "no-store" "σελίδες: ποτέ σε cache"
+
+# Το sw.js και το manifest ζητούνται από τη σελίδα ΜΕ αποτύπωμα ?v=<mtime>,
+# όχι γυμνά. Ελέγχουμε το URL που χρησιμοποιεί πραγματικά η εφαρμογή —
+# αλλιώς μετράμε ένα αντίγραφο που κανείς δεν ζητά πια.
+#
+# Ο λόγος που φτάσαμε εδώ: το edge cache του παρόχου κρατούσε το γυμνό
+# /sw.js και ΔΕΝ επικύρωνε — αγνοούσε το ETag. Το γυμνό URL σέρβιρε v2
+# ενώ ο δίσκος είχε v3. Χωρίς κουμπί Purge, η μόνη διέξοδος ήταν να
+# σταματήσουμε να ζητάμε αυτό το URL.
+home=$(curl -sS -L --max-time 15 "${BASE}/" 2>/dev/null)
+
+sw_url=$(printf '%s' "$home" | grep -oE "serviceWorker\.register\('[^']+'" | head -1 | sed "s/.*'\(.*\)'/\1/")
+mf_url=$(printf '%s' "$home" | grep -oE 'rel="manifest" href="[^"]+"' | head -1 | sed 's/.*href="\(.*\)"/\1/')
+
+if [ -n "$sw_url" ]; then
+    check_cache_header "${sw_url#"$BASE"}" "no-cache" "service worker: πάντα φρέσκος"
+else
+    printf '%s ⚠ %sδεν βρέθηκε καταχώρηση service worker στην αρχική\n' "$YELLOW" "$OFF"
+    warns=$((warns + 1))
+fi
+
+if [ -n "$mf_url" ]; then
+    check_cache_header "${mf_url#"$BASE"}" "no-cache" "manifest: πάντα φρέσκο"
+else
+    check_cache_header "/manifest.json" "no-cache" "manifest: πάντα φρέσκο"
+fi
 
 # ── 3. Αποτύπωμα έκδοσης: μπαίνει το ?v= στις σελίδες; ─────────────
 #
