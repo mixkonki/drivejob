@@ -264,3 +264,28 @@ a:hover {
 .btn-google:hover {
     background-color: #357ae8;
 }
+
+/* ── Λογότυπο επιστροφής στην αρχική ─────────────────────────────
+   Η φόρμα εγγραφής δεν φορτώνει το κοινό header, οπότε ο χρήστης
+   δεν είχε κανέναν τρόπο να γυρίσει πίσω αν άλλαζε γνώμη. */
+.brand-home {
+    display: block;
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.brand-home img {
+    height: 52px;
+    width: auto;
+    transition: opacity .15s ease;
+}
+
+.brand-home:hover img { opacity: .8; }
+
+.brand-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+}
+
+.brand-link:hover { opacity: .75; }

@@ -2,6 +2,21 @@
 // Ορισμός του τίτλου της σελίδας
 $pageTitle = 'Εγγραφή Επιχείρησης';
 
+/**
+ * Οι τιμές που πληκτρολόγησε ο χρήστης σε αποτυχημένη υποβολή.
+ *
+ * ΓΙΑΤΙ ΔΙΑΒΑΖΟΝΤΑΙ ΕΤΣΙ: το old_input δεν καθαριζόταν ποτέ από τη συνεδρία,
+ * και οι δύο φόρμες εγγραφής (οδηγού και επιχείρησης) διάβαζαν το ΙΔΙΟ κλειδί.
+ * Αποτέλεσμα: μια αποτυχημένη εγγραφή οδηγού άφηνε το email και το τηλέφωνό
+ * του να εμφανίζονται στη φόρμα εγγραφής επιχείρησης — και να παραμένουν εκεί
+ * επ' αόριστον, ακόμη και μετά από επιτυχή εγγραφή.
+ *
+ * Πλέον διαβάζονται μία φορά και σβήνονται αμέσως (flash), και μόνο όσα
+ * ανήκουν σε ΑΥΤΗ τη φόρμα.
+ */
+$old = $_SESSION['old_input'] ?? [];
+unset($_SESSION['old_input']);
+
 // Προσθήκη επιπλέον CSS
 $extraCss = ['company-registration.css'];
 
@@ -32,8 +47,11 @@ $extraJs = ['company_registration.js'];
 
     <div class="container">
         <div class="form-container">
+            <a href="<?= BASE_URL ?>" class="brand-home" aria-label="Επιστροφή στην αρχική σελίδα του DriveJob">
+                <img src="<?= BASE_URL ?>img/logo.png" alt="DriveJob">
+            </a>
             <h1>Εγγραφή Επιχείρησης</h1>
-            <p>Δημιουργήστε το προφίλ της επιχείρησής σας στο <br><strong>DriveJobs</strong> μέσα σε λίγα λεπτά!</p>
+            <p>Δημιουργήστε το προφίλ της επιχείρησής σας στο <br><a href="<?= BASE_URL ?>" class="brand-link"><strong>DriveJobs</strong></a> μέσα σε λίγα λεπτά!</p>
 
             <?php if (\Drivejob\Core\Session::has('error_message')) : ?>
                 <div class="error-message">
@@ -53,29 +71,27 @@ $extraJs = ['company_registration.js'];
                     <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
 
                     <input type="text" id="company_name" name="company_name" placeholder="Όνομα Εταιρείας" required
-                        value="<?= isset($_SESSION['old_input']['company_name']) ? htmlspecialchars($_SESSION['old_input']['company_name']) : '' ?>">
+                        value="<?= htmlspecialchars($old['company_name'] ?? '') ?>">
 
                     <input type="email" id="email" name="email" placeholder="Email Εταιρείας" required
-                        value="<?= isset($_SESSION['old_input']['email']) ? htmlspecialchars($_SESSION['old_input']['email']) : '' ?>">
+                        value="<?= htmlspecialchars($old['email'] ?? '') ?>">
 
                     <input type="tel" id="phone" name="phone" placeholder="Τηλέφωνο Εταιρείας" required
-                        value="<?= isset($_SESSION['old_input']['phone']) ? htmlspecialchars($_SESSION['old_input']['phone']) : '' ?>">
+                        value="<?= htmlspecialchars($old['phone'] ?? '') ?>">
 
                     <input type="text" id="contact_person" name="contact_person" placeholder="Υπεύθυνος Επικοινωνίας" required
-                        value="<?= isset($_SESSION['old_input']['contact_person']) ? htmlspecialchars($_SESSION['old_input']['contact_person']) : '' ?>">
+                        value="<?= htmlspecialchars($old['contact_person'] ?? '') ?>">
 
                     <div class="password-visibility">
                         <input type="password" id="password" name="password" placeholder="Συνθηματικό" required>
-                        <span class="password-toggle" onclick="togglePasswordVisibility()">
-                            <img src="<?= BASE_URL ?>img/eye.png" alt="show/hide password" id="toggleIcon">
-                        </span>
+                        <?php $passwordFieldId = 'password';
+                              include ROOT_DIR . '/src/Views/partials/password-toggle.php'; ?>
                     </div>
 
                     <div class="password-visibility">
                         <input type="password" id="confirm_password" name="confirm_password" placeholder="Επιβεβαίωση Συνθηματικού" required>
-                        <span class="password-toggle" onclick="toggleConfirmPasswordVisibility()">
-                            <img src="<?= BASE_URL ?>img/eye.png" alt="show/hide password" id="toggleConfirmIcon">
-                        </span>
+                        <?php $passwordFieldId = 'confirm_password';
+                              include ROOT_DIR . '/src/Views/partials/password-toggle.php'; ?>
                     </div>
 
                     <p class="text_pass">Το συνθηματικό πρέπει να περιέχει:</p>
@@ -112,29 +128,4 @@ $extraJs = ['company_registration.js'];
     </div>
 
     <script>
-        function togglePasswordVisibility() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('toggleIcon');
-
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.src = '<?= BASE_URL ?>img/eye-slash.png';
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.src = '<?= BASE_URL ?>img/eye.png';
-            }
-        }
-
-        function toggleConfirmPasswordVisibility() {
-            const confirmPasswordInput = document.getElementById('confirm_password');
-            const toggleConfirmIcon = document.getElementById('toggleConfirmIcon');
-
-            if (confirmPasswordInput.type === 'password') {
-                confirmPasswordInput.type = 'text';
-                toggleConfirmIcon.src = '<?= BASE_URL ?>img/eye-slash.png';
-            } else {
-                confirmPasswordInput.type = 'password';
-                toggleConfirmIcon.src = '<?= BASE_URL ?>img/eye.png';
-            }
-        }
     </script>
