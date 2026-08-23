@@ -119,6 +119,52 @@ class CompaniesController extends BaseUserController
         $jobListingRepository = new \Drivejob\Repositories\JobListingRepository($this->container->get('pdo'));
         $listings = $jobListingRepository->searchListings(['company_id' => $companyId], 1, 5);
 
+        /*
+         * ══════════════════════════════════════════════════════════════════
+         *  ΤΑ ΣΤΑΤΙΣΤΙΚΑ ΕΔΕΙΧΝΑΝ ΠΑΝΤΑ ΜΗΔΕΝ
+         * ══════════════════════════════════════════════════════════════════
+         *
+         * Το view διαβάζει `$companyStats['active_jobs']`,
+         * `['total_applications']` και `['hired_drivers']` — και ο
+         * controller ΔΕΝ όριζε ποτέ τη μεταβλητή. Το `?? 0` του view έκανε
+         * τη ζημιά αόρατη: αντί για σφάλμα, τρία καθαρά μηδενικά.
+         *
+         * Για την Εταιρία 1 τα πραγματικά νούμερα ήταν 3 ενεργές αγγελίες,
+         * 7 αιτήσεις και 1 πρόσληψη. Η εταιρεία έβλεπε μια πλατφόρμα όπου
+         * δεν είχε συμβεί τίποτα, ενώ επτά οδηγοί περίμεναν απάντηση.
+         *
+         * Οι αιτήσεις μετρώνται ΜΕΣΩ των αγγελιών: ο πίνακας
+         * job_applications δεν έχει στήλη company_id.
+         */
+        $pdo = $this->container->get('pdo');
+
+        $stats = $pdo->prepare(
+            'SELECT
+                (SELECT COUNT(*) FROM job_listings
+                  WHERE company_id = :c1 AND is_active = 1)          AS active_jobs,
+                (SELECT COUNT(*) FROM job_applications ja
+                    JOIN job_listings jl ON jl.id = ja.job_listing_id
+                  WHERE jl.company_id = :c2)                          AS total_applications,
+                (SELECT COUNT(*) FROM job_applications ja
+                    JOIN job_listings jl ON jl.id = ja.job_listing_id
+                  WHERE jl.company_id = :c3 AND ja.status = :hired)   AS hired_drivers,
+                (SELECT COUNT(*) FROM job_applications ja
+                    JOIN job_listings jl ON jl.id = ja.job_listing_id
+                  WHERE jl.company_id = :c4 AND ja.status = :pending) AS pending_applications'
+        );
+        $stats->execute([
+            ':c1' => $companyId, ':c2' => $companyId,
+            ':c3' => $companyId, ':c4' => $companyId,
+            ':hired' => 'hired', ':pending' => 'pending',
+        ]);
+
+        $companyStats = $stats->fetch(\PDO::FETCH_ASSOC) ?: [
+            'active_jobs' => 0,
+            'total_applications' => 0,
+            'hired_drivers' => 0,
+            'pending_applications' => 0,
+        ];
+
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/companies/company-profile.php';
     }

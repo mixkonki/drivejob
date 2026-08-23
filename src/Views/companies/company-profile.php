@@ -207,13 +207,33 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <?php endif; ?>
 
                     <div class="profile-actions">
-                        <a href="/drivejob/public/companies/edit-profile" class="btn btn-primary">
+                        <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn btn-primary">
                             <i class="fas fa-edit"></i> Επεξεργασία Προφίλ
                         </a>
                         <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn btn-secondary">
                             <i class="fas fa-plus"></i> Νέα Αγγελία
                         </a>
-                        <a href="/drivejob/public/companies/messages" class="btn btn-secondary">
+                        <?php
+                        /*
+                         * ΟΙ ΑΙΤΗΣΕΙΣ ΔΕΝ ΕΙΧΑΝ ΣΥΝΔΕΣΜΟ ΠΟΥΘΕΝΑ.
+                         *
+                         * Η σελίδα /job-applications/company-applications υπήρχε και
+                         * λειτουργούσε — αλλά κανένα κουμπί, μενού ή καρτέλα δεν
+                         * οδηγούσε σε αυτήν. Ο μόνος τρόπος να τη δει η εταιρεία ήταν
+                         * να πληκτρολογήσει τη διεύθυνση.
+                         *
+                         * Είναι η σημαντικότερη σελίδα της: εκεί βρίσκονται οι οδηγοί
+                         * που περιμένουν απάντηση. Το πλήθος μπαίνει πάνω στο κουμπί,
+                         * ώστε να φαίνεται ότι κάτι περιμένει χωρίς να χρειάζεται κλικ.
+                         */
+                        $pendingCount = (int) ($companyStats['pending_applications'] ?? 0);
+                        ?>
+                        <a href="<?php echo BASE_URL; ?>job-applications/company-applications"
+                           class="btn <?php echo $pendingCount > 0 ? 'btn-primary' : 'btn-secondary'; ?>">
+                            <i class="fas fa-inbox"></i> Αιτήσεις<?php
+                                echo $pendingCount > 0 ? ' (' . $pendingCount . ' νέες)' : ''; ?>
+                        </a>
+                        <a href="<?php echo BASE_URL; ?>companies/messages" class="btn btn-secondary">
                             <i class="fas fa-envelope"></i> Μηνύματα
                         </a>
                     </div>
@@ -280,7 +300,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                     <?php if (isset($companyData['description']) && $companyData['description']) : ?>
                                         <?php echo nl2br(htmlspecialchars($companyData['description'])); ?>
                                     <?php else : ?>
-                                        <p class="text-muted">Δεν έχετε προσθέσει περιγραφή για την εταιρεία σας. <a href="/drivejob/public/companies/edit-profile" class="btn btn-primary">Προσθέστε τώρα!</a></p>
+                                        <p class="text-muted">Δεν έχετε προσθέσει περιγραφή για την εταιρεία σας. <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn btn-primary">Προσθέστε τώρα!</a></p>
                                     <?php endif; ?>
                                 </div>
                             </section>
@@ -397,7 +417,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                 <div class="sidebar-section">
                     <h3><i class="fas fa-envelope"></i> Μηνύματα</h3>
                     <p class="text-muted mb-3">Έχετε <strong>3</strong> νέα μηνύματα</p>
-                    <a href="/drivejob/public/companies/messages" class="btn btn-secondary">
+                    <a href="<?php echo BASE_URL; ?>companies/messages" class="btn btn-secondary">
                         Προβολή Μηνυμάτων
                     </a>
                 </div>
@@ -433,7 +453,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         <a href="<?php echo BASE_URL; ?>drivers/search" class="btn btn-outline-primary">
                             <i class="fas fa-search"></i> Αναζήτηση Οδηγών
                         </a>
-                        <a href="/drivejob/public/companies/edit-profile" class="btn btn-primary">
+                        <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn btn-primary">
                             <i class="fas fa-cog"></i> Ρυθμίσεις
                         </a>
                     </div>
