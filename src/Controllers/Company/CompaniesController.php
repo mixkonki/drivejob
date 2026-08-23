@@ -337,14 +337,42 @@ class CompaniesController extends BaseUserController
         $companyReviews = $this->ratingService->getCompanyReviews($id);
         $averageRating = $this->ratingService->getCompanyRating($id);
 
-        // Έλεγχος αν ο συνδεδεμένος χρήστης είναι οδηγός και μπορεί να αξιολογήσει την εταιρεία
+        /*
+         * ══════════════════════════════════════════════════════════════════
+         *  ΠΟΙΟΣ ΕΠΙΤΡΕΠΕΤΑΙ ΝΑ ΑΞΙΟΛΟΓΗΣΕΙ
+         * ══════════════════════════════════════════════════════════════════
+         *
+         * Ο κανόνας ήταν μία γραμμή:
+         *
+         *     $canReview = !$hasReviewed;
+         *
+         * Δηλαδή ΚΑΘΕ συνδεδεμένος οδηγός μπορούσε να βαθμολογήσει ΚΑΘΕ
+         * εταιρεία, χωρίς να έχει καμία σχέση μαζί της — χωρίς αίτηση, χωρίς
+         * συνέντευξη, χωρίς να έχει δουλέψει ούτε μία μέρα.
+         *
+         * Ένα σύστημα αξιολόγησης με αυτόν τον κανόνα δεν είναι ελλιπές·
+         * είναι όπλο. Δέκα λογαριασμοί οδηγών αρκούν για να καταστραφεί η
+         * βαθμολογία ενός ανταγωνιστή, και η εταιρεία δεν έχει τρόπο να
+         * αμυνθεί ούτε να αποδείξει ότι δεν συνάντησε ποτέ αυτούς τους
+         * ανθρώπους.
+         *
+         * Ο ΝΕΟΣ ΚΑΝΟΝΑΣ: αξιολογεί μόνο όποιος έχει προχωρήσει σε
+         * προεπιλογή ή πρόσληψη — δηλαδή όποιος έχει πραγματική εμπειρία
+         * από την εταιρεία. Είναι η ΙΔΙΑ προϋπόθεση που ξεκλειδώνει και τα
+         * στοιχεία επικοινωνίας (Visibility::ENGAGED_STATUSES), οπότε η
+         * πλατφόρμα λέει το ίδιο πράγμα παντού: η σχέση γεννιέται από τη
+         * διαδικασία, όχι από την περιέργεια.
+         *
+         * Ίδια λογική με Booking και Airbnb: κριτική αφήνει μόνο όποιος
+         * έμεινε.
+         */
         $canReview = false;
         $hasReviewed = false;
+        $reviewBlockedReason = '';
 
         if (Session::has('user_id') && Session::get('user_role') === 'driver') {
-            $driverId = Session::get('user_id');
+            $driverId = (int) Session::get('user_id');
 
-            // Έλεγχος αν ο οδηγός έχει ήδη αξιολογήσει την εταιρεία
             foreach ($companyReviews as $review) {
                 if ($review['driver_id'] == $driverId) {
                     $hasReviewed = true;
@@ -352,8 +380,16 @@ class CompaniesController extends BaseUserController
                 }
             }
 
-            // Ο οδηγός μπορεί να αξιολογήσει την εταιρεία αν δεν την έχει ήδη αξιολογήσει
-            $canReview = !$hasReviewed;
+            $isEngaged = $visibility->driverIsEngagedWith($driverId, (int) $id);
+
+            if ($hasReviewed) {
+                $reviewBlockedReason = '';       // το view δείχνει «έχεις ήδη αξιολογήσει»
+            } elseif (!$isEngaged) {
+                $reviewBlockedReason = 'Μπορείς να αξιολογήσεις μια εταιρεία αφού '
+                    . 'προχωρήσει η αίτησή σου σε προεπιλογή ή πρόσληψη.';
+            }
+
+            $canReview = !$hasReviewed && $isEngaged;
         }
 
         // Φόρτωση του view
@@ -520,6 +556,32 @@ class CompaniesController extends BaseUserController
         if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in company review');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'companies/profile/' . $id);
+            exit();
+        }
+
+        /*
+         * Ο ΕΛΕΓΧΟΣ ΤΟΥ VIEW ΔΕΝ ΕΙΝΑΙ ΕΛΕΓΧΟΣ.
+         *
+         * Η φόρμα αξιολόγησης εμφανίζεται μόνο σε οδηγό που έχει προχωρήσει
+         * σε προεπιλογή ή πρόσληψη — αλλά αυτό αφορά μόνο όποιον ανοίγει τη
+         * σελίδα σε browser. Ένα POST απευθείας στο endpoint δεν βλέπει ποτέ
+         * το view, και ο έλεγχος δεν υπήρχε ΠΟΥΘΕΝΑ εδώ.
+         *
+         * Το ίδιο λάθος με το checkbox «Δεν είμαι ρομπότ»: κανόνας που ζει
+         * μόνο στο HTML είναι διακόσμηση. Ο κανόνας ζει στον server.
+         */
+        $visibility = new \Drivejob\Services\Visibility($this->container->get('pdo'));
+        $driverId = (int) Session::get('user_id');
+
+        if (!$visibility->driverIsEngagedWith($driverId, (int) $id)) {
+            Logger::warning('Απόπειρα αξιολόγησης χωρίς σχέση με την εταιρεία', [
+                'driver_id' => $driverId,
+                'company_id' => $id,
+            ]);
+            Session::set('error_message',
+                'Μπορείς να αξιολογήσεις μια εταιρεία αφού προχωρήσει η αίτησή '
+                . 'σου σε προεπιλογή ή πρόσληψη.');
             header('Location: ' . BASE_URL . 'companies/profile/' . $id);
             exit();
         }

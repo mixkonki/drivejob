@@ -269,9 +269,20 @@ use Drivejob\Core\CSRF;
                         <div class="already-reviewed">
                             <p>Έχετε ήδη αξιολογήσει αυτή την εταιρεία.</p>
                         </div>
-                    <?php elseif (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'driver') : ?>
+                    <?php elseif (!empty($reviewBlockedReason)) : ?>
+                        <?php
+                        /*
+                         * Ο λόγος έρχεται από τον controller, δεν μαντεύεται εδώ.
+                         *
+                         * Ο παλιός έλεγχος διάβαζε $_SESSION['role'] — κλειδί που
+                         * χρησιμοποιείται μόνο για διαχειριστές· για οδηγούς και
+                         * εταιρείες το κλειδί είναι 'user_role'. Το μήνυμα δεν
+                         * εμφανιζόταν ποτέ σε οδηγό, και η ενότητα αξιολογήσεων
+                         * τελείωνε απότομα χωρίς καμία εξήγηση.
+                         */
+                        ?>
                         <div class="review-info">
-                            <p>Για να αξιολογήσετε αυτή την εταιρεία, πρέπει να έχετε συνεργαστεί μαζί της.</p>
+                            <p><?php echo htmlspecialchars($reviewBlockedReason, ENT_QUOTES, 'UTF-8'); ?></p>
                         </div>
                     <?php elseif (!isset($_SESSION['user_id'])) : ?>
                         <div class="review-login-prompt">
