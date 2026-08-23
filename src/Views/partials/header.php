@@ -61,7 +61,7 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
     <meta name="msapplication-TileColor" content="#3b82f6">
     <meta name="msapplication-config" content="<?php echo BASE_URL; ?>browserconfig.xml">
     <link rel="manifest" href="<?php echo BASE_URL; ?>manifest.json">
-    <link rel="apple-touch-icon" href="<?php echo BASE_URL; ?>img/brand/icon-180.png">
+    <link rel="apple-touch-icon" href="<?php echo BASE_URL; ?>img/icons/icon-192x192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="<?php echo BASE_URL; ?>img/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="<?php echo BASE_URL; ?>img/icons/icon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="<?php echo BASE_URL; ?>img/icons/icon-72x72.png">
@@ -75,15 +75,6 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/styles.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/job-listings.css">
     <link rel="icon" href="<?php echo BASE_URL; ?>img/favicon.ico" type="image/x-icon">
-    <!-- Προεπισκόπηση συνδέσμων σε κοινωνικά δίκτυα (Πακέτο 8) -->
-    <meta property="og:site_name" content="DriveJob">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="<?php echo BASE_URL; ?>img/brand/og-image.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="<?php echo BASE_URL; ?>img/brand/og-image.jpg">
-    <meta name="theme-color" content="#C62828">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <!-- Επιπλέον CSS αρχεία -->
@@ -105,29 +96,44 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
 
     <!-- PWA Service Worker Registration -->
     <script>
-        // Register service worker for PWA functionality
+        /*
+         * Καταχώρηση service worker.
+         *
+         * Η προηγούμενη έκδοση ρωτούσε τον χρήστη «New version available!
+         * Reload to update?» — στα αγγλικά, και αν πατούσε Άκυρο έμενε
+         * κολλημένος στην παλιά έκδοση για πάντα. Τώρα η ενημέρωση
+         * εφαρμόζεται σιωπηλά στην επόμενη πλοήγηση.
+         */
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
+            window.addEventListener('load', function () {
                 navigator.serviceWorker.register('<?php echo BASE_URL; ?>sw.js')
-                    .then(function(registration) {
-                        console.log('SW registered: ', registration);
+                    .then(function (registration) {
+                        // Έλεγχος για νεότερη έκδοση σε κάθε φόρτωση
+                        registration.update();
 
-                        // Check for updates
-                        registration.addEventListener('updatefound', function() {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', function() {
+                        registration.addEventListener('updatefound', function () {
+                            var newWorker = registration.installing;
+                            if (!newWorker) return;
+
+                            newWorker.addEventListener('statechange', function () {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // New content is available, notify user
-                                    if (confirm('New version available! Reload to update?')) {
-                                        window.location.reload();
-                                    }
+                                    console.log('[SW] νέα έκδοση έτοιμη — θα ενεργοποιηθεί στην επόμενη πλοήγηση');
                                 }
                             });
                         });
                     })
-                    .catch(function(registrationError) {
-                        console.log('SW registration failed: ', registrationError);
+                    .catch(function (error) {
+                        console.log('[SW] η καταχώρηση απέτυχε:', error);
                     });
+
+                // Όταν αλλάξει ο ελεγκτής, φορτώνουμε μία φορά ώστε ο χρήστης
+                // να δει αμέσως τη νέα έκδοση αντί να μείνει στην παλιά.
+                var refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', function () {
+                    if (refreshing) return;
+                    refreshing = true;
+                    window.location.reload();
+                });
             });
         }
 
@@ -233,7 +239,7 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
         <!-- Λογότυπο -->
         <div class="logo">
             <a href="<?php echo BASE_URL; ?>">
-                <img src="<?php echo BASE_URL; ?>img/brand/logo-white-480.png" alt="DriveJob — αγγελίες εργασίας για οδηγούς">
+                <img src="<?php echo BASE_URL; ?>img/logo.png" alt="Λογότυπο DriveJob">
             </a>
         </div>
 

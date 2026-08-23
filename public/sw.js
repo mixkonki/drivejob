@@ -1,201 +1,208 @@
-// DriveJob Service Worker for PWA
-const CACHE_NAME = 'drivejob-v1.0.0';
-const STATIC_CACHE_NAME = 'drivejob-static-v1.0.0';
+// DriveJob Service Worker
+//
+// ΓΙΑΤΙ ΞΑΝΑΓΡΑΦΤΗΚΕ: η προηγούμενη έκδοση ήταν cache-first για ΤΑ ΠΑΝΤΑ —
+// αν κάτι υπήρχε στην τοπική μνήμη του browser, το σέρβιρε χωρίς καν να
+// ρωτήσει τον server. Όταν το site μπήκε σε Maintenance Mode, ο browser
+// αποθήκευσε τις αποκρίσεις εκείνης της περιόδου· μετά την επαναφορά
+// εξακολουθούσε να τις σερβίρει, και οι νέες εκδόσεις σελίδων δεν έφταναν
+// ποτέ στον χρήστη. Το CACHE_NAME ήταν σταθερό, οπότε τίποτα δεν καθαριζόταν.
+//
+// Η νέα λογική:
+//   • Σελίδες (navigation): ΠΑΝΤΑ δίκτυο πρώτα. Cache μόνο ως εφεδρεία όταν
+//     ο χρήστης είναι εκτός σύνδεσης.
+//   • Στατικά (css/js/img/fonts): stale-while-revalidate — γρήγορη απόκριση
+//     από cache, αλλά ΠΑΝΤΑ ανανέωση στο παρασκήνιο.
+//   • Τίποτα δυναμικό ή ευαίσθητο δεν μπαίνει σε cache.
+//
+// ΟΤΑΝ ΑΛΛΑΖΕΙ ΚΑΤΙ ΕΔΩ, ΑΝΕΒΑΣΕ ΤΟ CACHE_VERSION — έτσι καθαρίζονται τα
+// παλιά cache σε κάθε browser που έχει επισκεφθεί το site.
 
-// Resources to cache immediately
+const CACHE_VERSION = 'v2';
+const STATIC_CACHE = `drivejob-static-${CACHE_VERSION}`;
+const PAGES_CACHE = `drivejob-pages-${CACHE_VERSION}`;
+
+/**
+ * Ελάχιστα αρχεία που θέλουμε διαθέσιμα εκτός σύνδεσης.
+ *
+ * Η παλιά λίστα περιείχε '/css/style.css' — αρχείο που δεν υπήρξε ποτέ (το
+ * σωστό είναι styles.css). Επειδή το cache.addAll() αποτυγχάνει ΟΛΟΚΛΗΡΟ αν
+ * έστω ένα URL αποτύχει, το static cache δεν γέμιζε ποτέ.
+ */
 const STATIC_RESOURCES = [
-  '/',
-  '/manifest.json',
+  '/css/styles.css',
   '/img/logo.png',
-  '/css/style.css',
-  '/js/app.js'
+  '/manifest.json',
 ];
 
-// Install event - cache static resources
+/**
+ * Διαδρομές που ΔΕΝ μπαίνουν ποτέ σε cache.
+ *
+ * Οτιδήποτε αφορά ταυτότητα, διαχείριση, προγραμματισμένες εργασίες ή
+ * κατάσταση συστήματος πρέπει να φτάνει πάντα φρέσκο από τον server.
+ */
+const NEVER_CACHE = [
+  '/auth/', '/login', '/logout', '/register',
+  '/admin', '/cron/', '/health', '/gdpr/',
+  '/job-applications/', '/messages', '/conversation',
+];
+
+function isNeverCached(pathname) {
+  return NEVER_CACHE.some((prefix) => pathname.startsWith(prefix));
+}
+
+function isStaticAsset(pathname) {
+  return /\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf)$/i.test(pathname);
+}
+
+// ─────────────────────────────────────────────────────── Εγκατάσταση
+
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installing...');
   event.waitUntil(
-    caches.open(STATIC_CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(STATIC_RESOURCES);
-      })
-      .catch((error) => {
-        console.log('Failed to cache static resources:', error);
-      })
-  );
-  self.skipWaiting();
-});
-
-// Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating...');
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== STATIC_CACHE_NAME && cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-  self.clients.claim();
-});
-
-// Fetch event - serve from cache or network
-self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
-  if (event.request.method !== 'GET') return;
-
-  const url = new URL(event.request.url);
-
-  // Skip cross-origin requests
-  if (url.origin !== location.origin) return;
-
-  event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => {
-        if (cachedResponse) {
-          // Return cached response and update in background
-          event.waitUntil(
-            fetch(event.request)
-              .then((response) => {
-                if (response.ok) {
-                  caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, response.clone());
-                  });
-                }
-              })
-              .catch(() => {
-                // Network failed, that's ok
-              })
-          );
-          return cachedResponse;
-        }
-
-        // Not in cache, fetch from network
-        return fetch(event.request)
-          .then((response) => {
-            // Cache successful GET requests
-            if (response.ok && event.request.method === 'GET') {
-              const responseClone = response.clone();
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, responseClone);
-              });
-            }
-            return response;
+    caches.open(STATIC_CACHE)
+      // addAll ματαιώνεται ολόκληρο σε μία αποτυχία — προσθέτουμε ένα προς ένα
+      // ώστε ένα αρχείο που λείπει να μη ρίχνει όλη την εγκατάσταση.
+      .then((cache) => Promise.all(
+        STATIC_RESOURCES.map((url) =>
+          cache.add(url).catch(() => {
+            console.warn('[SW] δεν μπήκε σε cache:', url);
           })
-          .catch(() => {
-            // Return offline page for navigation requests
-            if (event.request.mode === 'navigate') {
-              return caches.match('/offline.html') || new Response('Offline - Please check your connection', {
-                status: 503,
-                statusText: 'Service Unavailable',
-                headers: new Headers({
-                  'Content-Type': 'text/plain'
-                })
-              });
-            }
-          });
-      })
+        )
+      ))
+      .then(() => self.skipWaiting())
   );
 });
 
-// Background sync for offline actions
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    event.waitUntil(doBackgroundSync());
+// ─────────────────────────────────────────────────────── Ενεργοποίηση
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((names) => Promise.all(
+        names
+          .filter((name) => name !== STATIC_CACHE && name !== PAGES_CACHE)
+          .map((name) => {
+            console.log('[SW] διαγραφή παλιού cache:', name);
+            return caches.delete(name);
+          })
+      ))
+      .then(() => self.clients.claim())
+  );
+});
+
+// ─────────────────────────────────────────────────────── Αιτήματα
+
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
+
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
+
+  if (url.origin !== location.origin) return;
+  if (isNeverCached(url.pathname)) return;      // αφήνουμε τον browser να το κάνει κανονικά
+  if (url.search) return;                       // αιτήματα με παραμέτρους: πάντα φρέσκα
+
+  if (isStaticAsset(url.pathname)) {
+    event.respondWith(staleWhileRevalidate(request));
+    return;
+  }
+
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request));
   }
 });
 
-async function doBackgroundSync() {
+/**
+ * Σελίδες: δίκτυο πρώτα, cache μόνο ως εφεδρεία εκτός σύνδεσης.
+ *
+ * Αυτό είναι το σημείο που έσπασε παλιότερα. Μια σελίδα από cache μπορεί να
+ * είναι σελίδα συντήρησης, παλιά έκδοση, ή απόκριση από περίοδο που κάτι δεν
+ * δούλευε. Δεν την εμπιστευόμαστε όσο υπάρχει δίκτυο.
+ */
+async function networkFirst(request) {
   try {
-    const cache = await caches.open(CACHE_NAME);
-    const requests = await cache.keys();
+    const response = await fetch(request);
 
-    const syncPromises = requests.map(async (request) => {
-      try {
-        const response = await fetch(request);
-        if (response.ok) {
-          await cache.put(request, response.clone());
-        }
-      } catch (error) {
-        console.log('Background sync failed for:', request.url);
-      }
-    });
+    // Μόνο κανονικές, επιτυχείς αποκρίσεις αξίζουν αποθήκευση.
+    if (response.ok && response.type === 'basic') {
+      const copy = response.clone();
+      caches.open(PAGES_CACHE).then((cache) => cache.put(request, copy));
+    }
 
-    await Promise.all(syncPromises);
+    return response;
   } catch (error) {
-    console.log('Background sync failed:', error);
+    const cached = await caches.match(request);
+    if (cached) return cached;
+
+    return new Response(
+      '<!DOCTYPE html><html lang="el"><head><meta charset="utf-8">'
+      + '<title>Χωρίς σύνδεση</title></head><body style="font:16px/1.6 system-ui;padding:2rem;text-align:center">'
+      + '<h1>Δεν υπάρχει σύνδεση</h1>'
+      + '<p>Έλεγξε τη σύνδεσή σου και δοκίμασε ξανά.</p></body></html>',
+      { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    );
   }
 }
 
-// Push notification handling
+/**
+ * Στατικά: γρήγορη απόκριση από cache, αλλά πάντα ανανέωση στο παρασκήνιο.
+ * Έτσι ένα νέο CSS φτάνει στον χρήστη το αργότερο στην επόμενη φόρτωση.
+ */
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(STATIC_CACHE);
+  const cached = await cache.match(request);
+
+  const network = fetch(request)
+    .then((response) => {
+      if (response.ok && response.type === 'basic') {
+        cache.put(request, response.clone());
+      }
+      return response;
+    })
+    .catch(() => cached);
+
+  return cached || network;
+}
+
+// ─────────────────────────────────────────────── Ειδοποιήσεις push
+
 self.addEventListener('push', (event) => {
-  if (event.data) {
-    const data = event.data.json();
-    const options = {
-      body: data.body,
+  if (!event.data) return;
+
+  let data;
+  try {
+    data = event.data.json();
+  } catch (error) {
+    return;
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'DriveJob', {
+      body: data.body || '',
       icon: '/img/icons/icon-192x192.png',
       badge: '/img/icons/icon-72x72.png',
-      vibrate: [100, 50, 100],
-      data: {
-        dateOfArrival: Date.now(),
-        primaryKey: data.primaryKey
-      },
-      actions: [
-        {
-          action: 'view',
-          title: 'View Details'
-        },
-        {
-          action: 'dismiss',
-          title: 'Dismiss'
-        }
-      ]
-    };
-    event.waitUntil(
-      self.registration.showNotification(data.title, options)
-    );
-  }
+      data: { url: data.url || '/' },
+    })
+  );
 });
 
-// Notification click handling
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  event.waitUntil(clients.openWindow(event.notification.data?.url || '/'));
+});
 
-  if (event.action === 'view') {
+/**
+ * Μήνυμα από τη σελίδα: καθαρισμός όλων των cache.
+ *
+ * Δίνει τρόπο να ξεκολλήσει ένας browser χωρίς να χρειάζεται ο χρήστης να
+ * μπει στα DevTools.
+ */
+self.addEventListener('message', (event) => {
+  if (event.data === 'dj-clear-caches') {
     event.waitUntil(
-      clients.openWindow(event.notification.data.url || '/')
+      caches.keys()
+        .then((names) => Promise.all(names.map((name) => caches.delete(name))))
+        .then(() => event.source && event.source.postMessage('dj-caches-cleared'))
     );
   }
 });
-
-// Periodic background sync (if supported)
-if ('periodicSync' in self.registration) {
-  self.addEventListener('periodicsync', (event) => {
-    if (event.tag === 'content-sync') {
-      event.waitUntil(syncContent());
-    }
-  });
-}
-
-async function syncContent() {
-  try {
-    // Sync important content in background
-    const response = await fetch('/api/sync-content');
-    const data = await response.json();
-
-    if (data.updates && data.updates.length > 0) {
-      // Show notification about updates
-      self.registration.showNotification('DriveJob Updates', {
-        body: `There are ${data.updates.length} new updates available`,
-        icon: '/img/icons/icon-192x192.png'
-      });
-    }
-  } catch (error) {
-    console.log('Content sync failed:', error);
-  }
-}
