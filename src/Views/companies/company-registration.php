@@ -17,6 +17,16 @@ $pageTitle = 'Εγγραφή Επιχείρησης';
 $old = $_SESSION['old_input'] ?? [];
 unset($_SESSION['old_input']);
 
+/**
+ * Τα σφάλματα επικύρωσης της προηγούμενης υποβολής.
+ *
+ * Ο controller τα έγραφε στη συνεδρία και κανένα view δεν τα διάβαζε —
+ * κάθε αποτυχία κατέληγε σε σιωπηλή ανακατεύθυνση χωρίς εξήγηση.
+ * Βλ. src/Views/drivers/drivers-registration.php.
+ */
+$errors = $_SESSION['errors'] ?? [];
+unset($_SESSION['errors']);
+
 // Προσθήκη επιπλέον CSS
 $extraCss = ['company-registration.css'];
 
@@ -56,6 +66,14 @@ $extraJs = ['company_registration.js'];
                     <?php echo \Drivejob\Core\Session::get('error_message'); ?>
                     <?php \Drivejob\Core\Session::remove('error_message'); ?>
                 </div>
+            <?php endif; ?>
+
+            <?php if (!empty($errors)) : ?>
+                <ul class="error-message dj-errors">
+                    <?php foreach ($errors as $message) : ?>
+                        <li><?= htmlspecialchars(is_array($message) ? implode(' ', $message) : (string) $message, ENT_QUOTES, 'UTF-8') ?></li>
+                    <?php endforeach; ?>
+                </ul>
             <?php endif; ?>
 
             <div>

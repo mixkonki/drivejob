@@ -17,6 +17,19 @@ $pageTitle = 'Εγγραφή Οδηγού';
 $old = $_SESSION['old_input'] ?? [];
 unset($_SESSION['old_input']);
 
+/**
+ * Τα σφάλματα επικύρωσης της προηγούμενης υποβολής.
+ *
+ * ΓΙΑΤΙ ΠΡΟΣΤΕΘΗΚΕ: ο controller έγραφε τα σφάλματα στη συνεδρία με
+ * `Session::set('errors', ...)` — και ΚΑΝΕΝΑ view δεν τα διάβαζε ποτέ.
+ * Κάθε αποτυχία επικύρωσης (αδύναμο συνθηματικό, λάθος τηλέφωνο, email που
+ * υπάρχει ήδη) κατέληγε σε σιωπηλή ανακατεύθυνση πίσω στη φόρμα, χωρίς
+ * καμία ένδειξη τι φταίει. Ο χρήστης πατούσε «Εγγραφή» ξανά και ξανά
+ * βλέποντας την ίδια σελίδα.
+ */
+$errors = $_SESSION['errors'] ?? [];
+unset($_SESSION['errors']);
+
 // Προσθήκη επιπλέον CSS
 $extraCss = ['drivers-registration.css'];
 
@@ -56,6 +69,14 @@ $extraJs = ['drivers_registration.js'];
                     <?php echo \Drivejob\Core\Session::get('error_message'); ?>
                     <?php \Drivejob\Core\Session::remove('error_message'); ?>
                 </div>
+            <?php endif; ?>
+
+            <?php if (!empty($errors)) : ?>
+                <ul class="error-message dj-errors">
+                    <?php foreach ($errors as $message) : ?>
+                        <li><?= htmlspecialchars(is_array($message) ? implode(' ', $message) : (string) $message, ENT_QUOTES, 'UTF-8') ?></li>
+                    <?php endforeach; ?>
+                </ul>
             <?php endif; ?>
 
             <div>
