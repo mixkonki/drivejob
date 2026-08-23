@@ -1,4 +1,23 @@
 <?php
+
+/**
+ * Οι αγγελίες του συνδεδεμένου χρήστη (κοινό view για εταιρεία και οδηγό).
+ *
+ * Δύο controllers στέλνουν εδώ διαφορετικό σχήμα: άλλοι δίνουν $listings ως
+ * ολόκληρο το αποτέλεσμα (με results και pagination μέσα), άλλοι δίνουν τα
+ * αποτελέσματα σκέτα και τη σελιδοποίηση χωριστά. Κανονικοποιούμε εδώ αντί να
+ * σπάσουμε τον έναν από τους δύο.
+ */
+
+$rows = $rows ?? (is_array($listings ?? null) ? $listings : []);
+$pager = $pager ?? ($pagination ?? []);
+
+$currentPage = (int) ($pager['page'] ?? $pager['current_page'] ?? 1);
+$totalPages = (int) ($pager['pages'] ?? $pager['total_pages'] ?? 1);
+
+// Ο ρόλος μπορεί να λείπει από τη συνεδρία σε παλιές συνδέσεις
+$viewerRole = $_SESSION['role'] ?? $_SESSION['user_role'] ?? '';
+
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
@@ -25,14 +44,14 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
         <!-- Επικεφαλίδα αγγελιών -->
         <div class="job-listings-header">
-            <h2><?php echo $_SESSION['role'] === 'company' ? 'Αγγελίες της Εταιρείας μου' : 'Αγγελίες μου ως Οδηγός'; ?></h2>
+            <h2><?php echo $viewerRole === 'company' ? 'Αγγελίες της Εταιρείας μου' : 'Αγγελίες μου ως Οδηγός'; ?></h2>
             <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα Αγγελία</a>
         </div>
 
         <!-- Λίστα Αγγελιών -->
-        <?php if (isset($listings) && count($listings['results']) > 0) : ?>
+        <?php if (count($rows) > 0) : ?>
             <div class="job-listings">
-                <?php foreach ($listings['results'] as $listing) : ?>
+                <?php foreach ($rows as $listing) : ?>
                     <div class="job-listing-card">
                         <div class="job-listing-header">
                             <h3><a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>"><?php echo htmlspecialchars($listing['title']); ?></a></h3>
@@ -135,10 +154,10 @@ include ROOT_DIR . '/src/Views/partials/header.php';
             </div>
 
             <!-- Σελιδοποίηση -->
-            <?php if ($listings['pagination']['pages'] > 1) : ?>
+            <?php if ($totalPages > 1) : ?>
                 <div class="pagination">
-                    <?php for ($i = 1; $i <= $listings['pagination']['pages']; $i++) : ?>
-                        <a href="?page=<?php echo $i; ?>" class="pagination-btn <?php echo $i === $listings['pagination']['page'] ? 'active' : ''; ?>">
+                    <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                        <a href="?page=<?php echo $i; ?>" class="pagination-btn <?php echo $i === $currentPage ? 'active' : ''; ?>">
                             <?php echo $i; ?>
                         </a>
                     <?php endfor; ?>

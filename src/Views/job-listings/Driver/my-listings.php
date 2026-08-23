@@ -1,4 +1,15 @@
 <?php
+
+use Drivejob\Helpers\VehicleTypes;
+
+/**
+ * Κανονικοποίηση του σχήματος που στέλνουν οι controllers — άλλοι δίνουν
+ * $listings ως ολόκληρο αποτέλεσμα, άλλοι σκέτα τα αποτελέσματα.
+ */
+$rows = $listings['results'] ?? (is_array($listings ?? null) ? $listings : []);
+$pager = $listings['pagination'] ?? ($pagination ?? []);
+$currentPage = (int) ($pager['page'] ?? $pager['current_page'] ?? 1);
+$totalPages = (int) ($pager['pages'] ?? $pager['total_pages'] ?? 1);
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
@@ -27,9 +38,9 @@ include ROOT_DIR . '/src/Views/partials/header.php';
             <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">Νέα Αγγελία</a>
         </div>
 
-        <?php if (isset($listings) && count($listings['results']) > 0) : ?>
+        <?php if (count($rows) > 0) : ?>
             <div class="listings-container">
-                <?php foreach ($listings['results'] as $listing) : ?>
+                <?php foreach ($rows as $listing) : ?>
                     <div class="listing-card">
                         <div class="listing-header">
                             <h2><a href="<?php echo BASE_URL; ?>job-listings/show/<?php echo $listing['id']; ?>"><?php echo htmlspecialchars($listing['title']); ?></a></h2>
@@ -52,16 +63,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                     <img src="<?php echo BASE_URL; ?>img/car_icon.png" alt="Τύπος Οχήματος">
                                     <span>
                                         <?php
-                                        $vehicleTypes = [
-                                            'car' => 'Αυτοκίνητο',
-                                            'van' => 'Βαν',
-                                            'truck' => 'Φορτηγό',
-                                            'bus' => 'Λεωφορείο',
-                                            'taxi' => 'Ταξί',
-                                            'motorcycle' => 'Μοτοσυκλέτα',
-                                            'special' => 'Ειδικό Όχημα'
-                                        ];
-                                        echo isset($vehicleTypes[$listing['vehicle_type']]) ? $vehicleTypes[$listing['vehicle_type']] : $listing['vehicle_type'];
+                                        echo htmlspecialchars(VehicleTypes::label($listing['vehicle_type'] ?? null));
                                         ?>
                                     </span>
                                 </div>
@@ -81,7 +83,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             <div class="listing-stats">
                                 <div class="stat-item">
                                     <span class="stat-label">Προβολές:</span>
-                                    <span class="stat-value"><?php echo $listing['views']; ?></span>
+                                    <span class="stat-value"><?php echo $listing['views_count']; ?></span>
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-label">Αιτήσεις:</span>
@@ -102,10 +104,10 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                 <?php endforeach; ?>
             </div>
 
-            <?php if ($listings['total_pages'] > 1) : ?>
+            <?php if ($totalPages > 1) : ?>
                 <div class="pagination">
-                    <?php for ($i = 1; $i <= $listings['total_pages']; $i++) : ?>
-                        <a href="?page=<?php echo $i; ?>" class="<?php echo $i === $listings['current_page'] ? 'active' : ''; ?>"><?php echo $i; ?></a>
+                    <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                        <a href="?page=<?php echo $i; ?>" class="<?php echo $i === $currentPage ? 'active' : ''; ?>"><?php echo $i; ?></a>
                     <?php endfor; ?>
                 </div>
             <?php endif; ?>

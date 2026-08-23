@@ -18,33 +18,63 @@ class JobListingRepository extends BaseRepository implements JobListingRepositor
     /**
      * @var array Τα πεδία που μπορούν να ενημερωθούν
      */
+    /**
+     * Τα πεδία που επιτρέπεται να γραφτούν.
+     *
+     * Παράγεται ΑΠΟ ΤΟ ΣΧΗΜΑ, όχι από μνήμη. Η προηγούμενη λίστα είχε
+     * αποκλίνει σοβαρά: εννέα ονόματα δεν αντιστοιχούσαν σε καμία στήλη
+     * (salary_period, license_required, pei_required, is_featured, views…)
+     * και ταυτόχρονα ΕΚΟΒΕ ΣΙΩΠΗΛΑ εικοσιπέντε υπαρκτές στήλες — ανάμεσά
+     * τους contact_email, contact_phone, salary_type, required_license,
+     * transport_type. Πρακτικά κάθε δημιουργία αγγελίας έχανε τα μισά
+     * πεδία της φόρμας χωρίς κανένα μήνυμα.
+     */
     protected $fillable = [
-        'company_id',
         'title',
+        'company_id',
+        'driver_id',
+        'listing_type',
+        'transport_type',
+        'job_category',
+        'job_type',
+        'required_license',
         'description',
-        'requirements',
-        'benefits',
-        'location',
         'salary_min',
         'salary_max',
-        'salary_period',
-        'job_type',
-        'vehicle_type',
+        'salary_type',
+        'location',
+        'latitude',
+        'longitude',
+        'radius',
+        'remote_possible',
         'experience_years',
-        'license_required',
-        'license_types',
-        'pei_required',
-        'adr_required',
-        'tachograph_required',
-        'operator_license_required',
+        'specialized_experience',
+        'machinery_types',
+        'adr_certificate',
+        'requires_pei',
+        'requires_tachograph',
+        'operator_license',
+        'required_training',
+        'benefits',
+        'additional_info',
+        'contact_email',
+        'contact_phone',
         'is_active',
-        'is_featured',
         'is_approved',
-        'views',
-        'applications',
+        'updated_at',
         'expires_at',
-        'created_at',
-        'updated_at'
+        'views_count',
+        'applications',
+        'preferred_schedule',
+        'max_days_away',
+        'is_urgent',
+        'route_type',
+        'cargo_type',
+        'requirements',
+        'min_experience',
+        'status',
+        'employment_type',
+        'vehicle_type',
     ];
 
     /**
@@ -289,7 +319,8 @@ class JobListingRepository extends BaseRepository implements JobListingRepositor
     public function incrementViews($id)
     {
         try {
-            $query = "UPDATE {$this->table} SET views = views + 1 WHERE id = :id";
+            // Η στήλη λέγεται views_count — το «views» δεν υπήρξε ποτέ.
+            $query = "UPDATE {$this->table} SET views_count = views_count + 1 WHERE id = :id";
             return $this->execute($query, ['id' => $id]) > 0;
         } catch (\PDOException $e) {
             throw DatabaseException::fromPDOException($e, $query ?? null, ['id' => $id]);
@@ -445,6 +476,102 @@ class JobListingRepository extends BaseRepository implements JobListingRepositor
             return $this->query($query);
         } catch (\PDOException $e) {
             throw DatabaseException::fromPDOException($e, $query ?? null, ['limit' => $limit]);
+        }
+    }
+
+    /**
+     * Οι τύποι οχημάτων μιας αγγελίας, από τη μοναδική έγκυρη πηγή.
+     *
+     * Η στήλη job_listings.vehicle_types καταργήθηκε επειδή ήταν διπλή πηγή
+     * αλήθειας — τέσσερις αγγελίες είχαν δεδομένα μόνο στον πίνακα και κανένα
+     * query δεν τα έβλεπε. Τα views εξακολουθούσαν να διαβάζουν το πεδίο και
+     * έδειχναν κενό.
+     *
+     * @return string[] κωδικοί τύπων οχημάτων
+     */
+    public function vehicleTypesFor(int $listingId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT vehicle_type FROM job_listing_vehicle_types WHERE job_listing_id = :id'
+        );
+        $stmt->execute([':id' => $listingId]);
+
+        return $stmt->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+    }
+
+    /**
+     * Γεμίζει το πεδίο vehicle_types μιας αγγελίας (ή λίστας αγγελιών).
+     *
+     * Δέχεται είτε μία αγγελία είτε πίνακα αγγελιών και επιστρέφει το ίδιο
+     * σχήμα. Για λίστες κάνει ΕΝΑ query αντί για ένα ανά αγγελία.
+     *
+     * @param array $listings μία αγγελία ή πίνακας αγγελιών
+     * @return array το ίδιο σχήμα, με το vehicle_types συμπληρωμένο
+     */
+    public function withVehicleTypes(array $listings): array
+    {
+        if (empty($listings)) {
+            return $listings;
+        }
+
+        $single = isset($listings['id']);
+        $rows = $single ? [$listings] : $listings;
+
+        $ids = array_values(array_filter(array_map(
+            static fn($l) => isset($l['id']) ? (int) $l['id'] : null,
+            $rows
+        )));
+
+        if (empty($ids)) {
+            return $listings;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $this->pdo->prepare(
+            "SELECT job_listing_id, vehicle_type
+             FROM job_listing_vehicle_types
+             WHERE job_listing_id IN ($placeholders)"
+        );
+        $stmt->execute($ids);
+
+        $byListing = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $byListing[(int) $row['job_listing_id']][] = $row['vehicle_type'];
+        }
+
+        foreach ($rows as $i => $listing) {
+            $id = isset($listing['id']) ? (int) $listing['id'] : 0;
+            $rows[$i]['vehicle_types'] = $byListing[$id] ?? [];
+        }
+
+        return $single ? $rows[0] : $rows;
+    }
+
+    /**
+     * Αντικαθιστά πλήρως τους τύπους οχημάτων μιας αγγελίας.
+     *
+     * @param string[] $types κωδικοί — οι μη έγκυροι αγνοούνται
+     */
+    public function setVehicleTypes(int $listingId, array $types): void
+    {
+        $this->pdo->prepare('DELETE FROM job_listing_vehicle_types WHERE job_listing_id = :id')
+                 ->execute([':id' => $listingId]);
+
+        $valid = array_unique(array_filter(
+            array_map([\Drivejob\Helpers\VehicleTypes::class, 'normalise'], $types),
+            [\Drivejob\Helpers\VehicleTypes::class, 'isValid']
+        ));
+
+        if (empty($valid)) {
+            return;
+        }
+
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO job_listing_vehicle_types (job_listing_id, vehicle_type) VALUES (:id, :type)'
+        );
+
+        foreach ($valid as $type) {
+            $stmt->execute([':id' => $listingId, ':type' => $type]);
         }
     }
 }

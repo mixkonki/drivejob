@@ -2,6 +2,8 @@
 
 namespace Drivejob\Services;
 
+use Drivejob\Helpers\VehicleTypes;
+
 use PDO;
 use Drivejob\Core\Logger;
 use Drivejob\Core\Database;
@@ -313,17 +315,7 @@ class EnhancedMatchingService implements MatchingServiceInterface
             return true;
         }
 
-        $vehicleLicenseMap = [
-            'car' => ['B'],
-            'van' => ['B'],
-            'truck' => ['C', 'C1', 'CE', 'C1E'],
-            'bus' => ['D', 'D1', 'DE', 'D1E'],
-            'motorcycle' => ['A', 'A1', 'A2'],
-            'tractor' => ['T'],
-            'forklift' => ['T'],
-            'crane' => ['T'],
-            'excavator' => ['T']
-        ];
+        // Η αντιστοίχιση οχήματος–διπλώματος ζει στο VehicleTypes.
 
         $driverLicenses = [];
         if (isset($driver['licenses']) && is_array($driver['licenses'])) {
@@ -332,8 +324,8 @@ class EnhancedMatchingService implements MatchingServiceInterface
             }
         }
 
-        if (isset($vehicleLicenseMap[$jobListing['vehicle_type']])) {
-            $requiredLicenses = $vehicleLicenseMap[$jobListing['vehicle_type']];
+        $requiredLicenses = VehicleTypes::licensesFor($jobListing['vehicle_type'] ?? null);
+        if ($requiredLicenses !== []) {
             foreach ($requiredLicenses as $license) {
                 if (in_array($license, $driverLicenses)) {
                     return true;

@@ -2,6 +2,8 @@
 
 namespace Drivejob\Repositories;
 
+use Drivejob\Helpers\VehicleTypes;
+
 use PDO;
 use Drivejob\Core\Exceptions\DatabaseException;
 
@@ -602,21 +604,11 @@ class MatchingRepository extends BaseRepository implements MatchingRepositoryInt
     private function calculateVehicleTypeMatch($requiredVehicleType, array $driverLicenses)
     {
         // Αντιστοίχιση τύπων οχημάτων με άδειες οδήγησης
-        $vehicleLicenseMap = [
-            'car' => ['B'],
-            'van' => ['B'],
-            'truck' => ['C', 'C1', 'CE', 'C1E'],
-            'bus' => ['D', 'D1', 'DE', 'D1E'],
-            'motorcycle' => ['A', 'A1', 'A2'],
-            'tractor' => ['T'],
-            'forklift' => ['T'],
-            'crane' => ['T'],
-            'excavator' => ['T']
-        ];
+        // Η αντιστοίχιση οχήματος–διπλώματος ζει στο VehicleTypes.
 
         // Έλεγχος αν ο οδηγός έχει την κατάλληλη άδεια
-        if (isset($vehicleLicenseMap[$requiredVehicleType])) {
-            $requiredLicenses = $vehicleLicenseMap[$requiredVehicleType];
+        if (VehicleTypes::licensesFor($requiredVehicleType) !== []) {
+            $requiredLicenses = VehicleTypes::licensesFor($requiredVehicleType);
             foreach ($requiredLicenses as $license) {
                 if (in_array($license, $driverLicenses)) {
                     return 100;

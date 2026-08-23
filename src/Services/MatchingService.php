@@ -2,6 +2,8 @@
 
 namespace Drivejob\Services;
 
+use Drivejob\Helpers\VehicleTypes;
+
 use PDO;
 use Drivejob\Core\Logger;
 use Drivejob\Repositories\MatchingRepositoryInterface;
@@ -159,17 +161,7 @@ class MatchingService
         }
 
         // Αντιστοίχιση τύπων οχημάτων με άδειες οδήγησης
-        $vehicleLicenseMap = [
-            'car' => ['B'],
-            'van' => ['B'],
-            'truck' => ['C', 'C1', 'CE', 'C1E'],
-            'bus' => ['D', 'D1', 'DE', 'D1E'],
-            'motorcycle' => ['A', 'A1', 'A2'],
-            'tractor' => ['T'],
-            'forklift' => ['T'],
-            'crane' => ['T'],
-            'excavator' => ['T']
-        ];
+        // Η αντιστοίχιση οχήματος–διπλώματος ζει στο VehicleTypes.
 
         // Λήψη των αδειών οδήγησης του οδηγού
         $driverLicenses = [];
@@ -180,8 +172,8 @@ class MatchingService
         }
 
         // Έλεγχος αν ο οδηγός έχει την κατάλληλη άδεια
-        if (isset($vehicleLicenseMap[$jobListing['vehicle_type']])) {
-            $requiredLicenses = $vehicleLicenseMap[$jobListing['vehicle_type']];
+        $requiredLicenses = VehicleTypes::licensesFor($jobListing['vehicle_type'] ?? null);
+        if ($requiredLicenses !== []) {
             foreach ($requiredLicenses as $license) {
                 if (in_array($license, $driverLicenses)) {
                     return true;

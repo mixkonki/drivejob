@@ -159,8 +159,8 @@ require_once ROOT_DIR . '/src/Views/partials/header.php';
                                         echo 'Έως ' . number_format($listing['salary_max']) . '€';
                                     }
 
-                                    if (!empty($listing['salary_period'])) {
-                                        switch ($listing['salary_period']) {
+                                    if (!empty($listing['salary_type'])) {
+                                        switch ($listing['salary_type']) {
                                             case 'hourly':
                                                 echo ' / ώρα';
                                                 break;
@@ -186,26 +186,26 @@ require_once ROOT_DIR . '/src/Views/partials/header.php';
                                 </li>
                             <?php endif; ?>
 
-                            <?php if (!empty($listing['license_required'])): ?>
+                            <?php if (!empty($listing['required_license'])): ?>
                                 <li>
                                     <strong>Απαιτούμενη Άδεια Οδήγησης:</strong>
-                                    <?php echo htmlspecialchars($listing['license_required']); ?>
+                                    <?php echo htmlspecialchars($listing['required_license']); ?>
                                 </li>
                             <?php endif; ?>
 
-                            <?php if (isset($listing['pei_required']) && $listing['pei_required']): ?>
+                            <?php if (isset($listing['requires_pei']) && $listing['requires_pei']): ?>
                                 <li>
                                     <strong>Απαιτείται ΠΕΙ:</strong> Ναι
                                 </li>
                             <?php endif; ?>
 
-                            <?php if (isset($listing['adr_required']) && $listing['adr_required']): ?>
+                            <?php if (isset($listing['adr_certificate']) && $listing['adr_certificate']): ?>
                                 <li>
                                     <strong>Απαιτείται ADR:</strong> Ναι
                                 </li>
                             <?php endif; ?>
 
-                            <?php if (isset($listing['tachograph_required']) && $listing['tachograph_required']): ?>
+                            <?php if (isset($listing['requires_tachograph']) && $listing['requires_tachograph']): ?>
                                 <li>
                                     <strong>Απαιτείται Κάρτα Ταχογράφου:</strong> Ναι
                                 </li>
@@ -225,7 +225,7 @@ require_once ROOT_DIR . '/src/Views/partials/header.php';
 
                             <li>
                                 <strong>Προβολές:</strong>
-                                <?php echo isset($listing['views']) ? $listing['views'] : 0; ?>
+                                <?php echo isset($listing['views_count']) ? $listing['views_count'] : 0; ?>
                             </li>
                         </ul>
                     </div>

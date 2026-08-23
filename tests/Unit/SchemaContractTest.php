@@ -28,7 +28,10 @@ class SchemaContractTest extends TestCase
         'drivers' => ['id', 'email', 'password', 'first_name', 'last_name', 'is_verified', 'experience_years', 'updated_at'],
         'companies' => ['id', 'email', 'password', 'company_name', 'is_verified'],
         'users' => ['id', 'email'],
-        'job_listings' => ['id', 'title', 'company_id', 'is_active', 'is_approved', 'applications', 'created_at'],
+        'job_listings' => ['id', 'title', 'company_id', 'is_active', 'is_approved', 'applications',
+                           'views_count', 'requires_pei', 'requires_tachograph', 'adr_certificate',
+                           'operator_license', 'job_category', 'salary_type', 'required_license', 'created_at'],
+        'job_listing_vehicle_types' => ['id', 'job_listing_id', 'vehicle_type'],
         'job_applications' => ['id', 'driver_id', 'job_listing_id', 'message', 'status'],
         'driver_licenses' => ['id', 'driver_id', 'license_type', 'expiry_date', 'has_pei', 'pei_expiry_c', 'pei_expiry_d'],
         'driver_adr_certificates' => ['id', 'driver_id', 'adr_type', 'expiry_date'],
@@ -90,6 +93,23 @@ class SchemaContractTest extends TestCase
         'job_applications' => [
             'cover_letter',
             'company_id',
+        ],
+    ];
+
+    /**
+     * Τιμές που ΔΕΝ επιτρέπεται να υπάρχουν σε συγκεκριμένη στήλη.
+     *
+     * Το λεξιλόγιο τύπων οχημάτων είχε αποκλίνει σε πέντε εκδοχές — φόρμα,
+     * έλεγχος εγκυρότητας, δύο views, τρία services. Η τομή φόρμας και
+     * ελέγχου ήταν τρεις τιμές, οπότε κάθε αγγελία για φορτηγό απορριπτόταν.
+     * Μοναδική πηγή είναι πλέον ο Drivejob\Helpers\VehicleTypes.
+     */
+    private const CANONICAL_VALUES = [
+        'job_listing_vehicle_types.vehicle_type' => [
+            'car', 'van', 'minibus', 'bus',
+            'truck_light', 'truck_medium', 'truck_heavy',
+            'truck_articulated', 'truck_tanker', 'truck_refrigerated',
+            'machinery',
         ],
     ];
 
@@ -192,5 +212,46 @@ class SchemaContractTest extends TestCase
                 $this->fail("Το query «{$label}» απέτυχε: " . $e->getMessage());
             }
         }
+    }
+
+    /**
+     * Οι αποθηκευμένες τιμές ανήκουν στο κανονικό λεξιλόγιο.
+     */
+    public function testVehicleTypeValuesAreCanonical(): void
+    {
+        foreach (self::CANONICAL_VALUES as $target => $allowed) {
+            [$table, $column] = explode('.', $target);
+
+            $stmt = self::$pdo->query("SELECT DISTINCT `$column` FROM `$table`");
+            $found = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            $unexpected = array_diff(array_filter($found), $allowed);
+
+            $this->assertSame(
+                [],
+                array_values($unexpected),
+                "Ο $target έχει τιμές εκτός λεξιλογίου: " . implode(', ', $unexpected)
+                . ". Το κανονικό λεξιλόγιο ορίζεται στον Drivejob\\Helpers\\VehicleTypes."
+            );
+        }
+    }
+
+    /**
+     * Ο VehicleTypes και το λεξιλόγιο του συμβολαίου δεν αποκλίνουν.
+     */
+    public function testVehicleTypesHelperMatchesContract(): void
+    {
+        $helper = \Drivejob\Helpers\VehicleTypes::codes();
+        $contract = self::CANONICAL_VALUES['job_listing_vehicle_types.vehicle_type'];
+
+        sort($helper);
+        sort($contract);
+
+        $this->assertSame(
+            $contract,
+            $helper,
+            'Ο VehicleTypes απέκλινε από το συμβόλαιο. Κάθε νέος τύπος οχήματος '
+            . 'προστίθεται και στα δύο σημεία.'
+        );
     }
 }

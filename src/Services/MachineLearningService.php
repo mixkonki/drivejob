@@ -2,6 +2,8 @@
 
 namespace Drivejob\Services;
 
+use Drivejob\Helpers\VehicleTypes;
+
 use Drivejob\Core\Logger;
 use Drivejob\Repositories\JobApplicationRepositoryInterface;
 use Drivejob\Repositories\JobApplicationRepository;
@@ -366,21 +368,11 @@ class MachineLearningService
         }
 
         // Αντιστοίχιση τύπων οχημάτων με άδειες οδήγησης
-        $vehicleLicenseMap = [
-            'car' => ['B'],
-            'van' => ['B'],
-            'truck' => ['C', 'C1', 'CE', 'C1E'],
-            'bus' => ['D', 'D1', 'DE', 'D1E'],
-            'motorcycle' => ['A', 'A1', 'A2'],
-            'tractor' => ['T'],
-            'forklift' => ['T'],
-            'crane' => ['T'],
-            'excavator' => ['T']
-        ];
+        // Η αντιστοίχιση οχήματος–διπλώματος ζει στο VehicleTypes.
 
         // Έλεγχος αν ο οδηγός έχει την κατάλληλη άδεια
-        if (isset($vehicleLicenseMap[$vehicleType])) {
-            $requiredLicenses = $vehicleLicenseMap[$vehicleType];
+        $requiredLicenses = VehicleTypes::licensesFor($vehicleType);
+        if ($requiredLicenses !== []) {
             foreach ($requiredLicenses as $license) {
                 if (in_array($license, $licenses)) {
                     return 1.0;

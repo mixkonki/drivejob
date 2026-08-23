@@ -22,4 +22,19 @@ class ValidationException extends BaseException
      * @var string
      */
     protected $errorType = 'Validation Error';
+
+    /**
+     * Τα σφάλματα επικύρωσης ανά πεδίο.
+     *
+     * Ο constructor του BaseException δέχεται τα σφάλματα ως $context —
+     * αυτή η μέθοδος τα επιστρέφει με το όνομα που περιμένουν οι controllers.
+     * Όσο έλειπε, κάθε αποτυχία επικύρωσης κατέληγε σε «Call to undefined
+     * method» και ο χρήστης έβλεπε 500 αντί για το ποιο πεδίο έφταιγε.
+     *
+     * @return array<string, string>
+     */
+    public function getErrors(): array
+    {
+        return $this->getContext() ?? [];
+    }
 }

@@ -3,6 +3,7 @@
 namespace Drivejob\Services\JobListing;
 
 use Drivejob\Core\Exceptions\ValidationException;
+use Drivejob\Helpers\VehicleTypes;
 use Drivejob\Core\Exceptions\DatabaseException;
 use Drivejob\Repositories\JobListingRepository;
 use Drivejob\Repositories\JobTagRepository;
@@ -255,10 +256,13 @@ class JobListingService implements JobListingServiceInterface
         // Έλεγχος τύπων οχημάτων
         if (isset($data['vehicle_types']) && !empty($data['vehicle_types'])) {
             $vehicleTypes = is_array($data['vehicle_types']) ? $data['vehicle_types'] : explode(',', $data['vehicle_types']);
-            $validVehicleTypes = ['car', 'van', 'truck', 'bus', 'motorcycle', 'tractor', 'excavator', 'crane', 'forklift', 'other'];
             foreach ($vehicleTypes as $vehicleType) {
-                if (!in_array($vehicleType, $validVehicleTypes)) {
-                    $errors['vehicle_types'] = "Ο τύπος οχήματος '$vehicleType' δεν είναι έγκυρος. Επιτρεπτές τιμές: " . implode(', ', $validVehicleTypes);
+                if (!VehicleTypes::isValid($vehicleType)) {
+                    $errors['vehicle_types'] = sprintf(
+                        "Ο τύπος οχήματος '%s' δεν είναι έγκυρος. Επιτρεπτές τιμές: %s",
+                        $vehicleType,
+                        implode(', ', VehicleTypes::codes())
+                    );
                     break;
                 }
             }

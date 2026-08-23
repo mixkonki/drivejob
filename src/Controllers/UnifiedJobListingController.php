@@ -419,7 +419,7 @@ class UnifiedJobListingController extends BaseJobListingController
             $data['created_at'] = date('Y-m-d H:i:s');
             $data['updated_at'] = date('Y-m-d H:i:s');
             $data['views_count'] = 0;
-            $data['applications_count'] = 0;
+            $data['applications'] = 0;
             $data['is_active'] = isset($_POST['is_active']) ? 1 : 0;
             $data['is_approved'] = 1; // Αυτόματη έγκριση για τώρα
 
@@ -463,15 +463,9 @@ class UnifiedJobListingController extends BaseJobListingController
                 $data['driver_id'] = null;
                 $data['listing_type'] = 'job_offer';
 
-                // Επεξεργασία των απαιτούμενων αδειών
-                if (isset($_POST['required_licenses']) && is_array($_POST['required_licenses'])) {
-                    $data['required_licenses'] = implode(',', $_POST['required_licenses']);
-                }
-
-                // Επεξεργασία των απαιτήσεων για ΠΕΙ, ADR, κάρτα ταχογράφου
-                $data['requires_pei'] = isset($_POST['requires_pei']) ? 1 : 0;
-                $data['requires_adr'] = isset($_POST['requires_adr']) ? 1 : 0;
-                $data['requires_tachograph'] = isset($_POST['requires_tachograph']) ? 1 : 0;
+                // Οι απαιτήσεις (δίπλωμα, ΠΕΙ, ADR, ταχογράφος) συλλέγονται
+                // πλέον στο collectFormData(), που δέχεται και τα ονόματα της
+                // φόρμας (has_*) και αυτά του σχήματος.
 
                 Logger::info('Starting company job listing creation', ['company_id' => $userId]);
             } else {
@@ -480,16 +474,27 @@ class UnifiedJobListingController extends BaseJobListingController
                 exit();
             }
 
-            // Επεξεργασία των τύπων οχημάτων
-            if (isset($_POST['vehicle_types']) && is_array($_POST['vehicle_types'])) {
-                $data['vehicle_types'] = implode(',', $_POST['vehicle_types']);
+            // Οι τύποι οχημάτων ΔΕΝ είναι στήλη του job_listings — ζουν στον
+            // πίνακα job_listing_vehicle_types. Κρατιούνται χωριστά και
+            // γράφονται μετά τη δημιουργία της αγγελίας.
+            $vehicleTypes = [];
+            if (isset($_POST['vehicle_types'])) {
+                $vehicleTypes = is_array($_POST['vehicle_types'])
+                    ? $_POST['vehicle_types']
+                    : array_filter(array_map('trim', explode(',', (string) $_POST['vehicle_types'])));
             }
+            $data['vehicle_types'] = $vehicleTypes; // για τον έλεγχο εγκυρότητας
 
             Logger::info('Collected form data for job listing', ['data_keys' => array_keys($data)]);
 
             // Δημιουργία της αγγελίας με το service
             try {
                 $listingId = $this->jobListingService->createJobListing($data);
+
+                // Οι τύποι οχημάτων γράφονται στον δικό τους πίνακα
+                if (!empty($vehicleTypes)) {
+                    $this->jobListingRepository->setVehicleTypes((int) $listingId, $vehicleTypes);
+                }
 
                 Logger::info('Job listing creation successful', ['listing_id' => $listingId]);
                 Session::set('success_message', 'Η αγγελία δημιουργήθηκε με επιτυχία.');
@@ -587,6 +592,10 @@ class UnifiedJobListingController extends BaseJobListingController
                 header('Location: ' . BASE_URL . 'job-listings');
                 exit();
             }
+
+            // Οι τύποι οχημάτων ζουν σε δικό τους πίνακα — η φόρμα τους χρειάζεται
+            // για να δείξει τα σωστά κουτάκια επιλεγμένα.
+            $listingVehicleTypes = $this->jobListingRepository->vehicleTypesFor((int) $id);
 
             // Φόρτωση του view
             include ROOT_DIR . '/src/Views/job-listings/edit.php';
@@ -688,27 +697,28 @@ class UnifiedJobListingController extends BaseJobListingController
             $data['updated_at'] = date('Y-m-d H:i:s');
             $data['is_active'] = isset($_POST['is_active']) ? 1 : 0;
 
-            // Επεξεργασία των τύπων οχημάτων
-            if (isset($_POST['vehicle_types']) && is_array($_POST['vehicle_types'])) {
-                $data['vehicle_types'] = implode(',', $_POST['vehicle_types']);
+            // Οι τύποι οχημάτων ΔΕΝ είναι στήλη του job_listings — ζουν στον
+            // πίνακα job_listing_vehicle_types. Κρατιούνται χωριστά και
+            // γράφονται μετά τη δημιουργία της αγγελίας.
+            $vehicleTypes = [];
+            if (isset($_POST['vehicle_types'])) {
+                $vehicleTypes = is_array($_POST['vehicle_types'])
+                    ? $_POST['vehicle_types']
+                    : array_filter(array_map('trim', explode(',', (string) $_POST['vehicle_types'])));
             }
+            $data['vehicle_types'] = $vehicleTypes; // για τον έλεγχο εγκυρότητας
 
-            // Ανάλογα με τον τύπο του χρήστη, προσθέτουμε τα κατάλληλα πεδία
-            if ($userRole === 'company') {
-                // Επεξεργασία των απαιτούμενων αδειών
-                if (isset($_POST['required_licenses']) && is_array($_POST['required_licenses'])) {
-                    $data['required_licenses'] = implode(',', $_POST['required_licenses']);
-                }
-
-                // Επεξεργασία των απαιτήσεων για ΠΕΙ, ADR, κάρτα ταχογράφου
-                $data['requires_pei'] = isset($_POST['requires_pei']) ? 1 : 0;
-                $data['requires_adr'] = isset($_POST['requires_adr']) ? 1 : 0;
-                $data['requires_tachograph'] = isset($_POST['requires_tachograph']) ? 1 : 0;
-            }
+            // Οι απαιτήσεις (δίπλωμα, ΠΕΙ, ADR, ταχογράφος) έχουν ήδη συλλεχθεί
+            // στο collectFormData(). Η παλιά έκδοση τις ξανάγραφε εδώ από
+            // $_POST['requires_*'] — ονόματα που η φόρμα δεν στέλνει — και έτσι
+            // μηδένιζε ό,τι είχε μόλις διαβαστεί σωστά.
 
             // Ενημέρωση της αγγελίας με το service
             try {
                 $success = $this->jobListingService->updateJobListing($id, $data);
+
+                // Οι τύποι οχημάτων αντικαθίστανται πλήρως στον δικό τους πίνακα
+                $this->jobListingRepository->setVehicleTypes((int) $id, $vehicleTypes);
 
                 Session::set('success_message', 'Η αγγελία ενημερώθηκε με επιτυχία.');
                 header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
@@ -1000,27 +1010,85 @@ class UnifiedJobListingController extends BaseJobListingController
      * 
      * @return array Τα δεδομένα της φόρμας
      */
+    /**
+     * Συλλέγει τα δεδομένα της φόρμας και τα μεταφράζει στα ονόματα του σχήματος.
+     *
+     * ΓΙΑΤΙ Η ΜΕΤΑΦΡΑΣΗ: η φόρμα δημιουργίας και αυτή η μέθοδος είχαν αποκλίνει
+     * τελείως. Η φόρμα στέλνει salary_range («1500-2000»), has_adr, has_pei,
+     * has_tachograph και availability· η μέθοδος διάβαζε salary_min/salary_max,
+     * requires_adr, requires_pei, requires_tachograph. Κοινά ήταν μόνο τα
+     * βασικά πεδία, οπότε κάθε νέα αγγελία έχανε μισθό, απαιτήσεις και
+     * διαθεσιμότητα χωρίς κανένα μήνυμα.
+     *
+     * Δέχεται και τις δύο μορφές: ό,τι στέλνει η φόρμα και ό,τι θα έστελνε ένα
+     * API με τα ονόματα του σχήματος.
+     */
     protected function collectFormData()
     {
-        // Βασικά δεδομένα αγγελίας
+        $post = $_POST;
+
+        // --- Μισθός: είτε εύρος από τη φόρμα, είτε min/max απευθείας ---
+        [$salaryMin, $salaryMax] = $this->parseSalary($post);
+
+        // --- Απαιτήσεις πιστοποιητικών: has_* από τη φόρμα, requires_* από API ---
+        $flag = static fn(string ...$keys): int => (int) (bool) array_reduce(
+            $keys,
+            static fn($carry, $k) => $carry ?: ($post[$k] ?? null),
+            null
+        );
+
         $data = [
-            'title' => parent::sanitize($_POST['title'] ?? ''),
-            'description' => parent::sanitizeHtml($_POST['description'] ?? ''),
-            'location' => parent::sanitize($_POST['location'] ?? ''),
-            'job_type' => parent::sanitize($_POST['job_type'] ?? ''),
-            'job_category' => parent::sanitize($_POST['job_category'] ?? ''),
-            'vehicle_type' => parent::sanitize($_POST['vehicle_type'] ?? ''),
-            'salary_min' => parent::sanitizeFloat($_POST['salary_min'] ?? 0),
-            'salary_max' => parent::sanitizeFloat($_POST['salary_max'] ?? 0),
-            'salary_period' => parent::sanitize($_POST['salary_period'] ?? ''),
-            'experience_years' => parent::sanitizeInt($_POST['experience_years'] ?? 0),
-            'benefits' => parent::sanitizeHtml($_POST['benefits'] ?? ''),
-            'contact_email' => parent::sanitizeEmail($_POST['contact_email'] ?? ''),
-            'contact_phone' => parent::sanitize($_POST['contact_phone'] ?? ''),
-            'expires_at' => parent::sanitizeDate($_POST['expires_at'] ?? ''),
-            'availability' => parent::sanitize($_POST['availability'] ?? ''),
-            'additional_info' => parent::sanitizeHtml($_POST['additional_info'] ?? '')
+            'title' => parent::sanitize($post['title'] ?? ''),
+            'description' => parent::sanitizeHtml($post['description'] ?? ''),
+            'location' => parent::sanitize($post['location'] ?? ''),
+            'job_type' => parent::sanitize($post['job_type'] ?? ''),
+            'job_category' => parent::sanitize($post['job_category'] ?? ''),
+            'transport_type' => $this->transportTypeFrom($post['job_category'] ?? ''),
+            'vehicle_type' => \Drivejob\Helpers\VehicleTypes::normalise($post['vehicle_type'] ?? ''),
+            'salary_min' => $salaryMin,
+            'salary_max' => $salaryMax,
+            'salary_type' => parent::sanitize($post['salary_type'] ?? $post['salary_period'] ?? 'monthly'),
+            'experience_years' => parent::sanitizeInt($post['experience_years'] ?? 0),
+            'min_experience' => parent::sanitizeInt($post['experience_years'] ?? 0),
+            'requirements' => parent::sanitizeHtml($post['requirements'] ?? ''),
+            'benefits' => parent::sanitizeHtml($post['benefits'] ?? ''),
+            'additional_info' => parent::sanitizeHtml($post['additional_info'] ?? ''),
+            'contact_email' => parent::sanitizeEmail($post['contact_email'] ?? ''),
+            'contact_phone' => parent::sanitize($post['contact_phone'] ?? ''),
+            'preferred_schedule' => parent::sanitize($post['availability'] ?? $post['preferred_schedule'] ?? ''),
+            'adr_certificate' => $flag('has_adr', 'requires_adr', 'adr_certificate'),
+            'requires_pei' => $flag('has_pei', 'requires_pei', 'pei_required'),
+            'requires_tachograph' => $flag('has_tachograph', 'requires_tachograph', 'tachograph_required'),
+            'operator_license' => $flag('has_operator_license', 'requires_operator_license', 'operator_license'),
+            'is_urgent' => $flag('is_urgent'),
         ];
+
+        // Απαιτούμενο δίπλωμα: η στήλη είναι ενικός, η φόρμα μπορεί να στείλει λίστα
+        $licenses = $post['required_licenses'] ?? $post['required_license'] ?? null;
+        if (is_array($licenses)) {
+            $licenses = implode(',', array_map('trim', $licenses));
+        }
+        $data['required_license'] = parent::sanitize((string) ($licenses ?? ''));
+
+        // Μηχανήματα έργου — ελεύθερο κείμενο ή λίστα από τα κουτάκια
+        $machinery = $post['machinery_types'] ?? null;
+        if (is_array($machinery)) {
+            $machinery = implode(',', array_map('trim', $machinery));
+        }
+        $data['machinery_types'] = parent::sanitize((string) ($machinery ?? ''));
+
+        // Λήξη: αν δεν δοθεί, ενενήντα ημέρες από σήμερα
+        $expires = parent::sanitizeDate($post['expires_at'] ?? '');
+        $data['expires_at'] = $expires ?: date('Y-m-d H:i:s', strtotime('+90 days'));
+
+        // Κενά αλφαριθμητικά γίνονται null ώστε να μη γεμίζει η βάση με ''
+        foreach (['requirements', 'benefits', 'additional_info', 'contact_email',
+                  'contact_phone', 'preferred_schedule', 'required_license',
+                  'machinery_types', 'job_category', 'vehicle_type'] as $key) {
+            if ($data[$key] === '') {
+                $data[$key] = null;
+            }
+        }
 
         // Επεξεργασία των αρχείων που ανεβάζονται
         if (isset($_FILES['job_image']) && $_FILES['job_image']['error'] === UPLOAD_ERR_OK) {
@@ -1060,5 +1128,62 @@ class UnifiedJobListingController extends BaseJobListingController
         ]);
 
         return $data;
+    }
+
+    /**
+     * Μεταφράζει το εύρος μισθού της φόρμας σε δύο αριθμούς.
+     *
+     * Η φόρμα στέλνει τιμές όπως «1500-2000» ή «2500+». Ένα API μπορεί να
+     * στείλει salary_min και salary_max απευθείας — αυτά έχουν προτεραιότητα.
+     *
+     * @return array{0: float|null, 1: float|null}
+     */
+    protected function parseSalary(array $post): array
+    {
+        $min = isset($post['salary_min']) && $post['salary_min'] !== ''
+            ? (float) $post['salary_min'] : null;
+        $max = isset($post['salary_max']) && $post['salary_max'] !== ''
+            ? (float) $post['salary_max'] : null;
+
+        if ($min !== null || $max !== null) {
+            return [$min, $max];
+        }
+
+        $range = trim((string) ($post['salary_range'] ?? ''));
+        if ($range === '') {
+            return [null, null];
+        }
+
+        if (str_ends_with($range, '+')) {
+            return [(float) rtrim($range, '+'), null];
+        }
+
+        if (str_contains($range, '-')) {
+            [$from, $to] = array_pad(explode('-', $range, 2), 2, null);
+
+            return [
+                is_numeric($from) ? (float) $from : null,
+                is_numeric($to) ? (float) $to : null,
+            ];
+        }
+
+        return [is_numeric($range) ? (float) $range : null, null];
+    }
+
+    /**
+     * Το transport_type προκύπτει από την κατηγορία εργασίας της φόρμας.
+     *
+     * Η φόρμα ρωτά job_category (τέσσερις τιμές, ξεχωρίζει χειριστή από βοηθό
+     * χειριστή)· η στήλη transport_type έχει τρεις. Κρατάμε και τα δύο: το
+     * transport_type το χρησιμοποιούν τα φίλτρα και το ταίριασμα.
+     */
+    protected function transportTypeFrom(string $jobCategory): ?string
+    {
+        return match ($jobCategory) {
+            'cargo_transport' => 'freight',
+            'passenger_transport' => 'passenger',
+            'machinery_operator', 'machinery_assistant' => 'machinery',
+            default => null,
+        };
     }
 }
