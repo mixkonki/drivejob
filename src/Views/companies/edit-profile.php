@@ -568,7 +568,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 
 
 <!-- Προσθήκη του JavaScript για τις λειτουργίες -->
-<script src="<?php echo BASE_URL; ?>js/company-features.js"></script>
+<?= \Drivejob\Helpers\Asset::js('js/company-features.js', false) ?>
 
 <?php
 // Συμπερίληψη του footer

@@ -1,3 +1,4 @@
+```php
 <?php
 // Συμπερίληψη του header
 include ROOT_DIR . '/src/Views/partials/header.php';
@@ -15,18 +16,18 @@ $oldInput = $_SESSION['old_input'] ?? [];
 unset($_SESSION['errors'], $_SESSION['old_input']);
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-edit-profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-skills.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/toggle-switch.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/vehicle-experience.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/form-buttons-fix.css">
+<?= \Drivejob\Helpers\Asset::css('css/driver-profile.css') ?>
+<?= \Drivejob\Helpers\Asset::css('css/driver-edit-profile.css') ?>
+<?= \Drivejob\Helpers\Asset::css('css/driver-skills.css') ?>
+<?= \Drivejob\Helpers\Asset::css('css/toggle-switch.css') ?>
+<?= \Drivejob\Helpers\Asset::css('css/vehicle-experience.css') ?>
+<?= \Drivejob\Helpers\Asset::css('css/form-buttons-fix.css') ?>
 <script src="<?php echo BASE_URL; ?>js/vendor/tesseract-bundle.js"></script>
-<script src="<?php echo BASE_URL; ?>js/tesseract-fallback.js"></script>
-<script src="<?php echo BASE_URL; ?>js/driver_edit_profile.js"></script>
-<script src="<?php echo BASE_URL; ?>js/license-validation.js"></script>
-<script src="<?php echo BASE_URL; ?>js/country-phone-codes.js"></script>
-<script src="<?php echo BASE_URL; ?>js/vehicle-experience.js"></script>
+<?= \Drivejob\Helpers\Asset::js('js/tesseract-fallback.js', false) ?>
+<?= \Drivejob\Helpers\Asset::js('js/driver_edit_profile.js', false) ?>
+<?= \Drivejob\Helpers\Asset::js('js/license-validation.js', false) ?>
+<?= \Drivejob\Helpers\Asset::js('js/country-phone-codes.js', false) ?>
+<?= \Drivejob\Helpers\Asset::js('js/vehicle-experience.js', false) ?>
 <script>
     // Αρχικοποίηση δεδομένων από τη βάση
     window.driverOperatorSubSpecialities = [];

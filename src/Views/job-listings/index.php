@@ -30,7 +30,7 @@ Session::remove('errors');
 Session::remove('old_input');
 
 ?>
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/job-listings.css">
+<?= \Drivejob\Helpers\Asset::css('css/job-listings.css') ?>
 <main>
     <div class="container">
         <h1>Αγγελίες Εργασίας</h1>

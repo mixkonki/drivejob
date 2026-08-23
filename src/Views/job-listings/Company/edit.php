@@ -75,7 +75,7 @@ $jobCategory = $val('job_category');
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/job-listings.css">
+<?= \Drivejob\Helpers\Asset::css('css/job-listings.css') ?>
 
 <main>
     <div class="container listing-form-page">

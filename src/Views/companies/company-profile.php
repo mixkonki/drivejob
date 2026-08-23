@@ -10,8 +10,8 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
 <!-- Σύνδεση με τα CSS αρχεία -->
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/company-profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/company-components.css">
+<?= \Drivejob\Helpers\Asset::css('css/company-profile.css') ?>
+<?= \Drivejob\Helpers\Asset::css('css/company-components.css') ?>
 
 <style>
     /* Main layout */

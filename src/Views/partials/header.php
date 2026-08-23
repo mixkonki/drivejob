@@ -72,8 +72,8 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
     <title>DriveJob - <?php echo isset($pageTitle) ? $pageTitle : 'Καλώς Ήρθατε'; ?></title>
 
     <!-- Σύνδεση με το CSS αρχείο -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/styles.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/job-listings.css">
+    <?= \Drivejob\Helpers\Asset::css('css/styles.css') ?>
+    <?= \Drivejob\Helpers\Asset::css('css/job-listings.css') ?>
     <link rel="icon" href="<?php echo BASE_URL; ?>img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -85,7 +85,7 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
     <?php endif; ?>
 
     <!-- Σύνδεση του header.js -->
-    <script src="<?php echo BASE_URL; ?>js/header.js" defer></script>
+    <?= \Drivejob\Helpers\Asset::js('js/header.js') ?>
 
     <!-- Επιπλέον JS αρχεία -->
     <?php if (isset($extraJs) && is_array($extraJs)) : ?>

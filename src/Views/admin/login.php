@@ -3,7 +3,7 @@
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/admin-login.css">
+<?= \Drivejob\Helpers\Asset::css('css/admin-login.css') ?>
 
 <div class="admin-login-container">
     <div class="admin-login-card">

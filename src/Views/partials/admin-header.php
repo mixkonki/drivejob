@@ -15,8 +15,8 @@ if (defined('ALLOW_INDEXING') && !ALLOW_INDEXING && !headers_sent()) {
     <title><?php echo $title ?? 'Admin Panel - DriveJob'; ?></title>
 
     <!-- Admin CSS -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/styles.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/admin.css">
+    <?= \Drivejob\Helpers\Asset::css('css/styles.css') ?>
+    <?= \Drivejob\Helpers\Asset::css('css/admin.css') ?>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>img/favicon.png">

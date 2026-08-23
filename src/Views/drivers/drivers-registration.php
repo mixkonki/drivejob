@@ -38,8 +38,8 @@ $extraJs = ['drivers_registration.js'];
     <title>DriveJob - <?php echo isset($pageTitle) ? $pageTitle : 'Καλώς Ήρθατε'; ?></title>
 
     <!-- Σύνδεση με το CSS αρχείο -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/styles.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/drivers-registration.css">
+    <?= \Drivejob\Helpers\Asset::css('css/styles.css') ?>
+    <?= \Drivejob\Helpers\Asset::css('css/drivers-registration.css') ?>
     <link rel="icon" href="<?php echo BASE_URL; ?>img/favicon.ico" type="image/x-icon">
 </head>
 

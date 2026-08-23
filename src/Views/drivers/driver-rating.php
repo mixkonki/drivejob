@@ -3,8 +3,8 @@
 include ROOT_DIR . '/src/Views/partials/header.php';
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver_profile.css">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>css/driver-rating.css">
+<?= \Drivejob\Helpers\Asset::css('css/driver_profile.css') ?>
+<?= \Drivejob\Helpers\Asset::css('css/driver-rating.css') ?>
 
 <main>
     <div class="container">
