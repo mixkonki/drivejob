@@ -115,20 +115,28 @@ $router->group(['prefix' => 'drivers'], function ($router) {
     $router->get('/vehicle-experience', [DriversController::class, 'vehicleExperience'])->name('drivers.vehicle-experience');
     $router->post('/change-password', [DriversController::class, 'changePassword'])->name('drivers.change-password');
 
-    // Διαδρομές αναζήτησης και αξιολόγησης
+    // Διαδρομές αναζήτησης
     $router->get('/search', [DriversController::class, 'search'])->name('drivers.search');
-    $router->get('/top-rated', [DriversController::class, 'topRated'])->name('drivers.top-rated');
-    $router->get('/recently-available', [DriversController::class, 'recentlyAvailable'])->name('drivers.recently-available');
-    $router->post('/add-rating/{id}', [DriversController::class, 'addRating'])->name('drivers.add-rating');
 
-    // Διαδρομές για νέους οδηγούς
-    $router->get('/welcome', [DriversController::class, 'welcome'])->name('drivers.welcome');
-    $router->post('/complete-profile', [DriversController::class, 'completeProfile'])->name('drivers.complete-profile');
+    /*
+     * ══════════════════════════════════════════════════════════════════
+     *  ΕΝΝΕΑ ΔΙΑΔΡΟΜΕΣ ΑΦΑΙΡΕΘΗΚΑΝ (23/08/2026) — ΝΕΚΡΕΣ
+     * ══════════════════════════════════════════════════════════════════
+     *
+     * top-rated, recently-available, add-rating, welcome, complete-profile,
+     * save-assessment, driver-rating, refresh-rating, debug-request:
+     * έδειχναν σε μεθόδους που ΔΕΝ ΥΠΑΡΧΟΥΝ στον DriversController.
+     * Κάθε επίσκεψη έβγαζε 500 — χειρότερο από 404, γιατί μοιάζει με
+     * βλάβη της πλατφόρμας αντί για ανύπαρκτη σελίδα.
+     *
+     * Αν κάποια από αυτές τις λειτουργίες χτιστεί στο μέλλον (π.χ. οι
+     * κορυφαίοι οδηγοί), γράφεται πρώτα η μέθοδος και μετά η διαδρομή —
+     * ποτέ ανάποδα.
+     */
 
     // Διαδρομές για την αυτοαξιολόγηση
     $router->get('/update-assessment', [DriversController::class, 'updateAssessment'])->name('drivers.update-assessment');
     $router->post('/update-assessment', [DriversController::class, 'updateAssessment']);
-    $router->post('/save-assessment', [DriversController::class, 'saveAssessment'])->name('drivers.save-assessment');
 
     // Διαδρομές για τη διαθεσιμότητα
     $router->post('/toggle-availability', [DriversController::class, 'toggleAvailability'], [
@@ -138,12 +146,10 @@ $router->group(['prefix' => 'drivers'], function ($router) {
         }
     ])->name('drivers.toggle-availability');
 
-    // Διαδρομές για το σύστημα αξιολόγησης οδηγών
-    $router->get('/driver-rating', [DriversController::class, 'driverRating'])->name('drivers.driver-rating');
+    // Μηνύματα
     $router->get('/messages', [\Drivejob\Controllers\MessagesController::class, 'driverMessages'])->name('drivers.messages');
     $router->get('/conversation', [\Drivejob\Controllers\MessagesController::class, 'driverConversation'])->name('drivers.conversation');
     $router->post('/conversation', [\Drivejob\Controllers\MessagesController::class, 'driverConversation']);
-    $router->get('/refresh-rating', [DriversController::class, 'refreshRating'])->name('drivers.refresh-rating');
 
     // Διαδρομές για τα περιστατικά
     $router->get('/incident-history', [DriversController::class, 'incidentHistory'])->name('drivers.incident-history');
@@ -153,9 +159,6 @@ $router->group(['prefix' => 'drivers'], function ($router) {
     // Διαδρομές για το βιογραφικό
     $router->get('/edit-resume', [DriverResumeController::class, 'editResume'])->name('drivers.edit-resume');
     $router->post('/update-resume', [DriverResumeController::class, 'updateResume'])->name('drivers.update-resume');
-
-    // Διαδρομές για debugging
-    $router->get('/debug-request', [DriversController::class, 'debugRequest'])->name('drivers.debug-request');
 
     // AI Matching routes
     $router->get('/job-matches', [DriversController::class, 'jobMatches'])->name('drivers.job-matches');
@@ -262,6 +265,7 @@ $router->group(['prefix' => 'admin'], function ($router) {
 
     // Job Listings Management
     $router->get('/job-listings', [\Drivejob\Controllers\Admin\AdminController::class, 'jobListings'])->name('admin.job-listings');
+    $router->post('/toggle-listing/{id}', [\Drivejob\Controllers\Admin\AdminController::class, 'toggleListing'])->name('admin.toggle-listing');
 
     // Analytics & Reports
     $router->get('/analytics', [\Drivejob\Controllers\Admin\AdminController::class, 'analytics'])->name('admin.analytics');
@@ -293,8 +297,8 @@ $router->group(['prefix' => 'admin'], function ($router) {
         // Logs
         $router->get('/logs', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'logs'])->name('admin.monitoring.logs');
         $router->get('/logs/{type}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'logs'])->name('admin.monitoring.logs.type');
-        $router->post('/logs/clear', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'clearLogs'])->name('admin.monitoring.logs.clear');
-        $router->post('/logs/clear/{type}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'clearLogs'])->name('admin.monitoring.logs.clear.type');
+        // Το clearLogs αφαιρέθηκε: η μέθοδος δεν υπάρχει στον controller,
+        // και η διαγραφή logs δεν είναι κουμπί — τα logs κόβονται με rotation.
 
         // Database Backup
         $router->post('/backup-database', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'backupDatabase'])->name('admin.monitoring.backup-database');

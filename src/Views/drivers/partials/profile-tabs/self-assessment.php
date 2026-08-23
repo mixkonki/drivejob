@@ -74,10 +74,9 @@
 
                                 <!-- Κουμπιά ενεργειών κάτω από την αξιολόγηση -->
                                 <div class="rating-actions">
-                                    <a href="<?php echo BASE_URL; ?>drivers/driver-rating" class="btn-action">
-                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/rating_icon.png') ?>" alt="Αναλυτική Βαθμολογία" class="action-icon">
-                                        <span>Αναλυτική Βαθμολογία</span>
-                                    </a>
+                                    <?php /* Το κουμπί «Αναλυτική Βαθμολογία» αφαιρέθηκε:
+                                           έδειχνε στο /drivers/driver-rating, μέθοδο που δεν
+                                           υπάρχει — κάθε κλικ έβγαζε σφάλμα 500. */ ?>
                                     <a href="<?php echo BASE_URL; ?>drivers/incident-history" class="btn-action">
                                         <img src="<?= \Drivejob\Helpers\Asset::url('img/history_icon.png') ?>" alt="Ιστορικό Συμβάντων" class="action-icon">
                                         <span>Ιστορικό Συμβάντων</span>

@@ -8,11 +8,9 @@ include ROOT_DIR . '/src/Views/partials/admin-header.php';
 <div class="admin-container">
     <div class="admin-header">
         <h1>Διαχείριση Χρηστών</h1>
-        <div class="admin-actions">
-            <button class="btn btn-primary" onclick="exportUsers()">
-                <i class="icon-export"></i> Εξαγωγή
-            </button>
-        </div>
+        <?php /* Το κουμπί «Εξαγωγή» αφαιρέθηκε: πατιόταν και έβγαζε
+               alert «θα υλοποιηθεί σύντομα». Κουμπί που δεν κάνει τίποτα
+               είναι χειρότερο από κουμπί που λείπει. */ ?>
     </div>
 
     <!-- Φίλτρα και Αναζήτηση -->
@@ -137,10 +135,9 @@ include ROOT_DIR . '/src/Views/partials/admin-header.php';
                                         title="<?php echo $user['is_active'] ? 'Απενεργοποίηση' : 'Ενεργοποίηση'; ?>">
                                         <i class="icon-<?php echo $user['is_active'] ? 'lock' : 'unlock'; ?>"></i>
                                     </button>
-                                    <button onclick="deleteUser(<?php echo $user['id']; ?>, '<?php echo $user['type']; ?>')"
-                                        class="btn btn-sm btn-danger" title="Διαγραφή">
-                                        <i class="icon-trash"></i>
-                                    </button>
+                                    <?php /* Διαγραφή από εδώ ΔΕΝ υπάρχει: είναι
+                                           διαδικασία GDPR με δικά της βήματα,
+                                           όχι κουμπί σε πίνακα. */ ?>
                                 </div>
                             </td>
                         </tr>
@@ -197,17 +194,6 @@ include ROOT_DIR . '/src/Views/partials/admin-header.php';
         }
     }
 
-    function deleteUser(userId, userType) {
-        if (confirm('ΠΡΟΣΟΧΗ: Αυτή η ενέργεια είναι μη αναστρέψιμη. Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον χρήστη;')) {
-            // Implement delete functionality
-            alert('Η λειτουργία διαγραφής δεν έχει υλοποιηθεί ακόμα για λόγους ασφαλείας.');
-        }
-    }
-
-    function exportUsers() {
-        // Implement export functionality
-        alert('Η λειτουργία εξαγωγής θα υλοποιηθεί σύντομα.');
-    }
 </script>
 
 <?php
