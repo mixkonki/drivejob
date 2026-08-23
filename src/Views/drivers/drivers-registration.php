@@ -47,11 +47,9 @@ $extraJs = ['drivers_registration.js'];
 
     <div class="container">
         <div class="form-container">
-            <a href="<?= BASE_URL ?>" class="brand-home" aria-label="Επιστροφή στην αρχική σελίδα του DriveJob">
-                <img src="<?= BASE_URL ?>img/logo.png" alt="DriveJob">
-            </a>
+            <?php include ROOT_DIR . '/src/Views/partials/brand-logo.php'; ?>
             <h1>Εγγραφείτε</h1>
-            <p>Αποκτήστε πρόσβαση στο <br><a href="<?= BASE_URL ?>" class="brand-link"><strong>DriveJobs</strong></a> μέσα σε 30 δευτερόλεπτα!</p>
+            <p>Αποκτήστε πρόσβαση στο <br><a href="<?= BASE_URL ?>" class="dj-brand-link"><strong>DriveJobs</strong></a> μέσα σε 30 δευτερόλεπτα!</p>
 
             <?php if (\Drivejob\Core\Session::has('error_message')) : ?>
                 <div class="error-message">

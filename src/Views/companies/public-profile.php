@@ -286,15 +286,36 @@ use Drivejob\Core\CSRF;
                 <!-- Στοιχεία Επικοινωνίας -->
                 <section class="profile-card contact-info">
                     <h3>Στοιχεία Επικοινωνίας</h3>
+
+                    <?php if (!($canSeeContact ?? false)) : ?>
+                        <div class="contact-locked">
+                            <ul class="contact-list muted">
+                                <?php if (!empty($companyData['email'])) : ?>
+                                    <li>
+                                        <img src="<?php echo BASE_URL; ?>img/email_icon.png" alt="Email">
+                                        <span><?php echo htmlspecialchars(\Drivejob\Services\Visibility::maskEmail($companyData['email'])); ?></span>
+                                    </li>
+                                <?php endif; ?>
+                                <?php if (!empty($companyData['phone'])) : ?>
+                                    <li>
+                                        <img src="<?php echo BASE_URL; ?>img/phone_icon.png" alt="Τηλέφωνο">
+                                        <span><?php echo htmlspecialchars(\Drivejob\Services\Visibility::maskPhone($companyData['phone'])); ?></span>
+                                    </li>
+                                <?php endif; ?>
+                            </ul>
+                            <p class="contact-hint"><?php echo htmlspecialchars($contactHint ?? ''); ?></p>
+                        </div>
+                    <?php endif; ?>
+
                     <ul class="contact-list">
-                        <?php if (isset($companyData['email']) && $companyData['email']) : ?>
+                        <?php if (($canSeeContact ?? false) && isset($companyData['email']) && $companyData['email']) : ?>
                             <li>
                                 <img src="<?php echo BASE_URL; ?>img/email_icon.png" alt="Email">
                                 <a href="mailto:<?php echo htmlspecialchars($companyData['email']); ?>"><?php echo htmlspecialchars($companyData['email']); ?></a>
                             </li>
                         <?php endif; ?>
 
-                        <?php if (isset($companyData['phone']) && $companyData['phone']) : ?>
+                        <?php if (($canSeeContact ?? false) && isset($companyData['phone']) && $companyData['phone']) : ?>
                             <li>
                                 <img src="<?php echo BASE_URL; ?>img/phone_icon.png" alt="Τηλέφωνο">
                                 <a href="tel:<?php echo htmlspecialchars($companyData['phone']); ?>"><?php echo htmlspecialchars($companyData['phone']); ?></a>
@@ -354,7 +375,7 @@ use Drivejob\Core\CSRF;
                 <?php endif; ?>
 
                 <!-- Τοποθεσία -->
-                <?php if (isset($companyData['address']) && $companyData['address'] && isset($companyData['city']) && $companyData['city']) : ?>
+                <?php if (($canSeeContact ?? false) && isset($companyData['address']) && $companyData['address'] && isset($companyData['city']) && $companyData['city']) : ?>
                     <section class="profile-card">
                         <h3>Τοποθεσία</h3>
                         <div class="company-map">
@@ -937,3 +958,20 @@ use Drivejob\Core\CSRF;
     .detailed-ratings .rating-input label {
         font-size: 24px;
     }
+
+<style>
+    /* Κλειδωμένα στοιχεία επικοινωνίας — πακέτο ορατότητας */
+    .contact-locked { margin-bottom: .75rem; }
+    .contact-locked .contact-list.muted li { color: #9ca3af; }
+    .contact-locked .contact-list.muted img { opacity: .45; }
+    .contact-hint {
+        margin: .5rem 0 0;
+        padding: .6rem .8rem;
+        background: #f9fafb;
+        border-left: 3px solid #d1d5db;
+        border-radius: 4px;
+        color: #4b5563;
+        font-size: .88rem;
+        line-height: 1.45;
+    }
+</style>

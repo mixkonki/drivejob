@@ -471,6 +471,31 @@ class DriversController extends BaseUserController
      */
     public function publicProfile($id)
     {
+        /*
+         * ΕΛΕΓΧΟΣ ΠΡΟΣΒΑΣΗΣ — προστέθηκε στο πακέτο ορατότητας.
+         *
+         * Μέχρι τώρα αυτή η σελίδα ήταν εντελώς δημόσια: οποιοσδήποτε στο
+         * διαδίκτυο, χωρίς λογαριασμό, έβλεπε ονοματεπώνυμο, email και
+         * τηλέφωνο του οδηγού ως clickable mailto: και tel:. Ένα bot μπορούσε
+         * να συλλέξει ολόκληρο τον κατάλογο.
+         *
+         * Πλέον το προφίλ ενός οδηγού το βλέπουν μόνο ο ίδιος, οι εταιρείες
+         * που έλαβαν αίτησή του, και οι διαχειριστές.
+         */
+        $visibility = new \Drivejob\Services\Visibility($this->container->get('pdo'));
+
+        if (!$visibility->canViewDriverProfile(
+            Session::get('user_role'),
+            Session::get('user_id'),
+            (int) $id
+        )) {
+            Session::set('error_message', Session::has('user_id')
+                ? 'Το προφίλ του οδηγού είναι διαθέσιμο μόνο σε εταιρείες που έχουν λάβει αίτησή του.'
+                : 'Συνδέσου για να δεις προφίλ οδηγών.');
+            header('Location: ' . BASE_URL . (Session::has('user_id') ? '' : 'login'));
+            exit;
+        }
+
         // Έλεγχος αν το ID είναι έγκυρο
         if (!$id || !is_numeric($id)) {
             Session::set('error_message', 'Μη έγκυρο αναγνωριστικό οδηγού');

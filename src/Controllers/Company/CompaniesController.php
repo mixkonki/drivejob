@@ -271,6 +271,28 @@ class CompaniesController extends BaseUserController
             $canReview = !$hasReviewed;
         }
 
+        /*
+         * ΟΡΑΤΟΤΗΤΑ ΣΤΟΙΧΕΙΩΝ ΕΠΙΚΟΙΝΩΝΙΑΣ — πακέτο ορατότητας.
+         *
+         * Το προφίλ (περιγραφή, στόλος, αξιολογήσεις) είναι εμπορική
+         * πληροφορία και ανοίγει σε κάθε συνδεδεμένο χρήστη. Το email, το
+         * τηλέφωνο, η ακριβής διεύθυνση και ο χάρτης όμως αποκαλύπτονται μόνο
+         * σε οδηγό του οποίου κάποια αίτηση έχει προχωρήσει σε προεπιλογή ή
+         * πρόσληψη — αλλιώς αρκούσαν είκοσι αιτήσεις για είκοσι τηλέφωνα.
+         */
+        $visibility = new \Drivejob\Services\Visibility($this->container->get('pdo'));
+        $viewerRole = Session::get('user_role');
+        $viewerId = Session::get('user_id');
+
+        if (!$visibility->canViewCompanyProfile($viewerRole, $viewerId, (int) $id)) {
+            Session::set('error_message', 'Συνδέσου για να δεις το προφίλ της εταιρείας.');
+            header('Location: ' . BASE_URL . 'login');
+            exit;
+        }
+
+        $canSeeContact = $visibility->canViewCompanyContact($viewerRole, $viewerId, (int) $id);
+        $contactHint = $visibility->companyContactHint($viewerRole, $viewerId, (int) $id);
+
         // Φόρτωση του view
         include ROOT_DIR . '/src/Views/companies/public-profile.php';
     }
