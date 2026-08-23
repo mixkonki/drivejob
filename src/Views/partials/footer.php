@@ -11,10 +11,10 @@
     </div>
     <div class="footer-right">
         <a href="https://facebook.com/drivejob" target="_blank">
-            <img src="<?php echo BASE_URL; ?>img/facebook-icon.png" alt="Facebook">
+            <img src="<?= \Drivejob\Helpers\Asset::url('img/facebook-icon.png') ?>" alt="Facebook">
         </a>
         <a href="https://linkedin.com/company/drivejob" target="_blank">
-            <img src="<?php echo BASE_URL; ?>img/linkedin-icon.png" alt="LinkedIn">
+            <img src="<?= \Drivejob\Helpers\Asset::url('img/linkedin-icon.png') ?>" alt="LinkedIn">
         </a>
     </div>
 </footer>

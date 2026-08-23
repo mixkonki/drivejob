@@ -14,20 +14,20 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                 <?php if (isset($company['logo']) && $company['logo']) : ?>
                     <img src="<?php echo BASE_URL . htmlspecialchars($company['logo']); ?>" alt="Λογότυπο εταιρείας" class="company-logo">
                 <?php else : ?>
-                    <img src="<?php echo BASE_URL; ?>img/default_company_logo.png" alt="Προεπιλεγμένο λογότυπο" class="company-logo">
+                    <img src="<?= \Drivejob\Helpers\Asset::url('img/default_company_logo.png') ?>" alt="Προεπιλεγμένο λογότυπο" class="company-logo">
                 <?php endif; ?>
                 <div class="company-details">
                     <h2><?php echo htmlspecialchars($company['company_name']); ?></h2>
                     <?php if (isset($company['city']) && $company['city']) : ?>
                         <p class="company-location">
-                            <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                            <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                             <?php echo htmlspecialchars($company['city'] . ', ' . $company['country']); ?>
                         </p>
                     <?php endif; ?>
                     <div class="company-meta">
                         <?php if (isset($company['company_size']) && $company['company_size']) : ?>
                             <span class="company-size">
-                                <img src="<?php echo BASE_URL; ?>img/employees_icon.png" alt="Μέγεθος">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/employees_icon.png') ?>" alt="Μέγεθος">
                                 <?php
                                 switch ($company['company_size']) {
                                     case 'micro':
@@ -50,7 +50,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         <?php endif; ?>
                         <?php if (isset($company['rating']) && $company['rating']) : ?>
                             <span class="company-rating">
-                                <img src="<?php echo BASE_URL; ?>img/rating_icon.png" alt="Αξιολόγηση">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/rating_icon.png') ?>" alt="Αξιολόγηση">
                                 <?php echo number_format($company['rating'], 1); ?>/5
                             </span>
                         <?php endif; ?>
@@ -113,12 +113,12 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                         <div class="job-listing-details">
                             <div class="job-listing-detail">
-                                <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                 <span><?php echo htmlspecialchars($listing['location']); ?></span>
                             </div>
 
                             <div class="job-listing-detail">
-                                <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Όχημα">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/vehicle_icon.png') ?>" alt="Όχημα">
                                 <span>
                                     <?php
                                     switch ($listing['vehicle_type']) {
@@ -144,7 +144,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                             <?php if ($listing['salary_min'] || $listing['salary_max']) : ?>
                                 <div class="job-listing-detail">
-                                    <img src="<?php echo BASE_URL; ?>img/salary_icon.png" alt="Αμοιβή">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/salary_icon.png') ?>" alt="Αμοιβή">
                                     <span>
                                         <?php
                                         if ($listing['salary_min'] && $listing['salary_max']) {

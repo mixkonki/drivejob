@@ -40,7 +40,7 @@ $extraJs = ['company_registration.js'];
     <!-- Σύνδεση με το CSS αρχείο -->
     <?= \Drivejob\Helpers\Asset::css('css/styles.css') ?>
     <?= \Drivejob\Helpers\Asset::css('css/company-registration.css') ?>
-    <link rel="icon" href="<?php echo BASE_URL; ?>img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="<?= \Drivejob\Helpers\Asset::url('img/favicon.ico') ?>" type="image/x-icon">
 </head>
 
 <body>
@@ -60,7 +60,7 @@ $extraJs = ['company_registration.js'];
 
             <div>
                 <div class="role_user">
-                    <img src="<?= BASE_URL ?>img/company_icon.png" alt="Επιχείρηση">
+                    <img src="<?= \Drivejob\Helpers\Asset::url('img/company_icon.png') ?>" alt="Επιχείρηση">
                     <span>Επιχείρηση</span>
                 </div>
 

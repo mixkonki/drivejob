@@ -61,7 +61,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                     ?>
                                 </span>
                                 <span class="location">
-                                    <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                     <?php echo htmlspecialchars($listing['location']); ?>
                                 </span>
                             </div>
@@ -108,28 +108,28 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                     <?php if (isset($driver['profile_image']) && $driver['profile_image']) : ?>
                                         <img src="<?php echo BASE_URL . htmlspecialchars($driver['profile_image']); ?>" alt="Φωτογραφία οδηγού">
                                     <?php else : ?>
-                                        <img src="<?php echo BASE_URL; ?>img/default_profile.png" alt="Προεπιλεγμένη φωτογραφία">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/default_profile.png') ?>" alt="Προεπιλεγμένη φωτογραφία">
                                     <?php endif; ?>
                                 </div>
                                 <div class="driver-meta">
                                     <h4><?php echo htmlspecialchars($driver['first_name'] . ' ' . $driver['last_name']); ?></h4>
                                     <?php if (isset($driver['city']) && $driver['city']) : ?>
                                         <div class="driver-location">
-                                            <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                            <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                             <?php echo htmlspecialchars($driver['city'] . ', ' . $driver['country']); ?>
                                         </div>
                                     <?php endif; ?>
                                     <div class="driver-match-stats">
                                         <?php if (isset($driver['experience_years']) && $driver['experience_years']) : ?>
                                             <span class="driver-experience" title="Εμπειρία">
-                                                <img src="<?php echo BASE_URL; ?>img/experience_icon.png" alt="Εμπειρία">
+                                                <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="Εμπειρία">
                                                 <?php echo $driver['experience_years']; ?> έτη
                                             </span>
                                         <?php endif; ?>
 
                                         <?php if (isset($driver['rating']) && $driver['rating']) : ?>
                                             <span class="driver-rating" title="Αξιολόγηση">
-                                                <img src="<?php echo BASE_URL; ?>img/rating_icon.png" alt="Αξιολόγηση">
+                                                <img src="<?= \Drivejob\Helpers\Asset::url('img/rating_icon.png') ?>" alt="Αξιολόγηση">
                                                 <?php echo number_format($driver['rating'], 1); ?>
                                             </span>
                                         <?php endif; ?>
@@ -140,21 +140,21 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             <div class="driver-match-qualifications">
                                 <?php if (isset($driver['driving_license']) && $driver['driving_license']) : ?>
                                     <span class="qualification" title="Άδεια Οδήγησης">
-                                        <img src="<?php echo BASE_URL; ?>img/license_icon.png" alt="Άδεια">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/license_icon.png') ?>" alt="Άδεια">
                                         Άδεια
                                     </span>
                                 <?php endif; ?>
 
                                 <?php if (isset($driver['adr_certificate']) && $driver['adr_certificate']) : ?>
                                     <span class="qualification" title="Πιστοποιητικό ADR">
-                                        <img src="<?php echo BASE_URL; ?>img/adr_icon.png" alt="ADR">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/adr_icon.png') ?>" alt="ADR">
                                         ADR
                                     </span>
                                 <?php endif; ?>
 
                                 <?php if (isset($driver['operator_license']) && $driver['operator_license']) : ?>
                                     <span class="qualification" title="Άδεια Χειριστή">
-                                        <img src="<?php echo BASE_URL; ?>img/operator_icon.png" alt="Χειριστής">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/operator_icon.png') ?>" alt="Χειριστής">
                                         Χειριστής
                                     </span>
                                 <?php endif; ?>

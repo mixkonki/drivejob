@@ -486,22 +486,22 @@
                             <h2>Στοιχεία Επικοινωνίας</h2>
                             <ul class="contact-list">
                                 <li>
-                                    <img src="<?php echo BASE_URL; ?>img/email_icon.png" alt="Email">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/email_icon.png') ?>" alt="Email">
                                     <span><?php echo htmlspecialchars($driverData['email']); ?></span>
                                 </li>
                                 <li>
-                                    <img src="<?php echo BASE_URL; ?>img/phone_icon.png" alt="Τηλέφωνο">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/phone_icon.png') ?>" alt="Τηλέφωνο">
                                     <span><?php echo htmlspecialchars($driverData['phone']); ?></span>
                                 </li>
                                 <?php if (isset($driverData['landline']) && $driverData['landline']) : ?>
                                     <li>
-                                        <img src="<?php echo BASE_URL; ?>img/landline_icon.png" alt="Σταθερό Τηλέφωνο">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/landline_icon.png') ?>" alt="Σταθερό Τηλέφωνο">
                                         <span><?php echo htmlspecialchars($driverData['landline']); ?></span>
                                     </li>
                                 <?php endif; ?>
                                 <?php if (isset($driverData['social_linkedin']) && $driverData['social_linkedin']) : ?>
                                     <li>
-                                        <img src="<?php echo BASE_URL; ?>img/linkedin_icon.png" alt="LinkedIn">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/linkedin_icon.png') ?>" alt="LinkedIn">
                                         <a href="<?php echo htmlspecialchars($driverData['social_linkedin']); ?>" target="_blank">LinkedIn Προφίλ</a>
                                     </li>
                                 <?php endif; ?>

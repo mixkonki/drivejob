@@ -27,7 +27,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <?php if (isset($driverData['profile_image']) && $driverData['profile_image']) : ?>
                         <img src="<?php echo BASE_URL . htmlspecialchars($driverData['profile_image']); ?>" alt="Εικόνα προφίλ">
                     <?php else : ?>
-                        <img src="<?php echo BASE_URL; ?>img/default_profile.png" alt="Προεπιλεγμένη εικόνα προφίλ">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/default_profile.png') ?>" alt="Προεπιλεγμένη εικόνα προφίλ">
                     <?php endif; ?>
                 </div>
 
@@ -38,7 +38,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                 <?php if (isset($driverData['city']) && $driverData['city']) : ?>
                     <p class="profile-location">
-                        <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                         <?php echo htmlspecialchars($driverData['city'] . ', ' . $driverData['country']); ?>
                     </p>
                 <?php endif; ?>
@@ -70,7 +70,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                 <?php if (isset($driverData['experience_years']) && $driverData['experience_years']) : ?>
                     <div class="experience-badge">
-                        <img src="<?php echo BASE_URL; ?>img/experience_icon.png" alt="Εμπειρία">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="Εμπειρία">
                         <span><?php echo $driverData['experience_years']; ?> έτη εμπειρίας</span>
                     </div>
                 <?php endif; ?>
@@ -84,7 +84,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                 <ul class="profile-stats">
                     <li>
                         <div class="stat-icon">
-                            <img src="<?php echo BASE_URL; ?>img/view_icon.png" alt="Προβολές">
+                            <img src="<?= \Drivejob\Helpers\Asset::url('img/view_icon.png') ?>" alt="Προβολές">
                         </div>
                         <div class="stat-info">
                             <span class="stat-value"><?php echo isset($driverStats['profile_views']) ? $driverStats['profile_views'] : '0'; ?></span>
@@ -93,7 +93,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     </li>
                     <li>
                         <div class="stat-icon">
-                            <img src="<?php echo BASE_URL; ?>img/application_icon.png" alt="Αιτήσεις">
+                            <img src="<?= \Drivejob\Helpers\Asset::url('img/application_icon.png') ?>" alt="Αιτήσεις">
                         </div>
                         <div class="stat-info">
                             <span class="stat-value"><?php echo isset($driverStats['applications']) ? $driverStats['applications'] : '0'; ?></span>
@@ -102,7 +102,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     </li>
                     <li>
                         <div class="stat-icon">
-                            <img src="<?php echo BASE_URL; ?>img/match_icon.png" alt="Ταιριάσματα">
+                            <img src="<?= \Drivejob\Helpers\Asset::url('img/match_icon.png') ?>" alt="Ταιριάσματα">
                         </div>
                         <div class="stat-info">
                             <span class="stat-value"><?php echo isset($driverStats['matches']) ? $driverStats['matches'] : '0'; ?></span>

@@ -145,7 +145,7 @@ Session::remove('old_input');
 
                         <div class="job-listing-details">
                             <div class="job-listing-detail">
-                                <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Όχημα">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/vehicle_icon.png') ?>" alt="Όχημα">
                                 <span>
                                     <?php
                                     // Έλεγχος αν υπάρχει το παλιό πεδίο vehicle_type
@@ -202,7 +202,7 @@ Session::remove('old_input');
 
                             <?php if ($listing['salary_min'] || $listing['salary_max']) : ?>
                                 <div class="job-listing-detail">
-                                    <img src="<?php echo BASE_URL; ?>img/salary_icon.png" alt="Αμοιβή">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/salary_icon.png') ?>" alt="Αμοιβή">
                                     <span>
                                         <?php
                                         if ($listing['salary_min'] && $listing['salary_max']) {

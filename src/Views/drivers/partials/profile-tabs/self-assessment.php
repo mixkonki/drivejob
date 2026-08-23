@@ -75,19 +75,19 @@
                                 <!-- Κουμπιά ενεργειών κάτω από την αξιολόγηση -->
                                 <div class="rating-actions">
                                     <a href="<?php echo BASE_URL; ?>drivers/driver-rating" class="btn-action">
-                                        <img src="<?php echo BASE_URL; ?>img/rating_icon.png" alt="Αναλυτική Βαθμολογία" class="action-icon">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/rating_icon.png') ?>" alt="Αναλυτική Βαθμολογία" class="action-icon">
                                         <span>Αναλυτική Βαθμολογία</span>
                                     </a>
                                     <a href="<?php echo BASE_URL; ?>drivers/incident-history" class="btn-action">
-                                        <img src="<?php echo BASE_URL; ?>img/history_icon.png" alt="Ιστορικό Συμβάντων" class="action-icon">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/history_icon.png') ?>" alt="Ιστορικό Συμβάντων" class="action-icon">
                                         <span>Ιστορικό Συμβάντων</span>
                                     </a>
                                     <a href="<?php echo BASE_URL; ?>drivers/report-incident" class="btn-action">
-                                        <img src="<?php echo BASE_URL; ?>img/report_icon.png" alt="Αναφορά Συμβάντος" class="action-icon">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/report_icon.png') ?>" alt="Αναφορά Συμβάντος" class="action-icon">
                                         <span>Αναφορά Συμβάντος</span>
                                     </a>
                                     <a href="<?php echo BASE_URL; ?>drivers/update-assessment" class="btn-action">
-                                        <img src="<?php echo BASE_URL; ?>img/assessment_icon.png" alt="Συμπλήρωση Αυτοαξιολόγησης" class="action-icon">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/assessment_icon.png') ?>" alt="Συμπλήρωση Αυτοαξιολόγησης" class="action-icon">
                                         <span>Συμπλήρωση Αυτοαξιολόγησης</span>
                                     </a>
                                 </div>
@@ -136,7 +136,7 @@
                                     <h3>Βελτιώστε τη βαθμολογία σας</h3>
                                     <p>Κατεβάστε την εφαρμογή DriveJob Telemetry για αυτόματη παρακολούθηση της οδηγικής συμπεριφοράς σας.</p>
                                     <a href="#" class="btn-app-download">
-                                        <img src="<?php echo BASE_URL; ?>img/app_download.png" alt="Κατέβασμα Εφαρμογής">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/app_download.png') ?>" alt="Κατέβασμα Εφαρμογής">
                                         <span>Κατέβασμα Εφαρμογής</span>
                                     </a>
                                 </div>
@@ -190,7 +190,7 @@
                             <h3>Προτάσεις Εκπαίδευσης</h3>
                             <div class="training-courses">
                                 <div class="course-item">
-                                    <div class="course-icon"><img src="<?php echo BASE_URL; ?>img/course_icon.png" alt="Σεμινάριο"></div>
+                                    <div class="course-icon"><img src="<?= \Drivejob\Helpers\Asset::url('img/course_icon.png') ?>" alt="Σεμινάριο"></div>
                                     <div class="course-details">
                                         <h4>Αμυντική Οδήγηση</h4>
                                         <p>Σεμινάριο αμυντικής οδήγησης για επαγγελματίες οδηγούς</p>
@@ -198,7 +198,7 @@
                                     </div>
                                 </div>
                                 <div class="course-item">
-                                    <div class="course-icon"><img src="<?php echo BASE_URL; ?>img/course_icon.png" alt="Σεμινάριο"></div>
+                                    <div class="course-icon"><img src="<?= \Drivejob\Helpers\Asset::url('img/course_icon.png') ?>" alt="Σεμινάριο"></div>
                                     <div class="course-details">
                                         <h4>Διαχείριση Οδηγικού Στρες</h4>
                                         <p>Τεχνικές διαχείρισης άγχους κατά την οδήγηση</p>

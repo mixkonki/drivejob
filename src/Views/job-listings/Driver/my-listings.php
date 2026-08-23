@@ -52,15 +52,15 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         <div class="listing-details">
                             <div class="listing-meta">
                                 <div class="meta-item">
-                                    <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                     <span><?php echo htmlspecialchars($listing['location']); ?></span>
                                 </div>
                                 <div class="meta-item">
-                                    <img src="<?php echo BASE_URL; ?>img/date_icon.png" alt="Ημερομηνία">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/date_icon.png') ?>" alt="Ημερομηνία">
                                     <span>Δημοσιεύτηκε: <?php echo date('d/m/Y', strtotime($listing['created_at'])); ?></span>
                                 </div>
                                 <div class="meta-item">
-                                    <img src="<?php echo BASE_URL; ?>img/car_icon.png" alt="Τύπος Οχήματος">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/car_icon.png') ?>" alt="Τύπος Οχήματος">
                                     <span>
                                         <?php
                                         echo htmlspecialchars(VehicleTypes::label($listing['vehicle_type'] ?? null));

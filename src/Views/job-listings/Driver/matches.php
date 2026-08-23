@@ -39,7 +39,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
             <div class="search-profile-items">
                 <?php if (!empty($driverProfile['preferred_job_type'])) : ?>
                     <div class="search-profile-item">
-                        <img src="<?php echo BASE_URL; ?>img/job_type_icon.png" alt="Τύπος Εργασίας">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/job_type_icon.png') ?>" alt="Τύπος Εργασίας">
                         <span>
                             <?php
                             switch ($driverProfile['preferred_job_type']) {
@@ -65,7 +65,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                 <?php if (!empty($driverProfile['preferred_vehicle_type'])) : ?>
                     <div class="search-profile-item">
-                        <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Τύπος Οχήματος">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/vehicle_icon.png') ?>" alt="Τύπος Οχήματος">
                         <span>
                             <?php
                             switch ($driverProfile['preferred_vehicle_type']) {
@@ -94,14 +94,14 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                 <?php if (!empty($driverProfile['preferred_location'])) : ?>
                     <div class="search-profile-item">
-                        <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                         <span><?php echo htmlspecialchars($driverProfile['preferred_location']); ?></span>
                     </div>
                 <?php endif; ?>
 
                 <?php if (!empty($driverProfile['preferred_radius'])) : ?>
                     <div class="search-profile-item">
-                        <img src="<?php echo BASE_URL; ?>img/radius_icon.png" alt="Ακτίνα">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/radius_icon.png') ?>" alt="Ακτίνα">
                         <span>Ακτίνα: <?php echo htmlspecialchars($driverProfile['preferred_radius']); ?> χλμ</span>
                     </div>
                 <?php endif; ?>
@@ -152,12 +152,12 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                         <div class="job-listing-details">
                             <div class="job-listing-detail">
-                                <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                 <span><?php echo htmlspecialchars($listing['location']); ?></span>
                             </div>
 
                             <div class="job-listing-detail">
-                                <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Όχημα">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/vehicle_icon.png') ?>" alt="Όχημα">
                                 <span>
                                     <?php
                                     switch ($listing['vehicle_type']) {
@@ -183,7 +183,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                             <?php if ($listing['salary_min'] || $listing['salary_max']) : ?>
                                 <div class="job-listing-detail">
-                                    <img src="<?php echo BASE_URL; ?>img/salary_icon.png" alt="Αμοιβή">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/salary_icon.png') ?>" alt="Αμοιβή">
                                     <span>
                                         <?php
                                         if ($listing['salary_min'] && $listing['salary_max']) {
@@ -220,21 +220,21 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             <div class="job-listing-requirements">
                                 <?php if ($listing['experience_years']) : ?>
                                     <span class="requirement" title="Έτη Εμπειρίας">
-                                        <img src="<?php echo BASE_URL; ?>img/experience_icon.png" alt="Εμπειρία">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="Εμπειρία">
                                         <?php echo $listing['experience_years']; ?> έτη
                                     </span>
                                 <?php endif; ?>
 
                                 <?php if ($listing['adr_certificate']) : ?>
                                     <span class="requirement" title="Πιστοποιητικό ADR">
-                                        <img src="<?php echo BASE_URL; ?>img/adr_icon.png" alt="ADR">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/adr_icon.png') ?>" alt="ADR">
                                         ADR
                                     </span>
                                 <?php endif; ?>
 
                                 <?php if ($listing['operator_license']) : ?>
                                     <span class="requirement" title="Άδεια Χειριστή">
-                                        <img src="<?php echo BASE_URL; ?>img/operator_icon.png" alt="Χειριστής">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/operator_icon.png') ?>" alt="Χειριστής">
                                         Άδεια Χειριστή
                                     </span>
                                 <?php endif; ?>

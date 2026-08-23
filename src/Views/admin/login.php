@@ -8,7 +8,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 <div class="admin-login-container">
     <div class="admin-login-card">
         <div class="admin-login-header">
-            <img src="<?php echo BASE_URL; ?>img/logo.png" alt="DriveJob" class="admin-logo">
+            <img src="<?= \Drivejob\Helpers\Asset::url('img/logo.png') ?>" alt="DriveJob" class="admin-logo">
             <h1>Admin Panel</h1>
             <p>Σύνδεση Διαχειριστή</p>
         </div>

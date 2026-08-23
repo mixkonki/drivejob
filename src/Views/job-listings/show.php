@@ -320,13 +320,13 @@ require_once ROOT_DIR . '/src/Views/partials/header.php';
                                 <div class="job-listing-details">
                                     <?php if (!empty($similarListing['location'])): ?>
                                         <div class="job-listing-detail">
-                                            <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                            <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                             <span><?php echo htmlspecialchars($similarListing['location']); ?></span>
                                         </div>
                                     <?php endif; ?>
                                     <?php if (!empty($similarListing['salary_min']) || !empty($similarListing['salary_max'])): ?>
                                         <div class="job-listing-detail">
-                                            <img src="<?php echo BASE_URL; ?>img/salary_icon.png" alt="Μισθός">
+                                            <img src="<?= \Drivejob\Helpers\Asset::url('img/salary_icon.png') ?>" alt="Μισθός">
                                             <span>
                                                 <?php
                                                 if (!empty($similarListing['salary_min']) && !empty($similarListing['salary_max'])) {

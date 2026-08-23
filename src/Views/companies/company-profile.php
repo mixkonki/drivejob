@@ -191,7 +191,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         <?php if (isset($companyData['company_logo']) && $companyData['company_logo']) : ?>
                             <img src="<?php echo BASE_URL . htmlspecialchars($companyData['company_logo']); ?>" alt="Λογότυπο εταιρείας" style="width: 120px; height: 120px; object-fit: cover;">
                         <?php else : ?>
-                            <img src="<?php echo BASE_URL; ?>img/default_company_logo.png" alt="Προεπιλεγμένο λογότυπο" style="width: 120px; height: 120px; object-fit: cover;">
+                            <img src="<?= \Drivejob\Helpers\Asset::url('img/default_company_logo.png') ?>" alt="Προεπιλεγμένο λογότυπο" style="width: 120px; height: 120px; object-fit: cover;">
                         <?php endif; ?>
                     </div>
                 </div>

@@ -18,7 +18,7 @@ $GLOBALS['__dj_brand_logo_loaded'] = true;
 
 <a href="<?php echo BASE_URL; ?>" class="dj-brand-home"
    aria-label="Επιστροφή στην αρχική σελίδα του DriveJob">
-    <img src="<?php echo BASE_URL; ?>img/logo.png" alt="DriveJob" width="180" height="52">
+    <img src="<?= \Drivejob\Helpers\Asset::url('img/logo.png') ?>" alt="DriveJob" width="180" height="52">
 </a>
 
 <?php if ($firstUse) : ?>

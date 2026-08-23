@@ -40,7 +40,7 @@ $extraJs = ['drivers_registration.js'];
     <!-- Σύνδεση με το CSS αρχείο -->
     <?= \Drivejob\Helpers\Asset::css('css/styles.css') ?>
     <?= \Drivejob\Helpers\Asset::css('css/drivers-registration.css') ?>
-    <link rel="icon" href="<?php echo BASE_URL; ?>img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="<?= \Drivejob\Helpers\Asset::url('img/favicon.ico') ?>" type="image/x-icon">
 </head>
 
 <body>
@@ -60,7 +60,7 @@ $extraJs = ['drivers_registration.js'];
 
             <div>
                 <div class="role_user">
-                    <img src="<?= BASE_URL ?>img/driver_icon.png" alt="Οδηγός">
+                    <img src="<?= \Drivejob\Helpers\Asset::url('img/driver_icon.png') ?>" alt="Οδηγός">
                     <span>Οδηγός</span>
                 </div>
 
@@ -122,7 +122,7 @@ $extraJs = ['drivers_registration.js'];
 
                 <div class="google-signup">
                     <button class="btn-google">
-                        <img src="<?= BASE_URL ?>img/google_icon.png" alt="Google Logo">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/google_icon.png') ?>" alt="Google Logo">
                         Συνδεθείτε με την Google
                     </button>
                 </div>

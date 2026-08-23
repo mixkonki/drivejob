@@ -19,7 +19,7 @@ if (defined('ALLOW_INDEXING') && !ALLOW_INDEXING && !headers_sent()) {
     <?= \Drivejob\Helpers\Asset::css('css/admin.css') ?>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>img/favicon.png">
+    <link rel="icon" type="image/png" href="<?= \Drivejob\Helpers\Asset::url('img/favicon.png') ?>">
 </head>
 
 <body class="admin-body">
@@ -27,7 +27,7 @@ if (defined('ALLOW_INDEXING') && !ALLOW_INDEXING && !headers_sent()) {
     <nav class="admin-nav">
         <div class="admin-nav-header">
             <a href="<?php echo BASE_URL; ?>admin/dashboard" class="admin-logo">
-                <img src="<?php echo BASE_URL; ?>img/logo.png" alt="DriveJob Admin">
+                <img src="<?= \Drivejob\Helpers\Asset::url('img/logo.png') ?>" alt="DriveJob Admin">
                 <span>Admin Panel</span>
             </a>
             <button class="admin-nav-toggle" onclick="toggleAdminNav()">
@@ -90,7 +90,7 @@ if (defined('ALLOW_INDEXING') && !ALLOW_INDEXING && !headers_sent()) {
 
         <div class="admin-nav-footer">
             <div class="admin-user-info">
-                <img src="<?php echo BASE_URL; ?>img/default_profile.png" alt="Admin" class="admin-user-avatar">
+                <img src="<?= \Drivejob\Helpers\Asset::url('img/default_profile.png') ?>" alt="Admin" class="admin-user-avatar">
                 <div class="admin-user-details">
                     <span class="admin-user-name"><?php echo $_SESSION['user_name'] ?? 'Administrator'; ?></span>
                     <span class="admin-user-role">Super Admin</span>

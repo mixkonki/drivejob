@@ -32,7 +32,7 @@
                                             <?php endif; ?>
                                             <input type="file" id="<?php echo $image['id']; ?>" name="<?php echo $image['id']; ?>" accept="image/jpeg, image/png, image/gif">
                                             <button type="button" id="<?php echo $image['scan_id']; ?>" class="btn-scan">
-                                                <img src="<?php echo BASE_URL; ?>img/scan_icon.png" alt="Scan" class="scan-icon">
+                                                <img src="<?= \Drivejob\Helpers\Asset::url('img/scan_icon.png') ?>" alt="Scan" class="scan-icon">
                                                 Σκανάρισμα με OCR
                                             </button>
                                         </div>

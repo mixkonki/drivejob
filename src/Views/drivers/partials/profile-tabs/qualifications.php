@@ -10,7 +10,7 @@
                         <div class="skills-category">
                             <div class="category-header">
                                 <div class="category-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/user_icon.png" alt="Ηλικία">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/user_icon.png') ?>" alt="Ηλικία">
                                 </div>
                                 <h3>Ηλικία</h3>
                             </div>
@@ -29,7 +29,7 @@
                         <div class="skills-category">
                             <div class="category-header">
                                 <div class="category-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Οικογενειακή Κατάσταση">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="Οικογενειακή Κατάσταση">
                                 </div>
                                 <h3>Οικογενειακή Κατάσταση</h3>
                             </div>
@@ -55,7 +55,7 @@
                         <div class="skills-category">
                             <div class="category-header">
                                 <div class="category-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/training_icon.png" alt="Επίπεδο Εκπαίδευσης">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/training_icon.png') ?>" alt="Επίπεδο Εκπαίδευσης">
                                 </div>
                                 <h3>Επίπεδο Εκπαίδευσης</h3>
                             </div>
@@ -86,7 +86,7 @@
                         <div class="skills-category">
                             <div class="category-header">
                                 <div class="category-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/license_icon.png" alt="Στρατιωτικές Υποχρεώσεις">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/license_icon.png') ?>" alt="Στρατιωτικές Υποχρεώσεις">
                                 </div>
                                 <h3>Στρατιωτικές Υποχρεώσεις</h3>
                             </div>
@@ -112,7 +112,7 @@
                         <div class="skills-category">
                             <div class="category-header">
                                 <div class="category-icon">
-                                    <img src="<?php echo BASE_URL; ?>img/safety_icon.png" alt="Ποινικό Μητρώο">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/safety_icon.png') ?>" alt="Ποινικό Μητρώο">
                                 </div>
                                 <h3>Ποινικό Μητρώο</h3>
                             </div>
@@ -133,7 +133,7 @@
                             <div class="skills-category">
                                 <div class="category-header">
                                     <div class="category-icon">
-                                        <img src="<?php echo BASE_URL; ?>img/driving_skills_icon.png" alt="Οδηγικές Ικανότητες">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/driving_skills_icon.png') ?>" alt="Οδηγικές Ικανότητες">
                                     </div>
                                     <h3>Οδηγικές Ικανότητες</h3>
                                 </div>
@@ -174,7 +174,7 @@
                             <div class="skills-category">
                                 <div class="category-header">
                                     <div class="category-icon">
-                                        <img src="<?php echo BASE_URL; ?>img/safety_icon.png" alt="Ασφάλεια & Συμμόρφωση">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/safety_icon.png') ?>" alt="Ασφάλεια & Συμμόρφωση">
                                     </div>
                                     <h3>Ασφάλεια & Συμμόρφωση</h3>
                                 </div>
@@ -216,7 +216,7 @@
                             <div class="skills-category">
                                 <div class="category-header">
                                     <div class="category-icon">
-                                        <img src="<?php echo BASE_URL; ?>img/professionalism_icon.png" alt="Επαγγελματισμός">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/professionalism_icon.png') ?>" alt="Επαγγελματισμός">
                                     </div>
                                     <h3>Επαγγελματισμός</h3>
                                 </div>
@@ -259,7 +259,7 @@
                             <div class="skills-category">
                                 <div class="category-header">
                                     <div class="category-icon">
-                                        <img src="<?php echo BASE_URL; ?>img/technical_icon.png" alt="Τεχνικές Γνώσεις">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/technical_icon.png') ?>" alt="Τεχνικές Γνώσεις">
                                     </div>
                                     <h3>Τεχνικές Γνώσεις</h3>
                                 </div>

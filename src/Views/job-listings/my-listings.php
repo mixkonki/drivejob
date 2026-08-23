@@ -82,12 +82,12 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                         <div class="job-listing-details">
                             <div class="job-listing-detail">
-                                <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                 <span><?php echo htmlspecialchars($listing['location']); ?></span>
                             </div>
 
                             <div class="job-listing-detail">
-                                <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Όχημα">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/vehicle_icon.png') ?>" alt="Όχημα">
                                 <span>
                                     <?php
                                     switch ($listing['vehicle_type']) {
@@ -113,7 +113,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                             <?php if ($listing['salary_min'] || $listing['salary_max']) : ?>
                                 <div class="job-listing-detail">
-                                    <img src="<?php echo BASE_URL; ?>img/salary_icon.png" alt="Αμοιβή">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/salary_icon.png') ?>" alt="Αμοιβή">
                                     <span>
                                         <?php
                                         if ($listing['salary_min'] && $listing['salary_max']) {
@@ -129,7 +129,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             <?php endif; ?>
 
                             <div class="job-listing-detail">
-                                <img src="<?php echo BASE_URL; ?>img/status_icon.png" alt="Κατάσταση">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/status_icon.png') ?>" alt="Κατάσταση">
                                 <span class="<?php echo $listing['is_active'] ? 'active' : 'inactive'; ?>">
                                     <?php echo $listing['is_active'] ? 'Ενεργή' : 'Ανενεργή'; ?>
                                 </span>

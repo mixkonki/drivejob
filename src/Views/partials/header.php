@@ -61,10 +61,10 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
     <meta name="msapplication-TileColor" content="#3b82f6">
     <meta name="msapplication-config" content="<?php echo BASE_URL; ?>browserconfig.xml">
     <link rel="manifest" href="<?php echo BASE_URL; ?>manifest.json">
-    <link rel="apple-touch-icon" href="<?php echo BASE_URL; ?>img/icons/icon-192x192.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="<?php echo BASE_URL; ?>img/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo BASE_URL; ?>img/icons/icon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?php echo BASE_URL; ?>img/icons/icon-72x72.png">
+    <link rel="apple-touch-icon" href="<?= \Drivejob\Helpers\Asset::url('img/icons/icon-192x192.png') ?>">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= \Drivejob\Helpers\Asset::url('img/icons/icon-192x192.png') ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= \Drivejob\Helpers\Asset::url('img/icons/icon-96x96.png') ?>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= \Drivejob\Helpers\Asset::url('img/icons/icon-72x72.png') ?>">
 
 
 
@@ -74,7 +74,7 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
     <!-- Σύνδεση με το CSS αρχείο -->
     <?= \Drivejob\Helpers\Asset::css('css/styles.css') ?>
     <?= \Drivejob\Helpers\Asset::css('css/job-listings.css') ?>
-    <link rel="icon" href="<?php echo BASE_URL; ?>img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="<?= \Drivejob\Helpers\Asset::url('img/favicon.ico') ?>" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <!-- Επιπλέον CSS αρχεία -->
@@ -239,7 +239,7 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
         <!-- Λογότυπο -->
         <div class="logo">
             <a href="<?php echo BASE_URL; ?>">
-                <img src="<?php echo BASE_URL; ?>img/logo.png" alt="Λογότυπο DriveJob">
+                <img src="<?= \Drivejob\Helpers\Asset::url('img/logo.png') ?>" alt="Λογότυπο DriveJob">
             </a>
         </div>
 
@@ -360,17 +360,17 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
                             <div class="dropdown-divider"></div>
                         <?php elseif ($userRole === 'company') : ?>
                             <a href="<?php echo BASE_URL; ?>companies/profile">
-                                <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="Profile Icon" />
                                 Προφίλ
                             </a>
                         <?php else : ?>
                             <a href="<?php echo BASE_URL; ?>drivers/profile">
-                                <img src="<?php echo BASE_URL; ?>img/profile_icon.png" alt="Profile Icon" />
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="Profile Icon" />
                                 Προφίλ
                             </a>
                         <?php endif; ?>
                         <a href="<?php echo BASE_URL; ?>auth/logout">
-                            <img src="<?php echo BASE_URL; ?>img/logout_icon.png" alt="Logout Icon" />
+                            <img src="<?= \Drivejob\Helpers\Asset::url('img/logout_icon.png') ?>" alt="Logout Icon" />
                             Αποσύνδεση
                         </a>
                     </div>

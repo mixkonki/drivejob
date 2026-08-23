@@ -431,3 +431,20 @@ a:hover {
 }
 
 .brand-link:hover { opacity: .75; }
+
+
+/* ── ΔΙΟΡΘΩΣΗ ΚΕΝΤΡΑΡΙΣΜΑΤΟΣ ──────────────────────────────────
+   Το .container είναι flex με align-items: center. Όταν το περιεχόμενο
+   είναι ψηλότερο από το παράθυρο, το κεντράρισμα σπρώχνει την κορυφή
+   ΕΞΩ από την οθόνη και δεν μπορεί να φανεί ούτε με scroll — το
+   λογότυπο βρισκόταν σε top: -46px.
+
+   Τα auto margins κεντράρουν ισοδύναμα αλλά δεν κόβουν ποτέ. */
+.container {
+    align-items: flex-start;
+}
+
+.container > .form-container {
+    margin-top: auto;
+    margin-bottom: auto;
+}

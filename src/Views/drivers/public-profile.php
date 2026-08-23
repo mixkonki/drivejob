@@ -28,7 +28,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <?php if (isset($driverData['profile_image']) && $driverData['profile_image']) : ?>
                         <img src="<?php echo BASE_URL . htmlspecialchars($driverData['profile_image']); ?>" alt="Φωτογραφία προφίλ" class="driver-photo">
                     <?php else : ?>
-                        <img src="<?php echo BASE_URL; ?>img/default_profile.png" alt="Προεπιλεγμένη φωτογραφία" class="driver-photo">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/default_profile.png') ?>" alt="Προεπιλεγμένη φωτογραφία" class="driver-photo">
                     <?php endif; ?>
                 </div>
                 <div class="driver-details">
@@ -37,21 +37,21 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <div class="driver-meta">
                         <?php if (isset($driverData['city']) && $driverData['city']) : ?>
                             <div class="driver-location">
-                                <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                 <span><?php echo htmlspecialchars($driverData['city'] . ', ' . $driverData['country']); ?></span>
                             </div>
                         <?php endif; ?>
 
                         <?php if (isset($driverData['experience_years']) && $driverData['experience_years']) : ?>
                             <div class="driver-experience">
-                                <img src="<?php echo BASE_URL; ?>img/experience_icon.png" alt="Εμπειρία">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="Εμπειρία">
                                 <span><?php echo $driverData['experience_years']; ?> έτη εμπειρίας</span>
                             </div>
                         <?php endif; ?>
 
                         <?php if (isset($averageRating) && $averageRating > 0) : ?>
                             <div class="driver-rating">
-                                <img src="<?php echo BASE_URL; ?>img/rating_icon.png" alt="Αξιολόγηση">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/rating_icon.png') ?>" alt="Αξιολόγηση">
                                 <div class="stars">
                                     <?php
                                     $rating = round($averageRating * 2) / 2; // Στρογγυλοποίηση στο πλησιέστερο 0.5
@@ -82,13 +82,13 @@ include ROOT_DIR . '/src/Views/partials/header.php';
             <div class="driver-actions">
                 <?php if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'company') : ?>
                     <a href="<?php echo BASE_URL; ?>messages/create/<?php echo $driverData['id']; ?>" class="btn-primary">
-                        <img src="<?php echo BASE_URL; ?>img/message_icon.png" alt="Μήνυμα">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/message_icon.png') ?>" alt="Μήνυμα">
                         Επικοινωνία
                     </a>
 
                     <?php if (isset($driverData['cv_file']) && $driverData['cv_file']) : ?>
                         <a href="<?php echo BASE_URL . htmlspecialchars($driverData['cv_file']); ?>" class="btn-secondary" target="_blank">
-                            <img src="<?php echo BASE_URL; ?>img/download_icon.png" alt="Κατέβασμα">
+                            <img src="<?= \Drivejob\Helpers\Asset::url('img/download_icon.png') ?>" alt="Κατέβασμα">
                             Κατέβασμα Βιογραφικού
                         </a>
                     <?php endif; ?>
@@ -248,7 +248,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             <ul class="certification-list">
                                 <?php if (isset($driverData['adr_certificate']) && $driverData['adr_certificate']) : ?>
                                     <li class="certification-item">
-                                        <img src="<?php echo BASE_URL; ?>img/adr_icon.png" alt="ADR">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/adr_icon.png') ?>" alt="ADR">
                                         <div class="certification-info">
                                             <h4>Πιστοποιητικό ADR</h4>
                                             <?php if (isset($driverData['adr_classes']) && $driverData['adr_classes']) : ?>
@@ -263,7 +263,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                                 <?php if (isset($driverData['operator_license']) && $driverData['operator_license']) : ?>
                                     <li class="certification-item">
-                                        <img src="<?php echo BASE_URL; ?>img/operator_icon.png" alt="Χειριστής">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/operator_icon.png') ?>" alt="Χειριστής">
                                         <div class="certification-info">
                                             <h4>Άδεια Χειριστή Μηχανημάτων</h4>
                                             <?php if (isset($driverData['operator_license_type']) && $driverData['operator_license_type']) : ?>
@@ -278,7 +278,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                                 <?php if (isset($driverData['tachograph_card']) && $driverData['tachograph_card']) : ?>
                                     <li class="certification-item">
-                                        <img src="<?php echo BASE_URL; ?>img/tachograph_icon.png" alt="Ταχογράφος">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/tachograph_icon.png') ?>" alt="Ταχογράφος">
                                         <div class="certification-info">
                                             <h4>Κάρτα Ταχογράφου</h4>
                                             <?php if (isset($driverData['tachograph_card_expiry']) && $driverData['tachograph_card_expiry']) : ?>
@@ -387,21 +387,21 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                         <?php if (isset($driverData['email']) && $driverData['email']) : ?>
                             <div class="contact-item">
-                                <img src="<?php echo BASE_URL; ?>img/email_icon.png" alt="Email">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/email_icon.png') ?>" alt="Email">
                                 <a href="mailto:<?php echo htmlspecialchars($driverData['email']); ?>"><?php echo htmlspecialchars($driverData['email']); ?></a>
                             </div>
                         <?php endif; ?>
 
                         <?php if (isset($driverData['phone']) && $driverData['phone']) : ?>
                             <div class="contact-item">
-                                <img src="<?php echo BASE_URL; ?>img/phone_icon.png" alt="Τηλέφωνο">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/phone_icon.png') ?>" alt="Τηλέφωνο">
                                 <a href="tel:<?php echo htmlspecialchars($driverData['phone']); ?>"><?php echo htmlspecialchars($driverData['phone']); ?></a>
                             </div>
                         <?php endif; ?>
 
                         <div class="contact-action">
                             <a href="<?php echo BASE_URL; ?>messages/create/<?php echo $driverData['id']; ?>" class="btn-primary btn-block">
-                                <img src="<?php echo BASE_URL; ?>img/message_icon.png" alt="Μήνυμα">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/message_icon.png') ?>" alt="Μήνυμα">
                                 Αποστολή Μηνύματος
                             </a>
                         </div>
@@ -447,12 +447,12 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                             <div class="job-listing-details">
                                 <div class="job-listing-detail">
-                                    <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                     <span><?php echo htmlspecialchars($listing['location']); ?></span>
                                 </div>
 
                                 <div class="job-listing-detail">
-                                    <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Όχημα">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/vehicle_icon.png') ?>" alt="Όχημα">
                                     <span>
                                         <?php
                                         $vehicleTypes = [];
@@ -508,7 +508,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
                                 <?php if ($listing['salary_min'] || $listing['salary_max']) : ?>
                                     <div class="job-listing-detail">
-                                        <img src="<?php echo BASE_URL; ?>img/salary_icon.png" alt="Αμοιβή">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/salary_icon.png') ?>" alt="Αμοιβή">
                                         <span>
                                             <?php
                                             if ($listing['salary_min'] && $listing['salary_max']) {

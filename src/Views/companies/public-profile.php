@@ -31,7 +31,7 @@ use Drivejob\Core\CSRF;
                     <?php if (isset($companyData['company_logo']) && $companyData['company_logo']) : ?>
                         <img src="<?php echo BASE_URL . htmlspecialchars($companyData['company_logo']); ?>" alt="Λογότυπο εταιρείας" class="company-logo">
                     <?php else : ?>
-                        <img src="<?php echo BASE_URL; ?>img/default_company_logo.png" alt="Προεπιλεγμένο λογότυπο" class="company-logo">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/default_company_logo.png') ?>" alt="Προεπιλεγμένο λογότυπο" class="company-logo">
                     <?php endif; ?>
                 </div>
                 <div class="company-details">
@@ -40,21 +40,21 @@ use Drivejob\Core\CSRF;
                     <div class="company-meta">
                         <?php if (isset($companyData['city']) && $companyData['city']) : ?>
                             <div class="company-location">
-                                <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                 <span><?php echo htmlspecialchars($companyData['city'] . ', ' . $companyData['country']); ?></span>
                             </div>
                         <?php endif; ?>
 
                         <?php if (isset($companyData['industry']) && $companyData['industry']) : ?>
                             <div class="company-industry">
-                                <img src="<?php echo BASE_URL; ?>img/industry_icon.png" alt="Κλάδος">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/industry_icon.png') ?>" alt="Κλάδος">
                                 <span><?php echo htmlspecialchars($companyData['industry']); ?></span>
                             </div>
                         <?php endif; ?>
 
                         <?php if (isset($averageRating) && $averageRating > 0) : ?>
                             <div class="company-rating">
-                                <img src="<?php echo BASE_URL; ?>img/rating_icon.png" alt="Αξιολόγηση">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/rating_icon.png') ?>" alt="Αξιολόγηση">
                                 <div class="stars">
                                     <?php
                                     $rating = round($averageRating * 2) / 2; // Στρογγυλοποίηση στο πλησιέστερο 0.5
@@ -79,7 +79,7 @@ use Drivejob\Core\CSRF;
             <div class="company-actions">
                 <?php if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'driver') : ?>
                     <a href="<?php echo BASE_URL; ?>messages/create/<?php echo $companyData['id']; ?>" class="btn-primary">
-                        <img src="<?php echo BASE_URL; ?>img/message_icon.png" alt="Μήνυμα">
+                        <img src="<?= \Drivejob\Helpers\Asset::url('img/message_icon.png') ?>" alt="Μήνυμα">
                         Επικοινωνία
                     </a>
                 <?php endif; ?>
@@ -292,13 +292,13 @@ use Drivejob\Core\CSRF;
                             <ul class="contact-list muted">
                                 <?php if (!empty($companyData['email'])) : ?>
                                     <li>
-                                        <img src="<?php echo BASE_URL; ?>img/email_icon.png" alt="Email">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/email_icon.png') ?>" alt="Email">
                                         <span><?php echo htmlspecialchars(\Drivejob\Services\Visibility::maskEmail($companyData['email'])); ?></span>
                                     </li>
                                 <?php endif; ?>
                                 <?php if (!empty($companyData['phone'])) : ?>
                                     <li>
-                                        <img src="<?php echo BASE_URL; ?>img/phone_icon.png" alt="Τηλέφωνο">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/phone_icon.png') ?>" alt="Τηλέφωνο">
                                         <span><?php echo htmlspecialchars(\Drivejob\Services\Visibility::maskPhone($companyData['phone'])); ?></span>
                                     </li>
                                 <?php endif; ?>
@@ -310,42 +310,42 @@ use Drivejob\Core\CSRF;
                     <ul class="contact-list">
                         <?php if (($canSeeContact ?? false) && isset($companyData['email']) && $companyData['email']) : ?>
                             <li>
-                                <img src="<?php echo BASE_URL; ?>img/email_icon.png" alt="Email">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/email_icon.png') ?>" alt="Email">
                                 <a href="mailto:<?php echo htmlspecialchars($companyData['email']); ?>"><?php echo htmlspecialchars($companyData['email']); ?></a>
                             </li>
                         <?php endif; ?>
 
                         <?php if (($canSeeContact ?? false) && isset($companyData['phone']) && $companyData['phone']) : ?>
                             <li>
-                                <img src="<?php echo BASE_URL; ?>img/phone_icon.png" alt="Τηλέφωνο">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/phone_icon.png') ?>" alt="Τηλέφωνο">
                                 <a href="tel:<?php echo htmlspecialchars($companyData['phone']); ?>"><?php echo htmlspecialchars($companyData['phone']); ?></a>
                             </li>
                         <?php endif; ?>
 
                         <?php if (isset($companyData['website']) && $companyData['website']) : ?>
                             <li>
-                                <img src="<?php echo BASE_URL; ?>img/website_icon.png" alt="Ιστοσελίδα">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/website_icon.png') ?>" alt="Ιστοσελίδα">
                                 <a href="<?php echo htmlspecialchars($companyData['website']); ?>" target="_blank"><?php echo htmlspecialchars($companyData['website']); ?></a>
                             </li>
                         <?php endif; ?>
 
                         <?php if (isset($companyData['social_linkedin']) && $companyData['social_linkedin']) : ?>
                             <li>
-                                <img src="<?php echo BASE_URL; ?>img/linkedin_icon.png" alt="LinkedIn">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/linkedin_icon.png') ?>" alt="LinkedIn">
                                 <a href="<?php echo htmlspecialchars($companyData['social_linkedin']); ?>" target="_blank">LinkedIn</a>
                             </li>
                         <?php endif; ?>
 
                         <?php if (isset($companyData['social_facebook']) && $companyData['social_facebook']) : ?>
                             <li>
-                                <img src="<?php echo BASE_URL; ?>img/facebook_icon.png" alt="Facebook">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/facebook_icon.png') ?>" alt="Facebook">
                                 <a href="<?php echo htmlspecialchars($companyData['social_facebook']); ?>" target="_blank">Facebook</a>
                             </li>
                         <?php endif; ?>
 
                         <?php if (isset($companyData['social_twitter']) && $companyData['social_twitter']) : ?>
                             <li>
-                                <img src="<?php echo BASE_URL; ?>img/twitter_icon.png" alt="Twitter">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/twitter_icon.png') ?>" alt="Twitter">
                                 <a href="<?php echo htmlspecialchars($companyData['social_twitter']); ?>" target="_blank">Twitter</a>
                             </li>
                         <?php endif; ?>
@@ -354,7 +354,7 @@ use Drivejob\Core\CSRF;
                     <?php if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'driver') : ?>
                         <div class="contact-action">
                             <a href="<?php echo BASE_URL; ?>messages/create/<?php echo $companyData['id']; ?>" class="btn-primary btn-block">
-                                <img src="<?php echo BASE_URL; ?>img/message_icon.png" alt="Μήνυμα">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/message_icon.png') ?>" alt="Μήνυμα">
                                 Αποστολή Μηνύματος
                             </a>
                         </div>
@@ -430,12 +430,12 @@ use Drivejob\Core\CSRF;
 
                             <div class="job-listing-details">
                                 <div class="job-listing-detail">
-                                    <img src="<?php echo BASE_URL; ?>img/location_icon.png" alt="Τοποθεσία">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/location_icon.png') ?>" alt="Τοποθεσία">
                                     <span><?php echo htmlspecialchars($listing['location']); ?></span>
                                 </div>
 
                                 <div class="job-listing-detail">
-                                    <img src="<?php echo BASE_URL; ?>img/vehicle_icon.png" alt="Όχημα">
+                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/vehicle_icon.png') ?>" alt="Όχημα">
                                     <span>
                                         <?php
                                         $vehicleTypes = [];
@@ -491,7 +491,7 @@ use Drivejob\Core\CSRF;
 
                                 <?php if ($listing['salary_min'] || $listing['salary_max']) : ?>
                                     <div class="job-listing-detail">
-                                        <img src="<?php echo BASE_URL; ?>img/salary_icon.png" alt="Αμοιβή">
+                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/salary_icon.png') ?>" alt="Αμοιβή">
                                         <span>
                                             <?php
                                             if ($listing['salary_min'] && $listing['salary_max']) {
