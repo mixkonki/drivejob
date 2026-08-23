@@ -81,15 +81,33 @@ check_type "/sw.js"                          "javascript"
 echo
 echo "2. Κεφαλίδες Cache-Control"
 
+cc_of() {
+    curl -sS -I -L --max-time 15 "$1" 2>/dev/null \
+        | tr -d '\r' | awk -F': ' 'tolower($1)=="cache-control"{print tolower($2)}' | tail -1
+}
+
 check_cache_header() {
     local path="$1" want="$2" label="$3"
-    local value
+    local value fresh
 
-    value=$(curl -sS -I -L --max-time 15 "${BASE}${path}" 2>/dev/null \
-            | tr -d '\r' | awk -F': ' 'tolower($1)=="cache-control"{print tolower($2)}' | tail -1)
+    value=$(cc_of "${BASE}${path}")
 
     if [ -z "$value" ]; then
-        printf '%s ✗ %s%s  → ΚΑΜΙΑ κεφαλίδα Cache-Control (%s)\n' "$RED" "$path" "$OFF" "$label"
+        # ΚΡΙΣΙΜΗ ΔΙΑΚΡΙΣΗ: λείπει η κεφαλίδα επειδή ο κανόνας είναι λάθος,
+        # ή επειδή ο πάροχος σερβίρει αποθηκευμένη απόκριση από ΠΡΙΝ τον
+        # κανόνα; Το ίδιο URL με τυχαία παράμετρο παρακάμπτει το edge cache
+        # και απαντά στο ερώτημα αμέσως.
+        fresh=$(cc_of "${BASE}${path}?dj-cachebust=1")
+
+        if [ -n "$fresh" ]; then
+            printf '%s ✗ %s%s  → ΚΟΛΛΗΜΕΝΟ ΣΤΟ EDGE CACHE ΤΟΥ ΠΑΡΟΧΟΥ\n' "$RED" "$path" "$OFF"
+            printf '   %sη ρύθμιση είναι ΣΩΣΤΗ — με ?dj-cachebust=1 επιστρέφει: %s\n' "$DIM" "$fresh"
+            printf '   ο πάροχος σερβίρει αντίγραφο αποθηκευμένο πριν την αλλαγή.\n'
+            printf '   ➜ StackCP → Cache → Purge, και ξανατρέξε αυτό το script.%s\n' "$OFF"
+        else
+            printf '%s ✗ %s%s  → ΚΑΜΙΑ κεφαλίδα Cache-Control (%s)\n' "$RED" "$path" "$OFF" "$label"
+            printf '   %sούτε με παράκαμψη cache — ο κανόνας στο .htaccess δεν εφαρμόζεται.%s\n' "$DIM" "$OFF"
+        fi
         fails=$((fails + 1))
     elif printf '%s' "$value" | grep -q "$want"; then
         printf '%s ✓ %s%s  %s%s%s\n' "$GREEN" "$path" "$OFF" "$DIM" "$value" "$OFF"
