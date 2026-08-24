@@ -385,17 +385,43 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <section class="profile-card contact-info">
                         <h3>Στοιχεία Επικοινωνίας</h3>
 
+                        <?php
+                        /*
+                         * Ο controller έχει ήδη κρίνει (Visibility) και έχει
+                         * μασκαρέψει τις τιμές αν χρειάζεται. Το view απλώς
+                         * ΔΕΝ φτιάχνει mailto/tel από μασκαρεμένη τιμή — ένα
+                         * mailto:k•••••s@ δεν οδηγεί πουθενά και μοιάζει bug.
+                         */
+                        $contactLocked = empty($canViewContact);
+                        ?>
+
+                        <?php if ($contactLocked) : ?>
+                            <p class="contact-locked-note">
+                                Τα πλήρη στοιχεία εμφανίζονται όταν προχωρήσεις την
+                                αίτηση του οδηγού σε προεπιλογή, ή όταν δεχθεί
+                                προσφορά σου.
+                            </p>
+                        <?php endif; ?>
+
                         <?php if (isset($driverData['email']) && $driverData['email']) : ?>
                             <div class="contact-item">
                                 <img src="<?= \Drivejob\Helpers\Asset::url('img/email_icon.png') ?>" alt="Email">
-                                <a href="mailto:<?php echo htmlspecialchars($driverData['email']); ?>"><?php echo htmlspecialchars($driverData['email']); ?></a>
+                                <?php if ($contactLocked) : ?>
+                                    <span><?php echo htmlspecialchars($driverData['email']); ?></span>
+                                <?php else : ?>
+                                    <a href="mailto:<?php echo htmlspecialchars($driverData['email']); ?>"><?php echo htmlspecialchars($driverData['email']); ?></a>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
 
                         <?php if (isset($driverData['phone']) && $driverData['phone']) : ?>
                             <div class="contact-item">
                                 <img src="<?= \Drivejob\Helpers\Asset::url('img/phone_icon.png') ?>" alt="Τηλέφωνο">
-                                <a href="tel:<?php echo htmlspecialchars($driverData['phone']); ?>"><?php echo htmlspecialchars($driverData['phone']); ?></a>
+                                <?php if ($contactLocked) : ?>
+                                    <span><?php echo htmlspecialchars($driverData['phone']); ?></span>
+                                <?php else : ?>
+                                    <a href="tel:<?php echo htmlspecialchars($driverData['phone']); ?>"><?php echo htmlspecialchars($driverData['phone']); ?></a>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
 
@@ -1095,6 +1121,16 @@ include ROOT_DIR . '/src/Views/partials/header.php';
         .job-listings {
             grid-template-columns: 1fr;
         }
+    }
+
+    .contact-locked-note {
+        background: #fffbeb;
+        border-left: 3px solid #f59e0b;
+        color: #92400e;
+        font-size: .85rem;
+        padding: .7rem .9rem;
+        border-radius: 0 6px 6px 0;
+        margin-bottom: .8rem;
     }
 </style>
 

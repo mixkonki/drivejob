@@ -5,7 +5,7 @@ use Drivejob\Core\Session;
 // Ξεκίνημα συνεδρίας
 Session::start();
 // Ορισμός των Content Security Policy headers με υποστήριξη για WebAssembly
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://maps.googleapis.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' https: data:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://maps.googleapis.com blob: data:; frame-src 'self' https://maps.google.com https://www.google.com; worker-src 'self' blob:;");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://maps.googleapis.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' https: data: blob:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://maps.googleapis.com blob: data:; frame-src 'self' https://maps.google.com https://www.google.com; worker-src 'self' blob:;");
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
@@ -83,6 +83,9 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
             <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/<?php echo $css; ?>">
         <?php endforeach; ?>
     <?php endif; ?>
+
+    <!-- Η βάση των URL για τα scripts (το site μπορεί να μη ζει στη ρίζα) -->
+    <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
 
     <!-- Σύνδεση του header.js -->
     <?= \Drivejob\Helpers\Asset::js('js/header.js') ?>

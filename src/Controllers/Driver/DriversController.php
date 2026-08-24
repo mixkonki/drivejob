@@ -570,6 +570,38 @@ class DriversController extends BaseUserController
 
         // Αντιστοίχιση μεταβλητών για συμβατότητα με το view
         $driverData = $driverProfile;
+
+        /*
+         * ══════════════════════════════════════════════════════════════════
+         *  ΜΑΣΚΑΡΙΣΜΑ ΕΠΙΚΟΙΝΩΝΙΑΣ — ΣΤΟΝ CONTROLLER, ΟΧΙ ΣΤΟ VIEW
+         * ══════════════════════════════════════════════════════════════════
+         *
+         * Το view έδειχνε email και τηλέφωνο ως clickable mailto:/tel: σε
+         * όποιον περνούσε τον έλεγχο προφίλ — δηλαδή σε κάθε εταιρεία με
+         * μία απλή αίτηση, πριν από κάθε shortlist. Το συμφωνημένο μοντέλο
+         * λέει: πλήρη στοιχεία ΜΟΝΟ μετά την προεπιλογή ή την αποδοχή
+         * προσφοράς.
+         *
+         * Το μασκάρισμα γίνεται εδώ, πριν φτάσουν τα δεδομένα στο view,
+         * ώστε ΚΑΝΕΝΑ μονοπάτι του template να μην μπορεί να δείξει την
+         * πλήρη τιμή — ούτε το mailto, ούτε κάποιο σχόλιο, ούτε μελλοντική
+         * προσθήκη που θα ξεχάσει τον κανόνα.
+         */
+        $canViewContact = $visibility->canViewDriverContact(
+            Session::get('user_role'),
+            Session::get('user_id'),
+            (int) $id
+        );
+
+        if (!$canViewContact) {
+            $driverData['email'] = \Drivejob\Services\Visibility::maskEmail($driverData['email'] ?? null);
+            $driverData['phone'] = \Drivejob\Services\Visibility::maskPhone($driverData['phone'] ?? null);
+            $driverData['landline'] = \Drivejob\Services\Visibility::maskPhone($driverData['landline'] ?? null);
+            // Η ακριβής διεύθυνση δεν έχει καμία δουλειά πριν την πρόσληψη.
+            unset($driverData['address'], $driverData['address_number'],
+                  $driverData['house_number'], $driverData['latitude'], $driverData['longitude']);
+        }
+
         $driverSkills = $driverProfile['skills'] ?? [];
         $driverLicenses = $driverProfile['licenses'] ?? [];
         $driverLicenseTypes = array_column($driverLicenses, 'license_type');
@@ -1027,48 +1059,99 @@ class DriversController extends BaseUserController
     /**
      * Search for drivers
      */
+    /**
+     * Αναζήτηση οδηγών — GET /drivers/search
+     *
+     * ══════════════════════════════════════════════════════════════════════
+     *  ΓΙΑΤΙ ΓΥΡΙΖΕ ΠΑΝΤΑ ΚΕΝΗ
+     * ══════════════════════════════════════════════════════════════════════
+     *
+     * Το ερώτημα έκανε `JOIN users u ON d.user_id = u.id` — αλλά οι οδηγοί
+     * αυθεντικοποιούνται στον ΔΙΚΟ τους πίνακα και η στήλη user_id είναι
+     * NULL και στους 32. Το JOIN έκοβε τους πάντες: μηδέν αποτελέσματα,
+     * πάντα, χωρίς σφάλμα. (Το email που ζητούσε από τον users υπάρχει
+     * ούτως ή άλλως στον drivers — το JOIN δεν χρειαζόταν καν.)
+     *
+     * Και δύο ακόμη προβλήματα που έκρυβε το κενό αποτέλεσμα:
+     *
+     *   1. ΚΑΜΙΑ προστασία: η σελίδα ήταν δημόσια. Με SELECT d.* το view
+     *      έπαιρνε ονοματεπώνυμα, τηλέφωνα, ΚΑΙ password hashes για όποιον
+     *      περνούσε — απλώς δεν τα τύπωνε ακόμη.
+     *   2. Το φίλτρο άδειας (license_type) υπήρχε στη φόρμα και δεν
+     *      διαβαζόταν πουθενά — οι άδειες ζουν στον πίνακα driver_licenses.
+     *
+     * ΤΩΡΑ: μόνο συνδεδεμένες εταιρείες (και admin), λίστα επιτρεπτών
+     * πεδίων χωρίς κανένα προσωπικό στοιχείο, και ανώνυμες κάρτες — η
+     * ταυτότητα ξεκλειδώνει μέσα από το προφίλ, με τους κανόνες του
+     * Visibility, όχι από τη λίστα.
+     */
     public function search()
     {
-        // Get search parameters
-        $criteria = [
-            'city' => $_GET['city'] ?? null,
-            'license_type' => $_GET['license_type'] ?? null,
-            'available_for_work' => isset($_GET['available_for_work']) ? 1 : null,
-            'experience_years' => $_GET['experience_years'] ?? null
-        ];
+        try {
+            AuthMiddleware::hasRole('company');
+        } catch (\Exception $e) {
+            if (Session::get('user_role') !== 'admin') {
+                Session::set('error_message', Session::has('user_id')
+                    ? 'Η αναζήτηση οδηγών είναι διαθέσιμη μόνο σε εταιρείες.'
+                    : 'Συνδέσου ως εταιρεία για να αναζητήσεις οδηγούς.');
+                header('Location: ' . BASE_URL . (Session::has('user_id') ? '' : 'login'));
+                exit();
+            }
+        }
 
-        // Remove empty criteria
-        $criteria = array_filter($criteria);
+        $city = trim((string) ($_GET['city'] ?? ''));
+        $license = strtoupper(trim((string) ($_GET['license_type'] ?? '')));
+        $experience = (int) ($_GET['experience_years'] ?? 0);
+        $availableOnly = isset($_GET['available_for_work']);
 
-        // Get drivers
-        $query = "SELECT d.*, u.email 
-                  FROM drivers d 
-                  JOIN users u ON d.user_id = u.id 
+        /*
+         * ΛΙΣΤΑ ΕΠΙΤΡΕΠΤΩΝ ΠΕΔΙΩΝ — όχι d.*.
+         * Ό,τι δεν χρειάζεται η κάρτα, δεν φεύγει από τη βάση.
+         */
+        $query = "SELECT d.id, d.city, d.region, d.experience_years,
+                         d.available_for_work, d.rating, d.rating_count,
+                         d.preferred_job_type, d.willing_to_relocate,
+                         d.adr_certificate,
+                         GROUP_CONCAT(DISTINCT dl.license_type ORDER BY dl.license_type SEPARATOR ', ') AS licenses
+                  FROM drivers d
+                  LEFT JOIN driver_licenses dl ON dl.driver_id = d.id
                   WHERE d.is_active = 1";
 
         $params = [];
 
-        if (!empty($criteria['city'])) {
-            $query .= " AND d.city LIKE ?";
-            $params[] = '%' . $criteria['city'] . '%';
+        if ($city !== '') {
+            $query .= ' AND (d.city LIKE ? OR d.region LIKE ?)';
+            $params[] = '%' . $city . '%';
+            $params[] = '%' . $city . '%';
         }
 
-        if (!empty($criteria['available_for_work'])) {
-            $query .= " AND d.available_for_work = 1";
+        if ($availableOnly) {
+            $query .= ' AND d.available_for_work = 1';
         }
 
-        if (!empty($criteria['experience_years'])) {
-            $query .= " AND d.experience_years >= ?";
-            $params[] = $criteria['experience_years'];
+        if ($experience > 0) {
+            $query .= ' AND d.experience_years >= ?';
+            $params[] = $experience;
         }
 
-        $query .= " ORDER BY d.created_at DESC LIMIT 20";
+        if ($license !== '' && preg_match('/^[A-Z]{1,2}[0-9]?E?$/', $license)) {
+            // Η άδεια ζει στον πίνακα driver_licenses — όχι στον drivers.
+            $query .= ' AND EXISTS (SELECT 1 FROM driver_licenses dl2
+                                    WHERE dl2.driver_id = d.id AND dl2.license_type = ?)';
+            $params[] = $license;
+        }
 
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute($params);
-        $drivers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $query .= ' GROUP BY d.id ORDER BY d.available_for_work DESC, d.rating DESC, d.created_at DESC LIMIT 30';
 
-        // Load view
+        try {
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute($params);
+            $drivers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            Logger::error('Σφάλμα στην αναζήτηση οδηγών', ['message' => $e->getMessage()]);
+            $drivers = [];
+        }
+
         include ROOT_DIR . '/src/Views/drivers/search.php';
     }
 }

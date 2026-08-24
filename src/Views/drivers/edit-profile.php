@@ -21,8 +21,11 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 <?= \Drivejob\Helpers\Asset::css('css/toggle-switch.css') ?>
 <?= \Drivejob\Helpers\Asset::css('css/vehicle-experience.css') ?>
 <?= \Drivejob\Helpers\Asset::css('css/form-buttons-fix.css') ?>
-<script src="<?php echo BASE_URL; ?>js/vendor/tesseract-bundle.js"></script>
-<?= \Drivejob\Helpers\Asset::js('js/tesseract-fallback.js', false) ?>
+<?php /* Τα παλιά tesseract-bundle/tesseract-fallback αφαιρέθηκαν: φόρτωναν
+   έναν TesseractWrapper που δεν καλούσε κανείς — τα κουμπιά «Σκανάρισμα»
+   δεν είχαν ΚΑΝΕΝΑΝ χειριστή. Ο πραγματικός χειριστής είναι το
+   license-ocr.js, που φορτώνει το Tesseract μόνο όταν πατηθεί το κουμπί. */ ?>
+<?= \Drivejob\Helpers\Asset::js('js/license-ocr.js', false) ?>
 <?= \Drivejob\Helpers\Asset::js('js/driver_edit_profile.js', false) ?>
 <?= \Drivejob\Helpers\Asset::js('js/license-validation.js', false) ?>
 <?= \Drivejob\Helpers\Asset::js('js/country-phone-codes.js', false) ?>

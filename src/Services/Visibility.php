@@ -81,12 +81,37 @@ final class Visibility
     /**
      * Μπορεί να δει email, τηλέφωνο και διεύθυνση του οδηγού;
      *
-     * Ταυτίζεται με την πρόσβαση στο προφίλ: αν μια εταιρεία έλαβε αίτηση, ο
-     * οδηγός έδωσε ο ίδιος τη συναίνεσή του να επικοινωνήσουν μαζί του.
+     * ══════════════════════════════════════════════════════════════════════
+     *  ΠΡΟΦΙΛ ≠ ΕΠΙΚΟΙΝΩΝΙΑ — δύο διαφορετικά κατώφλια
+     * ══════════════════════════════════════════════════════════════════════
+     *
+     * Η προηγούμενη έκδοση ταύτιζε τα δύο: όποια εταιρεία έβλεπε το προφίλ
+     * έβλεπε και τηλέφωνο/email. Αλλά το συμφωνημένο μοντέλο (απόφαση
+     * 23/08) είναι σταδιακό, όπως Airbnb/Booking:
+     *
+     *   αίτηση          → πλήρες προφίλ, ΜΑΣΚΑΡΙΣΜΕΝΗ επικοινωνία
+     *   shortlist/hired → πλήρη στοιχεία
+     *   αποδεκτή προσφορά → πλήρη στοιχεία (ο άλλος δρόμος της χειραψίας)
+     *
+     * Χωρίς αυτή τη διάκριση, η «προεπιλογή» δεν σήμαινε τίποτα: τα
+     * στοιχεία είχαν ήδη φύγει με την πρώτη αίτηση, πριν η εταιρεία
+     * δείξει το παραμικρό ενδιαφέρον.
      */
     public function canViewDriverContact(?string $viewerRole, $viewerId, int $driverId): bool
     {
-        return $this->canViewDriverProfile($viewerRole, $viewerId, $driverId);
+        if ($this->isAdmin($viewerRole)) {
+            return true;
+        }
+
+        if ($viewerRole === 'driver' && (int) $viewerId === $driverId) {
+            return true;
+        }
+
+        if ($viewerRole === 'company') {
+            return $this->driverIsEngagedWith($driverId, (int) $viewerId);
+        }
+
+        return false;
     }
 
     // ─────────────────────────────────────────────── Προφίλ εταιρείας
@@ -191,7 +216,33 @@ final class Visibility
         );
         $stmt->execute(array_merge([$driverId, $companyId], self::ENGAGED_STATUSES));
 
-        return $this->cache[$key] = (bool) $stmt->fetchColumn();
+        if ($stmt->fetchColumn()) {
+            return $this->cache[$key] = true;
+        }
+
+        /*
+         * Η ΑΠΟΔΕΚΤΗ ΠΡΟΣΦΟΡΑ ΕΙΝΑΙ ΚΙ ΑΥΤΗ ΔΕΣΜΕΥΣΗ.
+         *
+         * Η πλατφόρμα έχει δύο δρόμους προς την ίδια χειραψία: ο οδηγός
+         * κάνει αίτηση και η εταιρεία τον προκρίνει, Ή η εταιρεία στέλνει
+         * προσφορά και ο οδηγός τη δέχεται. Στον δεύτερο δρόμο ο οδηγός
+         * συναίνεσε ρητά — πατώντας «Αποδοχή» — να δει η εταιρεία τα
+         * στοιχεία του. Χωρίς αυτόν τον έλεγχο, η αποδοχή ξεκλείδωνε τα
+         * στοιχεία μόνο στη σελίδα της προσφοράς και πουθενά αλλού.
+         */
+        try {
+            $offer = $this->pdo->prepare(
+                "SELECT 1 FROM job_offers
+                 WHERE driver_id = ? AND company_id = ? AND status = 'accepted'
+                 LIMIT 1"
+            );
+            $offer->execute([$driverId, $companyId]);
+
+            return $this->cache[$key] = (bool) $offer->fetchColumn();
+        } catch (\PDOException $e) {
+            // Ο πίνακας job_offers ίσως λείπει σε παλιό περιβάλλον.
+            return $this->cache[$key] = false;
+        }
     }
 
     /**
