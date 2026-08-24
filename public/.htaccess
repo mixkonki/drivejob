@@ -19,9 +19,25 @@ Options -Indexes
     SetEnvIfNoCase Authorization "^(.*)" HTTP_AUTHORIZATION=$1
 </IfModule>
 
-<IfModule mod_headers.c>
-    Header set Content-Security-Policy "default-src 'self'; connect-src 'self' https://maps.googleapis.com blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; object-src 'none'; base-uri 'self';"
-</IfModule>
+# ═══════════════════════════════════════════════════════════════════════
+#  ΚΑΝΕΝΑ Content-Security-Policy ΑΠΟ ΕΔΩ — Η ΜΟΝΗ ΠΗΓΗ ΕΙΝΑΙ ΤΟ PHP
+# ═══════════════════════════════════════════════════════════════════════
+#
+# Εδώ υπήρχε ένα δεύτερο, αυστηρότερο CSP. Όταν φτάνουν ΔΥΟ κεφαλίδες
+# CSP, ο browser δεν κρατά τη μία — επιβάλλει ΚΑΙ τις δύο, δηλαδή την
+# τομή τους. Αποτέλεσμα:
+#
+#   - style-src χωρίς cdnjs  → το font-awesome κοβόταν (τα εικονίδια
+#     εξαφανίζονταν, με σφάλμα CSP στο console)
+#   - χωρίς worker-src       → έπεφτε στο default-src 'self', οπότε ο
+#     blob: worker του Tesseract μπλοκαριζόταν — το OCR δεν μπορούσε να
+#     ξεκινήσει ΠΟΤΕ, ό,τι κι αν έλεγε το CSP του PHP
+#   - script-src με 'unsafe-eval' → ΧΑΛΑΡΩΤΕΡΟ από του PHP σε αυτό το
+#     σημείο, χωρίς λόγο
+#
+# Το CSP ορίζεται ΜΟΝΟ στο src/Views/partials/header.php, σε ένα σημείο.
+# Μην ξαναπροσθέσεις CSP εδώ — ό,τι αλλαγή χρειάζεται, γίνεται εκεί.
+
 
 # ═══════════════════════════════════════════════════════════════════════
 #  ΠΟΛΙΤΙΚΗ CACHE — Η ΜΟΝΙΜΗ ΛΥΣΗ
