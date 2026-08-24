@@ -685,6 +685,33 @@ class DriversController extends BaseUserController
             // ── Κατάσταση ────────────────────────────────────────────
             'legal_status' => (($_POST['legal_status'] ?? '') === 'yes') ? 'yes' : 'no',
             'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
+
+            /*
+             * ── Στοιχεία εντύπου άδειας (πίνακας drivers) ─────────────
+             *
+             * ΓΙΑΤΙ ΕΔΩ ΚΑΙ ΟΧΙ ΜΟΝΟ ΣΤΟΝ DriverLicenseService: ο service
+             * γράφει αριθμό/λήξη ΜΟΝΟ μέσα στις γραμμές του πίνακα
+             * driver_licenses, και μόνο αν έχει τσεκαριστεί τουλάχιστον
+             * μία κατηγορία. Ο οδηγός που σκάναρε το δίπλωμα, είδε τον
+             * αριθμό και τη λήξη να συμπληρώνονται, και πάτησε αποθήκευση
+             * ΧΩΡΙΣ να τσεκάρει κατηγορία, έχανε ΤΑ ΠΑΝΤΑ — τα πεδία δεν
+             * γράφονταν πουθενά και η καρτέλα γύριζε άδεια.
+             *
+             * Οι στήλες υπάρχουν στον πίνακα drivers και το view διαβάζει
+             * από εκεί ($driverData). Το license_codes (στήλη 12) δεν
+             * αποθηκευόταν πουθενά, ποτέ.
+             */
+            // Η στήλη είναι UNIQUE: το κενό string πρέπει να γίνει null,
+            // αλλιώς ο δεύτερος οδηγός με άδειο πεδίο σκάει σε duplicate ''.
+            'license_number' => (trim((string) ($_POST['license_number'] ?? '')) === '')
+                ? null
+                : $this->sanitize($_POST['license_number']),
+            'license_document_expiry' => $this->sanitizeDate($_POST['license_document_expiry'] ?? null),
+            'license_codes' => $this->sanitize($_POST['license_codes'] ?? null),
+            'driving_license' => isset($_POST['license_number']) || isset($_POST['license_types'])
+                ? (isset($_POST['driving_license']) ? 1 : 0)
+                : null,
+
             'updated_at' => date('Y-m-d H:i:s'),
         ];
 
@@ -724,6 +751,12 @@ class DriversController extends BaseUserController
         $data = [];
 
         foreach ($raw as $field => $value) {
+            // Το driving_license υπολογίζεται παραπάνω: null = η καρτέλα
+            // αδειών δεν ήταν στο POST, οπότε δεν το αγγίζουμε.
+            if ($field === 'driving_license' && $value === null) {
+                continue;
+            }
+
             if (isset($alwaysWrite[$field])) {
                 $data[$field] = $value;
                 continue;

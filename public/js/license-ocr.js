@@ -197,13 +197,60 @@
             if (!seen[m[1]]) { seen[m[1]] = true; out.codes.push(m[1]); }
         }
 
-        // Κατηγορίες — αναγνωρίζονται μόνο ως αυτόνομες λέξεις.
-        var cats = ['AM', 'A1', 'A2', 'A', 'B1', 'BE', 'B', 'C1E', 'C1', 'CE', 'C', 'D1E', 'D1', 'DE', 'D'];
+        /*
+         * Κατηγορίες. Δύο τρόποι, γιατί το OCR άλλοτε κρατά τα κενά
+         * («B C CE») κι άλλοτε τα καταπίνει («BCCE»):
+         *
+         *  1. Αυτόνομες λέξεις — ο απλός δρόμος.
+         *  2. Τεμαχισμός κολλημένων: κάθε συστάδα από γράμματα κατηγοριών
+         *     δοκιμάζεται να «σπάσει» σε γνωστούς κωδικούς, με προτίμηση
+         *     στον μακρύτερο (C1E πριν από C1 πριν από C). Το «BCCE»
+         *     γίνεται B + C + CE — αυτό ακριβώς που γράφει το δίπλωμα.
+         *     Αν η συστάδα ΔΕΝ τεμαχίζεται πλήρως σε κωδικούς, απορρίπτεται
+         *     ολόκληρη — καλύτερα να λείψει μια κατηγορία παρά να
+         *     εφευρεθεί.
+         */
+        var cats = ['C1E', 'D1E', 'AM', 'A1', 'A2', 'B1', 'BE', 'C1', 'CE', 'D1', 'DE', 'A', 'B', 'C', 'D'];
         var found = {};
+
         cats.forEach(function (c) {
             var r = new RegExp('(^|[^A-Z0-9])' + c + '($|[^A-Z0-9E])');
             if (r.test(clean.toUpperCase())) { found[c] = true; }
         });
+
+        var runRe = /\b[ABCDEM12]{2,8}\b/g;
+        var run;
+        while ((run = runRe.exec(clean.toUpperCase())) !== null) {
+            var token = run[0];
+            var pos = 0;
+            var pieces = [];
+            while (pos < token.length) {
+                var matched = null;
+                for (var ci = 0; ci < cats.length; ci++) {
+                    if (token.substring(pos, pos + cats[ci].length) === cats[ci]) {
+                        matched = cats[ci];
+                        break;
+                    }
+                }
+                if (matched === null) {
+                    pieces = null;
+                    break;
+                }
+                pieces.push(matched);
+                pos += matched.length;
+            }
+            /*
+             * Φρένο στα ψευδώς θετικά: μια αγγλική λέξη όπως «CAB» τεμαχίζεται
+             * «επιτυχώς» σε C+A+B. Δεκτός μόνο ο τεμαχισμός που περιέχει
+             * τουλάχιστον έναν ΠΟΛΥΨΗΦΙΟ κωδικό (CE, C1, BE, AM…) — τυχαία
+             * λέξη δεν σχηματίζει τέτοιον, ενώ το κολλημένο «BCCE» τον έχει.
+             */
+            var hasMultiChar = pieces && pieces.some(function (c) { return c.length >= 2; });
+            if (pieces && pieces.length > 1 && hasMultiChar) {
+                pieces.forEach(function (c) { found[c] = true; });
+            }
+        }
+
         out.categories = Object.keys(found);
 
         return out;
@@ -236,6 +283,40 @@
         button.disabled = false;
         if (button.dataset.originalHtml) {
             button.innerHTML = button.dataset.originalHtml;
+        }
+    }
+
+    /**
+     * Τσεκάρει την κατηγορία στον πίνακα αδειών — ΜΟΝΟ τσεκάρει, ποτέ δεν
+     * ξε-τσεκάρει: αν ο οδηγός έχει ήδη δηλώσει κατηγορία που το OCR δεν
+     * διάβασε, η αποτυχία του OCR δεν επιτρέπεται να του τη σβήσει.
+     */
+    function checkCategory(code) {
+        var box = document.querySelector('input[name="license_types[]"][value="' + code + '"]');
+        if (!box) {
+            return false;
+        }
+        if (!box.checked) {
+            box.checked = true;
+            box.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        return true;
+    }
+
+    /**
+     * Ανοίγει την ενότητα αδειών: τσεκάρει το «Διαθέτω άδεια οδήγησης» και
+     * εμφανίζει τον πίνακα. Χωρίς αυτό, το OCR συμπλήρωνε πεδία μέσα σε
+     * κρυφό (hidden) τμήμα και ο οδηγός δεν έβλεπε τίποτα να τσεκάρεται.
+     */
+    function ensureLicenseSectionOpen() {
+        var master = document.getElementById('driving_license');
+        if (master && !master.checked) {
+            master.checked = true;
+            master.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        var tab = document.getElementById('driving_license_tab');
+        if (tab) {
+            tab.classList.remove('hidden');
         }
     }
 
@@ -285,6 +366,10 @@
             var result = await worker.recognize(plain);
             var parsed = parseLicense(result.data.text || '');
 
+            if (parsed.number || parsed.expiry || parsed.codes.length || parsed.categories.length) {
+                ensureLicenseSectionOpen();
+            }
+
             if (!parsed.number || !parsed.expiry) {
                 setBusy(button, 'Δεύτερο πέρασμα…');
                 var enhanced = await preprocess(file, true);
@@ -319,7 +404,23 @@
             }
 
             if (parsed.categories.length) {
-                lines.push('Κατηγορίες που διαβάστηκαν: <strong>' + parsed.categories.join(', ') + '</strong> — τσέκαρέ τες στον πίνακα από κάτω');
+                ensureLicenseSectionOpen();
+                var ticked = [];
+                var missed = [];
+                parsed.categories.forEach(function (code) {
+                    if (checkCategory(code)) {
+                        ticked.push(code);
+                    } else {
+                        missed.push(code);
+                    }
+                });
+                if (ticked.length) {
+                    lines.push('Κατηγορίες: <strong>' + ticked.join(', ') + '</strong> — τσεκαρίστηκαν στον πίνακα. '
+                        + 'Συμπλήρωσε την ημερομηνία λήξης καθεμιάς (στήλη 11 στο πίσω μέρος).');
+                }
+                if (missed.length) {
+                    lines.push('Διαβάστηκαν αλλά δεν βρέθηκαν στον πίνακα: ' + missed.join(', '));
+                }
             }
 
             if (!lines.length) {
