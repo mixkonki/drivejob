@@ -216,7 +216,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 
         <div class="form-buttons">
             <button type="submit" class="btn-primary btn-save">Αποθήκευση Αλλαγών</button>
-            <a href="<?php echo BASE_URL; ?>drivers/driver-profile" class="btn-secondary">Ακύρωση</a>
+            <a href="<?php echo BASE_URL; ?>drivers/profile" class="btn-secondary">Ακύρωση</a>
         </div>
 
     </div>

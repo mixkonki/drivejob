@@ -46,7 +46,7 @@
                                             </td>
                                             <td>
                                                 <?php
-                                                // Εύρεση της πιο πρόσφατης ημερομηνίας λήξης των αδειών οδήγησης
+                                                // Η πιο κοντινή λήξη ανά κατηγορία (στήλη 11 του διπλώματος)
                                                 $earliestExpiry = null;
                                                 if (isset($driverLicenses) && !empty($driverLicenses)) {
                                                     foreach ($driverLicenses as $license) {
@@ -57,17 +57,37 @@
                                                         }
                                                     }
                                                 }
-                                                if ($earliestExpiry) :
+
+                                                /*
+                                                 * Λήξη εντύπου (πεδίο 4β): πότε λήγει το ίδιο το πλαστικό
+                                                 * δίπλωμα — συχνά νωρίτερα από τις κατηγορίες, και είναι
+                                                 * αυτή που καθορίζει πότε χρειάζεται ανανέωση εντύπου.
+                                                 * Για την ένδειξη κατάστασης μετράει ό,τι λήγει πρώτο.
+                                                 */
+                                                $documentExpiry = !empty($driverData['license_document_expiry'])
+                                                    ? $driverData['license_document_expiry'] : null;
+                                                $effectiveExpiry = $earliestExpiry;
+                                                if ($documentExpiry && (!$effectiveExpiry || strtotime($documentExpiry) < strtotime($effectiveExpiry))) {
+                                                    $effectiveExpiry = $documentExpiry;
+                                                }
                                                 ?>
-                                                    <span class="expiry-date"><?php echo date('d/m/Y', strtotime($earliestExpiry)); ?></span>
+                                                <?php if ($documentExpiry || $earliestExpiry) : ?>
+                                                    <?php if ($documentExpiry) : ?>
+                                                        <div><span class="expiry-date"><?php echo date('d/m/Y', strtotime($documentExpiry)); ?></span>
+                                                            <small style="color:#6b7280;">(έντυπο)</small></div>
+                                                    <?php endif; ?>
+                                                    <?php if ($earliestExpiry) : ?>
+                                                        <div><span class="expiry-date"><?php echo date('d/m/Y', strtotime($earliestExpiry)); ?></span>
+                                                            <small style="color:#6b7280;">(κατηγορίες)</small></div>
+                                                    <?php endif; ?>
                                                 <?php else : ?>
                                                     <span class="not-available">Δεν έχει οριστεί</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if ($earliestExpiry) :
-                                                    $isExpired = strtotime($earliestExpiry) < time();
-                                                    $expiresInThreeMonths = !$isExpired && (strtotime($earliestExpiry) - time()) < 60 * 60 * 24 * 90;
+                                                <?php if ($effectiveExpiry) :
+                                                    $isExpired = strtotime($effectiveExpiry) < time();
+                                                    $expiresInThreeMonths = !$isExpired && (strtotime($effectiveExpiry) - time()) < 60 * 60 * 24 * 90;
                                                 ?>
                                                     <span class="status-indicator <?php echo $isExpired ? 'expired' : ($expiresInThreeMonths ? 'expiring-soon' : 'valid'); ?>">
                                                         <?php
