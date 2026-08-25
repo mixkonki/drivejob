@@ -1,0 +1,316 @@
+/**
+ * Πακέτο οπτικής ευθυγράμμισης — Επεξεργασία Προφίλ Οδηγού (25/08/2026).
+ *
+ * Φορτώνεται ΤΕΛΕΥΤΑΙΟ στη σελίδα, ώστε να κερδίζει το cascade χωρίς να
+ * σκαλίζουμε 6 παλιά αρχεία CSS. Στόχοι: μία γραμματοσειρά παντού, οι
+ * ενότητες κάρτες με σταθερές αποστάσεις (τέλος στα τεράστια κενά), ένα
+ * στυλ κουμπιών (το κόκκινο του brand), και κινητό που δουλεύει: καρτέλες
+ * με οριζόντια κύλιση, στήλες που στοιβάζονται, κουμπιά σε όλο το πλάτος.
+ *
+ * ΚΑΝΟΝΑΣ ΑΡΧΕΙΟΥ: όλα τα mobile rules ζουν σε ΕΝΑ block στο ΤΕΛΟΣ —
+ * τα media queries δεν έχουν βαρύτητα, μετράει η σειρά (μάθημα 24/08).
+ */
+
+/* ── 1. Τυπογραφία: τέλος στα serif των επικεφαλίδων ─────────────────── */
+.edit-profile-form,
+.edit-profile-form h1, .edit-profile-form h2, .edit-profile-form h3,
+.edit-profile-form h4, .edit-profile-form h5,
+.edit-profile-form input, .edit-profile-form select,
+.edit-profile-form textarea, .edit-profile-form button,
+main .container > h1 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+}
+
+main .container > h1 {
+    font-size: 1.45rem;
+    text-align: center;
+    margin: 1.2rem 0 1rem;
+    color: #1f2937;
+}
+
+.edit-profile-form h2 { font-size: 1.15rem; color: #1f2937; }
+.edit-profile-form h3 { font-size: 1.02rem; color: #1f2937; }
+.edit-profile-form h4 { font-size: .92rem; color: #374151; }
+
+/* ── 2. Καρτέλες (tabs) ──────────────────────────────────────────────── */
+.tabs-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+    border-bottom: 2px solid #e5e7eb;
+    background: #fff;
+    padding: .25rem .25rem 0;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-btn {
+    font-size: .88rem;
+    padding: .55rem .85rem;
+    border: 0;
+    background: transparent;
+    color: #4b5563;
+    border-bottom: 3px solid transparent;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tab-btn:hover { background: #f9fafb; color: #b3261e; }
+
+.tab-btn.active {
+    color: #b3261e;
+    border-bottom-color: #b3261e;
+    background: #fff;
+    font-weight: 600;
+}
+
+/* ── 3. Ενότητες ως κάρτες, σταθερές αποστάσεις ──────────────────────── */
+.edit-profile-form .form-section {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    margin: 0 0 1.1rem;
+}
+
+.edit-profile-form .form-section > h3:first-child {
+    margin-top: 0;
+    padding-bottom: .55rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.edit-profile-form .form-info { color: #6b7280; font-size: .88rem; }
+
+/* Το εσωτερικό «κουτί μέσα σε κουτί» των καρτελών αδειών: πιο διακριτικό */
+.edit-profile-form .form-section .form-section,
+.edit-profile-form .license-details-section {
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    margin-bottom: .8rem;
+}
+
+/* ── 4. Πεδία φόρμας ─────────────────────────────────────────────────── */
+.edit-profile-form .form-group { margin-bottom: .85rem; }
+
+.edit-profile-form .form-group label {
+    display: block;
+    font-size: .85rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: .3rem;
+}
+
+.edit-profile-form input[type="text"],
+.edit-profile-form input[type="email"],
+.edit-profile-form input[type="tel"],
+.edit-profile-form input[type="number"],
+.edit-profile-form input[type="date"],
+.edit-profile-form select,
+.edit-profile-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: .55rem .7rem;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    font-size: .93rem;
+    background: #fff;
+    color: #111827;
+}
+
+.edit-profile-form input:focus,
+.edit-profile-form select:focus,
+.edit-profile-form textarea:focus {
+    outline: none;
+    border-color: #b3261e;
+    box-shadow: 0 0 0 3px rgba(179, 38, 30, .12);
+}
+
+.edit-profile-form input[type="checkbox"],
+.edit-profile-form input[type="radio"] {
+    width: auto;
+    accent-color: #b3261e;
+}
+
+/* Υπόμνημα κάτω από πεδία (π.χ. «θεωρούνται κάθε έντεκα έτη») */
+.edit-profile-form .form-group small,
+.edit-profile-form .field-hint {
+    color: #6b7280;
+    font-size: .78rem;
+}
+
+/* ── 5. Κουμπιά: ΕΝΑ σύστημα, το κόκκινο του brand ───────────────────── */
+.edit-profile-form .btn-primary,
+.edit-profile-form button[type="submit"],
+.edit-profile-form .btn-save {
+    background: #b3261e;
+    color: #fff;
+    border: 0;
+    border-radius: 7px;
+    padding: .6rem 1.4rem;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.edit-profile-form .btn-primary:hover,
+.edit-profile-form button[type="submit"]:hover { background: #92201a; }
+
+.edit-profile-form .btn-secondary {
+    background: #fff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    padding: .6rem 1.4rem;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.edit-profile-form .btn-secondary:hover { background: #f9fafb; }
+
+/* Τα παλιά 70px «χώρος για τα κουμπιά» (margin+padding στο .tab-pane)
+   δημιουργούσαν το τεράστιο κενό κάτω από κάθε καρτέλα. Με τη sticky
+   μπάρα αποθήκευσης δεν χρειάζονται. */
+.edit-profile-form .tab-pane {
+    margin-bottom: 0;
+    padding-bottom: .5rem;
+}
+
+/* ── 6. Μπάρα αποθήκευσης: πάντα ορατή στο κάτω μέρος ────────────────── */
+.edit-profile-form .form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    background: rgba(255, 255, 255, .97);
+    border-top: 1px solid #e5e7eb;
+    border-radius: 10px 10px 0 0;
+    padding: .75rem 1.2rem;
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+    box-shadow: 0 -4px 14px rgba(0, 0, 0, .05);
+}
+
+.edit-profile-form .form-buttons { display: flex; gap: .6rem; }
+
+/* ── 7. Πίνακες (υποειδικότητες, σύνοψη προϋπηρεσίας) ────────────────── */
+.edit-profile-form table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+}
+
+.edit-profile-form table th {
+    text-align: left;
+    padding: .5rem .6rem;
+    border-bottom: 2px solid #e5e7eb;
+    font-size: .8rem;
+    color: #6b7280;
+}
+
+.edit-profile-form table td {
+    padding: .5rem .6rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+/* Οι πίνακες σε στενές οθόνες κυλούν οριζόντια ΜΕΣΑ στο κουτί τους —
+   αλλιώς ένας φαρδύς πίνακας ανοίγει ΟΛΗ τη σελίδα σε οριζόντιο scroll */
+.edit-profile-form .sub-specialities,
+.edit-profile-form .qualifications-table,
+.edit-profile-form .certifications-summary,
+.edit-profile-form .vehicle-experience-summary {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+/* Checkbox δεξιοτήτων: πρώτα το κουτάκι, μετά η ετικέτα — σε μία γραμμή */
+.edit-profile-form .skill-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    margin-bottom: .45rem;
+}
+
+.edit-profile-form .skill-item .skill-checkbox {
+    order: -1;
+    margin-top: .2rem;
+    flex-shrink: 0;
+}
+
+.edit-profile-form .skill-item .skill-label {
+    font-weight: 400;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
+/* ── 8. MOBILE — ΟΛΟΙ οι κανόνες κινητού εδώ, στο ΤΕΛΟΣ ──────────────── */
+@media (max-width: 760px) {
+
+    main .container {
+        padding-left: .8rem;
+        padding-right: .8rem;
+        max-width: 100%;
+        box-sizing: border-box; /* αλλιώς width+padding > viewport = 10px οριζόντιο scroll */
+    }
+
+    /* Καρτέλες: μία γραμμή με οριζόντια κύλιση — όχι σαλάτα 3 σειρών */
+    .tabs-nav {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 0;
+    }
+    .tabs-nav::-webkit-scrollbar { display: none; }
+    .tab-btn { padding: .65rem .8rem; font-size: .85rem; }
+
+    /* Δίστηλα → μονόστηλα */
+    .edit-profile-form .form-row,
+    .edit-profile-form .skills-row,
+    .edit-profile-form .crt-two { display: block; }
+    .edit-profile-form .form-row > .form-group,
+    .edit-profile-form .skills-column { width: 100%; margin-bottom: .85rem; }
+
+    .edit-profile-form .form-section { padding: .9rem .9rem; }
+
+    /* Κουμπιά αποθήκευσης: όλο το πλάτος, εύκολα στον αντίχειρα.
+       ΣΤΑΤΙΚΗ μπάρα στο κινητό — sticky εκεί έτρωγε τη μισή οθόνη
+       (μαζί με το cookie banner δεν έμενε χώρος για τη φόρμα). */
+    .edit-profile-form .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+        position: static;
+        box-shadow: none;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+    }
+    .edit-profile-form .form-buttons { flex-direction: column; }
+    .edit-profile-form .form-buttons .btn-primary,
+    .edit-profile-form .form-buttons .btn-secondary,
+    .edit-profile-form .btn-save {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+        padding: .8rem 1rem;
+    }
+
+    /* Πεδία λίγο ψηλότερα για δάχτυλο (44px στόχος αφής) */
+    .edit-profile-form input[type="text"],
+    .edit-profile-form input[type="email"],
+    .edit-profile-form input[type="tel"],
+    .edit-profile-form input[type="number"],
+    .edit-profile-form input[type="date"],
+    .edit-profile-form select {
+        padding: .7rem .75rem;
+        font-size: 16px; /* κάτω από 16px το iOS κάνει zoom στο focus */
+    }
+}

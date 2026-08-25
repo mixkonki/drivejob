@@ -21,6 +21,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 <?= \Drivejob\Helpers\Asset::css('css/toggle-switch.css') ?>
 <?= \Drivejob\Helpers\Asset::css('css/vehicle-experience.css') ?>
 <?= \Drivejob\Helpers\Asset::css('css/form-buttons-fix.css') ?>
+<?php /* ΤΕΛΕΥΤΑΙΟ επίτηδες: το πακέτο ευθυγράμμισης κερδίζει το cascade */ ?>
+<?= \Drivejob\Helpers\Asset::css('css/driver-edit-align.css') ?>
 <?php /* Τα παλιά tesseract-bundle/tesseract-fallback αφαιρέθηκαν: φόρτωναν
    έναν TesseractWrapper που δεν καλούσε κανείς — τα κουμπιά «Σκανάρισμα»
    δεν είχαν ΚΑΝΕΝΑΝ χειριστή. Ο πραγματικός χειριστής είναι το
