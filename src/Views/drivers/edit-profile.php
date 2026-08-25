@@ -92,27 +92,28 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 
             <!-- Καρτέλες φόρμας -->
             <div class="form-tabs">
+                <?php /* Σειρά καρτελών (25/08, feedback Κώστα): Προσωπικά+Επικοινωνία μαζί,
+                   ο ταχογράφος ΔΙΠΛΑ στην άδεια οδήγησης, οι ειδικές άδειες τελευταίες. */ ?>
                 <nav class="tabs-nav">
-                    <button type="button" class="tab-btn active" data-tab="personal-info">Προσωπικά Στοιχεία</button>
-                    <button type="button" class="tab-btn" data-tab="contact-info">Στοιχεία Επικοινωνίας</button>
+                    <button type="button" class="tab-btn active" data-tab="personal-info">Προσωπικά & Επικοινωνία</button>
                     <button type="button" class="tab-btn" data-tab="driving-licenses">Άδειες Οδήγησης</button>
+                    <button type="button" class="tab-btn" data-tab="tachograph-card">Κάρτα Ταχογράφου</button>
                     <button type="button" class="tab-btn" data-tab="adr-certificates">Πιστοποιητικά ADR</button>
-                    <button type="button" class="tab-btn" data-tab="operator-licenses">Άδειες Χειριστή Μηχανημάτων</button>
-                    <button type="button" class="tab-btn" data-tab="tachograph-card">Κάρτα Ψηφιακού Ταχογράφου</button>
-                    <button type="button" class="tab-btn" data-tab="special-licenses">Ειδικές Άδειες</button>
+                    <button type="button" class="tab-btn" data-tab="operator-licenses">Άδειες Χειριστή</button>
                     <button type="button" class="tab-btn" data-tab="skills-tab">Προσόντα & Πιστοποιήσεις</button>
+                    <button type="button" class="tab-btn" data-tab="special-licenses">Ειδικές Άδειες</button>
                 </nav>
 
                 <div class="tab-content">
-                    <!-- Καρτέλα Προσωπικών Στοιχείων -->
+                    <!-- Προσωπικά Στοιχεία + Στοιχεία Επικοινωνίας (το contact-info
+                         περιλαμβάνεται ΜΕΣΑ από το personal-info.php) -->
                     <?php include __DIR__ . '/partials/edit-tabs/personal-info.php'; ?>
-                    <?php include __DIR__ . '/partials/edit-tabs/contact-info.php'; ?>
                     <?php include __DIR__ . '/partials/edit-tabs/driving-licenses.php'; ?>
+                    <?php include __DIR__ . '/partials/edit-tabs/tachograph-card.php'; ?>
                     <?php include __DIR__ . '/partials/edit-tabs/adr-certificates.php'; ?>
                     <?php include __DIR__ . '/partials/edit-tabs/operator-licenses.php'; ?>
-                    <?php include __DIR__ . '/partials/edit-tabs/tachograph-card.php'; ?>
+                    <?php include __DIR__ . '/partials/edit-tabs/skills.php'; ?>
                     <?php include __DIR__ . '/partials/edit-tabs/special-licenses.php'; ?>
-            <?php include __DIR__ . '/partials/edit-tabs/skills.php'; ?>
 
 
 

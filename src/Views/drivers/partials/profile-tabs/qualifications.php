@@ -10,7 +10,7 @@
                         <div class="skills-category">
                             <div class="category-header">
                                 <div class="category-icon">
-                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/user_icon.png') ?>" alt="Ηλικία">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                 </div>
                                 <h3>Ηλικία</h3>
                             </div>
@@ -29,7 +29,7 @@
                         <div class="skills-category">
                             <div class="category-header">
                                 <div class="category-icon">
-                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="Οικογενειακή Κατάσταση">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                                 </div>
                                 <h3>Οικογενειακή Κατάσταση</h3>
                             </div>
@@ -55,7 +55,7 @@
                         <div class="skills-category">
                             <div class="category-header">
                                 <div class="category-icon">
-                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/training_icon.png') ?>" alt="Επίπεδο Εκπαίδευσης">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                                 </div>
                                 <h3>Επίπεδο Εκπαίδευσης</h3>
                             </div>
@@ -86,7 +86,7 @@
                         <div class="skills-category">
                             <div class="category-header">
                                 <div class="category-icon">
-                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/license_icon.png') ?>" alt="Στρατιωτικές Υποχρεώσεις">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                                 </div>
                                 <h3>Στρατιωτικές Υποχρεώσεις</h3>
                             </div>
@@ -112,7 +112,7 @@
                         <div class="skills-category">
                             <div class="category-header">
                                 <div class="category-icon">
-                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/safety_icon.png') ?>" alt="Ποινικό Μητρώο">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
                                 </div>
                                 <h3>Ποινικό Μητρώο</h3>
                             </div>
@@ -309,10 +309,12 @@
                         <?php endif; ?>
                     </div>
                 </div>
+                <?php /* Προϋπηρεσία + Γλώσσες δίπλα-δίπλα όταν χωράει η οθόνη (25/08) */ ?>
+                <div class="profile-two-col">
                 <!-- Προϋπηρεσία σε Οχήματα -->
                 <?php if (isset($driverVehicleExperience) && !empty($driverVehicleExperience)) : ?>
                     <div class="vehicle-experience-section">
-                        <h3>Προϋπηρεσία σε Οχήματα</h3>
+                        <h3><svg class="section-h3-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> Προϋπηρεσία σε Οχήματα</h3>
                         <div class="vehicle-experience-list">
                             <?php foreach ($driverVehicleExperience as $exp) : ?>
                                 <div class="vehicle-experience-item">
@@ -368,7 +370,7 @@
                     </div>
                 <?php endif; ?>
                 <div class="languages-section">
-                    <h3>Γλωσσικές Ικανότητες</h3>
+                    <h3><svg class="section-h3-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Γλωσσικές Ικανότητες</h3>
                     <div class="languages-list">
                         <?php
                         /*
@@ -399,6 +401,7 @@
                         <?php endif; ?>
                     </div>
                 </div>
+                </div><!-- /.profile-two-col -->
 
                 <?php if (isset($driverCertifications) && !empty($driverCertifications)) : ?>
                     <div class="certifications-section">

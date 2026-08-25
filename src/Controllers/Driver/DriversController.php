@@ -616,6 +616,16 @@ class DriversController extends BaseUserController
     /**
      * Προβάλλει τη φόρμα επεξεργασίας προφίλ
      */
+    /**
+     * Σελίδα «Ασφάλεια & Κωδικός» — φόρμα αλλαγής κωδικού (POST στο
+     * υπάρχον drivers/change-password του BaseUserController).
+     */
+    public function security()
+    {
+        AuthMiddleware::hasRole('driver');
+        require ROOT_DIR . '/src/Views/drivers/security.php';
+    }
+
     public function edit()
     {
         // Έλεγχος αν ο χρήστης είναι συνδεδεμένος

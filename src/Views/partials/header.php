@@ -414,10 +414,21 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
                                 Προφίλ
                             </a>
                         <?php else : ?>
+                            <?php /* Μενού λογαριασμού οδηγού (25/08): στο πρότυπο μεγάλων
+                               πλατφορμών — προφίλ, επεξεργασία, ασφάλεια/κωδικός. */ ?>
                             <a href="<?php echo BASE_URL; ?>drivers/profile">
                                 <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="Profile Icon" />
-                                Προφίλ
+                                Το Προφίλ μου
                             </a>
+                            <a href="<?php echo BASE_URL; ?>drivers/edit-profile">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="" />
+                                Επεξεργασία Προφίλ
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>drivers/security">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/safety_icon.png') ?>" alt="" />
+                                Ασφάλεια & Κωδικός
+                            </a>
+                            <div class="dropdown-divider"></div>
                         <?php endif; ?>
                         <a href="<?php echo BASE_URL; ?>auth/logout">
                             <img src="<?= \Drivejob\Helpers\Asset::url('img/logout_icon.png') ?>" alt="Logout Icon" />

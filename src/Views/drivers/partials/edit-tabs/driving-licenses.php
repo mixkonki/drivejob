@@ -66,18 +66,10 @@
                                 <!-- Κατηγορίες Αδειών Οδήγησης με πίνακα -->
                                 <h4>Κατηγορίες Αδειών Οδήγησης</h4>
 
-                                <div class="license-categories-table">
-                                    <table class="table table-striped table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Κατηγορία</th>
-                                                <th>Περιγραφή</th>
-                                                <th>Ενεργή</th>
-                                                <th>Ημερομηνία Λήξης</th>
-                                                <th>ΠΕΙ</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                                <?php /* 25/08: μία στήλη-«κατεβατό» → πλέγμα 2 στηλών: κάθε
+                                   ομάδα (Δίκυκλα/Επιβατικά/Φορτηγά/Λεωφορεία) δικό της κουτί.
+                                   Οι ομάδες χωρίς ΠΕΙ δεν κουβαλούν άδεια στήλη ΠΕΙ. */ ?>
+                                <div class="license-cats-grid">
                                             <?php
                                             // Καθορισμός των κατηγοριών αδειών οδήγησης και ομαδοποίησή τους
                                             $licenseCategories = [
@@ -116,58 +108,83 @@
                                                 return '';
                                             }
 
-                                            // Εμφάνιση των κατηγοριών αδειών
+                                            // Εμφάνιση: ένα κουτί ανά ομάδα, σε πλέγμα 2 στηλών
                                             foreach ($licenseCategories as $categoryName => $licenses) :
+                                                $groupHasPei = $licenses[0]['hasPei'];
                                             ?>
-                                                <tr class="category-header">
-                                                    <td colspan="<?php echo $categoryName === 'Φορτηγά' || $categoryName === 'Λεωφορεία' ? '4' : '5'; ?>"><strong><?php echo $categoryName; ?></strong></td>
-                                                    <?php if ($categoryName === 'Φορτηγά' || $categoryName === 'Λεωφορεία') : ?>
-                                                        <td><strong>ΠΕΙ</strong></td>
-                                                    <?php endif; ?>
-                                                </tr>
-                                                <?php foreach ($licenses as $license) : ?>
-                                                    <tr>
-                                                        <td>
-                                                            <div class="license-type-icon">
-
-                                                                <span><?php echo $license['type']; ?></span>
-                                                            </div>
-                                                        </td>
-                                                        <td><?php echo $license['desc']; ?></td>
-                                                        <td>
-                                                            <label class="toggle-switch">
-                                                                <input type="checkbox" name="license_types[]" value="<?php echo $license['type']; ?>" <?php echo (in_array($license['type'], $driverLicenseTypes)) ? 'checked' : ''; ?>>
-                                                                <span class="toggle-slider"></span>
-                                                            </label>
-                                                        </td>
-                                                        <td>
-                                                            <input type="date" name="license_expiry[<?php echo $license['type']; ?>]" value="<?php echo old('license_expiry[' . $license['type'] . ']', getExpiryDateForLicenseType($driverLicenses, $license['type'])); ?>">
-                                                        </td>
-                                                        <td>
-                                                            <?php if ($license['hasPei']) : ?>
-                                                                <div class="pei-field">
-                                                                    <label class="checkbox-label">
-                                                                        <input type="checkbox" name="has_pei_<?php echo strtolower($license['type']); ?>" value="1" <?php echo (in_array($license['type'], $driverPEI)) ? 'checked' : ''; ?>>
-                                                                        <span class="checkmark"></span>
-                                                                    </label>
-                                                                    <input type="date" name="pei_<?php echo $license['peiType']; ?>_expiry" value="<?php echo old('pei_' . $license['peiType'] . '_expiry', ${$license['peiType'] == 'c' ? 'peiCExpiryDate' : 'peiDExpiryDate'} ?? ''); ?>" <?php echo (in_array($license['type'], $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
-                                                                </div>
-                                                            <?php else : ?>
-                                                                — <!-- Δεν υπάρχει ΠΕΙ για αυτή την κατηγορία -->
-                                                            <?php endif; ?>
-                                                        </td>
-                                                    </tr>
-                                                <?php endforeach; ?>
+                                                <div class="license-cat">
+                                                    <h5><?php echo $categoryName; ?></h5>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Κατηγ.</th>
+                                                                <th>Περιγραφή</th>
+                                                                <th>Ενεργή</th>
+                                                                <th>Λήξη</th>
+                                                                <?php if ($groupHasPei) : ?><th>ΠΕΙ</th><?php endif; ?>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <?php foreach ($licenses as $license) : ?>
+                                                                <tr>
+                                                                    <td>
+                                                                        <div class="license-type-icon">
+                                                                            <span><?php echo $license['type']; ?></span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td><?php echo $license['desc']; ?></td>
+                                                                    <td>
+                                                                        <label class="toggle-switch">
+                                                                            <input type="checkbox" name="license_types[]" value="<?php echo $license['type']; ?>" <?php echo (in_array($license['type'], $driverLicenseTypes)) ? 'checked' : ''; ?>>
+                                                                            <span class="toggle-slider"></span>
+                                                                        </label>
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="date" name="license_expiry[<?php echo $license['type']; ?>]" value="<?php echo old('license_expiry[' . $license['type'] . ']', getExpiryDateForLicenseType($driverLicenses, $license['type'])); ?>">
+                                                                    </td>
+                                                                    <?php if ($groupHasPei) : ?>
+                                                                        <td>
+                                                                            <div class="pei-field">
+                                                                                <label class="checkbox-label">
+                                                                                    <input type="checkbox" name="has_pei_<?php echo strtolower($license['type']); ?>" value="1" <?php echo (in_array($license['type'], $driverPEI)) ? 'checked' : ''; ?>>
+                                                                                    <span class="checkmark"></span>
+                                                                                </label>
+                                                                                <input type="date" name="pei_<?php echo $license['peiType']; ?>_expiry" value="<?php echo old('pei_' . $license['peiType'] . '_expiry', ${$license['peiType'] == 'c' ? 'peiCExpiryDate' : 'peiDExpiryDate'} ?? ''); ?>" <?php echo (in_array($license['type'], $driverPEI)) ? '' : 'disabled'; ?> class="pei-expiry-date">
+                                                                            </div>
+                                                                        </td>
+                                                                    <?php endif; ?>
+                                                                </tr>
+                                                            <?php endforeach; ?>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                </div><!-- /.license-cats-grid -->
 
-                                <!-- Ενημερωτικό μήνυμα για ανανέωση -->
-                                <div class="expiry-reminder">
-                                    <h4>Πληροφορίες για την ανανέωση</h4>
-                                    <p>Η ανανέωση της άδειας οδήγησης μπορεί να γίνει στο χρονικό διάστημα δύο μηνών πριν την λήξη και το ΠΕΙ ενός έτους πριν την λήξη.</p>
-                                </div>
+                                <?php
+                                // Υπενθυμίσεις ΜΟΝΟ όταν πλησιάζει η λήξη (όχι μόνιμα μπλοκ):
+                                // έντυπο άδειας → 2 μήνες, ΠΕΙ → 1 έτος πριν.
+                                
+
+                                echo \Drivejob\Helpers\RenewalAlerts::render(
+                                    $driverData['license_document_expiry'] ?? null,
+                                    \Drivejob\Helpers\RenewalAlerts::WINDOW_LICENSE,
+                                    'Το έντυπο της άδειας οδήγησης',
+                                    'Η ανανέωση γίνεται ηλεκτρονικά: ' . \Drivejob\Helpers\RenewalAlerts::link(\Drivejob\Helpers\RenewalAlerts::URL_LICENSE, 'gov.gr — Ανανέωση άδειας οδήγησης')
+                                );
+                                echo \Drivejob\Helpers\RenewalAlerts::render(
+                                    $peiCExpiryDate ?? null,
+                                    \Drivejob\Helpers\RenewalAlerts::WINDOW_PEI,
+                                    'Το ΠΕΙ εμπορευμάτων (C)',
+                                    'Απαιτείται περιοδική κατάρτιση 35 ωρών σε σχολή ΠΕΙ. ' . \Drivejob\Helpers\RenewalAlerts::schoolSearchLink('σχολή ΠΕΙ περιοδική κατάρτιση', $driverData['city'] ?? null)
+                                );
+                                echo \Drivejob\Helpers\RenewalAlerts::render(
+                                    $peiDExpiryDate ?? null,
+                                    \Drivejob\Helpers\RenewalAlerts::WINDOW_PEI,
+                                    'Το ΠΕΙ επιβατών (D)',
+                                    'Απαιτείται περιοδική κατάρτιση 35 ωρών σε σχολή ΠΕΙ. ' . \Drivejob\Helpers\RenewalAlerts::schoolSearchLink('σχολή ΠΕΙ περιοδική κατάρτιση', $driverData['city'] ?? null)
+                                );
+                                ?>
                             </div>
                         </div>
                     </div>

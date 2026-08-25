@@ -127,6 +127,7 @@ $router->group(['prefix' => 'drivers'], function ($router) {
     $router->post('/certifications', [DriversController::class, 'addCertification'])->name('drivers.certifications.add');
     $router->post('/certifications/delete/{id}', [DriversController::class, 'deleteCertification'])->name('drivers.certifications.delete');
     $router->post('/change-password', [DriversController::class, 'changePassword'])->name('drivers.change-password');
+    $router->get('/security', [DriversController::class, 'security'])->name('drivers.security');
 
     // Διαδρομές αναζήτησης
     $router->get('/search', [DriversController::class, 'search'])->name('drivers.search');
