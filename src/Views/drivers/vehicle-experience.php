@@ -1,150 +1,187 @@
-<!-- Προϋπηρεσία σε Οχήματα -->
-<div class="form-section">
-    <h3>Προϋπηρεσία σε Οχήματα</h3>
-    <p class="form-info">Συμπληρώστε τα οχήματα στα οποία έχετε επαγγελματική εμπειρία:</p>
+<?php
 
-    <div class="vehicle-experience-container">
-        <div class="row">
-            <!-- Αριστερή στήλη: Φόρμα προσθήκης προϋπηρεσίας -->
-            <div class="col-md-6">
-                <div class="vehicle-experience-form">
-                    <h4>Προσθήκη Προϋπηρεσίας</h4>
+/**
+ * Προϋπηρεσία σε Οχήματα — GET /drivers/vehicle-experience
+ *
+ * Μεταβλητές από τον DriversController::vehicleExperience():
+ *   $rows   — εγγραφές από τη βάση (με vehicle_type_name)
+ *   $totals — ['freight' => ..., 'passenger' => ..., 'all' => ...]
+ *
+ * ══════════════════════════════════════════════════════════════════════════
+ *  ΚΑΘΕ ΕΓΓΡΑΦΗ ΑΠΟΘΗΚΕΥΕΤΑΙ ΤΗ ΣΤΙΓΜΗ ΤΗΣ ΠΡΟΣΘΗΚΗΣ
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * Το παλιό σχέδιο («μάζεψε σε κρυφά πεδία → πάτα Αποθήκευση Αλλαγών»)
+ * απαιτούσε δύο βήματα και όποιος ξεχνούσε το δεύτερο έχανε σιωπηλά τη
+ * δουλειά του — γι' αυτό χρειαζόταν το κίτρινο προειδοποιητικό σημείωμα.
+ * Τώρα: «Προσθήκη» = σώθηκε στη βάση, ο πίνακας δείχνει ΠΑΝΤΑ ό,τι
+ * πραγματικά υπάρχει, η διαγραφή είναι άμεση. Κανένα κουμπί αποθήκευσης,
+ * καμία αλλαγή σελίδας.
+ *
+ * Ο πίνακας ζωγραφίζεται server-side από τη βάση. Το JS
+ * (vehicle-experience-page.js) κάνει μόνο: φιλτράρισμα τύπων ανά είδος
+ * μεταφοράς, fetch για προσθήκη/διαγραφή, ενημέρωση πίνακα/συνόλων.
+ */
 
-                    <div class="form-group">
-                        <label for="new_transport_type">Είδος Μεταφοράς:</label>
-                        <select id="new_transport_type" name="new_transport_type" class="form-control">
-                            <option value="">Επιλέξτε είδος μεταφοράς...</option>
-                            <option value="freight">Εμπορευματική Μεταφορά</option>
-                            <option value="passenger">Επιβατική Μεταφορά</option>
-                        </select>
-                    </div>
+use Drivejob\Helpers\VehicleExperienceTypes;
 
-                    <div class="form-group">
-                        <label for="new_vehicle_type">Τύπος Οχήματος:</label>
-                        <select id="new_vehicle_type" name="new_vehicle_type" class="form-control">
-                            <option value="">Επιλέξτε πρώτα είδος μεταφοράς...</option>
-                        </select>
-                    </div>
+$rows = $rows ?? [];
+$totals = $totals ?? ['freight' => '—', 'passenger' => '—', 'all' => '—'];
 
+$fmtPeriod = static function (array $row): string {
+    if (empty($row['start_date'])) {
+        return '—';
+    }
+    $end = !empty($row['end_date']) ? date('d/m/Y', strtotime($row['end_date'])) : 'σήμερα';
 
-                    <div class="form-group">
-                        <label for="new_employment_type">Σχέση Εργασίας:</label>
-                        <select id="new_employment_type" name="new_employment_type" class="form-control">
-                            <option value="">Επιλέξτε σχέση εργασίας...</option>
-                            <option value="own_business">Ίδια Επιχείρηση</option>
-                            <option value="employee">Υπάλληλος</option>
-                            <option value="contractor">Εξωτερικός Συνεργάτης</option>
-                        </select>
-                    </div>
+    return date('d/m/Y', strtotime($row['start_date'])) . ' — ' . $end;
+};
+?>
 
-                    <div class="form-group">
-                        <label>Περίοδος:</label>
-                        <!-- Πληκτρολόγηση ΚΑΙ ημερολόγιο: γράφεις ελεύθερα
-                             ηη/μμ/εεεε μέσα στο πεδίο, ή πατάς το κουμπί 📅
-                             για το πτυσσόμενο. -->
-                        <div class="date-range" style="display:flex; align-items:center; gap:.4rem; flex-wrap:wrap;">
-                            <input type="date" id="new_start_date" name="new_start_date" class="form-control" style="flex:1; min-width:130px;">
-                            <button type="button" class="dj-cal" data-for="new_start_date" title="Άνοιγμα ημερολογίου"
-                                    style="border:1px solid #d1d5db; background:#f9fafb; border-radius:6px; padding:.35rem .55rem; cursor:pointer;">📅</button>
-                            <span>έως</span>
-                            <input type="date" id="new_end_date" name="new_end_date" class="form-control" style="flex:1; min-width:130px;">
-                            <button type="button" class="dj-cal" data-for="new_end_date" title="Άνοιγμα ημερολογίου"
-                                    style="border:1px solid #d1d5db; background:#f9fafb; border-radius:6px; padding:.35rem .55rem; cursor:pointer;">📅</button>
-                        </div>
-                    </div>
+<style>
+    .vxp-wrap { max-width: 1100px; margin: 1.5rem auto; padding: 0 1rem; }
+    .vxp-grid { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 1.5rem; align-items: start; }
+    .vxp-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.2rem 1.4rem; }
+    .vxp-card h2 { font-size: 1.05rem; margin: 0 0 1rem; }
+    .vxp-f { margin-bottom: .9rem; }
+    .vxp-f label { display: block; font-size: .85rem; font-weight: 600; color: #374151; margin-bottom: .3rem; }
+    .vxp-f select, .vxp-f input, .vxp-f textarea {
+        width: 100%; padding: .5rem .65rem; border: 1px solid #d1d5db; border-radius: 6px;
+        font-family: inherit; font-size: .92rem; box-sizing: border-box; background: #fff; }
+    .vxp-dates { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+    .vxp-dates input { flex: 1; min-width: 125px; }
+    .vxp-cal { border: 1px solid #d1d5db; background: #f9fafb; border-radius: 6px;
+               padding: .4rem .55rem; cursor: pointer; font-size: .95rem; }
+    .vxp-hint { font-size: .78rem; color: #6b7280; margin-top: .25rem; }
+    .vxp-add { background: #b3261e; color: #fff; border: 0; border-radius: 6px;
+               padding: .6rem 1.3rem; font-weight: 600; cursor: pointer; font-size: .95rem; }
+    .vxp-add:disabled { opacity: .6; cursor: wait; }
+    .vxp-msg { margin-top: .8rem; padding: .55rem .8rem; border-radius: 6px; font-size: .88rem; display: none; }
+    .vxp-msg.ok { background: #dcfce7; color: #166534; display: block; }
+    .vxp-msg.err { background: #fee2e2; color: #991b1b; display: block; }
+    .vxp-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    .vxp-table th { text-align: left; padding: .5rem .6rem; border-bottom: 2px solid #e5e7eb;
+                    font-size: .8rem; color: #6b7280; }
+    .vxp-table td { padding: .55rem .6rem; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+    .vxp-table .cat { color: #9ca3af; font-size: .78rem; }
+    .vxp-del { border: 1px solid #fca5a5; background: #fff; color: #b91c1c; border-radius: 6px;
+               padding: .25rem .6rem; cursor: pointer; font-size: .8rem; }
+    .vxp-totals td { border-bottom: 0; border-top: 2px solid #e5e7eb; font-size: .85rem; }
+    .vxp-empty { color: #6b7280; padding: 1rem 0; }
+    .vxp-back { margin-top: 1.2rem; }
+    @media (max-width: 860px) { .vxp-grid { grid-template-columns: 1fr; } }
+</style>
 
-                    <div class="form-group">
-                        <label for="new_description">Περιγραφή Καθηκόντων:</label>
-                        <textarea id="new_description" name="new_description" rows="3" class="form-control"></textarea>
-                    </div>
+<main class="vxp-wrap">
+    <h1 style="font-size:1.3rem;">Προϋπηρεσία σε Οχήματα</h1>
+    <p style="color:#6b7280;">Κάθε καταχώρηση αποθηκεύεται αμέσως με το «Προσθήκη» — δεν χρειάζεται άλλο βήμα.</p>
 
-                    <button type="button" id="btn-add-experience" class="btn-primary">Προσθήκη Προϋπηρεσίας</button>
-                    <div id="save-reminder" class="save-reminder" style="display: none; margin-top: 15px; padding: 10px; background-color: #ffffd0; border: 1px solid #e6e600; border-radius: 4px;">
-                        <strong>Σημείωση:</strong> Μην ξεχάσετε να κάνετε κλικ στο κουμπί <strong>"Αποθήκευση Αλλαγών"</strong> στο πάνω ή στο κάτω μέρος της σελίδας για να αποθηκευτούν οι αλλαγές σας.
-                    </div>
-                </div>
+    <div class="vxp-grid">
+        <div class="vxp-card">
+            <h2>Προσθήκη Προϋπηρεσίας</h2>
+
+            <div class="vxp-f">
+                <label for="vxp_transport">Είδος Μεταφοράς</label>
+                <select id="vxp_transport">
+                    <option value="">Επιλέξτε είδος μεταφοράς...</option>
+                    <?php foreach (VehicleExperienceTypes::TRANSPORT_LABELS as $tCode => $tLabel) : ?>
+                        <option value="<?= $tCode ?>"><?= $tLabel ?> Μεταφορές</option>
+                    <?php endforeach; ?>
+                </select>
             </div>
 
-            <!-- Δεξιά στήλη: Πίνακας προϋπηρεσίας -->
-            <div class="col-md-6">
-                <div class="vehicle-experience-table">
-                    <h4>Καταχωρημένη Προϋπηρεσία</h4>
-
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Είδος Οχήματος</th>
-                                <th>Είδος Μεταφορών</th>
-                                <th>Διάστημα</th>
-                                <th>Ενέργειες</th>
-                            </tr>
-                        </thead>
-                        <tbody id="vehicle-experience-tbody">
-                            <!-- Τα δεδομένα θα προστεθούν δυναμικά με JavaScript -->
-                        </tbody>
-                        <tfoot>
-                            <tr class="summary-row freight-summary">
-                                <td colspan="2">Μερικό Σύνολο (Εμπορευματικές)</td>
-                                <td>Εμπορευματικές</td>
-                                <td id="freight-total">0 έτη, 0 μήνες, 0 ημέρες</td>
-                                <td></td>
-                            </tr>
-                            <tr class="summary-row passenger-summary">
-                                <td colspan="2">Μερικό Σύνολο (Επιβατικές)</td>
-                                <td>Επιβατικές</td>
-                                <td id="passenger-total">0 έτη, 0 μήνες, 0 ημέρες</td>
-                                <td></td>
-                            </tr>
-                            <tr class="summary-row total-summary">
-                                <td colspan="2"><strong>Συνολική Προϋπηρεσία</strong></td>
-                                <td>Όλα τα είδη</td>
-                                <td id="total-experience"><strong>0 έτη, 0 μήνες, 0 ημέρες</strong></td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+            <div class="vxp-f">
+                <label for="vxp_type">Τύπος Οχήματος</label>
+                <select id="vxp_type" disabled>
+                    <option value="">Επιλέξτε πρώτα είδος μεταφοράς...</option>
+                    <?php /* ΟΛΟΙ οι τύποι, server-rendered από τη μία πηγή αλήθειας.
+                             Το JS απλώς δείχνει/κρύβει τα optgroups ανά είδος μεταφοράς. */ ?>
+                    <?php foreach (VehicleExperienceTypes::TAXONOMY as $tCode => $categories) : ?>
+                        <?php foreach ($categories as $catCode => $types) : ?>
+                            <optgroup data-transport="<?= $tCode ?>" data-category="<?= $catCode ?>"
+                                      label="<?= htmlspecialchars(VehicleExperienceTypes::categoryLabel($catCode), ENT_QUOTES, 'UTF-8') ?>">
+                                <?php foreach ($types as $typeCode => $typeLabel) : ?>
+                                    <option value="<?= $catCode ?>|<?= $typeCode ?>"><?= htmlspecialchars($typeLabel, ENT_QUOTES, 'UTF-8') ?></option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </select>
             </div>
+
+            <div class="vxp-f">
+                <label for="vxp_employment">Σχέση Εργασίας</label>
+                <select id="vxp_employment">
+                    <?php foreach (VehicleExperienceTypes::EMPLOYMENT_LABELS as $eCode => $eLabel) : ?>
+                        <option value="<?= $eCode ?>"><?= $eLabel ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="vxp-f">
+                <label>Περίοδος</label>
+                <div class="vxp-dates">
+                    <input type="date" id="vxp_start" max="<?= date('Y-m-d') ?>">
+                    <button type="button" class="vxp-cal" data-for="vxp_start" title="Άνοιγμα ημερολογίου">📅</button>
+                    <span>έως</span>
+                    <input type="date" id="vxp_end">
+                    <button type="button" class="vxp-cal" data-for="vxp_end" title="Άνοιγμα ημερολογίου">📅</button>
+                </div>
+                <div class="vxp-hint">Γράψε ηη/μμ/εεεε ή πάτα 📅. Άφησε κενό το «έως» αν εργάζεσαι ακόμη εκεί — η διάρκεια υπολογίζεται αυτόματα.</div>
+            </div>
+
+            <div class="vxp-f">
+                <label for="vxp_description">Περιγραφή Καθηκόντων <span style="font-weight:400;color:#9ca3af;">(προαιρετικό)</span></label>
+                <textarea id="vxp_description" rows="3"></textarea>
+            </div>
+
+            <button type="button" id="vxp-add-btn" class="vxp-add">Προσθήκη</button>
+            <div id="vxp-msg" class="vxp-msg"></div>
+        </div>
+
+        <div class="vxp-card">
+            <h2>Καταχωρημένη Προϋπηρεσία</h2>
+
+            <table class="vxp-table" id="vxp-table">
+                <thead>
+                    <tr>
+                        <th>Όχημα</th>
+                        <th>Μεταφορές</th>
+                        <th>Περίοδος</th>
+                        <th>Διάρκεια</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="vxp-tbody">
+                    <?php foreach ($rows as $row) : ?>
+                        <tr data-id="<?= (int) $row['id'] ?>">
+                            <td>
+                                <?= htmlspecialchars((string) ($row['vehicle_type_name'] ?? $row['vehicle_type']), ENT_QUOTES, 'UTF-8') ?>
+                                <div class="cat"><?= htmlspecialchars(VehicleExperienceTypes::categoryLabel((string) $row['vehicle_category']), ENT_QUOTES, 'UTF-8') ?></div>
+                            </td>
+                            <td><?= htmlspecialchars(VehicleExperienceTypes::transportLabel($row['transport_type'] ?? 'freight'), ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= $fmtPeriod($row) ?></td>
+                            <td><?= (int) ($row['years'] ?? 0) ?> έτη, <?= (int) ($row['months'] ?? 0) ?> μήνες, <?= (int) ($row['days'] ?? 0) ?> ημέρες</td>
+                            <td><button type="button" class="vxp-del" data-id="<?= (int) $row['id'] ?>">Διαγραφή</button></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+                <tfoot>
+                    <tr class="vxp-totals"><td colspan="3">Μερικό Σύνολο (Εμπορευματικές)</td><td id="vxp-total-freight" colspan="2"><?= htmlspecialchars($totals['freight'], ENT_QUOTES, 'UTF-8') ?></td></tr>
+                    <tr class="vxp-totals"><td colspan="3">Μερικό Σύνολο (Επιβατικές)</td><td id="vxp-total-passenger" colspan="2"><?= htmlspecialchars($totals['passenger'], ENT_QUOTES, 'UTF-8') ?></td></tr>
+                    <tr class="vxp-totals"><td colspan="3"><strong>Συνολική Προϋπηρεσία</strong></td><td id="vxp-total-all" colspan="2"><strong><?= htmlspecialchars($totals['all'], ENT_QUOTES, 'UTF-8') ?></strong></td></tr>
+                </tfoot>
+            </table>
+
+            <p class="vxp-empty" id="vxp-empty" <?= !empty($rows) ? 'style="display:none;"' : '' ?>>
+                Δεν έχεις καταχωρήσει ακόμη προϋπηρεσία — πρόσθεσε την πρώτη από τη φόρμα.
+            </p>
         </div>
     </div>
 
-    <!-- Δηλώνει στον server ότι η φόρμα περιέχει την ενότητα προϋπηρεσίας:
-         χωρίς αυτό, ο server δεν ξέρει αν το κενό vehicle_experience[]
-         σημαίνει «διάγραψέ τα όλα» ή «η φόρμα δεν είχε την ενότητα». -->
-    <input type="hidden" name="vehicle_experience_submitted" value="1">
-
-    <!-- Κρυφά πεδία για αποθήκευση των δεδομένων -->
-    <div id="vehicle-experience-data">
-        <!-- Εδώ θα προστεθούν δυναμικά τα πεδία για κάθε εγγραφή -->
+    <div class="vxp-back">
+        <a href="<?= BASE_URL ?>drivers/edit-profile" class="btn-secondary" style="text-decoration:none;">← Επιστροφή στο προφίλ</a>
     </div>
-</div>
+</main>
 
-<!-- Δεδομένα προϋπηρεσίας για φόρτωση από JavaScript -->
-<?php if (isset($driverVehicleExperience) && !empty($driverVehicleExperience)) : ?>
-    <script id="vehicle-experience-data-script">
-        // Τα δεδομένα προϋπηρεσίας θα φορτωθούν από το vehicle-experience.js
-        window.initialVehicleExperience = [
-            <?php
-            $count = count($driverVehicleExperience);
-            $i = 0;
-            foreach ($driverVehicleExperience as $index => $exp) :
-                $i++;
-            ?> {
-                    id: <?php echo $index; ?>,
-                    vehicleCategory: '<?php echo addslashes($exp['vehicle_category']); ?>',
-                    vehicleType: '<?php echo addslashes($exp['vehicle_type'] ?? ''); ?>',
-                    transportType: '<?php echo isset($exp['transport_type']) ? addslashes($exp['transport_type']) : "freight"; ?>',
-                    employmentType: '<?php echo isset($exp['employment_type']) ? addslashes($exp['employment_type']) : "own_business"; ?>',
-                    startDate: '<?php echo addslashes($exp['start_date'] ?? ''); ?>',
-                    endDate: '<?php echo addslashes($exp['end_date'] ?? ''); ?>',
-                    years: <?php echo intval($exp['years'] ?? 0); ?>,
-                    months: <?php echo isset($exp['months']) ? intval($exp['months']) : 0; ?>,
-                    days: <?php echo isset($exp['days']) ? intval($exp['days']) : 0; ?>,
-                    description: '<?php echo addslashes($exp['description'] ?? ''); ?>'
-                }
-                <?php echo ($i < $count) ? ',' : ''; ?>
-            <?php endforeach; ?>
-        ];
-    </script>
-<?php endif; ?>
+<?= \Drivejob\Helpers\Asset::js('js/vehicle-experience-page.js', false) ?>

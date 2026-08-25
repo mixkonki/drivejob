@@ -205,42 +205,66 @@ class SkillModel extends BaseModel
      */
     private function getVehicleTypeName($category, $type)
     {
-        $vehicleTypes = [
-            'lcv' => [
-                'panel_van' => 'Κλειστό Van',
-                'pickup_truck' => 'Van με καρότσα (Pick-up)',
-                'small_refrigerated' => 'Μικρό φορτηγό ψυγείο/κατάψυξης'
-            ],
-            'rigid_truck' => [
-                'distribution_truck' => 'Φορτηγό Διανομών',
-                'refrigerated_truck' => 'Φορτηγό Ψυγείο/Κατάψυξης',
-                'platform_truck' => 'Φορτηγό Πλατφόρμα',
-                'dump_truck' => 'Ανατρεπόμενο Φορτηγό',
-                'tanker_truck' => 'Βυτιοφόρο (άκαμπτο)',
-                'car_carrier' => 'Όχημα Μεταφοράς Οχημάτων',
-                'silo_truck' => 'Φορτηγό με Σιλό',
-                'crane_truck' => 'Φορτηγό με Γερανό',
-                'livestock_truck' => 'Όχημα Μεταφοράς Ζώων'
-            ],
-            'articulated' => [
-                'curtainsider' => 'Επικαθήμενο με Μουσαμά',
-                'reefer' => 'Επικαθήμενο Ψυγείο/Κατάψυξη',
-                'box_trailer' => 'Επικαθήμενο Κλειστού Τύπου',
-                'flatbed' => 'Επικαθήμενο Πλατφόρμα',
-                'tipper' => 'Επικαθήμενο Ανατρεπόμενο',
-                'tanker' => 'Επικαθήμενο Βυτίο',
-                'silo' => 'Επικαθήμενο Σιλό',
-                'container' => 'Επικαθήμενο Μεταφοράς Εμπορευματοκιβωτίων',
-                'car_transporter' => 'Επικαθήμενο Μεταφοράς Οχημάτων',
-                'livestock' => 'Επικαθήμενο Μεταφοράς Ζώων',
-                'low_loader' => 'Επικαθήμενο Χαμηλής Κλίνης',
-                'drawbar' => 'Φορτηγό με Ρυμουλκούμενο (συρμός)'
-            ],
-            // Προσθέστε και τις υπόλοιπες κατηγορίες και τύπους
-        ];
+        /*
+         * Παλιά εδώ ζούσε μισός πίνακας ονομάτων (3 από τις 10 κατηγορίες,
+         * με σχόλιο «Προσθέστε και τις υπόλοιπες») — τα ταξί, τα λεωφορεία
+         * και τα υπόλοιπα εμφανίζονταν με τον κωδικό τους. Η μία πηγή
+         * αλήθειας είναι πλέον το VehicleExperienceTypes.
+         */
+        return \Drivejob\Helpers\VehicleExperienceTypes::typeLabel((string) $category, (string) $type);
+    }
 
-        // Επιστροφή του ονόματος αν υπάρχει, αλλιώς επιστρέφουμε τον κωδικό
-        return isset($vehicleTypes[$category][$type]) ? $vehicleTypes[$category][$type] : $type;
+    /**
+     * Προσθέτει ΜΙΑ εγγραφή προϋπηρεσίας. Επιστρέφει το id της ή false.
+     *
+     * Μέρος του νέου μοντέλου «κάθε εγγραφή αποθηκεύεται τη στιγμή της
+     * προσθήκης» — όχι μαζική διαγραφή/επανεγγραφή στο τέλος.
+     */
+    public function addDriverVehicleExperience($driverId, array $exp)
+    {
+        try {
+            $sql = 'INSERT INTO driver_vehicle_experience (
+                driver_id, vehicle_category, vehicle_type, transport_type, employment_type,
+                years, months, days, start_date, end_date, description
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            $stmt = $this->pdo->prepare($sql);
+            $ok = $stmt->execute([
+                $driverId,
+                $exp['vehicle_category'],
+                $exp['vehicle_type'] ?? '',
+                $exp['transport_type'] ?? 'freight',
+                $exp['employment_type'] ?? 'employee',
+                intval($exp['years'] ?? 0),
+                intval($exp['months'] ?? 0),
+                intval($exp['days'] ?? 0),
+                ($exp['start_date'] ?? '') !== '' ? $exp['start_date'] : null,
+                ($exp['end_date'] ?? '') !== '' ? $exp['end_date'] : null,
+                $exp['description'] ?? '',
+            ]);
+
+            return $ok ? (int) $this->pdo->lastInsertId() : false;
+        } catch (PDOException $e) {
+            Logger::error('Error in addDriverVehicleExperience: ' . $e->getMessage(), ['driver_id' => $driverId]);
+            return false;
+        }
+    }
+
+    /**
+     * Διαγράφει ΜΙΑ εγγραφή προϋπηρεσίας — μόνο αν ανήκει στον οδηγό.
+     */
+    public function deleteDriverVehicleExperienceRow($driverId, $rowId): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                'DELETE FROM driver_vehicle_experience WHERE id = ? AND driver_id = ?'
+            );
+            $stmt->execute([(int) $rowId, (int) $driverId]);
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            Logger::error('Error in deleteDriverVehicleExperienceRow: ' . $e->getMessage(), ['driver_id' => $driverId]);
+            return false;
+        }
     }
 
     /**

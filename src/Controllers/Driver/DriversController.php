@@ -219,29 +219,19 @@ class DriversController extends BaseUserController
                 exit();
             }
 
-            $viewData = $this->prepareDriverProfileViewData($driverProfile);
-            $this->calculateExperienceYears($viewData);
+            /*
+             * Νέο μοντέλο (25/08/2026): η σελίδα ΔΕΝ είναι πια μέρος της
+             * μεγάλης φόρμας update-profile. Κάθε εγγραφή αποθηκεύεται τη
+             * στιγμή της προσθήκης (POST /drivers/vehicle-experience) και
+             * διαγράφεται επιτόπου — κανένα «Αποθήκευση Αλλαγών», καμία
+             * αλλαγή σελίδας. Ο πίνακας ζωγραφίζεται από τη βάση.
+             */
+            $rows = $driverProfile['vehicle_experience'] ?? [];
+            $totals = self::vehicleExperienceTotals($rows);
             $pageTitle = 'Προϋπηρεσία σε Οχήματα';
 
-            extract($viewData);
-
             include ROOT_DIR . '/src/Views/partials/header.php';
-            echo '<main class="container"><form method="POST" action="'
-                . BASE_URL . 'drivers/update-profile">';
-            echo \Drivejob\Core\CSRF::tokenField();
             include ROOT_DIR . '/src/Views/drivers/vehicle-experience.php';
-            echo '<div class="form-actions" style="margin:1.5rem 0">'
-                . '<button type="submit" class="btn-primary">Αποθήκευση Αλλαγών</button> '
-                . '<a href="' . BASE_URL . 'drivers/edit-profile" class="btn-secondary">Επιστροφή στο προφίλ</a>'
-                . '</div>';
-            echo '</form></main>';
-            /*
-             * Χωρίς αυτό το script η σελίδα ήταν άψυχη: το «Τύπος Οχήματος»
-             * δεν γέμιζε ποτέ (το γεμίζει το JS όταν αλλάζει το «Είδος
-             * Μεταφοράς») και το κουμπί προσθήκης δεν έκανε τίποτα. Το
-             * αρχείο φορτωνόταν μόνο μέσα από το edit-profile.
-             */
-            echo \Drivejob\Helpers\Asset::js('js/vehicle-experience.js', false);
             include ROOT_DIR . '/src/Views/partials/footer.php';
         } catch (\Exception $e) {
             Logger::error('Error in vehicle experience page', [
@@ -252,6 +242,156 @@ class DriversController extends BaseUserController
             header('Location: ' . BASE_URL . 'drivers/edit-profile');
             exit();
         }
+    }
+
+    /**
+     * POST /drivers/vehicle-experience — προσθήκη ΜΙΑΣ εγγραφής προϋπηρεσίας.
+     *
+     * Αποθηκεύει τη στιγμή που ο χρήστης πατά «Προσθήκη»: επιστρέφει JSON
+     * με τη σωσμένη γραμμή (με ονόματα για εμφάνιση) και τα νέα σύνολα.
+     */
+    public function addVehicleExperience()
+    {
+        AuthMiddleware::hasRole('driver');
+
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            JsonHelper::error('Η φόρμα έληξε. Ανανεώστε τη σελίδα και δοκιμάστε ξανά.');
+        }
+
+        $driverId = Session::get('user_id');
+
+        $category = $this->sanitize($_POST['vehicle_category'] ?? '');
+        $type = $this->sanitize($_POST['vehicle_type'] ?? '');
+        $employment = $this->sanitize($_POST['employment_type'] ?? '');
+        $startDate = $this->sanitizeDate($_POST['start_date'] ?? null);
+        $endDate = $this->sanitizeDate($_POST['end_date'] ?? null);
+        $description = $this->sanitize($_POST['description'] ?? '');
+
+        // Allowlist από τη μία πηγή αλήθειας — όχι ελεύθερες τιμές στη βάση.
+        if (!\Drivejob\Helpers\VehicleExperienceTypes::isValid($category, $type)) {
+            JsonHelper::error('Επιλέξτε τύπο οχήματος από τη λίστα.');
+        }
+        if (!isset(\Drivejob\Helpers\VehicleExperienceTypes::EMPLOYMENT_LABELS[$employment])) {
+            $employment = 'employee';
+        }
+        if (!$startDate) {
+            JsonHelper::error('Συμπληρώστε την ημερομηνία έναρξης.');
+        }
+        if ($startDate > date('Y-m-d')) {
+            JsonHelper::error('Η ημερομηνία έναρξης δεν μπορεί να είναι στο μέλλον.');
+        }
+        if ($endDate && $endDate < $startDate) {
+            JsonHelper::error('Η ημερομηνία λήξης πρέπει να είναι μετά την έναρξη.');
+        }
+
+        // Διάρκεια από τις πραγματικές ημερομηνίες (κενό τέλος = έως σήμερα).
+        $diff = (new \DateTime($startDate))->diff(new \DateTime($endDate ?: date('Y-m-d')));
+
+        $transport = \Drivejob\Helpers\VehicleExperienceTypes::transportOfCategory($category);
+        $skillModel = new \Drivejob\Models\Driver\SkillModel($this->container->get('pdo'));
+        $newId = $skillModel->addDriverVehicleExperience($driverId, [
+            'vehicle_category' => $category,
+            'vehicle_type' => $type,
+            'transport_type' => $transport,
+            'employment_type' => $employment,
+            'years' => $diff->y,
+            'months' => $diff->m,
+            'days' => $diff->d,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'description' => $description,
+        ]);
+
+        if ($newId === false) {
+            JsonHelper::error('Η αποθήκευση απέτυχε. Δοκιμάστε ξανά.');
+        }
+
+        $rows = $skillModel->getDriverVehicleExperience($driverId);
+
+        JsonHelper::success('Η προϋπηρεσία αποθηκεύτηκε.', [
+            'row' => [
+                'id' => $newId,
+                'type_label' => \Drivejob\Helpers\VehicleExperienceTypes::typeLabel($category, $type),
+                'category_label' => \Drivejob\Helpers\VehicleExperienceTypes::categoryLabel($category),
+                'transport_label' => \Drivejob\Helpers\VehicleExperienceTypes::transportLabel($transport),
+                'duration' => self::formatDuration($diff->y, $diff->m, $diff->d),
+                'period' => date('d/m/Y', strtotime($startDate)) . ' — '
+                    . ($endDate ? date('d/m/Y', strtotime($endDate)) : 'σήμερα'),
+            ],
+            'totals' => self::vehicleExperienceTotals($rows),
+        ]);
+    }
+
+    /**
+     * POST /drivers/vehicle-experience/delete/{id} — διαγραφή μίας εγγραφής.
+     */
+    public function deleteVehicleExperience($id)
+    {
+        AuthMiddleware::hasRole('driver');
+
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            JsonHelper::error('Η φόρμα έληξε. Ανανεώστε τη σελίδα και δοκιμάστε ξανά.');
+        }
+
+        $driverId = Session::get('user_id');
+        $skillModel = new \Drivejob\Models\Driver\SkillModel($this->container->get('pdo'));
+
+        if (!$skillModel->deleteDriverVehicleExperienceRow($driverId, (int) $id)) {
+            JsonHelper::error('Η εγγραφή δεν βρέθηκε.');
+        }
+
+        $rows = $skillModel->getDriverVehicleExperience($driverId);
+
+        JsonHelper::success('Η εγγραφή διαγράφηκε.', [
+            'totals' => self::vehicleExperienceTotals($rows),
+        ]);
+    }
+
+    /**
+     * Σύνολα προϋπηρεσίας ανά είδος μεταφοράς + γενικό, με κανονικοποίηση
+     * (30 ημέρες → μήνας, 12 μήνες → έτος).
+     */
+    private static function vehicleExperienceTotals(array $rows): array
+    {
+        $sum = [
+            'freight' => ['y' => 0, 'm' => 0, 'd' => 0],
+            'passenger' => ['y' => 0, 'm' => 0, 'd' => 0],
+        ];
+
+        foreach ($rows as $row) {
+            $key = ($row['transport_type'] ?? 'freight') === 'passenger' ? 'passenger' : 'freight';
+            $sum[$key]['y'] += (int) ($row['years'] ?? 0);
+            $sum[$key]['m'] += (int) ($row['months'] ?? 0);
+            $sum[$key]['d'] += (int) ($row['days'] ?? 0);
+        }
+
+        $normalize = static function (array $t): array {
+            $t['m'] += intdiv($t['d'], 30);
+            $t['d'] %= 30;
+            $t['y'] += intdiv($t['m'], 12);
+            $t['m'] %= 12;
+
+            return $t;
+        };
+
+        $freight = $normalize($sum['freight']);
+        $passenger = $normalize($sum['passenger']);
+        $all = $normalize([
+            'y' => $sum['freight']['y'] + $sum['passenger']['y'],
+            'm' => $sum['freight']['m'] + $sum['passenger']['m'],
+            'd' => $sum['freight']['d'] + $sum['passenger']['d'],
+        ]);
+
+        return [
+            'freight' => self::formatDuration($freight['y'], $freight['m'], $freight['d']),
+            'passenger' => self::formatDuration($passenger['y'], $passenger['m'], $passenger['d']),
+            'all' => self::formatDuration($all['y'], $all['m'], $all['d']),
+        ];
+    }
+
+    private static function formatDuration(int $years, int $months, int $days): string
+    {
+        return sprintf('%d έτη, %d μήνες, %d ημέρες', $years, $months, $days);
     }
 
     /**

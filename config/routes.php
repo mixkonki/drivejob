@@ -116,6 +116,9 @@ $router->group(['prefix' => 'drivers'], function ($router) {
     // Το κουμπί «Διαχείριση Προϋπηρεσίας σε Οχήματα» έδειχνε εδώ, αλλά η
     // διαδρομή δεν υπήρχε ποτέ — ο οδηγός έπαιρνε 404.
     $router->get('/vehicle-experience', [DriversController::class, 'vehicleExperience'])->name('drivers.vehicle-experience');
+    // Άμεση αποθήκευση/διαγραφή ανά εγγραφή — καμία «Αποθήκευση Αλλαγών»
+    $router->post('/vehicle-experience', [DriversController::class, 'addVehicleExperience'])->name('drivers.vehicle-experience.add');
+    $router->post('/vehicle-experience/delete/{id}', [DriversController::class, 'deleteVehicleExperience'])->name('drivers.vehicle-experience.delete');
     $router->post('/change-password', [DriversController::class, 'changePassword'])->name('drivers.change-password');
 
     // Διαδρομές αναζήτησης
