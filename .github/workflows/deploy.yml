@@ -38,14 +38,24 @@ jobs:
           ssh-keyscan -H ssh.gb.stackcp.com >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Ενημέρωση κώδικα στον server
+        # Reset στο ΣΥΓΚΕΚΡΙΜΕΝΟ commit του push (github.sha), όχι στο
+        # origin/main: σε παλιότερα git το «fetch origin main» δεν
+        # ενημερώνει το origin/main, οπότε το reset πετύχαινε…
+        # επαναφέροντας τον ΠΑΛΙΟ κώδικα — πράσινο deploy, μηδέν αλλαγές.
+        # Στο τέλος επιβεβαιώνεται ότι το HEAD είναι όντως το ζητούμενο.
         run: |
-          ssh -i ~/.ssh/deploy_key drivejob.gr@ssh.gb.stackcp.com '
+          ssh -i ~/.ssh/deploy_key drivejob.gr@ssh.gb.stackcp.com "
             set -e
             cd ~/drivejob
             git fetch origin main
-            git reset --hard origin/main
-            echo "Παραγωγή στο commit: $(git rev-parse --short HEAD)"
-          '
+            git reset --hard ${{ github.sha }}
+            ACTUAL=\$(git rev-parse HEAD)
+            if [ \"\$ACTUAL\" != \"${{ github.sha }}\" ]; then
+              echo \"ΣΦΑΛΜΑ: HEAD=\$ACTUAL αντί για ${{ github.sha }}\" >&2
+              exit 1
+            fi
+            echo \"Παραγωγή στο commit: \$(git rev-parse --short HEAD)\"
+          "
 
       - name: Έλεγχος υγείας
         run: |
