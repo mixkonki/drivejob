@@ -43,10 +43,20 @@ jobs:
         # ενημερώνει το origin/main, οπότε το reset πετύχαινε…
         # επαναφέροντας τον ΠΑΛΙΟ κώδικα — πράσινο deploy, μηδέν αλλαγές.
         # Στο τέλος επιβεβαιώνεται ότι το HEAD είναι όντως το ζητούμενο.
-        # ΟΛΑ σε ΜΙΑ γραμμή με && — το SSH του 20i ενώνει τις γραμμές της
-        # εντολής σε μία, οπότε πολυγραμμικά if/then/fi σκάνε με syntax error.
+        # Η ΑΠΟΜΑΚΡΥΣΜΕΝΗ εντολή σε ΜΙΑ γραμμή με && — το SSH του 20i ενώνει
+        # τις γραμμές σε μία, οπότε πολυγραμμικά if/then/fi σκάνε.
+        # 3 προσπάθειες με παύση: το gateway του 20i κλείνει περιστασιακά
+        # τη σύνδεση (rate limiting) πριν την αυθεντικοποίηση.
         run: |
-          ssh -i ~/.ssh/deploy_key drivejob.gr@ssh.gb.stackcp.com "cd ~/drivejob && git fetch origin main && git reset --hard ${{ github.sha }} && test \"\$(git rev-parse HEAD)\" = \"${{ github.sha }}\" && echo \"Παραγωγή στο commit: \$(git rev-parse --short HEAD)\""
+          for i in 1 2 3; do
+            if ssh -o ConnectTimeout=15 -i ~/.ssh/deploy_key drivejob.gr@ssh.gb.stackcp.com "cd ~/drivejob && git fetch origin main && git reset --hard ${{ github.sha }} && test \"\$(git rev-parse HEAD)\" = \"${{ github.sha }}\" && echo \"Παραγωγή στο commit: \$(git rev-parse --short HEAD)\""; then
+              exit 0
+            fi
+            echo "Προσπάθεια $i απέτυχε — νέα προσπάθεια σε 20 δευτερόλεπτα..."
+            sleep 20
+          done
+          echo "Το deploy απέτυχε και στις 3 προσπάθειες" >&2
+          exit 1
 
       - name: Έλεγχος υγείας
         run: |
