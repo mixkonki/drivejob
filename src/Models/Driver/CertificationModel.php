@@ -96,8 +96,44 @@ class CertificationModel extends BaseModel
     }
 
     /**
+     * Προσθέτει ΜΙΑ πιστοποίηση/σεμινάριο. Επιστρέφει το id ή false.
+     *
+     * Μέρος του μοτίβου «αποθήκευση τη στιγμή της προσθήκης» — όχι
+     * μαζική διαγραφή/επανεγγραφή (βλ. addDriverCertifications παραπάνω,
+     * που μένει μόνο για συμβατότητα).
+     */
+    public function addDriverCertification($driverId, array $cert)
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                'INSERT INTO driver_certifications
+                    (driver_id, title, provider, category, transport_type,
+                     date, expiry, duration, description, certificate_file)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            );
+            $ok = $stmt->execute([
+                (int) $driverId,
+                $cert['title'],
+                $cert['provider'] ?? null,
+                $cert['category'] ?? null,
+                $cert['transport_type'] ?? 'both',
+                $cert['date'] ?? null,
+                $cert['expiry'] ?? null,
+                $cert['duration'] ?? null,
+                $cert['description'] ?? null,
+                $cert['certificate_file'] ?? null,
+            ]);
+
+            return $ok ? (int) $this->pdo->lastInsertId() : false;
+        } catch (PDOException $e) {
+            Logger::error('Error in addDriverCertification: ' . $e->getMessage(), ['driver_id' => $driverId]);
+            return false;
+        }
+    }
+
+    /**
      * Ενημερώνει μια πιστοποίηση οδηγού
-     * 
+     *
      * @param int $certificationId ID της πιστοποίησης
      * @param int $driverId ID του οδηγού για επαλήθευση
      * @param array $data Δεδομένα της πιστοποίησης
@@ -118,7 +154,7 @@ class CertificationModel extends BaseModel
 
     /**
      * Διαγράφει μια πιστοποίηση οδηγού
-     * 
+     *
      * @param int $certificationId ID της πιστοποίησης
      * @param int $driverId ID του οδηγού για επαλήθευση
      * @return bool Επιτυχία/αποτυχία
@@ -126,6 +162,27 @@ class CertificationModel extends BaseModel
     public function deleteDriverCertification($certificationId, $driverId)
     {
         return $this->delete(['id' => $certificationId, 'driver_id' => $driverId]);
+    }
+
+    /**
+     * Διαγράφει ΜΙΑ πιστοποίηση και λέει την αλήθεια: true ΜΟΝΟ αν
+     * όντως διαγράφηκε γραμμή. (Η deleteDriverCertification παραπάνω
+     * επιστρέφει true και όταν δεν βρέθηκε τίποτα — το execute()
+     * «πέτυχε», απλώς δεν άγγιξε γραμμές.)
+     */
+    public function deleteDriverCertificationRow($driverId, $rowId): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                'DELETE FROM driver_certifications WHERE id = ? AND driver_id = ?'
+            );
+            $stmt->execute([(int) $rowId, (int) $driverId]);
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            Logger::error('Error in deleteDriverCertificationRow: ' . $e->getMessage(), ['driver_id' => $driverId]);
+            return false;
+        }
     }
 
     // -------------------- ADR ΠΙΣΤΟΠΟΙΗΤΙΚΑ --------------------

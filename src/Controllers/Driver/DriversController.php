@@ -348,6 +348,153 @@ class DriversController extends BaseUserController
         ]);
     }
 
+    /** Θεματολογίες σεμιναρίων/πιστοποιητικών — μία πηγή για UI και έλεγχο. */
+    private const CERT_CATEGORIES = [
+        'road_safety' => 'Οδική ασφάλεια',
+        'tachograph' => 'Ταχογράφος',
+        'loading_securing' => 'Φόρτωση - Πρόσδεση',
+        'technical' => 'Τεχνική επιμόρφωση',
+        'commercial' => 'Εμπορική επιμόρφωση',
+        'procedures' => 'Διαδικασίες',
+        'inspections' => 'Έλεγχοι',
+        'first_aid' => 'Πρώτες βοήθειες',
+        'adr' => 'ADR / Επικίνδυνα φορτία',
+        'other' => 'Άλλο',
+    ];
+
+    private const CERT_TRANSPORT = [
+        'both' => 'Όλες οι μεταφορές',
+        'freight' => 'Εμπορευματικές',
+        'passenger' => 'Επιβατικές',
+    ];
+
+    /**
+     * GET /drivers/certifications — σελίδα σεμιναρίων & πιστοποιητικών.
+     * Ίδιο μοτίβο με την προϋπηρεσία: server-rendered λίστα, άμεση
+     * αποθήκευση ανά εγγραφή, κανένα «Αποθήκευση Αλλαγών».
+     */
+    public function certifications()
+    {
+        AuthMiddleware::hasRole('driver');
+        $driverId = Session::get('user_id');
+
+        try {
+            $certModel = new \Drivejob\Models\Driver\CertificationModel($this->container->get('pdo'));
+            $rows = $certModel->getDriverCertifications($driverId) ?: [];
+            $categories = self::CERT_CATEGORIES;
+            $transports = self::CERT_TRANSPORT;
+            $pageTitle = 'Σεμινάρια & Πιστοποιητικά';
+
+            include ROOT_DIR . '/src/Views/partials/header.php';
+            include ROOT_DIR . '/src/Views/drivers/certifications.php';
+            include ROOT_DIR . '/src/Views/partials/footer.php';
+        } catch (\Exception $e) {
+            Logger::error('Error in certifications page', ['driver_id' => $driverId, 'message' => $e->getMessage()]);
+            Session::set('error_message', 'Υπήρξε ένα σφάλμα. Παρακαλώ δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'drivers/edit-profile');
+            exit();
+        }
+    }
+
+    /** POST /drivers/certifications — προσθήκη ΜΙΑΣ πιστοποίησης (με προαιρετικό αρχείο). */
+    public function addCertification()
+    {
+        AuthMiddleware::hasRole('driver');
+
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            JsonHelper::error('Η φόρμα έληξε. Ανανεώστε τη σελίδα και δοκιμάστε ξανά.');
+        }
+
+        $driverId = Session::get('user_id');
+
+        $title = trim($this->sanitize($_POST['title'] ?? ''));
+        $provider = trim($this->sanitize($_POST['provider'] ?? ''));
+        $category = $_POST['category'] ?? '';
+        $transport = $_POST['transport_type'] ?? 'both';
+        $date = $this->sanitizeDate($_POST['date'] ?? null);
+        $expiry = $this->sanitizeDate($_POST['expiry'] ?? null);
+        $duration = ($_POST['duration'] ?? '') !== '' ? max(0, (int) $_POST['duration']) : null;
+        $description = trim($this->sanitize($_POST['description'] ?? ''));
+
+        if ($title === '' || mb_strlen($title) > 255) {
+            JsonHelper::error('Συμπληρώστε τον τίτλο της πιστοποίησης (έως 255 χαρακτήρες).');
+        }
+        if ($category !== '' && !isset(self::CERT_CATEGORIES[$category])) {
+            JsonHelper::error('Επιλέξτε θεματολογία από τη λίστα.');
+        }
+        if (!isset(self::CERT_TRANSPORT[$transport])) {
+            $transport = 'both';
+        }
+        if ($date && $expiry && $expiry < $date) {
+            JsonHelper::error('Η λήξη πρέπει να είναι μετά την ημερομηνία απόκτησης.');
+        }
+
+        // Προαιρετικό αρχείο βεβαίωσης — μέσω του υπάρχοντος FileService
+        // (έλεγχος MIME/μεγέθους, αποθήκευση στο storage/uploads/certificates).
+        $filePath = null;
+        if (!empty($_FILES['certificate_file']) && $_FILES['certificate_file']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $fileService = new \Drivejob\Services\FileService();
+            $result = $fileService->uploadFile($_FILES['certificate_file'], 'certificate_file', 'all');
+            if (empty($result['success'])) {
+                JsonHelper::error('Το αρχείο δεν ανέβηκε: ' . ($result['message'] ?? 'άγνωστο σφάλμα'));
+            }
+            $filePath = $result['file_path'];
+        }
+
+        $certModel = new \Drivejob\Models\Driver\CertificationModel($this->container->get('pdo'));
+        $newId = $certModel->addDriverCertification($driverId, [
+            'title' => $title,
+            'provider' => $provider !== '' ? $provider : null,
+            'category' => $category !== '' ? $category : null,
+            'transport_type' => $transport,
+            'date' => $date,
+            'expiry' => $expiry,
+            'duration' => $duration,
+            'description' => $description !== '' ? $description : null,
+            'certificate_file' => $filePath,
+        ]);
+
+        if ($newId === false) {
+            JsonHelper::error('Η αποθήκευση απέτυχε. Δοκιμάστε ξανά.');
+        }
+
+        $expired = $expiry !== null && $expiry < date('Y-m-d');
+
+        JsonHelper::success('Η πιστοποίηση αποθηκεύτηκε.', [
+            'row' => [
+                'id' => $newId,
+                'title' => $title,
+                'provider' => $provider,
+                'category_label' => $category !== '' ? self::CERT_CATEGORIES[$category] : '',
+                'transport_label' => self::CERT_TRANSPORT[$transport],
+                'date' => $date ? date('d/m/Y', strtotime($date)) : '',
+                'expiry' => $expiry ? date('d/m/Y', strtotime($expiry)) : '',
+                'expired' => $expired,
+                'duration' => $duration,
+                'file_url' => $filePath ? BASE_URL . $filePath : null,
+            ],
+        ]);
+    }
+
+    /** POST /drivers/certifications/delete/{id} — διαγραφή μίας πιστοποίησης. */
+    public function deleteCertification($id)
+    {
+        AuthMiddleware::hasRole('driver');
+
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            JsonHelper::error('Η φόρμα έληξε. Ανανεώστε τη σελίδα και δοκιμάστε ξανά.');
+        }
+
+        $driverId = Session::get('user_id');
+        $certModel = new \Drivejob\Models\Driver\CertificationModel($this->container->get('pdo'));
+
+        if (!$certModel->deleteDriverCertificationRow($driverId, (int) $id)) {
+            JsonHelper::error('Η εγγραφή δεν βρέθηκε.');
+        }
+
+        JsonHelper::success('Η πιστοποίηση διαγράφηκε.');
+    }
+
     /** Ετικέτες επιπέδων γλώσσας — μία πηγή για UI και JSON. */
     private const LANGUAGE_LEVELS = [
         'native' => 'Μητρική Γλώσσα',

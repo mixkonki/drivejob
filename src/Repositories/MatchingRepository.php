@@ -145,9 +145,13 @@ class MatchingRepository extends BaseRepository implements MatchingRepositoryInt
 
             // Προσθήκη του LIMIT και OFFSET
             $offset = ($page - 1) * $limit;
-            $query .= " LIMIT :limit OFFSET :offset";
-            $params['limit'] = $limit;
-            $params['offset'] = $offset;
+            /*
+             * LIMIT/OFFSET ΔΕΝ γίνονται named params: το PDO τα δένει ως
+             * κείμενο ('5' OFFSET '0') και η MariaDB απορρίπτει το ερώτημα
+             * — το ταίριασμα σκοτωνόταν σε ΚΑΘΕ φόρτωση προφίλ (φαινόταν
+             * μόνο στα logs). Ασφαλές ως άμεση παρεμβολή: μόνο ακέραιοι.
+             */
+            $query .= ' LIMIT ' . max(1, (int) $limit) . ' OFFSET ' . max(0, (int) $offset);
 
             // Εκτέλεση του ερωτήματος
             $results = $this->query($query, $params);
@@ -231,9 +235,13 @@ class MatchingRepository extends BaseRepository implements MatchingRepositoryInt
 
             // Προσθήκη του LIMIT και OFFSET
             $offset = ($page - 1) * $limit;
-            $query .= " LIMIT :limit OFFSET :offset";
-            $params['limit'] = $limit;
-            $params['offset'] = $offset;
+            /*
+             * LIMIT/OFFSET ΔΕΝ γίνονται named params: το PDO τα δένει ως
+             * κείμενο ('5' OFFSET '0') και η MariaDB απορρίπτει το ερώτημα
+             * — το ταίριασμα σκοτωνόταν σε ΚΑΘΕ φόρτωση προφίλ (φαινόταν
+             * μόνο στα logs). Ασφαλές ως άμεση παρεμβολή: μόνο ακέραιοι.
+             */
+            $query .= ' LIMIT ' . max(1, (int) $limit) . ' OFFSET ' . max(0, (int) $offset);
 
             // Εκτέλεση του ερωτήματος
             $results = $this->query($query, $params);
@@ -332,9 +340,13 @@ class MatchingRepository extends BaseRepository implements MatchingRepositoryInt
 
             // Προσθήκη του LIMIT και OFFSET
             $offset = ($page - 1) * $limit;
-            $query .= " LIMIT :limit OFFSET :offset";
-            $params['limit'] = $limit;
-            $params['offset'] = $offset;
+            /*
+             * LIMIT/OFFSET ΔΕΝ γίνονται named params: το PDO τα δένει ως
+             * κείμενο ('5' OFFSET '0') και η MariaDB απορρίπτει το ερώτημα
+             * — το ταίριασμα σκοτωνόταν σε ΚΑΘΕ φόρτωση προφίλ (φαινόταν
+             * μόνο στα logs). Ασφαλές ως άμεση παρεμβολή: μόνο ακέραιοι.
+             */
+            $query .= ' LIMIT ' . max(1, (int) $limit) . ' OFFSET ' . max(0, (int) $offset);
 
             // Εκτέλεση του ερωτήματος
             $results = $this->query($query, $params);
@@ -438,9 +450,13 @@ class MatchingRepository extends BaseRepository implements MatchingRepositoryInt
 
             // Προσθήκη του LIMIT και OFFSET
             $offset = ($page - 1) * $limit;
-            $query .= " LIMIT :limit OFFSET :offset";
-            $params['limit'] = $limit;
-            $params['offset'] = $offset;
+            /*
+             * LIMIT/OFFSET ΔΕΝ γίνονται named params: το PDO τα δένει ως
+             * κείμενο ('5' OFFSET '0') και η MariaDB απορρίπτει το ερώτημα
+             * — το ταίριασμα σκοτωνόταν σε ΚΑΘΕ φόρτωση προφίλ (φαινόταν
+             * μόνο στα logs). Ασφαλές ως άμεση παρεμβολή: μόνο ακέραιοι.
+             */
+            $query .= ' LIMIT ' . max(1, (int) $limit) . ' OFFSET ' . max(0, (int) $offset);
 
             // Εκτέλεση του ερωτήματος
             $results = $this->query($query, $params);
@@ -741,9 +757,13 @@ class MatchingRepository extends BaseRepository implements MatchingRepositoryInt
 
             // Προσθήκη του LIMIT και OFFSET
             $offset = ($page - 1) * $limit;
-            $query .= " LIMIT :limit OFFSET :offset";
-            $params['limit'] = $limit;
-            $params['offset'] = $offset;
+            /*
+             * LIMIT/OFFSET ΔΕΝ γίνονται named params: το PDO τα δένει ως
+             * κείμενο ('5' OFFSET '0') και η MariaDB απορρίπτει το ερώτημα
+             * — το ταίριασμα σκοτωνόταν σε ΚΑΘΕ φόρτωση προφίλ (φαινόταν
+             * μόνο στα logs). Ασφαλές ως άμεση παρεμβολή: μόνο ακέραιοι.
+             */
+            $query .= ' LIMIT ' . max(1, (int) $limit) . ' OFFSET ' . max(0, (int) $offset);
 
             // Εκτέλεση του ερωτήματος
             $results = $this->query($query, $params);
@@ -786,9 +806,13 @@ class MatchingRepository extends BaseRepository implements MatchingRepositoryInt
 
             // Προσθήκη του LIMIT και OFFSET
             $offset = ($page - 1) * $limit;
-            $query .= " LIMIT :limit OFFSET :offset";
-            $params['limit'] = $limit;
-            $params['offset'] = $offset;
+            /*
+             * LIMIT/OFFSET ΔΕΝ γίνονται named params: το PDO τα δένει ως
+             * κείμενο ('5' OFFSET '0') και η MariaDB απορρίπτει το ερώτημα
+             * — το ταίριασμα σκοτωνόταν σε ΚΑΘΕ φόρτωση προφίλ (φαινόταν
+             * μόνο στα logs). Ασφαλές ως άμεση παρεμβολή: μόνο ακέραιοι.
+             */
+            $query .= ' LIMIT ' . max(1, (int) $limit) . ' OFFSET ' . max(0, (int) $offset);
 
             // Εκτέλεση του ερωτήματος
             $results = $this->query($query, $params);

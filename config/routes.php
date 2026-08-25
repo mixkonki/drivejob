@@ -121,6 +121,11 @@ $router->group(['prefix' => 'drivers'], function ($router) {
     $router->post('/vehicle-experience/delete/{id}', [DriversController::class, 'deleteVehicleExperience'])->name('drivers.vehicle-experience.delete');
     $router->post('/languages', [DriversController::class, 'addLanguage'])->name('drivers.languages.add');
     $router->post('/languages/delete/{id}', [DriversController::class, 'deleteLanguage'])->name('drivers.languages.delete');
+    // Σεμινάρια & πιστοποιητικά εκπαίδευσης — το κουμπί «Διαχείριση
+    // Πιστοποιητικών» έδειχνε εδώ από καιρό, αλλά η διαδρομή δεν υπήρχε (404).
+    $router->get('/certifications', [DriversController::class, 'certifications'])->name('drivers.certifications');
+    $router->post('/certifications', [DriversController::class, 'addCertification'])->name('drivers.certifications.add');
+    $router->post('/certifications/delete/{id}', [DriversController::class, 'deleteCertification'])->name('drivers.certifications.delete');
     $router->post('/change-password', [DriversController::class, 'changePassword'])->name('drivers.change-password');
 
     // Διαδρομές αναζήτησης
