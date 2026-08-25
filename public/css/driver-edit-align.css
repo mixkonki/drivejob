@@ -91,7 +91,38 @@ main .container > h1 {
 }
 
 /* ── 4. Πεδία φόρμας ─────────────────────────────────────────────────── */
-.edit-profile-form .form-group { margin-bottom: .85rem; }
+.edit-profile-form .form-group {
+    margin-bottom: .85rem;
+    /* Παλιό CSS έδινε padding 15px σε κάποια form-group (π.χ. Email) —
+       τα έκανε να φαίνονται «μετατοπισμένα» σε σχέση με τα υπόλοιπα. */
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Προσαρμοστικό πλέγμα: κάθε .form-row γεμίζει 2-3 στήλες όταν χωράει η
+   οθόνη (κάθε στήλη τουλάχιστον 220px) και διπλώνει ΜΟΝΟ ΤΟΥ σε μία στο
+   κινητό — χωρίς media query, το auto-fit κάνει όλη τη δουλειά.
+   Απάντηση στο «όχι ένα κατεβατό» (25/08). */
+.edit-profile-form .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: .2rem .9rem;
+    margin-bottom: 0;
+}
+
+/* Μέσα στο πλέγμα το κάθετο ρυθμό τον δίνει το gap+form-group, όχι διπλά
+   περιθώρια· τα label/inputs ευθυγραμμίζονται στην κορυφή του κελιού. */
+.edit-profile-form .form-row > .form-group {
+    margin-bottom: .85rem;
+    min-width: 0; /* αλλιώς ένα μακρύ placeholder σπάει το πλέγμα */
+}
+
+/* Σειρά διεύθυνσης: η οδός παίρνει το διπλάσιο πλάτος από αριθμό/ΤΚ,
+   όλα σε ΜΙΑ γραμμή στο desktop. Στο κινητό γυρίζει σε μία στήλη
+   (κανόνας στο mobile block). */
+.edit-profile-form .form-row.addr-row {
+    grid-template-columns: 2fr 1fr 1fr;
+}
 
 .edit-profile-form .form-group label {
     display: block;
@@ -186,7 +217,8 @@ main .container > h1 {
     position: sticky;
     bottom: 0;
     z-index: 30;
-    background: rgba(255, 255, 255, .97);
+    background: #fff; /* ΣΥΜΠΑΓΕΣ — το rgba(.97) φαινόταν σαν σφάλμα
+                         διαφάνειας πάνω από τα πεδία (feedback 25/08) */
     border-top: 1px solid #e5e7eb;
     border-radius: 10px 10px 0 0;
     padding: .75rem 1.2rem;
@@ -273,12 +305,22 @@ main .container > h1 {
     .tabs-nav::-webkit-scrollbar { display: none; }
     .tab-btn { padding: .65rem .8rem; font-size: .85rem; }
 
-    /* Δίστηλα → μονόστηλα */
-    .edit-profile-form .form-row,
+    /* Δίστηλα → μονόστηλα. Τα .form-row ΔΕΝ χρειάζονται εδώ:
+       το grid auto-fit διπλώνει μόνο του κάτω από τα 220px/στήλη. */
     .edit-profile-form .skills-row,
     .edit-profile-form .crt-two { display: block; }
-    .edit-profile-form .form-row > .form-group,
     .edit-profile-form .skills-column { width: 100%; margin-bottom: .85rem; }
+
+    /* Η σειρά διεύθυνσης έχει ρητό template — εδώ διπλώνει χειροκίνητα */
+    .edit-profile-form .form-row.addr-row { grid-template-columns: 1fr; }
+
+    /* Οι 3 μετρητές προϋπηρεσίας: στοίβα αντί για 3 στριμωγμένες στήλες */
+    .edit-profile-form .experience-display { flex-direction: column; gap: .6rem; }
+    .edit-profile-form .experience-display .experience-column {
+        border-left: 0 !important;
+        border-right: 0 !important;
+        padding: 0 !important;
+    }
 
     .edit-profile-form .form-section { padding: .9rem .9rem; }
 

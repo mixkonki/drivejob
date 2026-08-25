@@ -108,9 +108,10 @@
 
 
 
-                        <!-- Τρεις στήλες για τα έγγραφα -->
-                        <div class="documents-row" style="display: flex; flex-wrap: nowrap; margin-right: -15px; margin-left: -15px; margin-top: 20px;">
-                            <div class="document-column" style="flex: 1; max-width: 33.33%; padding-right: 15px; padding-left: 15px; position: relative;">
+                        <?php /* Έγγραφα: ίδιο προσαρμοστικό πλέγμα με τις υπόλοιπες σειρές —
+                           το παλιό inline flex-nowrap στρίμωχνε 3 στήλες και στο κινητό. */ ?>
+                        <div class="form-row documents-row">
+                            <div class="document-column">
                                 <div class="form-group">
                                     <label for="profile_image">Φωτογραφία Προφίλ</label>
                                     <?php if (isset($driverData['profile_image']) && $driverData['profile_image']) : ?>
@@ -124,7 +125,7 @@
                                 </div>
                             </div>
 
-                            <div class="document-column" style="flex: 1; max-width: 33.33%; padding-right: 15px; padding-left: 15px; position: relative;">
+                            <div class="document-column">
                                 <div class="form-group">
                                     <label for="resume_file">Βιογραφικό</label>
                                     <?php if (isset($driverData['resume_file']) && $driverData['resume_file']) : ?>
@@ -137,7 +138,7 @@
                                 </div>
                             </div>
 
-                            <div class="document-column" style="flex: 1; max-width: 33.33%; padding-right: 15px; padding-left: 15px; position: relative;">
+                            <div class="document-column">
                                 <div class="form-group">
                                     <label>Ποινικό Μητρώο</label>
                                     <label class="checkbox-inline" style="display:block; margin-top:8px;">

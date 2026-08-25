@@ -3,17 +3,21 @@
                     <div class="tab-pane" id="contact-info">
                         <h2>Στοιχεία Επικοινωνίας</h2>
 
-                        <div class="form-group <?php echo isset($errors['phone']) ? 'has-error' : ''; ?>">
-                            <label for="phone">Κινητό Τηλέφωνο</label>
-                            <input type="tel" id="phone" name="phone" value="<?php echo old('phone', $driverData['phone'] ?? ''); ?>" required>
-                            <?php if (isset($errors['phone'])) : ?>
-                                <div class="error-message"><?php echo $errors['phone']; ?></div>
-                            <?php endif; ?>
-                        </div>
+                        <?php /* Προσαρμοστικό πλέγμα (25/08): συγγενικά πεδία στην ίδια
+                           .form-row — 2-3 στήλες όταν χωράει η οθόνη, μία στο κινητό. */ ?>
+                        <div class="form-row">
+                            <div class="form-group <?php echo isset($errors['phone']) ? 'has-error' : ''; ?>">
+                                <label for="phone">Κινητό Τηλέφωνο</label>
+                                <input type="tel" id="phone" name="phone" value="<?php echo old('phone', $driverData['phone'] ?? ''); ?>" required>
+                                <?php if (isset($errors['phone'])) : ?>
+                                    <div class="error-message"><?php echo $errors['phone']; ?></div>
+                                <?php endif; ?>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="landline">Σταθερό Τηλέφωνο</label>
-                            <input type="tel" id="landline" name="landline" value="<?php echo old('landline', $driverData['landline'] ?? ''); ?>">
+                            <div class="form-group">
+                                <label for="landline">Σταθερό Τηλέφωνο</label>
+                                <input type="tel" id="landline" name="landline" value="<?php echo old('landline', $driverData['landline'] ?? ''); ?>">
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -22,12 +26,12 @@
                             <p class="form-hint">Το email δεν μπορεί να αλλάξει. Επικοινωνήστε με τη διαχείριση για αλλαγή email.</p>
                         </div>
 
-                        <div class="form-group">
-                            <label for="address">Διεύθυνση</label>
-                            <input type="text" id="address" name="address" value="<?php echo old('address', $driverData['address'] ?? ''); ?>">
-                        </div>
+                        <div class="form-row addr-row">
+                            <div class="form-group">
+                                <label for="address">Διεύθυνση</label>
+                                <input type="text" id="address" name="address" value="<?php echo old('address', $driverData['address'] ?? ''); ?>">
+                            </div>
 
-                        <div class="form-row">
                             <div class="form-group">
                                 <label for="house_number">Αριθμός</label>
                                 <input type="text" id="house_number" name="house_number" value="<?php echo old('house_number', $driverData['house_number'] ?? ''); ?>">
@@ -92,44 +96,48 @@
                         <hr class="section-divider">
                         <h3>Μέσα Κοινωνικής Δικτύωσης</h3>
 
-                        <div class="form-group">
-                            <label for="social_linkedin">LinkedIn</label>
-                            <input type="url" id="social_linkedin" name="social_linkedin" value="<?php echo old('social_linkedin', $driverData['social_linkedin'] ?? ''); ?>" placeholder="https://www.linkedin.com/in/yourprofile">
-                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="social_linkedin">LinkedIn</label>
+                                <input type="url" id="social_linkedin" name="social_linkedin" value="<?php echo old('social_linkedin', $driverData['social_linkedin'] ?? ''); ?>" placeholder="https://www.linkedin.com/in/yourprofile">
+                            </div>
 
-                        <div class="form-group">
-                            <label for="social_facebook">Facebook</label>
-                            <input type="url" id="social_facebook" name="social_facebook" value="<?php echo old('social_facebook', $driverData['social_facebook'] ?? ''); ?>" placeholder="https://www.facebook.com/yourprofile">
-                        </div>
+                            <div class="form-group">
+                                <label for="social_facebook">Facebook</label>
+                                <input type="url" id="social_facebook" name="social_facebook" value="<?php echo old('social_facebook', $driverData['social_facebook'] ?? ''); ?>" placeholder="https://www.facebook.com/yourprofile">
+                            </div>
 
-                        <div class="form-group">
-                            <label for="social_twitter">Twitter/X</label>
-                            <input type="url" id="social_twitter" name="social_twitter" value="<?php echo old('social_twitter', $driverData['social_twitter'] ?? ''); ?>" placeholder="https://twitter.com/yourusername">
-                        </div>
+                            <div class="form-group">
+                                <label for="social_twitter">Twitter/X</label>
+                                <input type="url" id="social_twitter" name="social_twitter" value="<?php echo old('social_twitter', $driverData['social_twitter'] ?? ''); ?>" placeholder="https://twitter.com/yourusername">
+                            </div>
 
-                        <div class="form-group">
-                            <label for="social_instagram">Instagram</label>
-                            <input type="url" id="social_instagram" name="social_instagram" value="<?php echo old('social_instagram', $driverData['social_instagram'] ?? ''); ?>" placeholder="https://www.instagram.com/yourusername">
+                            <div class="form-group">
+                                <label for="social_instagram">Instagram</label>
+                                <input type="url" id="social_instagram" name="social_instagram" value="<?php echo old('social_instagram', $driverData['social_instagram'] ?? ''); ?>" placeholder="https://www.instagram.com/yourusername">
+                            </div>
                         </div>
 
                         <hr class="section-divider">
                         <h3>Αλλαγή Κωδικού Πρόσβασης</h3>
                         <p class="form-hint">Αφήστε τα πεδία κενά αν δεν επιθυμείτε να αλλάξετε τον κωδικό σας.</p>
 
-                        <div class="form-group">
-                            <label for="current_password">Τρέχων Κωδικός</label>
-                            <input type="password" id="current_password" name="current_password">
-                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="current_password">Τρέχων Κωδικός</label>
+                                <input type="password" id="current_password" name="current_password">
+                            </div>
 
-                        <div class="form-group">
-                            <label for="new_password">Νέος Κωδικός</label>
-                            <input type="password" id="new_password" name="new_password">
-                            <div id="password-strength" class="password-strength"></div>
-                        </div>
+                            <div class="form-group">
+                                <label for="new_password">Νέος Κωδικός</label>
+                                <input type="password" id="new_password" name="new_password">
+                                <div id="password-strength" class="password-strength"></div>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="confirm_password">Επιβεβαίωση Νέου Κωδικού</label>
-                            <input type="password" id="confirm_password" name="confirm_password">
+                            <div class="form-group">
+                                <label for="confirm_password">Επιβεβαίωση Νέου Κωδικού</label>
+                                <input type="password" id="confirm_password" name="confirm_password">
+                            </div>
                         </div>
                     </div>
 
