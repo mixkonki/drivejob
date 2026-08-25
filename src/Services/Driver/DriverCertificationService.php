@@ -23,6 +23,54 @@ class DriverCertificationService
         $this->profileModel = new ProfileModel($pdo);
     }
 
+    /** Όλες οι στήλες-δεξιότητες του πίνακα driver_skills. */
+    public const SKILL_FIELDS = [
+        // Οδηγικές Ικανότητες
+        'defensive_driving', 'eco_driving', 'night_driving', 'mountain_driving',
+        'extreme_conditions', 'precision_handling',
+        // Ασφάλεια & Συμμόρφωση
+        'loading_securing', 'emergency_response', 'first_aid', 'dangerous_goods',
+        'tacograph_compliance', 'fire_safety', 'vehicle_inspection',
+        // Επαγγελματισμός
+        'customer_service', 'time_management', 'route_planning', 'conflict_resolution',
+        'multilingual', 'report_writing', 'inspection_behavior', 'border_crossing',
+        // Τεχνικές Γνώσεις
+        'vehicle_maintenance', 'troubleshooting', 'digital_tachograph', 'gps_systems',
+        'logistics_software', 'technical_terms', 'equipment_handling', 'checklists_usage',
+    ];
+
+    /**
+     * Αποθηκεύει ΜΟΝΟ τα checkboxes δεξιοτήτων (καρτέλα «Δεξιότητες»).
+     *
+     * Εστιασμένη μέθοδος (25/08/2026): η μεγάλη updateSkills() δεν
+     * καλούνταν ΠΟΤΕ από τη ροή αποθήκευσης — δεξιότητες, γλώσσες και
+     * σεμινάρια πετιούνταν σιωπηλά. Ο controller την καλεί ΜΟΝΟ όταν η
+     * φόρμα δηλώνει την καρτέλα (skills_submitted), ώστε ένα POST χωρίς
+     * την καρτέλα να μη μηδενίζει ό,τι υπάρχει.
+     */
+    public function updateSkillCheckboxes($driverId, array $post): bool
+    {
+        $skillsData = array_fill_keys(self::SKILL_FIELDS, 0);
+
+        foreach ((array) ($post['skills'] ?? []) as $skill => $value) {
+            if (array_key_exists($skill, $skillsData)) {
+                $skillsData[$skill] = 1;
+            }
+        }
+
+        // Σημάνσεις «μόνο για εμπορευματικές» — ίδια σημασιολογία με πριν.
+        $freightOnly = $post['freight_only'] ?? null;
+        if (is_array($freightOnly)) {
+            $skillsData['freight_only_loading'] = isset($freightOnly['loading_securing']) ? 1 : 0;
+            $skillsData['freight_only_dangerous'] = isset($freightOnly['dangerous_goods']) ? 1 : 0;
+        } else {
+            $skillsData['freight_only_loading'] = 1;
+            $skillsData['freight_only_dangerous'] = 1;
+        }
+
+        return (bool) $this->skillModel->updateDriverSkills($driverId, $skillsData);
+    }
+
     /**
      * Ενημερώνει τις δεξιότητες και τις πιστοποιήσεις του οδηγού
      *

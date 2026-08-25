@@ -597,6 +597,20 @@ class DriversController extends BaseUserController
                     }
                 }
 
+                /*
+                 * Δεξιότητες (checkboxes) — ΜΟΝΟ όταν η καρτέλα ήρθε
+                 * (skills_submitted). Χωρίς τον φρουρό, ένα POST χωρίς την
+                 * καρτέλα θα μηδένιζε όλες τις δεξιότητες: unchecked
+                 * checkbox και απών checkbox μοιάζουν ολόιδια στο POST.
+                 */
+                if (isset($_POST['skills_submitted'])) {
+                    $certService = new \Drivejob\Services\Driver\DriverCertificationService($this->container->get('pdo'));
+                    if (!$certService->updateSkillCheckboxes($driverId, $_POST)) {
+                        Logger::error('Skill checkboxes update failed', ['driver_id' => $driverId]);
+                        Session::set('warning_message', 'Το προφίλ αποθηκεύτηκε, αλλά οι δεξιότητες δεν ενημερώθηκαν.');
+                    }
+                }
+
                 Session::set('success_message', 'Το προφίλ σας ενημερώθηκε με επιτυχία.');
 
                 // Trigger event hook για profile update
@@ -963,6 +977,50 @@ class DriversController extends BaseUserController
             }
 
             $data[$field] = $value;
+        }
+
+        /*
+         * Γλωσσικές ικανότητες: η φόρμα στέλνει languages[greek] κ.λπ.,
+         * η βάση έχει στήλες language_greek κ.λπ. Η αντιστοίχιση ΔΕΝ
+         * υπήρχε πουθενά στη ροή αποθήκευσης — τα επίπεδα γλωσσών
+         * πετιούνταν σιωπηλά (25/08/2026). Γράφονται ΜΟΝΟ όταν η
+         * ενότητα ήρθε στο POST, κατά τον κανόνα παραπάνω. Τα select
+         * στέλνονται πάντα (και με κενή τιμή = «Δεν γνωρίζω»), οπότε
+         * το κενό εδώ είναι συνειδητή επιλογή, όχι απουσία.
+         */
+        if (isset($_POST['languages']) && is_array($_POST['languages'])) {
+            $langs = $_POST['languages'];
+
+            /*
+             * Οι στήλες είναι ENUM('native','fluent','good','basic') — το
+             * κενό «Δεν γνωρίζω» ΔΕΝ είναι έγκυρη τιμή ENUM και με
+             * STRICT_TRANS_TABLES η MariaDB απορρίπτει ΟΛΟΚΛΗΡΟ το UPDATE
+             * (Data truncated), σιωπηλά για τον χρήστη — ίδιο μοτίβο με
+             * το seasonal στα job_type. Λίστα επιτρεπτών, κενό → NULL.
+             */
+            $level = static function ($v) {
+                return in_array($v, ['native', 'fluent', 'good', 'basic'], true) ? $v : null;
+            };
+
+            foreach (['greek', 'english', 'german', 'french', 'italian'] as $langKey) {
+                if (!array_key_exists($langKey, $langs)) {
+                    continue;
+                }
+                $value = $level($langs[$langKey]);
+                // Το language_greek είναι NOT NULL — το «Δεν γνωρίζω» εκεί
+                // σημαίνει «μην το αγγίξεις», όχι NULL.
+                if ($langKey === 'greek' && $value === null) {
+                    continue;
+                }
+                $data['language_' . $langKey] = $value;
+            }
+            if (array_key_exists('other_name', $langs)) {
+                $name = trim($this->sanitize($langs['other_name']));
+                $data['language_other_name'] = ($name !== '') ? $name : null;
+            }
+            if (array_key_exists('other_level', $langs)) {
+                $data['language_other_level'] = $level($langs['other_level']);
+            }
         }
 
         return $data;
