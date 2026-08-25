@@ -43,19 +43,10 @@ jobs:
         # ενημερώνει το origin/main, οπότε το reset πετύχαινε…
         # επαναφέροντας τον ΠΑΛΙΟ κώδικα — πράσινο deploy, μηδέν αλλαγές.
         # Στο τέλος επιβεβαιώνεται ότι το HEAD είναι όντως το ζητούμενο.
+        # ΟΛΑ σε ΜΙΑ γραμμή με && — το SSH του 20i ενώνει τις γραμμές της
+        # εντολής σε μία, οπότε πολυγραμμικά if/then/fi σκάνε με syntax error.
         run: |
-          ssh -i ~/.ssh/deploy_key drivejob.gr@ssh.gb.stackcp.com "
-            set -e
-            cd ~/drivejob
-            git fetch origin main
-            git reset --hard ${{ github.sha }}
-            ACTUAL=\$(git rev-parse HEAD)
-            if [ \"\$ACTUAL\" != \"${{ github.sha }}\" ]; then
-              echo \"ΣΦΑΛΜΑ: HEAD=\$ACTUAL αντί για ${{ github.sha }}\" >&2
-              exit 1
-            fi
-            echo \"Παραγωγή στο commit: \$(git rev-parse --short HEAD)\"
-          "
+          ssh -i ~/.ssh/deploy_key drivejob.gr@ssh.gb.stackcp.com "cd ~/drivejob && git fetch origin main && git reset --hard ${{ github.sha }} && test \"\$(git rev-parse HEAD)\" = \"${{ github.sha }}\" && echo \"Παραγωγή στο commit: \$(git rev-parse --short HEAD)\""
 
       - name: Έλεγχος υγείας
         run: |
