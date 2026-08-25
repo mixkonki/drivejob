@@ -20,12 +20,12 @@
                                 <label for="landline">Σταθερό Τηλέφωνο</label>
                                 <input type="tel" id="landline" name="landline" value="<?php echo old('landline', $driverData['landline'] ?? ''); ?>">
                             </div>
-                        </div>
 
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" value="<?php echo $driverData['email'] ?? ''; ?>" readonly>
-                            <p class="form-hint">Το email δεν μπορεί να αλλάξει. Επικοινωνήστε με τη διαχείριση για αλλαγή email.</p>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" value="<?php echo $driverData['email'] ?? ''; ?>" readonly>
+                                <p class="form-hint">Δεν αλλάζει — επικοινωνήστε με τη διαχείριση.</p>
+                            </div>
                         </div>
 
                         <div class="form-row addr-row">

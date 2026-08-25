@@ -3,6 +3,33 @@
                     <div class="tab-pane active" id="personal-info">
                         <h2>Προσωπικά Στοιχεία</h2>
 
+                        <?php /* 25/08: hero με κλικαμπλ avatar (ανέβασμα με ένα κλικ) +
+                           πεδία σε 3 στήλες. Τα «Έτη Εμπειρίας» έφυγαν (ανήκουν στην
+                           Προϋπηρεσία), το βιογραφικό-αρχείο αφαιρέθηκε (το προφίλ
+                           ΕΙΝΑΙ το βιογραφικό — έρχεται εξαγωγή PDF). */ ?>
+                        <div class="profile-hero">
+                            <div class="avatar-block">
+                                <label class="avatar-upload" for="profile_image" title="Αλλαγή φωτογραφίας προφίλ">
+                                    <?php $hasAvatar = !empty($driverData['profile_image']); ?>
+                                    <?php /* Και τα δύο πάντα στο DOM: αν η εικόνα λείπει ή
+                                       σπάσει (onerror), φαίνεται το placeholder — ποτέ
+                                       «σπασμένο εικονίδιο» μέσα στον κύκλο. */ ?>
+                                    <img id="avatarPreview"
+                                         src="<?php echo $hasAvatar ? BASE_URL . htmlspecialchars($driverData['profile_image']) : ''; ?>"
+                                         alt="Φωτογραφία προφίλ"
+                                         <?php echo $hasAvatar ? '' : 'style="display:none;"'; ?>
+                                         onerror="this.style.display='none';var p=document.getElementById('avatarPlaceholder');if(p)p.style.display='';">
+                                    <svg id="avatarPlaceholder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" <?php echo $hasAvatar ? 'style="display:none;"' : ''; ?>><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    <span class="avatar-overlay">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                        Αλλαγή
+                                    </span>
+                                </label>
+                                <input type="file" id="profile_image" name="profile_image" accept="image/jpeg, image/png, image/gif" class="avatar-file-input">
+                                <p class="avatar-hint">JPEG/PNG/GIF έως 2MB</p>
+                            </div>
+
+                            <div class="profile-hero-fields">
                         <div class="form-row">
                             <div class="form-group <?php echo isset($errors['first_name']) ? 'has-error' : ''; ?>">
                                 <label for="first_name">Όνομα</label>
@@ -19,15 +46,15 @@
                                     <div class="error-message"><?php echo $errors['last_name']; ?></div>
                                 <?php endif; ?>
                             </div>
-                        </div>
 
-                        <div class="form-row">
                             <div class="form-group">
                                 <label for="birth_date">Ημερομηνία Γέννησης</label>
                                 <input type="date" id="birth_date" name="birth_date" value="<?php echo old('birth_date', $driverData['birth_date'] ?? ''); ?>">
                                 <div id="age_display" class="form-hint"></div>
                             </div>
+                        </div>
 
+                        <div class="form-row">
                             <div class="form-group">
                                 <label for="marital_status">Οικογενειακή Κατάσταση</label>
                                 <select id="marital_status" name="marital_status">
@@ -41,9 +68,7 @@
                                     <option value="no_answer" <?php echo old('marital_status', $driverData['marital_status'] ?? '') === 'no_answer' ? 'selected' : ''; ?>>Δεν απαντώ</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <div class="form-row">
                             <div class="form-group">
                                 <label for="education_level">Γραμματικές Γνώσεις</label>
                                 <select id="education_level" name="education_level">
@@ -75,6 +100,8 @@
                                 </select>
                             </div>
                         </div>
+                            </div><!-- /.profile-hero-fields -->
+                        </div><!-- /.profile-hero -->
 
                         <div class="form-group">
                             <label for="about_me">Σχετικά με εμένα</label>
@@ -82,73 +109,37 @@
                             <p class="form-hint">Περιγράψτε τον εαυτό σας, την εμπειρία και τις δεξιότητές σας ως οδηγός.</p>
                         </div>
 
-                        <div class="form-group">
-                            <label>Έτη Επαγγελματικής Εμπειρίας</label>
-                            <div class="experience-display" style="display: flex; justify-content: space-between; margin-top: 10px; background-color: #f9f9f9; padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
-                                <div class="experience-column" style="flex: 1; text-align: center; padding: 0 10px;">
-                                    <div style="font-weight: bold; margin-bottom: 5px;">Συνολική Προϋπηρεσία</div>
-                                    <div style="font-size: 24px; color: #007bff;"><?php echo $driverData['experience_years'] ?? '0'; ?> έτη</div>
-                                </div>
-                                <div class="experience-column" style="flex: 1; text-align: center; padding: 0 10px; border-left: 1px solid #ddd; border-right: 1px solid #ddd;">
-                                    <div style="font-weight: bold; margin-bottom: 5px;">Εμπορευματικές Μεταφορές</div>
-                                    <div style="font-size: 24px; color: #28a745;"><?php echo $roundedFreightYears ?? '0'; ?> έτη</div>
-                                </div>
-                                <div class="experience-column" style="flex: 1; text-align: center; padding: 0 10px;">
-                                    <div style="font-weight: bold; margin-bottom: 5px;">Επιβατικές Μεταφορές</div>
-                                    <div style="font-size: 24px; color: #dc3545;"><?php echo $roundedPassengerYears ?? '0'; ?> έτη</div>
-                                </div>
-                            </div>
-                            <!-- Κρυφό πεδίο για να διατηρήσουμε την τιμή -->
-                            <input type="hidden" id="experience_years" name="experience_years" value="<?php echo old('experience_years', $driverData['experience_years'] ?? ''); ?>">
-                            <p class="form-hint" style="margin-top: 5px;">
-                                Η προϋπηρεσία υπολογίζεται αυτόματα από τα στοιχεία που έχετε καταχωρήσει στην ενότητα "Προϋπηρεσία σε Οχήματα".
-                                <a href="<?php echo BASE_URL; ?>drivers/debug_experience.php" target="_blank" style="margin-left: 10px; color: #007bff;">Αναλυτικά διαγνωστικά</a>
-                            </p>
-                        </div>
+                        <?php /* Κρατά την τιμή — η εμπειρία υπολογίζεται αυτόματα από την
+                           Προϋπηρεσία σε Οχήματα και ΔΕΝ εμφανίζεται πια εδώ (25/08). */ ?>
+                        <input type="hidden" id="experience_years" name="experience_years" value="<?php echo old('experience_years', $driverData['experience_years'] ?? ''); ?>">
 
+                        <?php /* Ποινικό μητρώο: μία διακριτική γραμμή — όχι «στήλη εγγράφου».
+                           Το βιογραφικό-αρχείο αφαιρέθηκε: το προφίλ το υποκαθιστά. */ ?>
+                        <label class="legal-status-line" title="Η δήλωση επέχει θέση υπεύθυνης δήλωσης και μπορεί να ζητηθεί επαλήθευση κατά τη συνέντευξη.">
+                            <input type="checkbox" name="legal_status" value="yes" <?php echo (isset($driverData["legal_status"]) && $driverData["legal_status"] == "yes") ? "checked" : ""; ?>>
+                            <span>Δηλώνω υπεύθυνα ότι διαθέτω λευκό ποινικό μητρώο</span>
+                        </label>
 
-
-                        <?php /* Έγγραφα: ίδιο προσαρμοστικό πλέγμα με τις υπόλοιπες σειρές —
-                           το παλιό inline flex-nowrap στρίμωχνε 3 στήλες και στο κινητό. */ ?>
-                        <div class="form-row documents-row">
-                            <div class="document-column">
-                                <div class="form-group">
-                                    <label for="profile_image">Φωτογραφία Προφίλ</label>
-                                    <?php if (isset($driverData['profile_image']) && $driverData['profile_image']) : ?>
-                                        <div class="current-image">
-                                            <img src="<?php echo BASE_URL . htmlspecialchars($driverData['profile_image']); ?>" alt="Τρέχουσα φωτογραφία">
-                                            <p>Τρέχουσα φωτογραφία</p>
-                                        </div>
-                                    <?php endif; ?>
-                                    <input type="file" id="profile_image" name="profile_image" accept="image/jpeg, image/png, image/gif">
-                                    <p class="form-hint">Μέγιστο μέγεθος: 2MB. Επιτρεπόμενοι τύποι: JPEG, PNG, GIF</p>
-                                </div>
-                            </div>
-
-                            <div class="document-column">
-                                <div class="form-group">
-                                    <label for="resume_file">Βιογραφικό</label>
-                                    <?php if (isset($driverData['resume_file']) && $driverData['resume_file']) : ?>
-                                        <div class="current-file">
-                                            <a href="<?php echo BASE_URL . htmlspecialchars($driverData['resume_file']); ?>" target="_blank">Προβολή τρέχοντος βιογραφικού</a>
-                                        </div>
-                                    <?php endif; ?>
-                                    <input type="file" id="resume_file" name="resume_file" accept=".pdf,.doc,.docx">
-                                    <p class="form-hint">Μέγιστο μέγεθος: 5MB. Επιτρεπόμενοι τύποι: PDF, DOC, DOCX</p>
-                                </div>
-                            </div>
-
-                            <div class="document-column">
-                                <div class="form-group">
-                                    <label>Ποινικό Μητρώο</label>
-                                    <label class="checkbox-inline" style="display:block; margin-top:8px;">
-                                        <input type="checkbox" name="legal_status" value="yes" <?php echo (isset($driverData["legal_status"]) && $driverData["legal_status"] == "yes") ? "checked" : ""; ?>>
-                                        Δηλώνω υπεύθυνα ότι διαθέτω λευκό ποινικό μητρώο
-                                    </label>
-                                    <p class="form-hint">Δεν απαιτείται ανέβασμα αρχείου. Η δήλωση επέχει θέση υπεύθυνης δήλωσης και μπορεί να ζητηθεί επαλήθευση κατά τη συνέντευξη.</p>
-                                </div>
-                            </div>
-                        </div>
+                        <script>
+                        // Ζωντανή προεπισκόπηση avatar: με την επιλογή αρχείου η νέα
+                        // φωτογραφία φαίνεται αμέσως στον κύκλο (πριν την αποθήκευση).
+                        (function () {
+                            var input = document.getElementById('profile_image');
+                            if (!input) return;
+                            input.addEventListener('change', function () {
+                                var f = this.files && this.files[0];
+                                if (!f || !f.type.match(/^image\//)) return;
+                                var img = document.getElementById('avatarPreview');
+                                var ph = document.getElementById('avatarPlaceholder');
+                                var r = new FileReader();
+                                r.onload = function (e) {
+                                    if (img) { img.src = e.target.result; img.style.display = ''; }
+                                    if (ph) { ph.style.display = 'none'; }
+                                };
+                                r.readAsDataURL(f);
+                            });
+                        })();
+                        </script>
 
                         <?php // Στοιχεία Επικοινωνίας: ίδια καρτέλα, δική τους ενότητα ?>
                         <?php include __DIR__ . '/contact-info.php'; ?>

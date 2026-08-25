@@ -233,6 +233,109 @@ main .container > h1 {
 
 .edit-profile-form .form-buttons { display: flex; gap: .6rem; }
 
+/* ── Hero Προσωπικών Στοιχείων: avatar + πεδία σε 3 στήλες ───────────── */
+.edit-profile-form .profile-hero {
+    display: flex;
+    gap: 1.6rem;
+    align-items: flex-start;
+}
+
+.edit-profile-form .profile-hero-fields { flex: 1; min-width: 0; }
+
+.edit-profile-form .avatar-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .4rem;
+    flex-shrink: 0;
+    padding-top: .2rem;
+}
+
+/* Κλικαμπλ avatar: κύκλος με hover-overlay «Αλλαγή» — το κλικ ανοίγει
+   τον επιλογέα αρχείου (label for=profile_image). */
+.edit-profile-form .avatar-upload {
+    position: relative;
+    display: block;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 3px solid #e5e7eb;
+    background: #f3f4f6;
+    color: #9ca3af;
+    transition: border-color .15s ease;
+}
+
+.edit-profile-form .avatar-upload:hover { border-color: #b3261e; }
+
+.edit-profile-form .avatar-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.edit-profile-form .avatar-upload svg#avatarPlaceholder {
+    width: 60%;
+    height: 60%;
+    margin: 20%;
+}
+
+.edit-profile-form .avatar-overlay {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(17, 24, 39, .65);
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 600;
+    text-align: center;
+    padding: .28rem 0 .34rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .3rem;
+    opacity: 0;
+    transition: opacity .15s ease;
+}
+
+.edit-profile-form .avatar-upload:hover .avatar-overlay { opacity: 1; }
+.edit-profile-form .avatar-overlay svg { width: 14px; height: 14px; }
+
+/* Στην αφή δεν υπάρχει hover — η ετικέτα μένει πάντα ορατή στο κινητό
+   (κανόνας στο mobile block). */
+
+.edit-profile-form .avatar-file-input {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+.edit-profile-form .avatar-hint {
+    color: #9ca3af;
+    font-size: .72rem;
+    margin: 0;
+    text-align: center;
+}
+
+/* Ποινικό μητρώο: διακριτική γραμμή, όχι «στήλη εγγράφου» */
+.edit-profile-form .legal-status-line {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .84rem;
+    color: #6b7280;
+    background: #f9fafb;
+    border: 1px dashed #e5e7eb;
+    border-radius: 8px;
+    padding: .55rem .8rem;
+    margin: .3rem 0 .8rem;
+    cursor: pointer;
+}
+.edit-profile-form .legal-status-line input { accent-color: #b3261e; }
+
 /* Ειδοποιήσεις ανανέωσης (RenewalAlerts): εμφανίζονται ΜΟΝΟ όταν
    πλησιάζει/πέρασε η λήξη — πορτοκαλί «λήγει», κόκκινο «έληξε». */
 .renewal-alert {
@@ -390,6 +493,12 @@ main .container > h1 {
 
     /* Κατηγορίες αδειών: το minmax(470px) θα ξεχείλωνε το κινητό */
     .edit-profile-form .license-cats-grid { grid-template-columns: 1fr; }
+
+    /* Hero: avatar από πάνω, κεντραρισμένο· η ετικέτα «Αλλαγή» πάντα
+       ορατή γιατί στην αφή δεν υπάρχει hover */
+    .edit-profile-form .profile-hero { flex-direction: column; align-items: center; }
+    .edit-profile-form .profile-hero-fields { width: 100%; }
+    .edit-profile-form .avatar-overlay { opacity: 1; }
 
     /* Οι 3 μετρητές προϋπηρεσίας: στοίβα αντί για 3 στριμωγμένες στήλες */
     .edit-profile-form .experience-display { flex-direction: column; gap: .6rem; }
