@@ -76,14 +76,7 @@ class AuthController extends BaseUserController
         ]);
 
         // Αυθεντικοποίηση χρήστη
-        error_log("=== CALLING AUTHENTICATE ===");
-        error_log("Email: $email");
-        error_log("Password length: " . strlen($password));
-
         $user = $this->authModel->authenticate($email, $password);
-
-        error_log("=== AUTHENTICATE RESULT ===");
-        error_log("User: " . ($user ? json_encode($user) : 'FALSE'));
 
         Logger::debug('Authentication result', [
             'success' => $user ? true : false,
@@ -94,6 +87,23 @@ class AuthController extends BaseUserController
             ] : null
         ]);
 
+        /*
+         * Απενεργοποιημένος λογαριασμός (κουμπί admin panel): σωστός
+         * κωδικός, αλλά ΔΕΝ δημιουργείται συνεδρία. Μέχρι σήμερα το
+         * is_active αγνοούνταν εντελώς — η «απενεργοποίηση» δεν κρατούσε
+         * κανέναν έξω.
+         */
+        if ($user && empty($user['is_active'])) {
+            Logger::warning('Login refused for deactivated account', [
+                'user_id' => $user['user_id'],
+                'role' => $user['role'],
+            ]);
+            Session::set('error_message',
+                'Ο λογαριασμός σας έχει απενεργοποιηθεί. Επικοινωνήστε μαζί μας '
+                . 'στο info@drivejob.gr αν πιστεύετε ότι πρόκειται για λάθος.');
+            $this->redirect(BASE_URL . 'login');
+        }
+
         if ($user) {
             // Επιτυχής σύνδεση - Αναγέννηση του session ID για ασφάλεια
             Session::regenerate(true);
@@ -103,6 +113,7 @@ class AuthController extends BaseUserController
             Session::set('user_role', $user['role']);
             Session::set('role', $user['role']); // Για συμβατότητα με υπάρχον κώδικα
             Session::set('user_name', $user['name']);
+            Session::set('is_verified', !empty($user['is_verified']));
 
             // Δημιουργία νέου CSRF token μετά το login
             CSRF::generateToken();
@@ -113,6 +124,16 @@ class AuthController extends BaseUserController
                 'role' => $user['role'],
                 'session_id' => session_id()
             ]);
+
+            /*
+             * Ανεπαλήθευτος λογαριασμός: η συνεδρία δημιουργείται (ώστε να
+             * δουλεύει η επαναποστολή email), αλλά ο προορισμός είναι η
+             * σελίδα «απαιτείται επαλήθευση» — όχι το προφίλ. Την υπόλοιπη
+             * πλατφόρμα τη φράζει ο ίδιος έλεγχος στο AuthMiddleware.
+             */
+            if (in_array($user['role'], ['driver', 'company'], true) && empty($user['is_verified'])) {
+                $this->redirect(BASE_URL . 'auth/verification-required');
+            }
 
             // Έλεγχος για ανακατεύθυνση μετά τη σύνδεση
             $redirectUrl = Session::has('redirect_after_login')
@@ -310,6 +331,19 @@ class AuthController extends BaseUserController
         $result = $this->authModel->verifyAccount($token);
 
         if ($result) {
+            /*
+             * Αν ο χρήστης που επαληθεύτηκε είναι ήδη συνδεδεμένος σε αυτόν
+             * τον browser (συνηθισμένο: εγγραφή → σύνδεση → κλικ στο email),
+             * ενημερώνεται και η συνεδρία — αλλιώς θα έβλεπε «απαιτείται
+             * επαλήθευση» μέχρι να αποσυνδεθεί.
+             */
+            if (Session::get('user_id') == ($result['user_id'] ?? null)
+                && Session::get('role') === ($result['role'] ?? null)) {
+                Session::set('is_verified', true);
+                Session::set('success_message', 'Το email σας επαληθεύτηκε. Καλώς ήρθατε!');
+                $this->redirect($this->getDefaultRedirectUrl($result['role']));
+            }
+
             Session::set('success_message', 'Ο λογαριασμός σας επαληθεύτηκε με επιτυχία. Μπορείτε τώρα να συνδεθείτε.');
             $this->redirect(BASE_URL . 'auth/login');
         } else {

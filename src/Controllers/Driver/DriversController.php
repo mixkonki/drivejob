@@ -235,6 +235,13 @@ class DriversController extends BaseUserController
                 . '<a href="' . BASE_URL . 'drivers/edit-profile" class="btn-secondary">Επιστροφή στο προφίλ</a>'
                 . '</div>';
             echo '</form></main>';
+            /*
+             * Χωρίς αυτό το script η σελίδα ήταν άψυχη: το «Τύπος Οχήματος»
+             * δεν γέμιζε ποτέ (το γεμίζει το JS όταν αλλάζει το «Είδος
+             * Μεταφοράς») και το κουμπί προσθήκης δεν έκανε τίποτα. Το
+             * αρχείο φορτωνόταν μόνο μέσα από το edit-profile.
+             */
+            echo \Drivejob\Helpers\Asset::js('js/vehicle-experience.js', false);
             include ROOT_DIR . '/src/Views/partials/footer.php';
         } catch (\Exception $e) {
             Logger::error('Error in vehicle experience page', [

@@ -35,8 +35,8 @@ class AuthMiddleware
      */
     public static function isLoggedIn()
     {
-        Logger::debug("AuthMiddleware::isLoggedIn - Checking if user is logged in");
-        Logger::debug("Session data: " . print_r($_SESSION, true));
+        // ΟΧΙ print_r($_SESSION) εδώ: κατέγραφε ολόκληρη τη συνεδρία
+        // (ονόματα, emails, CSRF tokens) σε κάθε αίτημα συνδεδεμένου χρήστη.
 
         // Βεβαιωνόμαστε ότι η συνεδρία είναι ενεργή
         Session::start();
@@ -72,6 +72,30 @@ class AuthMiddleware
 
         $userRole = Session::get('user_role');
 
+        /*
+         * Φράχτης επαλήθευσης email: ανεπαλήθευτος οδηγός/εταιρεία δεν
+         * περνά σε καμία προστατευμένη σελίδα — μόνο στη σελίδα
+         * «απαιτείται επαλήθευση».
+         *
+         * Ισχύει ΜΟΝΟ όταν η συνεδρία λέει ρητά is_verified=false (το
+         * θέτει το login). Παλιές συνεδρίες χωρίς το κλειδί περνούν
+         * κανονικά — δεν κλειδώνουμε έξω ήδη συνδεδεμένους χρήστες.
+         * Πριν το μπλοκάρισμα γίνεται ένα φρέσκο ερώτημα στη βάση, ώστε
+         * όποιος πάτησε τον σύνδεσμο του email σε άλλη καρτέλα/συσκευή
+         * να συνεχίσει αμέσως.
+         */
+        if (in_array($userRole, ['driver', 'company'], true)
+            && Session::has('is_verified')
+            && Session::get('is_verified') === false
+        ) {
+            if (self::freshlyVerified($userRole, (int) Session::get('user_id'))) {
+                Session::set('is_verified', true);
+            } else {
+                header('Location: ' . BASE_URL . 'auth/verification-required');
+                exit();
+            }
+        }
+
         // Έλεγχος αν ο χρήστης έχει τον απαιτούμενο ρόλο
         if (is_array($role)) {
             if (!in_array($userRole, $role)) {
@@ -88,6 +112,25 @@ class AuthMiddleware
 
         Logger::debug("User has required role, continuing");
         return true;
+    }
+
+    /**
+     * Ξανακοιτάζει τη βάση για το is_verified — μόνο για συνεδρίες που
+     * είναι σημαδεμένες ως ανεπαλήθευτες (σπάνια διαδρομή, ένα SELECT).
+     */
+    private static function freshlyVerified(string $role, int $userId): bool
+    {
+        try {
+            $pdo = Container::getInstance()->get('pdo');
+            $table = $role === 'company' ? 'companies' : 'drivers';
+            $stmt = $pdo->prepare("SELECT is_verified FROM {$table} WHERE id = ?");
+            $stmt->execute([$userId]);
+            return (bool) $stmt->fetchColumn();
+        } catch (\Throwable $e) {
+            // Σε σφάλμα βάσης δεν κόβουμε τον χρήστη από όλη την πλατφόρμα.
+            Logger::error('freshlyVerified check failed: ' . $e->getMessage());
+            return true;
+        }
     }
 
     /**

@@ -37,6 +37,9 @@ $router->group(['prefix' => 'auth'], function ($router) {
     $router->post('/password-reset/{token}', [AuthController::class, 'resetPassword']);
     $router->get('/access-denied', [AuthController::class, 'accessDenied'])->name('auth.access-denied');
     $router->get('/verification-required', [AuthController::class, 'verificationRequired'])->name('auth.verification-required');
+    // Η φόρμα «Επαναποστολή email» στο verification-required.php κάνει POST
+    // εδώ — χωρίς αυτή τη διαδρομή το κουμπί έβγαζε 404.
+    $router->post('/resend-verification', [AuthController::class, 'resendVerification'])->name('auth.resend-verification');
 });
 
 // ── Συντομεύσεις πρώτου επιπέδου ────────────────────────────────────────

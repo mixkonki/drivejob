@@ -43,7 +43,11 @@ class UserAuthenticator
                         'email' => $driver['email'],
                         'name' => $driver['first_name'] . ' ' . $driver['last_name'],
                         'is_verified' => $driver['is_verified'],
-                        'is_active' => $driver['is_verified'], // το σχήμα δεν έχει is_active
+                        // Η πραγματική στήλη — αυτή που αλλάζει ο admin.
+                        // (Παλιό σχόλιο έλεγε ότι δεν υπάρχει· υπάρχει, και
+                        // η αντιγραφή από το is_verified άφηνε τους
+                        // απενεργοποιημένους να συνδέονται κανονικά.)
+                        'is_active' => $driver['is_active'] ?? 1,
                     ];
                 }
             }
@@ -57,7 +61,7 @@ class UserAuthenticator
                         'email' => $company['email'],
                         'name' => $company['company_name'],
                         'is_verified' => $company['is_verified'],
-                        'is_active' => $company['is_verified'],
+                        'is_active' => $company['is_active'] ?? 1,
                     ];
                 }
             }
