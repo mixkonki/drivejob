@@ -62,16 +62,8 @@
                                     <select id="operator_speciality" name="operator_speciality" onchange="loadSubSpecialities(this.value)">
                                         <option value="">Επιλέξτε</option>
                                         <?php
-                                        $specialities = [
-                                            '1' => 'Εργασίες εκσκαφής και χωματουργικές',
-                                            '2' => 'Εργασίες ανύψωσης και μεταφοράς φορτίων',
-                                            '3' => 'Εργασίες οδοστρωσίας',
-                                            '4' => 'Εργασίες εξυπηρέτησης οδών και αεροδρομίων',
-                                            '5' => 'Εργασίες υπόγειων έργων και μεταλλείων',
-                                            '6' => 'Εργασίες έλξης',
-                                            '7' => 'Εργασίες διάτρησης και κοπής εδαφών',
-                                            '8' => 'Ειδικές εργασίες ανύψωσης'
-                                        ];
+                                        // Μία πηγή αλήθειας: ΥΑ 1032/166/2013 μέσω OperatorSpecialities.
+                                        $specialities = \Drivejob\Helpers\OperatorSpecialities::SPECIALITIES;
 
                                         foreach ($specialities as $id => $name) :
                                         ?>
@@ -145,7 +137,7 @@
                                                     ?>
                                                         <li>
                                                             <span class="subspeciality-id"><?php echo $subspecialityId; ?></span>
-                                                            <span class="subspeciality-name"><?php echo $subSpec['name'] ?? "Υποειδικότητα {$subspecialityId}"; ?></span>
+                                                            <span class="subspeciality-name"><?php echo htmlspecialchars(\Drivejob\Helpers\OperatorSpecialities::subName((string) $subspecialityId), ENT_QUOTES, 'UTF-8'); ?></span>
                                                             <span class="subspeciality-group">Ομάδα <?php echo $groupType; ?></span>
                                                         </li>
                                                     <?php endforeach; ?>
@@ -158,6 +150,14 @@
                                         </ul>
                                     <?php endif; ?>
                                 </div>
+
+                                <script>
+                                    // Ο επίσημος κατάλογος υποειδικοτήτων (ΥΑ 1032/166/2013)
+                                    // από τη μία πηγή αλήθειας — τον διαβάζει το operator-licenses.js
+                                    window.djOperatorCatalog = <?php echo json_encode(\Drivejob\Helpers\OperatorSpecialities::SUB_SPECIALITIES, JSON_UNESCAPED_UNICODE); ?>;
+                                    window.djOperatorSpecialityNames = <?php echo json_encode(\Drivejob\Helpers\OperatorSpecialities::SPECIALITIES, JSON_UNESCAPED_UNICODE); ?>;
+                                </script>
+                                <?php echo \Drivejob\Helpers\Asset::js('js/operator-licenses.js', true); ?>
 
                                 <!-- Ενημερωτικό μήνυμα για άδεια χειριστή -->
                                 <div class="expiry-reminder">

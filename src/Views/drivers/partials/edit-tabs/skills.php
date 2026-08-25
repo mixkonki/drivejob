@@ -385,4 +385,71 @@
                     </div>
                 </div>
 
+            
+                <!-- Οι ενότητες αυτές ανήκουν ΣΤΗΝ καρτέλα «Προσόντα &
+                     Πιστοποιήσεις». Πριν (25/08/2026) ζούσαν ΕΞΩ από κάθε
+                     tab-pane και εμφανίζονταν κάτω από ΟΛΕΣ τις καρτέλες. -->
+
+            <!-- Προϋπηρεσία σε Οχήματα -->
+            <div class="form-section">
+                <h3>Προϋπηρεσία σε Οχήματα</h3>
+
+                <!-- Εμφάνιση του πίνακα προϋπηρεσίας -->
+                <?php include ROOT_DIR . '/src/Views/drivers/vehicle-experience-summary.php'; ?>
+
+                <div class="vehicle-experience-link" style="margin-top: 15px;">
+                    <a href="<?php echo BASE_URL; ?>drivers/vehicle-experience" class="btn-primary">Διαχείριση Προϋπηρεσίας σε Οχήματα</a>
+                </div>
+            </div>
+
+
+    <!-- Γλωσσικές Ικανότητες — αυτόνομες εγγραφές, άμεση αποθήκευση.
+         Καμία σχέση με το κουμπί «Αποθήκευση Αλλαγών» της φόρμας: κάθε
+         προσθήκη/διαγραφή γλώσσας γράφεται στη βάση τη στιγμή του κλικ
+         (POST /drivers/languages), ίδια φιλοσοφία με την προϋπηρεσία. -->
+    <div class="form-section" id="dj-languages">
+        <h3>Γλωσσικές Ικανότητες</h3>
+        <p class="form-info">Κάθε γλώσσα αποθηκεύεται αμέσως με το «Προσθήκη» — γράψε όσες γλώσσες γνωρίζεις.</p>
+
+        <ul id="dj-lang-list" style="list-style:none; padding:0; margin:0 0 1rem; display:flex; flex-wrap:wrap; gap:.5rem;">
+            <?php foreach (($driverLanguages ?? []) as $lang) : ?>
+                <li data-id="<?php echo (int) $lang['id']; ?>"
+                    style="display:flex; align-items:center; gap:.45rem; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:999px; padding:.3rem .4rem .3rem .9rem;">
+                    <span><strong><?php echo htmlspecialchars($lang['language_name'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <span style="color:#6b7280; font-size:.85em;">·
+                            <?php echo ['native' => 'Μητρική', 'fluent' => 'Άριστα', 'good' => 'Καλά', 'basic' => 'Βασικά'][$lang['level']] ?? $lang['level']; ?></span>
+                    </span>
+                    <button type="button" class="dj-lang-del" data-id="<?php echo (int) $lang['id']; ?>" title="Διαγραφή"
+                            style="border:0; background:#e5e7eb; color:#6b7280; border-radius:50%; width:22px; height:22px; line-height:1; cursor:pointer;">×</button>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+
+        <div style="display:flex; flex-wrap:wrap; gap:.6rem; align-items:end;">
+            <div class="form-group" style="margin:0;">
+                <label for="dj-lang-name">Γλώσσα</label>
+                <input type="text" id="dj-lang-name" list="dj-lang-suggestions" placeholder="π.χ. Βουλγαρικά" maxlength="50" style="min-width:180px;">
+                <datalist id="dj-lang-suggestions">
+                    <option value="Ελληνικά"></option><option value="Αγγλικά"></option><option value="Γερμανικά"></option>
+                    <option value="Γαλλικά"></option><option value="Ιταλικά"></option><option value="Ισπανικά"></option>
+                    <option value="Ρωσικά"></option><option value="Βουλγαρικά"></option><option value="Ρουμανικά"></option>
+                    <option value="Τουρκικά"></option><option value="Αλβανικά"></option><option value="Σερβικά"></option>
+                    <option value="Πολωνικά"></option><option value="Ουκρανικά"></option><option value="Αραβικά"></option>
+                </datalist>
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label for="dj-lang-level">Επίπεδο</label>
+                <select id="dj-lang-level">
+                    <option value="basic">Βασικά</option>
+                    <option value="good" selected>Καλά</option>
+                    <option value="fluent">Άριστα</option>
+                    <option value="native">Μητρική Γλώσσα</option>
+                </select>
+            </div>
+            <button type="button" id="dj-lang-add" class="btn-primary" style="margin:0;">Προσθήκη</button>
+        </div>
+        <div id="dj-lang-msg" style="display:none; margin-top:.6rem; padding:.45rem .7rem; border-radius:6px; font-size:.88rem;"></div>
+    </div>
+
+
             </div>

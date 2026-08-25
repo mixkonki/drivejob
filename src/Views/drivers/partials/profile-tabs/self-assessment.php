@@ -78,15 +78,12 @@
                                            έδειχνε στο /drivers/driver-rating, μέθοδο που δεν
                                            υπάρχει — κάθε κλικ έβγαζε σφάλμα 500. */ ?>
                                     <a href="<?php echo BASE_URL; ?>drivers/incident-history" class="btn-action">
-                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/history_icon.png') ?>" alt="Ιστορικό Συμβάντων" class="action-icon">
                                         <span>Ιστορικό Συμβάντων</span>
                                     </a>
                                     <a href="<?php echo BASE_URL; ?>drivers/report-incident" class="btn-action">
-                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/report_icon.png') ?>" alt="Αναφορά Συμβάντος" class="action-icon">
                                         <span>Αναφορά Συμβάντος</span>
                                     </a>
                                     <a href="<?php echo BASE_URL; ?>drivers/update-assessment" class="btn-action">
-                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/assessment_icon.png') ?>" alt="Συμπλήρωση Αυτοαξιολόγησης" class="action-icon">
                                         <span>Συμπλήρωση Αυτοαξιολόγησης</span>
                                     </a>
                                 </div>
@@ -130,16 +127,10 @@
 
                             <!-- Δεξιό τμήμα (1/4) με πρόσφατα συμβάντα -->
                             <div class="rating-side-column">
-                                <!-- Προώθηση εφαρμογής τηλεματικής -->
-                                <div class="telemetry-promotion">
-                                    <h3>Βελτιώστε τη βαθμολογία σας</h3>
-                                    <p>Κατεβάστε την εφαρμογή DriveJob Telemetry για αυτόματη παρακολούθηση της οδηγικής συμπεριφοράς σας.</p>
-                                    <a href="#" class="btn-app-download">
-                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/app_download.png') ?>" alt="Κατέβασμα Εφαρμογής">
-                                        <span>Κατέβασμα Εφαρμογής</span>
-                                    </a>
-                                </div>
-
+                                <!-- Η προώθηση της εφαρμογής «DriveJob Telemetry» αφαιρέθηκε
+                                     25/08/2026: η εφαρμογή ΔΕΝ υπάρχει ακόμη — δεν υποσχόμαστε
+                                     στους χρήστες πράγματα που δεν μπορούν να κατεβάσουν.
+                                     Επανέρχεται μαζί με την τηλεματική (βλ. στρατηγική). -->
                                 <!-- Πρόσφατα συμβάντα -->
                                 <div class="recent-incidents">
                                     <h3>Πρόσφατα Συμβάντα</h3>
@@ -189,20 +180,16 @@
                             <h3>Προτάσεις Εκπαίδευσης</h3>
                             <div class="training-courses">
                                 <div class="course-item">
-                                    <div class="course-icon"><img src="<?= \Drivejob\Helpers\Asset::url('img/course_icon.png') ?>" alt="Σεμινάριο"></div>
                                     <div class="course-details">
                                         <h4>Αμυντική Οδήγηση</h4>
                                         <p>Σεμινάριο αμυντικής οδήγησης για επαγγελματίες οδηγούς</p>
-                                        <a href="#" class="course-link">Περισσότερα &raquo;</a>
-                                    </div>
+                                        </div>
                                 </div>
                                 <div class="course-item">
-                                    <div class="course-icon"><img src="<?= \Drivejob\Helpers\Asset::url('img/course_icon.png') ?>" alt="Σεμινάριο"></div>
                                     <div class="course-details">
                                         <h4>Διαχείριση Οδηγικού Στρες</h4>
                                         <p>Τεχνικές διαχείρισης άγχους κατά την οδήγηση</p>
-                                        <a href="#" class="course-link">Περισσότερα &raquo;</a>
-                                    </div>
+                                        </div>
                                 </div>
                             </div>
                         </div>
