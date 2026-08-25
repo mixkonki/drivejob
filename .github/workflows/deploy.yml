@@ -1,0 +1,53 @@
+# Αυτόματο deploy στην παραγωγή (netmind/StackCP)
+#
+# Σε κάθε push στο main, το GitHub συνδέεται με SSH στον server και
+# τρέχει ό,τι έτρεχες μέχρι τώρα με το χέρι: cd ~/drivejob && git pull.
+#
+# Χρησιμοποιεί fetch + reset --hard origin/main αντί για σκέτο pull:
+# είναι η ίδια εντολή που έχουμε ήδη ως «επανόρθωση» στο runbook —
+# αν κατά λάθος υπάρχει τοπικό commit στον server, το deploy δεν
+# κολλάει, απλώς επαναφέρει τον κώδικα στο main. Τα .env, logs/,
+# storage/, vendor/ δεν αγγίζονται (είναι εκτός git).
+#
+# Απαιτεί ΕΝΑ secret στο GitHub: DEPLOY_SSH_KEY (ιδιωτικό κλειδί SSH
+# αποκλειστικά για deploy — οδηγίες στη συνομιλία / project doc).
+#
+# Οι migrations ΔΕΝ τρέχουν αυτόματα — παραμένουν συνειδητό, χειροκίνητο
+# βήμα στον server, όπως μέχρι τώρα.
+
+name: Deploy σε παραγωγή
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}   # και χειροκίνητα, από την καρτέλα Actions
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false   # δύο γρήγορα push → τα deploy μπαίνουν στη σειρά
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ρύθμιση κλειδιού SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ssh.gb.stackcp.com >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Ενημέρωση κώδικα στον server
+        run: |
+          ssh -i ~/.ssh/deploy_key drivejob.gr@ssh.gb.stackcp.com '
+            set -e
+            cd ~/drivejob
+            git fetch origin main
+            git reset --hard origin/main
+            echo "Παραγωγή στο commit: $(git rev-parse --short HEAD)"
+          '
+
+      - name: Έλεγχος υγείας
+        run: |
+          sleep 3
+          curl -fsS https://drivejob.gr/health
