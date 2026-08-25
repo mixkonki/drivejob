@@ -233,6 +233,64 @@ main .container > h1 {
 
 .edit-profile-form .form-buttons { display: flex; gap: .6rem; }
 
+/* Ειδοποιήσεις ανανέωσης (RenewalAlerts): εμφανίζονται ΜΟΝΟ όταν
+   πλησιάζει/πέρασε η λήξη — πορτοκαλί «λήγει», κόκκινο «έληξε». */
+.renewal-alert {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+    padding: .7rem 1rem;
+    margin: .8rem 0;
+    font-size: .9rem;
+    color: #78350f;
+}
+.renewal-alert--expired {
+    background: #fef2f2;
+    border-color: #fecaca;
+    border-left-color: #b3261e;
+    color: #7f1d1d;
+}
+.renewal-alert p { margin: 0; }
+.renewal-alert a { color: #92400e; font-weight: 600; }
+.renewal-alert--expired a { color: #b3261e; }
+
+/* Κατηγορίες αδειών οδήγησης σε προσαρμοστικό πλέγμα: Δίκυκλα/Επιβατικά/
+   Φορτηγά/Λεωφορεία δίπλα-δίπλα όταν χωράει η οθόνη, στοίβα στο κινητό. */
+.edit-profile-form .license-cats-grid {
+    display: grid;
+    /* 2 στήλες: Δίκυκλα+Επιβατικά αριστερά, Φορτηγά+Λεωφορεία (με ΠΕΙ)
+       δεξιά — στα 470px+ ανά στήλη χωρούν και οι 5 στήλες πίνακα. */
+    grid-template-columns: repeat(auto-fit, minmax(470px, 1fr));
+    gap: 1rem;
+    align-items: start;
+}
+.edit-profile-form .license-cat {
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    padding: .6rem .8rem;
+    overflow-x: auto;
+}
+.edit-profile-form .license-cat > h5 {
+    margin: 0 0 .4rem;
+    font-size: .88rem;
+    color: #374151;
+}
+.edit-profile-form .license-cat input[type="date"] {
+    padding: .35rem .4rem;
+    font-size: .85rem;
+    max-width: 135px;
+}
+.edit-profile-form .license-cat td,
+.edit-profile-form .license-cat th { padding: .4rem .45rem; }
+.edit-profile-form .license-cat .pei-field {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+}
+.edit-profile-form .license-cat .pei-field input[type="date"] { max-width: 118px; }
+
 /* ── 7. Πίνακες (υποειδικότητες, σύνοψη προϋπηρεσίας) ────────────────── */
 .edit-profile-form table {
     width: 100%;
@@ -262,6 +320,22 @@ main .container > h1 {
 .edit-profile-form .vehicle-experience-summary {
     overflow-x: auto;
     max-width: 100%;
+}
+
+/* Οι λίστες δεξιοτήτων ΔΕΝ είναι κατεβατό: κάθε κατηγορία απλώνει τα
+   checkbox της σε 2-4 στήλες όταν χωράει η οθόνη (feedback 25/08).
+   Ο τίτλος h4 πιάνει όλο το πλάτος, από κάτω κυλούν τα κουτάκια. */
+.edit-profile-form .skills-row { display: block; }
+.edit-profile-form .skills-column { width: 100%; }
+.edit-profile-form .skills-category {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 0 1.2rem;
+    align-items: start;
+}
+.edit-profile-form .skills-category > h4 {
+    grid-column: 1 / -1;
+    margin-bottom: .5rem;
 }
 
 /* Checkbox δεξιοτήτων: πρώτα το κουτάκι, μετά η ετικέτα — σε μία γραμμή */
@@ -313,6 +387,9 @@ main .container > h1 {
 
     /* Η σειρά διεύθυνσης έχει ρητό template — εδώ διπλώνει χειροκίνητα */
     .edit-profile-form .form-row.addr-row { grid-template-columns: 1fr; }
+
+    /* Κατηγορίες αδειών: το minmax(470px) θα ξεχείλωνε το κινητό */
+    .edit-profile-form .license-cats-grid { grid-template-columns: 1fr; }
 
     /* Οι 3 μετρητές προϋπηρεσίας: στοίβα αντί για 3 στριμωγμένες στήλες */
     .edit-profile-form .experience-display { flex-direction: column; gap: .6rem; }

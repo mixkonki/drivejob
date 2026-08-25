@@ -1,6 +1,8 @@
-<?php /* Καρτέλα «contact-info» της φόρμας επεξεργασίας προφίλ — αποσπάστηκε από το edit-profile.php (Πακέτο 5.4).
-   Μοιράζεται το scope μεταβλητών του γονικού view (include). */ ?>
-                    <div class="tab-pane" id="contact-info">
+<?php /* Ενότητα «Στοιχεία Επικοινωνίας» — από 25/08 ΔΕΝ είναι δική της καρτέλα:
+   περιλαμβάνεται ΜΕΣΑ στην καρτέλα «Προσωπικά Στοιχεία» (personal-info.php),
+   ώστε προσωπικά + επικοινωνία να ζουν σε μία οθόνη. Η αλλαγή κωδικού
+   μεταφέρθηκε στη σελίδα drivers/security (μενού λογαριασμού). */ ?>
+                        <hr class="section-divider">
                         <h2>Στοιχεία Επικοινωνίας</h2>
 
                         <?php /* Προσαρμοστικό πλέγμα (25/08): συγγενικά πεδία στην ίδια
@@ -118,27 +120,4 @@
                             </div>
                         </div>
 
-                        <hr class="section-divider">
-                        <h3>Αλλαγή Κωδικού Πρόσβασης</h3>
-                        <p class="form-hint">Αφήστε τα πεδία κενά αν δεν επιθυμείτε να αλλάξετε τον κωδικό σας.</p>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="current_password">Τρέχων Κωδικός</label>
-                                <input type="password" id="current_password" name="current_password">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="new_password">Νέος Κωδικός</label>
-                                <input type="password" id="new_password" name="new_password">
-                                <div id="password-strength" class="password-strength"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="confirm_password">Επιβεβαίωση Νέου Κωδικού</label>
-                                <input type="password" id="confirm_password" name="confirm_password">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tab για Άδειες Οδήγησης -->
+<?php /* Η «Αλλαγή Κωδικού Πρόσβασης» μεταφέρθηκε στη σελίδα drivers/security. */ ?>
