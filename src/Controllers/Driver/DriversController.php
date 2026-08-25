@@ -144,6 +144,7 @@ class DriversController extends BaseUserController
             'driverData' => $driverProfile,
             'driverLicenses' => $driverProfile['licenses'] ?? [],
             'driverSkills' => $driverProfile['skills'] ?? [],
+            'driverLanguages' => $driverProfile['languages_list'] ?? [],
             'driverCertifications' => $driverProfile['certifications'] ?? [],
             'driverVehicleExperience' => $driverProfile['vehicle_experience'] ?? [],
             'driverTachograph' => $driverProfile['tachograph_cards'][0] ?? null,
@@ -345,6 +346,77 @@ class DriversController extends BaseUserController
         JsonHelper::success('Η εγγραφή διαγράφηκε.', [
             'totals' => self::vehicleExperienceTotals($rows),
         ]);
+    }
+
+    /** Ετικέτες επιπέδων γλώσσας — μία πηγή για UI και JSON. */
+    private const LANGUAGE_LEVELS = [
+        'native' => 'Μητρική Γλώσσα',
+        'fluent' => 'Άριστα',
+        'good' => 'Καλά',
+        'basic' => 'Βασικά',
+    ];
+
+    /**
+     * POST /drivers/languages — προσθήκη/ενημέρωση ΜΙΑΣ γλώσσας.
+     * Ίδια φιλοσοφία με την προϋπηρεσία: αποθήκευση τη στιγμή της πράξης.
+     */
+    public function addLanguage()
+    {
+        AuthMiddleware::hasRole('driver');
+
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            JsonHelper::error('Η φόρμα έληξε. Ανανεώστε τη σελίδα και δοκιμάστε ξανά.');
+        }
+
+        $driverId = Session::get('user_id');
+        $name = trim($this->sanitize($_POST['language_name'] ?? ''));
+        $level = $_POST['level'] ?? '';
+
+        if ($name === '' || mb_strlen($name) > 50) {
+            JsonHelper::error('Γράψτε το όνομα της γλώσσας (έως 50 χαρακτήρες).');
+        }
+        if (!isset(self::LANGUAGE_LEVELS[$level])) {
+            JsonHelper::error('Επιλέξτε επίπεδο γνώσης.');
+        }
+
+        // Κανονικοποίηση: πρώτο γράμμα κεφαλαίο, ώστε «αγγλικά» και
+        // «Αγγλικά» να είναι η ίδια εγγραφή (το unique key ολοκληρώνει).
+        $name = mb_convert_case(mb_strtolower($name), MB_CASE_TITLE);
+
+        $skillModel = new \Drivejob\Models\Driver\SkillModel($this->container->get('pdo'));
+        $rowId = $skillModel->addDriverLanguage($driverId, $name, $level);
+
+        if ($rowId === false) {
+            JsonHelper::error('Η αποθήκευση απέτυχε. Δοκιμάστε ξανά.');
+        }
+
+        JsonHelper::success('Η γλώσσα αποθηκεύτηκε.', [
+            'row' => [
+                'id' => $rowId,
+                'name' => $name,
+                'level' => $level,
+                'level_label' => self::LANGUAGE_LEVELS[$level],
+            ],
+        ]);
+    }
+
+    /** POST /drivers/languages/delete/{id} — διαγραφή μίας γλώσσας. */
+    public function deleteLanguage($id)
+    {
+        AuthMiddleware::hasRole('driver');
+
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            JsonHelper::error('Η φόρμα έληξε. Ανανεώστε τη σελίδα και δοκιμάστε ξανά.');
+        }
+
+        $driverId = Session::get('user_id');
+        $skillModel = new \Drivejob\Models\Driver\SkillModel($this->container->get('pdo'));
+
+        if (!$skillModel->deleteDriverLanguage($driverId, (int) $id)) {
+            JsonHelper::error('Η εγγραφή δεν βρέθηκε.');
+        }
+
+        JsonHelper::success('Η γλώσσα διαγράφηκε.');
     }
 
     /**

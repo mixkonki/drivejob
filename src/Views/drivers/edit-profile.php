@@ -30,6 +30,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 <?= \Drivejob\Helpers\Asset::js('js/license-validation.js', false) ?>
 <?= \Drivejob\Helpers\Asset::js('js/country-phone-codes.js', false) ?>
 <?= \Drivejob\Helpers\Asset::js('js/vehicle-experience.js', false) ?>
+<?= \Drivejob\Helpers\Asset::js('js/driver-languages.js', true) ?>
 <script>
     // Αρχικοποίηση δεδομένων από τη βάση
     window.driverOperatorSubSpecialities = [];
@@ -127,76 +128,52 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 
     </div>
     </div>
-    <!-- Γλωσσικές Ικανότητες -->
-    <div class="form-section">
+    <!-- Γλωσσικές Ικανότητες — αυτόνομες εγγραφές, άμεση αποθήκευση.
+         Καμία σχέση με το κουμπί «Αποθήκευση Αλλαγών» της φόρμας: κάθε
+         προσθήκη/διαγραφή γλώσσας γράφεται στη βάση τη στιγμή του κλικ
+         (POST /drivers/languages), ίδια φιλοσοφία με την προϋπηρεσία. -->
+    <div class="form-section" id="dj-languages">
         <h3>Γλωσσικές Ικανότητες</h3>
-        <div class="language-form">
-            <div class="form-group">
-                <label for="languages[greek]">Ελληνικά:</label>
-                <select name="languages[greek]" id="languages[greek]">
-                    <option value="native" <?php echo (isset($driverData['language_greek']) && $driverData['language_greek'] == 'native') ? 'selected' : ''; ?>>Μητρική Γλώσσα</option>
-                    <option value="fluent" <?php echo (isset($driverData['language_greek']) && $driverData['language_greek'] == 'fluent') ? 'selected' : ''; ?>>Άριστα</option>
-                    <option value="good" <?php echo (isset($driverData['language_greek']) && $driverData['language_greek'] == 'good') ? 'selected' : ''; ?>>Καλά</option>
-                    <option value="basic" <?php echo (isset($driverData['language_greek']) && $driverData['language_greek'] == 'basic') ? 'selected' : ''; ?>>Βασικά</option>
-                    <option value="" <?php echo (!isset($driverData['language_greek']) || $driverData['language_greek'] == '') ? 'selected' : ''; ?>>Δεν γνωρίζω</option>
+        <p class="form-info">Κάθε γλώσσα αποθηκεύεται αμέσως με το «Προσθήκη» — γράψε όσες γλώσσες γνωρίζεις.</p>
+
+        <ul id="dj-lang-list" style="list-style:none; padding:0; margin:0 0 1rem; display:flex; flex-wrap:wrap; gap:.5rem;">
+            <?php foreach (($driverLanguages ?? []) as $lang) : ?>
+                <li data-id="<?php echo (int) $lang['id']; ?>"
+                    style="display:flex; align-items:center; gap:.45rem; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:999px; padding:.3rem .4rem .3rem .9rem;">
+                    <span><strong><?php echo htmlspecialchars($lang['language_name'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <span style="color:#6b7280; font-size:.85em;">·
+                            <?php echo ['native' => 'Μητρική', 'fluent' => 'Άριστα', 'good' => 'Καλά', 'basic' => 'Βασικά'][$lang['level']] ?? $lang['level']; ?></span>
+                    </span>
+                    <button type="button" class="dj-lang-del" data-id="<?php echo (int) $lang['id']; ?>" title="Διαγραφή"
+                            style="border:0; background:#e5e7eb; color:#6b7280; border-radius:50%; width:22px; height:22px; line-height:1; cursor:pointer;">×</button>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+
+        <div style="display:flex; flex-wrap:wrap; gap:.6rem; align-items:end;">
+            <div class="form-group" style="margin:0;">
+                <label for="dj-lang-name">Γλώσσα</label>
+                <input type="text" id="dj-lang-name" list="dj-lang-suggestions" placeholder="π.χ. Βουλγαρικά" maxlength="50" style="min-width:180px;">
+                <datalist id="dj-lang-suggestions">
+                    <option value="Ελληνικά"></option><option value="Αγγλικά"></option><option value="Γερμανικά"></option>
+                    <option value="Γαλλικά"></option><option value="Ιταλικά"></option><option value="Ισπανικά"></option>
+                    <option value="Ρωσικά"></option><option value="Βουλγαρικά"></option><option value="Ρουμανικά"></option>
+                    <option value="Τουρκικά"></option><option value="Αλβανικά"></option><option value="Σερβικά"></option>
+                    <option value="Πολωνικά"></option><option value="Ουκρανικά"></option><option value="Αραβικά"></option>
+                </datalist>
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label for="dj-lang-level">Επίπεδο</label>
+                <select id="dj-lang-level">
+                    <option value="basic">Βασικά</option>
+                    <option value="good" selected>Καλά</option>
+                    <option value="fluent">Άριστα</option>
+                    <option value="native">Μητρική Γλώσσα</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="languages[english]">Αγγλικά:</label>
-                <select name="languages[english]" id="languages[english]">
-                    <option value="native" <?php echo (isset($driverData['language_english']) && $driverData['language_english'] == 'native') ? 'selected' : ''; ?>>Μητρική Γλώσσα</option>
-                    <option value="fluent" <?php echo (isset($driverData['language_english']) && $driverData['language_english'] == 'fluent') ? 'selected' : ''; ?>>Άριστα</option>
-                    <option value="good" <?php echo (isset($driverData['language_english']) && $driverData['language_english'] == 'good') ? 'selected' : ''; ?>>Καλά</option>
-                    <option value="basic" <?php echo (isset($driverData['language_english']) && $driverData['language_english'] == 'basic') ? 'selected' : ''; ?>>Βασικά</option>
-                    <option value="" <?php echo (!isset($driverData['language_english']) || $driverData['language_english'] == '') ? 'selected' : ''; ?>>Δεν γνωρίζω</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="languages[german]">Γερμανικά:</label>
-                <select name="languages[german]" id="languages[german]">
-                    <option value="native" <?php echo (isset($driverData['language_german']) && $driverData['language_german'] == 'native') ? 'selected' : ''; ?>>Μητρική Γλώσσα</option>
-                    <option value="fluent" <?php echo (isset($driverData['language_german']) && $driverData['language_german'] == 'fluent') ? 'selected' : ''; ?>>Άριστα</option>
-                    <option value="good" <?php echo (isset($driverData['language_german']) && $driverData['language_german'] == 'good') ? 'selected' : ''; ?>>Καλά</option>
-                    <option value="basic" <?php echo (isset($driverData['language_german']) && $driverData['language_german'] == 'basic') ? 'selected' : ''; ?>>Βασικά</option>
-                    <option value="" <?php echo (!isset($driverData['language_german']) || $driverData['language_german'] == '') ? 'selected' : ''; ?>>Δεν γνωρίζω</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="languages[french]">Γαλλικά:</label>
-                <select name="languages[french]" id="languages[french]">
-                    <option value="native" <?php echo (isset($driverData['language_french']) && $driverData['language_french'] == 'native') ? 'selected' : ''; ?>>Μητρική Γλώσσα</option>
-                    <option value="fluent" <?php echo (isset($driverData['language_french']) && $driverData['language_french'] == 'fluent') ? 'selected' : ''; ?>>Άριστα</option>
-                    <option value="good" <?php echo (isset($driverData['language_french']) && $driverData['language_french'] == 'good') ? 'selected' : ''; ?>>Καλά</option>
-                    <option value="basic" <?php echo (isset($driverData['language_french']) && $driverData['language_french'] == 'basic') ? 'selected' : ''; ?>>Βασικά</option>
-                    <option value="" <?php echo (!isset($driverData['language_french']) || $driverData['language_french'] == '') ? 'selected' : ''; ?>>Δεν γνωρίζω</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="languages[italian]">Ιταλικά:</label>
-                <select name="languages[italian]" id="languages[italian]">
-                    <option value="native" <?php echo (isset($driverData['language_italian']) && $driverData['language_italian'] == 'native') ? 'selected' : ''; ?>>Μητρική Γλώσσα</option>
-                    <option value="fluent" <?php echo (isset($driverData['language_italian']) && $driverData['language_italian'] == 'fluent') ? 'selected' : ''; ?>>Άριστα</option>
-                    <option value="good" <?php echo (isset($driverData['language_italian']) && $driverData['language_italian'] == 'good') ? 'selected' : ''; ?>>Καλά</option>
-                    <option value="basic" <?php echo (isset($driverData['language_italian']) && $driverData['language_italian'] == 'basic') ? 'selected' : ''; ?>>Βασικά</option>
-                    <option value="" <?php echo (!isset($driverData['language_italian']) || $driverData['language_italian'] == '') ? 'selected' : ''; ?>>Δεν γνωρίζω</option>
-                </select>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="languages[other_name]">Άλλη γλώσσα:</label>
-                    <input type="text" name="languages[other_name]" id="languages[other_name]" value="<?php echo isset($driverData['language_other_name']) ? htmlspecialchars($driverData['language_other_name']) : ''; ?>">
-                </div>
-                <div class="form-group">
-                    <label for="languages[other_level]">Επίπεδο:</label>
-                    <select name="languages[other_level]" id="languages[other_level]">
-                        <option value="native" <?php echo (isset($driverData['language_other_level']) && $driverData['language_other_level'] == 'native') ? 'selected' : ''; ?>>Μητρική Γλώσσα</option>
-                        <option value="fluent" <?php echo (isset($driverData['language_other_level']) && $driverData['language_other_level'] == 'fluent') ? 'selected' : ''; ?>>Άριστα</option>
-                        <option value="good" <?php echo (isset($driverData['language_other_level']) && $driverData['language_other_level'] == 'good') ? 'selected' : ''; ?>>Καλά</option>
-                        <option value="basic" <?php echo (isset($driverData['language_other_level']) && $driverData['language_other_level'] == 'basic') ? 'selected' : ''; ?>>Βασικά</option>
-                    </select>
-                </div>
-            </div>
+            <button type="button" id="dj-lang-add" class="btn-primary" style="margin:0;">Προσθήκη</button>
         </div>
+        <div id="dj-lang-msg" style="display:none; margin-top:.6rem; padding:.45rem .7rem; border-radius:6px; font-size:.88rem;"></div>
     </div>
 
     <!-- Κουμπιά αποθήκευσης και ακύρωσης -->

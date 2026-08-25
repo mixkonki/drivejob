@@ -111,6 +111,9 @@ class DriverProfileService implements DriverProfileServiceInterface
             // Προσθήκη των δεξιοτήτων
             $driver['skills'] = $this->skillModel->getDriverSkills($driverId);
 
+            // Γλωσσικές ικανότητες (πίνακας driver_languages — μία γραμμή ανά γλώσσα)
+            $driver['languages_list'] = $this->skillModel->getDriverLanguages($driverId);
+
             // Προσθήκη της αυτοαξιολόγησης
             $driver['assessment'] = $this->skillModel->getDriverAssessment($driverId);
 

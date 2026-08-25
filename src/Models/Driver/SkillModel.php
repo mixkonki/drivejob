@@ -249,6 +249,125 @@ class SkillModel extends BaseModel
         }
     }
 
+    // ── Γλωσσικές ικανότητες (πίνακας driver_languages) ──────────────────
+
+    /** Οι γλώσσες του οδηγού, μητρική πρώτα. */
+    public function getDriverLanguages($driverId): array
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT id, language_name, level FROM driver_languages
+                 WHERE driver_id = ?
+                 ORDER BY FIELD(level, 'native', 'fluent', 'good', 'basic'), language_name"
+            );
+            $stmt->execute([(int) $driverId]);
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            Logger::error('Error in getDriverLanguages: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Προσθέτει/ενημερώνει ΜΙΑ γλώσσα (upsert στο μοναδικό driver+όνομα).
+     * Επιστρέφει το id της γραμμής ή false.
+     */
+    public function addDriverLanguage($driverId, string $name, string $level)
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                'INSERT INTO driver_languages (driver_id, language_name, level)
+                 VALUES (?, ?, ?)
+                 ON DUPLICATE KEY UPDATE level = VALUES(level), id = LAST_INSERT_ID(id)'
+            );
+            $stmt->execute([(int) $driverId, $name, $level]);
+            $id = (int) $this->pdo->lastInsertId();
+            $this->syncLegacyLanguageColumns((int) $driverId);
+
+            return $id;
+        } catch (PDOException $e) {
+            Logger::error('Error in addDriverLanguage: ' . $e->getMessage(), ['driver_id' => $driverId]);
+            return false;
+        }
+    }
+
+    /** Διαγράφει ΜΙΑ γλώσσα — μόνο αν ανήκει στον οδηγό. */
+    public function deleteDriverLanguage($driverId, $rowId): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                'DELETE FROM driver_languages WHERE id = ? AND driver_id = ?'
+            );
+            $stmt->execute([(int) $rowId, (int) $driverId]);
+            $deleted = $stmt->rowCount() > 0;
+            if ($deleted) {
+                $this->syncLegacyLanguageColumns((int) $driverId);
+            }
+
+            return $deleted;
+        } catch (PDOException $e) {
+            Logger::error('Error in deleteDriverLanguage: ' . $e->getMessage(), ['driver_id' => $driverId]);
+            return false;
+        }
+    }
+
+    /**
+     * Συγχρονίζει τις ΠΑΛΙΕΣ στήλες language_* του drivers από τον νέο
+     * πίνακα, ώστε PDF βιογραφικού / οπτικό βιογραφικό (που διαβάζουν
+     * ακόμη τις στήλες) να δείχνουν σωστά. Μία κατεύθυνση εγγραφής:
+     * driver_languages → στήλες. Φεύγει στο beta-cleanup.
+     */
+    private function syncLegacyLanguageColumns(int $driverId): void
+    {
+        try {
+            $known = [
+                'Ελληνικά' => 'language_greek',
+                'Αγγλικά' => 'language_english',
+                'Γερμανικά' => 'language_german',
+                'Γαλλικά' => 'language_french',
+                'Ιταλικά' => 'language_italian',
+            ];
+
+            $columns = [
+                'language_english' => null,
+                'language_german' => null,
+                'language_french' => null,
+                'language_italian' => null,
+                'language_other_name' => null,
+                'language_other_level' => null,
+            ];
+            $greek = null;
+
+            foreach ($this->getDriverLanguages($driverId) as $lang) {
+                $name = $lang['language_name'];
+                if (isset($known[$name])) {
+                    if ($known[$name] === 'language_greek') {
+                        $greek = $lang['level'];
+                    } else {
+                        $columns[$known[$name]] = $lang['level'];
+                    }
+                } elseif ($columns['language_other_name'] === null) {
+                    // Η πρώτη «άλλη» γλώσσα χωράει στις παλιές στήλες·
+                    // οι επόμενες ζουν μόνο στον νέο πίνακα.
+                    $columns['language_other_name'] = $name;
+                    $columns['language_other_level'] = $lang['level'];
+                }
+            }
+
+            if ($greek !== null) {
+                $columns['language_greek'] = $greek; // NOT NULL στήλη — μόνο όταν υπάρχει
+            }
+
+            $set = implode(', ', array_map(fn ($c) => "`$c` = ?", array_keys($columns)));
+            $stmt = $this->pdo->prepare("UPDATE drivers SET $set WHERE id = ?");
+            $stmt->execute([...array_values($columns), $driverId]);
+        } catch (PDOException $e) {
+            // Ο συγχρονισμός είναι βοηθητικός — δεν ματαιώνει την κύρια πράξη.
+            Logger::error('Error in syncLegacyLanguageColumns: ' . $e->getMessage(), ['driver_id' => $driverId]);
+        }
+    }
+
     /**
      * Διαγράφει ΜΙΑ εγγραφή προϋπηρεσίας — μόνο αν ανήκει στον οδηγό.
      */

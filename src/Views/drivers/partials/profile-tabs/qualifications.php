@@ -371,53 +371,31 @@
                     <h3>Γλωσσικές Ικανότητες</h3>
                     <div class="languages-list">
                         <?php
-                        $languageLabels = [
-                            'greek' => 'Ελληνικά',
-                            'english' => 'Αγγλικά',
-                            'german' => 'Γερμανικά',
-                            'french' => 'Γαλλικά',
-                            'italian' => 'Ιταλικά'
-                        ];
-
+                        /*
+                         * Από τον πίνακα driver_languages (25/08/2026) — μία
+                         * γραμμή ανά γλώσσα, όσες γλώσσες θέλει ο οδηγός.
+                         * Οι παλιές στήλες language_* συγχρονίζονται μόνο για
+                         * το PDF/οπτικό βιογραφικό μέχρι το beta-cleanup.
+                         */
                         $languageLevelLabels = [
                             'native' => 'Μητρική Γλώσσα',
                             'fluent' => 'Άριστα',
                             'good' => 'Καλά',
                             'basic' => 'Βασικά'
                         ];
-
-                        $languageLevelClasses = [
-                            'native' => 'native',
-                            'fluent' => 'fluent',
-                            'good' => 'good',
-                            'basic' => 'basic'
-                        ];
-
-                        foreach ($languageLabels as $key => $label) :
-                            $dbField = 'language_' . $key;
-                            if (isset($driverData[$dbField]) && $driverData[$dbField]) :
-                                $level = $driverData[$dbField];
-                                $levelLabel = isset($languageLevelLabels[$level]) ? $languageLevelLabels[$level] : $level;
-                                $levelClass = isset($languageLevelClasses[$level]) ? $languageLevelClasses[$level] : '';
                         ?>
+                        <?php if (!empty($driverLanguages)) : ?>
+                            <?php foreach ($driverLanguages as $lang) : ?>
                                 <div class="language-item">
-                                    <div class="language-name"><?php echo $label; ?></div>
-                                    <div class="language-level <?php echo $levelClass; ?>"><?php echo $levelLabel; ?></div>
+                                    <div class="language-name"><?php echo htmlspecialchars($lang['language_name'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                    <div class="language-level <?php echo htmlspecialchars($lang['level'], ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?php echo $languageLevelLabels[$lang['level']] ?? $lang['level']; ?>
+                                    </div>
                                 </div>
-                            <?php
-                            endif;
-                        endforeach;
-
-                        // Προσθήκη άλλης γλώσσας αν έχει οριστεί
-                        if (isset($driverData['language_other_name']) && $driverData['language_other_name']) :
-                            $otherLevel = $driverData['language_other_level'] ?? 'basic';
-                            $otherLevelLabel = isset($languageLevelLabels[$otherLevel]) ? $languageLevelLabels[$otherLevel] : $otherLevel;
-                            $otherLevelClass = isset($languageLevelClasses[$otherLevel]) ? $languageLevelClasses[$otherLevel] : '';
-                            ?>
-                            <div class="language-item">
-                                <div class="language-name"><?php echo htmlspecialchars($driverData['language_other_name']); ?></div>
-                                <div class="language-level <?php echo $otherLevelClass; ?>"><?php echo $otherLevelLabel; ?></div>
-                            </div>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <p class="not-available" style="color:#6b7280;">Δεν έχουν καταχωρηθεί γλώσσες —
+                                πρόσθεσέ τες από την επεξεργασία προφίλ.</p>
                         <?php endif; ?>
                     </div>
                 </div>

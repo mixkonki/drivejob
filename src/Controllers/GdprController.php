@@ -63,6 +63,7 @@ class GdprController extends BaseController
             $data['certifications'] = $this->fetchAll('SELECT * FROM driver_certifications WHERE driver_id = ?', [$userId]);
             $data['skills'] = $this->fetchAll('SELECT * FROM driver_skills WHERE driver_id = ?', [$userId]);
             $data['vehicle_experience'] = $this->fetchAll('SELECT * FROM driver_vehicle_experience WHERE driver_id = ?', [$userId]);
+            $data['languages'] = $this->fetchAll('SELECT * FROM driver_languages WHERE driver_id = ?', [$userId]);
             $data['job_applications'] = $this->fetchAll(
                 'SELECT ja.id, ja.job_listing_id, jl.title AS job_title, ja.status, ja.message, ja.created_at
                  FROM job_applications ja LEFT JOIN job_listings jl ON jl.id = ja.job_listing_id
