@@ -2,7 +2,7 @@
    περιλαμβάνεται ΜΕΣΑ στην καρτέλα «Προσωπικά Στοιχεία» (personal-info.php),
    ώστε προσωπικά + επικοινωνία να ζουν σε μία οθόνη. Η αλλαγή κωδικού
    μεταφέρθηκε στη σελίδα drivers/security (μενού λογαριασμού). */ ?>
-                        <hr class="section-divider">
+                        <div class="form-section">
                         <h2>Στοιχεία Επικοινωνίας</h2>
 
                         <?php /* Προσαρμοστικό πλέγμα (25/08): συγγενικά πεδία στην ίδια
@@ -95,7 +95,9 @@
                         </div>
 
                         <!-- Προσθήκη τμήματος Μέσα Κοινωνικής Δικτύωσης -->
-                        <hr class="section-divider">
+                        </div><!-- /.form-section Επικοινωνία -->
+
+                        <div class="form-section">
                         <h3>Μέσα Κοινωνικής Δικτύωσης</h3>
 
                         <div class="form-row">
@@ -119,5 +121,6 @@
                                 <input type="url" id="social_instagram" name="social_instagram" value="<?php echo old('social_instagram', $driverData['social_instagram'] ?? ''); ?>" placeholder="https://www.instagram.com/yourusername">
                             </div>
                         </div>
+                        </div><!-- /.form-section Social -->
 
 <?php /* Η «Αλλαγή Κωδικού Πρόσβασης» μεταφέρθηκε στη σελίδα drivers/security. */ ?>

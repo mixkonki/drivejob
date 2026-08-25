@@ -74,7 +74,8 @@ main .container > h1 {
     margin: 0 0 1.1rem;
 }
 
-.edit-profile-form .form-section > h3:first-child {
+.edit-profile-form .form-section > h3:first-child,
+.edit-profile-form .form-section > h2:first-child {
     margin-top: 0;
     padding-bottom: .55rem;
     border-bottom: 1px solid #f3f4f6;
@@ -224,11 +225,32 @@ main .container > h1 {
     padding: .75rem 1.2rem;
     margin-top: 1rem;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: row; /* το form-buttons-fix.css δίνει column — override */
+    flex-wrap: nowrap; /* toggle + κουμπιά σε ΜΙΑ γραμμή στο desktop (25/08) */
     align-items: center;
     justify-content: space-between;
     gap: .8rem;
     box-shadow: 0 -4px 14px rgba(0, 0, 0, .05);
+}
+
+.edit-profile-form .form-actions .availability-toggle-container {
+    flex: 1;
+    min-width: 0;
+    text-align: left; /* όχι κεντραρισμένο — αριστερά, απέναντι από τα κουμπιά */
+}
+
+.edit-profile-form .form-actions .toggle-switch-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin: 0;
+    justify-content: flex-start;
+}
+
+.edit-profile-form .form-actions .toggle-switch-text {
+    font-size: .9rem;
+    color: #374151;
+    white-space: nowrap;
 }
 
 .edit-profile-form .form-buttons { display: flex; gap: .6rem; }
@@ -320,21 +342,25 @@ main .container > h1 {
     text-align: center;
 }
 
-/* Ποινικό μητρώο: διακριτική γραμμή, όχι «στήλη εγγράφου» */
+/* Ποινικό μητρώο: διακριτικό, στην ίδια γραμμή με τα select της σειράς —
+   η κενή ετικέτα του .legal-status-group το ευθυγραμμίζει μαζί τους */
 .edit-profile-form .legal-status-line {
     display: flex;
     align-items: center;
     gap: .5rem;
-    font-size: .84rem;
+    font-size: .82rem;
     color: #6b7280;
     background: #f9fafb;
     border: 1px dashed #e5e7eb;
-    border-radius: 8px;
-    padding: .55rem .8rem;
-    margin: .3rem 0 .8rem;
+    border-radius: 7px;
+    padding: .5rem .7rem;
+    margin: 0;
     cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.edit-profile-form .legal-status-line input { accent-color: #b3261e; }
+.edit-profile-form .legal-status-line input { accent-color: #b3261e; flex-shrink: 0; }
 
 /* Ειδοποιήσεις ανανέωσης (RenewalAlerts): εμφανίζονται ΜΟΝΟ όταν
    πλησιάζει/πέρασε η λήξη — πορτοκαλί «λήγει», κόκκινο «έληξε». */
@@ -499,6 +525,9 @@ main .container > h1 {
     .edit-profile-form .profile-hero { flex-direction: column; align-items: center; }
     .edit-profile-form .profile-hero-fields { width: 100%; }
     .edit-profile-form .avatar-overlay { opacity: 1; }
+
+    /* Η δήλωση ποινικού μητρώου διπλώνει κανονικά στο κινητό */
+    .edit-profile-form .legal-status-line { white-space: normal; }
 
     /* Οι 3 μετρητές προϋπηρεσίας: στοίβα αντί για 3 στριμωγμένες στήλες */
     .edit-profile-form .experience-display { flex-direction: column; gap: .6rem; }

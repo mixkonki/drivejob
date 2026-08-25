@@ -106,7 +106,7 @@ function initAvailabilityToggle() {
     
     if (availabilityToggle && toggleText) {
         availabilityToggle.addEventListener('change', function() {
-            toggleText.textContent = this.checked ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία';
+            toggleText.textContent = this.checked ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η';
         });
     }
 }

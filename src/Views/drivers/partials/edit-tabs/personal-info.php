@@ -1,6 +1,9 @@
 <?php /* Καρτέλα «personal-info» της φόρμας επεξεργασίας προφίλ — αποσπάστηκε από το edit-profile.php (Πακέτο 5.4).
    Μοιράζεται το scope μεταβλητών του γονικού view (include). */ ?>
                     <div class="tab-pane active" id="personal-info">
+                        <?php /* Κάθε ομάδα σε δικό της «κουτί» (.form-section) — διακριτικό
+                           περίγραμμα, εμφανής ομαδοποίηση (feedback 25/08). */ ?>
+                        <div class="form-section">
                         <h2>Προσωπικά Στοιχεία</h2>
 
                         <?php /* 25/08: hero με κλικαμπλ avatar (ανέβασμα με ένα κλικ) +
@@ -99,26 +102,25 @@
                                     <option value="no_answer" <?php echo old('military_service', $driverData['military_service'] ?? '') === 'no_answer' ? 'selected' : ''; ?>>Δεν απαντώ</option>
                                 </select>
                             </div>
+
+                            <?php /* Ποινικό μητρώο: στην ίδια γραμμή με τις επιλογές —
+                               ευθυγραμμισμένο με τα select (κενή ετικέτα από πάνω).
+                               Το «Σχετικά με εμένα» αφαιρέθηκε (feedback 25/08). */ ?>
+                            <div class="form-group legal-status-group">
+                                <label>&nbsp;</label>
+                                <label class="legal-status-line" title="Η δήλωση επέχει θέση υπεύθυνης δήλωσης και μπορεί να ζητηθεί επαλήθευση κατά τη συνέντευξη.">
+                                    <input type="checkbox" name="legal_status" value="yes" <?php echo (isset($driverData["legal_status"]) && $driverData["legal_status"] == "yes") ? "checked" : ""; ?>>
+                                    <span>Λευκό ποινικό μητρώο</span>
+                                </label>
+                            </div>
                         </div>
                             </div><!-- /.profile-hero-fields -->
                         </div><!-- /.profile-hero -->
 
-                        <div class="form-group">
-                            <label for="about_me">Σχετικά με εμένα</label>
-                            <textarea id="about_me" name="about_me" rows="5"><?php echo old('about_me', $driverData['about_me'] ?? ''); ?></textarea>
-                            <p class="form-hint">Περιγράψτε τον εαυτό σας, την εμπειρία και τις δεξιότητές σας ως οδηγός.</p>
-                        </div>
-
                         <?php /* Κρατά την τιμή — η εμπειρία υπολογίζεται αυτόματα από την
                            Προϋπηρεσία σε Οχήματα και ΔΕΝ εμφανίζεται πια εδώ (25/08). */ ?>
                         <input type="hidden" id="experience_years" name="experience_years" value="<?php echo old('experience_years', $driverData['experience_years'] ?? ''); ?>">
-
-                        <?php /* Ποινικό μητρώο: μία διακριτική γραμμή — όχι «στήλη εγγράφου».
-                           Το βιογραφικό-αρχείο αφαιρέθηκε: το προφίλ το υποκαθιστά. */ ?>
-                        <label class="legal-status-line" title="Η δήλωση επέχει θέση υπεύθυνης δήλωσης και μπορεί να ζητηθεί επαλήθευση κατά τη συνέντευξη.">
-                            <input type="checkbox" name="legal_status" value="yes" <?php echo (isset($driverData["legal_status"]) && $driverData["legal_status"] == "yes") ? "checked" : ""; ?>>
-                            <span>Δηλώνω υπεύθυνα ότι διαθέτω λευκό ποινικό μητρώο</span>
-                        </label>
+                        </div><!-- /.form-section Προσωπικά -->
 
                         <script>
                         // Ζωντανή προεπισκόπηση avatar: με την επιλογή αρχείου η νέα

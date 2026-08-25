@@ -120,17 +120,18 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
             </div><!-- /.tab-content -->
             </div><!-- /.form-tabs -->
 
-    <!-- Κουμπιά αποθήκευσης και ακύρωσης -->
+    <?php /* Μπάρα ενεργειών: toggle + κουμπιά σε ΜΙΑ γραμμή (25/08).
+       Χωρίς την ετικέτα «Διαθεσιμότητα για εργασία:» — το κείμενο
+       κατάστασης δίπλα στο toggle αρκεί. */ ?>
     <div class="form-actions">
         <div class="availability-toggle-container">
             <label class="toggle-switch-label">
-                <span class="toggle-label-text">Διαθεσιμότητα για εργασία:</span>
                 <span class="toggle-switch">
                     <input type="checkbox" name="available_for_work" id="available_for_work" class="toggle-switch-input" value="1" <?php echo $driverData['available_for_work'] ? 'checked' : ''; ?>>
                     <span class="toggle-switch-slider"></span>
                 </span>
                 <span class="toggle-switch-text">
-                    <?php echo $driverData['available_for_work'] ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία'; ?>
+                    <?php echo $driverData['available_for_work'] ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η'; ?>
                 </span>
             </label>
         </div>
