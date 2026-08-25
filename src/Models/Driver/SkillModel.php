@@ -123,57 +123,40 @@ class SkillModel extends BaseModel
      */
     public function updateDriverVehicleExperience($driverId, $vehicleExperience)
     {
+        /*
+         * Καθαρίστηκε 25/08/2026: η παλιά εκδοχή δεν είχε εκτελεστεί ΠΟΤΕ
+         * (κανείς δεν την καλούσε) και στην πρώτη πραγματική κλήση έσκασε
+         * — Logger::info(msg, "string") ενώ το context πρέπει να είναι
+         * array. Έγραφε επίσης όλα τα δεδομένα του οδηγού σε δικό της
+         * debug-αρχείο (logs/vehicle_experience_debug.log) σε κάθε κλήση.
+         *
+         * Στρατηγική: διαγραφή όλων + επανεγγραφή όσων ήρθαν. Ο caller
+         * (DriversController::update) την καλεί ΜΟΝΟ όταν η φόρμα δηλώνει
+         * την ενότητα με το vehicle_experience_submitted.
+         */
         try {
-            // Δημιουργία αρχείου καταγραφής για διαγνωστικούς σκοπούς
-            $logFile = ROOT_DIR . '/logs/vehicle_experience_debug.log';
-            file_put_contents($logFile, "=== " . date('Y-m-d H:i:s') . " ===\n", FILE_APPEND);
-            file_put_contents($logFile, "Driver ID: $driverId\n", FILE_APPEND);
-            file_put_contents($logFile, "Vehicle experience data: " . print_r($vehicleExperience, true) . "\n", FILE_APPEND);
+            $this->deleteDriverVehicleExperience($driverId);
 
-            // Καταγραφή των δεδομένων για διαγνωστικούς σκοπούς
-            Logger::info("updateDriverVehicleExperience called for driver_id: $driverId", "VehicleExperience");
-            Logger::info("Vehicle experience data: " . print_r($vehicleExperience, true), "VehicleExperience");
-
-            // Διαγραφή προηγούμενης εμπειρίας
-            $deleteResult = $this->deleteDriverVehicleExperience($driverId);
-            file_put_contents($logFile, "Delete result: " . ($deleteResult ? 'success' : 'failure') . "\n", FILE_APPEND);
-            Logger::info("Delete result: " . ($deleteResult ? 'success' : 'failure'), "VehicleExperience");
-
-            // Αν δεν υπάρχει νέα εμπειρία, επιστρέφουμε επιτυχία
             if (empty($vehicleExperience)) {
-                Logger::info("No vehicle experience data to insert", "VehicleExperience");
-                file_put_contents($logFile, "No vehicle experience data to insert\n", FILE_APPEND);
                 return true;
             }
 
-            // Προσθήκη της νέας εμπειρίας
-            $table = 'driver_vehicle_experience';
-            $sql = "INSERT INTO $table (
+            $sql = 'INSERT INTO driver_vehicle_experience (
                 driver_id, vehicle_category, vehicle_type, transport_type, employment_type,
                 years, months, days, start_date, end_date, description
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-            file_put_contents($logFile, "SQL query: $sql\n", FILE_APPEND);
-            Logger::info("SQL query: $sql", "VehicleExperience");
-
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
             $stmt = $this->pdo->prepare($sql);
-            $insertCount = 0;
-            $errorCount = 0;
+
+            $inserted = 0;
+            $failed = 0;
 
             foreach ($vehicleExperience as $exp) {
-                // Παραλείπουμε εγγραφές χωρίς επιλεγμένη κατηγορία οχήματος
+                // Γραμμές χωρίς κατηγορία οχήματος δεν έχουν νόημα.
                 if (empty($exp['vehicle_category'])) {
-                    Logger::warning("Skipping entry with empty vehicle_category", "VehicleExperience");
-                    file_put_contents($logFile, "Skipping entry with empty vehicle_category\n", FILE_APPEND);
                     continue;
                 }
 
-                // Καταγραφή των δεδομένων κάθε εγγραφής
-                Logger::info("Inserting vehicle experience: " . print_r($exp, true), "VehicleExperience");
-                file_put_contents($logFile, "Inserting vehicle experience: " . print_r($exp, true) . "\n", FILE_APPEND);
-
-                // Προετοιμασία των παραμέτρων
-                $params = [
+                $ok = $stmt->execute([
                     $driverId,
                     $exp['vehicle_category'],
                     $exp['vehicle_type'] ?? '',
@@ -182,45 +165,33 @@ class SkillModel extends BaseModel
                     intval($exp['years'] ?? 0),
                     intval($exp['months'] ?? 0),
                     intval($exp['days'] ?? 0),
-                    $exp['start_date'] ?? null,
-                    $exp['end_date'] ?? null,
-                    $exp['description'] ?? ''
-                ];
+                    ($exp['start_date'] ?? '') !== '' ? $exp['start_date'] : null,
+                    ($exp['end_date'] ?? '') !== '' ? $exp['end_date'] : null,
+                    $exp['description'] ?? '',
+                ]);
 
-                file_put_contents($logFile, "Parameters: " . print_r($params, true) . "\n", FILE_APPEND);
-                Logger::info("Parameters: " . print_r($params, true), "VehicleExperience");
-
-                $result = $stmt->execute($params);
-
-                if ($result) {
-                    $insertCount++;
-                    file_put_contents($logFile, "Insert successful\n", FILE_APPEND);
-                    Logger::info("Insert successful", "VehicleExperience");
+                if ($ok) {
+                    $inserted++;
                 } else {
-                    $errorCount++;
-                    $errorInfo = $stmt->errorInfo();
-                    file_put_contents($logFile, "Failed to insert vehicle experience: " . print_r($exp, true) . " Error: " . print_r($errorInfo, true) . "\n", FILE_APPEND);
-                    Logger::error('Failed to insert vehicle experience: ' . print_r($exp, true) . ' Error: ' . print_r($errorInfo, true), "VehicleExperience");
+                    $failed++;
+                    Logger::error('Failed to insert vehicle experience row', [
+                        'driver_id' => $driverId,
+                        'error' => $stmt->errorInfo(),
+                    ]);
                 }
             }
 
-            file_put_contents($logFile, "Insert summary: $insertCount successful, $errorCount failed\n", FILE_APPEND);
-            Logger::info("Insert summary: $insertCount successful, $errorCount failed", "VehicleExperience");
+            Logger::info('Vehicle experience updated', [
+                'driver_id' => $driverId,
+                'inserted' => $inserted,
+                'failed' => $failed,
+            ]);
 
-            // Έλεγχος των εγγραφών μετά την εισαγωγή
-            $sql = "SELECT COUNT(*) FROM $table WHERE driver_id = ?";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$driverId]);
-            $count = $stmt->fetchColumn();
-
-            file_put_contents($logFile, "Records after insert: $count\n", FILE_APPEND);
-            Logger::info("Records after insert: $count", "VehicleExperience");
-
-            return true;
+            return $failed === 0;
         } catch (PDOException $e) {
-            file_put_contents($logFile, "Error in updateDriverVehicleExperience: " . $e->getMessage() . "\n", FILE_APPEND);
-            file_put_contents($logFile, "Stack trace: " . $e->getTraceAsString() . "\n", FILE_APPEND);
-            Logger::error('Error in updateDriverVehicleExperience: ' . $e->getMessage());
+            Logger::error('Error in updateDriverVehicleExperience: ' . $e->getMessage(), [
+                'driver_id' => $driverId,
+            ]);
             return false;
         }
     }

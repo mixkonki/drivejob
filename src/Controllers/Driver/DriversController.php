@@ -368,12 +368,25 @@ class DriversController extends BaseUserController
             exit();
         }
 
-        // Επικύρωση βασικών δεδομένων
+        /*
+         * Επικύρωση ΜΟΝΟ των πεδίων που ήρθαν — ίδιος κανόνας με το
+         * collectFormData («πεδίο που δεν ήρθε δεν γράφεται»). Το
+         * update-profile δέχεται POST και από μερικές φόρμες (π.χ. τη
+         * σελίδα προϋπηρεσίας οχημάτων) που δεν κουβαλούν όνομα/τηλέφωνο·
+         * το παλιό ανεξαίρετο required τις έκοβε όλες στο validation και
+         * η αποθήκευση φαινόταν να «μην κρατάει» τίποτα.
+         */
         $validator = new Validator($_POST);
-        $validator->required('first_name', 'Το όνομα είναι υποχρεωτικό.')
-            ->required('last_name', 'Το επώνυμο είναι υποχρεωτικό.')
-            ->required('phone', 'Το τηλέφωνο είναι υποχρεωτικό.')
-            ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
+        if (array_key_exists('first_name', $_POST)) {
+            $validator->required('first_name', 'Το όνομα είναι υποχρεωτικό.');
+        }
+        if (array_key_exists('last_name', $_POST)) {
+            $validator->required('last_name', 'Το επώνυμο είναι υποχρεωτικό.');
+        }
+        if (array_key_exists('phone', $_POST)) {
+            $validator->required('phone', 'Το τηλέφωνο είναι υποχρεωτικό.')
+                ->pattern('phone', '/^[0-9+\s()-]{10,15}$/', 'Παρακαλώ εισάγετε ένα έγκυρο τηλέφωνο.');
+        }
 
         if (!$validator->isValid()) {
             Logger::error('Validation failed in profile update', [
@@ -423,6 +436,27 @@ class DriversController extends BaseUserController
                     Session::set('warning_message', 'Το προφίλ αποθηκεύτηκε, αλλά κάποια στοιχεία αδειών/πιστοποιητικών δεν ενημερώθηκαν. Ελέγξτε την καρτέλα αδειών.');
                 }
 
+                /*
+                 * Προϋπηρεσία οχημάτων — ΜΟΝΟ όταν η φόρμα δηλώνει ρητά την
+                 * ενότητα (κρυφό πεδίο vehicle_experience_submitted). Έτσι:
+                 *  - η σελίδα προϋπηρεσίας αποθηκεύει (μέχρι σήμερα ΚΑΝΕΙΣ
+                 *    δεν διάβαζε το vehicle_experience[] — η μέθοδος του
+                 *    μοντέλου υπήρχε αλλά δεν καλούνταν από πουθενά)
+                 *  - το άδειασμα ΟΛΩΝ των γραμμών όντως τις διαγράφει
+                 *  - μια φόρμα ΧΩΡΙΣ την ενότητα δεν σβήνει ό,τι υπάρχει.
+                 */
+                if (isset($_POST['vehicle_experience_submitted'])) {
+                    $skillModel = new \Drivejob\Models\Driver\SkillModel($this->container->get('pdo'));
+                    $veOk = $skillModel->updateDriverVehicleExperience(
+                        $driverId,
+                        is_array($_POST['vehicle_experience'] ?? null) ? $_POST['vehicle_experience'] : []
+                    );
+                    if (!$veOk) {
+                        Logger::error('Vehicle experience update failed', ['driver_id' => $driverId]);
+                        Session::set('warning_message', 'Το προφίλ αποθηκεύτηκε, αλλά η προϋπηρεσία οχημάτων δεν ενημερώθηκε.');
+                    }
+                }
+
                 Session::set('success_message', 'Το προφίλ σας ενημερώθηκε με επιτυχία.');
 
                 // Trigger event hook για profile update
@@ -455,7 +489,14 @@ class DriversController extends BaseUserController
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
         }
 
-        header('Location: ' . BASE_URL . 'drivers/profile');
+        // Πίσω στη σελίδα απ' όπου ήρθε η αποθήκευση: η φόρμα προϋπηρεσίας
+        // γυρίζει στη σελίδα της (να φανεί ο ενημερωμένος πίνακας), οι
+        // υπόλοιπες στο προφίλ.
+        if (isset($_POST['vehicle_experience_submitted'])) {
+            header('Location: ' . BASE_URL . 'drivers/vehicle-experience');
+        } else {
+            header('Location: ' . BASE_URL . 'drivers/profile');
+        }
         exit();
     }
 

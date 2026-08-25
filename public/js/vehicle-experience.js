@@ -566,19 +566,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /*
-     * Ημερολόγιο με ένα κλικ ΟΠΟΥΔΗΠΟΤΕ πάνω στο πεδίο ημερομηνίας.
-     * Από μόνο του το <input type="date"> ανοίγει το ημερολόγιο μόνο από
-     * το μικρό εικονίδιο στη δεξιά άκρη — οι χρήστες κλικάρουν στη μέση
-     * του πεδίου και νομίζουν ότι «δεν ανοίγει». Το showPicker() το
-     * ανοίγει από όλο το πεδίο (Chrome/Edge/Safari 16+· αλλού απλώς
-     * δεν κάνει τίποτα και μένει η πληκτρολόγηση).
+     * Ημερομηνίες: πληκτρολόγηση ΚΑΙ ημερολόγιο, χωρίς να μπερδεύεται
+     * το ένα με το άλλο. Το κλικ ΜΕΣΑ στο πεδίο αφήνει τον χρήστη να
+     * γράψει ηη/μμ/εεεε ελεύθερα· το διπλανό κουμπί 📅 (class .dj-cal)
+     * ανοίγει το πτυσσόμενο ημερολόγιο με showPicker().
+     * (Η προηγούμενη εκδοχή άνοιγε το ημερολόγιο σε ΚΑΘΕ κλικ πάνω στο
+     * πεδίο — μπλόκαρε την πληκτρολόγηση.)
      */
-    ['new_start_date', 'new_end_date'].forEach(function(id) {
-        const input = document.getElementById(id);
-        if (!input) return;
-        input.addEventListener('click', function() {
+    document.querySelectorAll('.dj-cal').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const input = document.getElementById(btn.dataset.for || '');
+            if (!input) return;
             if (typeof input.showPicker === 'function') {
-                try { input.showPicker(); } catch (e) { /* απαιτεί user gesture — ok */ }
+                try { input.showPicker(); } catch (e) { input.focus(); }
+            } else {
+                input.focus();
             }
         });
     });

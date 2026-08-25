@@ -39,10 +39,17 @@
 
                     <div class="form-group">
                         <label>Περίοδος:</label>
-                        <div class="date-range">
-                            <input type="date" id="new_start_date" name="new_start_date" class="form-control" placeholder="Από">
+                        <!-- Πληκτρολόγηση ΚΑΙ ημερολόγιο: γράφεις ελεύθερα
+                             ηη/μμ/εεεε μέσα στο πεδίο, ή πατάς το κουμπί 📅
+                             για το πτυσσόμενο. -->
+                        <div class="date-range" style="display:flex; align-items:center; gap:.4rem; flex-wrap:wrap;">
+                            <input type="date" id="new_start_date" name="new_start_date" class="form-control" style="flex:1; min-width:130px;">
+                            <button type="button" class="dj-cal" data-for="new_start_date" title="Άνοιγμα ημερολογίου"
+                                    style="border:1px solid #d1d5db; background:#f9fafb; border-radius:6px; padding:.35rem .55rem; cursor:pointer;">📅</button>
                             <span>έως</span>
-                            <input type="date" id="new_end_date" name="new_end_date" class="form-control" placeholder="Έως">
+                            <input type="date" id="new_end_date" name="new_end_date" class="form-control" style="flex:1; min-width:130px;">
+                            <button type="button" class="dj-cal" data-for="new_end_date" title="Άνοιγμα ημερολογίου"
+                                    style="border:1px solid #d1d5db; background:#f9fafb; border-radius:6px; padding:.35rem .55rem; cursor:pointer;">📅</button>
                         </div>
                     </div>
 
@@ -101,6 +108,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Δηλώνει στον server ότι η φόρμα περιέχει την ενότητα προϋπηρεσίας:
+         χωρίς αυτό, ο server δεν ξέρει αν το κενό vehicle_experience[]
+         σημαίνει «διάγραψέ τα όλα» ή «η φόρμα δεν είχε την ενότητα». -->
+    <input type="hidden" name="vehicle_experience_submitted" value="1">
 
     <!-- Κρυφά πεδία για αποθήκευση των δεδομένων -->
     <div id="vehicle-experience-data">
