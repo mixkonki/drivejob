@@ -138,39 +138,56 @@
  * συμπληρώσει.
  */
 ?>
+                        <?php $currentRadius = (int) old('preferred_radius', $driverData['preferred_radius'] ?? 0); ?>
                         <div class="form-section">
                         <h2>Περιοχή Εργασίας</h2>
-                        <p class="form-hint form-hint-lead">Πόσο μακριά από την έδρα σας δέχεστε να εργαστείτε. Καθορίζει ποιες αγγελίες θα σας προταθούν.</p>
 
                         <?php /* Δείκτης παρουσίας: χωρίς αυτόν ο controller δεν ξέρει αν
                            τα ατσέκαρα checkbox σημαίνουν «όχι» ή «η ενότητα δεν
                            στάλθηκε» — και θα τα μηδένιζε σε κάθε αποθήκευση. */ ?>
                         <input type="hidden" name="reach_section" value="1">
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="preferred_radius">Ακτίνα μετακίνησης</label>
-                                <select id="preferred_radius" name="preferred_radius">
-                                    <?php
-                                    $currentRadius = (int) old('preferred_radius', $driverData['preferred_radius'] ?? 0);
-                                    $radiusOptions = [
-                                        0 => 'Δεν έχω αποφασίσει',
-                                        20 => 'Έως 20 χλμ — εντός πόλης',
-                                        50 => 'Έως 50 χλμ — ευρύτερη περιοχή',
-                                        100 => 'Έως 100 χλμ — γειτονικοί νομοί',
-                                        200 => 'Έως 200 χλμ',
-                                        500 => 'Έως 500 χλμ',
-                                        9999 => 'Όλη την Ελλάδα',
-                                    ];
-                                    foreach ($radiusOptions as $km => $label) :
-                                    ?>
-                                        <option value="<?php echo $km; ?>" <?php echo $currentRadius === $km ? 'selected' : ''; ?>><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                        <?php /* Οι συντεταγμένες γεμίζουν ΜΟΝΕΣ τους από τον χάρτη
+                           (work-radius.js → Geocoder). Ήταν NULL για κάθε οδηγό,
+                           ενώ το MatchingModel τις χρειάζεται για να υπολογίσει
+                           απόσταση — γι' αυτό το ταίριασμα έβγαζε Αθήνα σε οδηγό
+                           Θεσσαλονίκης. */ ?>
+                        <input type="hidden" id="driverLat" name="latitude" value="<?php echo htmlspecialchars((string) ($driverData['latitude'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" id="driverLng" name="longitude" value="<?php echo htmlspecialchars((string) ($driverData['longitude'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+
+                        <div id="workRadius" class="wr"
+                             data-lat="<?php echo htmlspecialchars((string) ($driverData['latitude'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                             data-lng="<?php echo htmlspecialchars((string) ($driverData['longitude'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                             data-city="<?php echo htmlspecialchars((string) ($driverData['city'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                             data-address="<?php echo htmlspecialchars(trim(($driverData['address'] ?? '') . ' ' . ($driverData['city'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>">
+
+                            <div class="wr-controls">
+                                <div class="wr-readout">
+                                    <span class="wr-readout-label">Δέχομαι εργασία έως</span>
+                                    <strong id="radiusReadout"><?php echo $currentRadius > 0 ? ($currentRadius >= 9999 ? 'Όλη την Ελλάδα' : $currentRadius . ' χλμ') : 'Δεν έχει οριστεί'; ?></strong>
+                                </div>
+
+                                <?php /* Δείκτης ΚΑΙ αριθμός: ο δείκτης για γρήγορη
+                                   αίσθηση, ο αριθμός για όποιον ξέρει ακριβώς
+                                   («δουλεύω μέχρι τα 65 χλμ») και δεν πρέπει να
+                                   στρογγυλοποιεί σε προκαθορισμένη επιλογή. */ ?>
+                                <input type="range" id="radiusSlider" min="0" max="10" step="1" class="wr-slider"
+                                       aria-label="Ακτίνα εργασίας">
+
+                                <div class="wr-exact">
+                                    <label for="preferred_radius">Ακριβής τιμή</label>
+                                    <input type="number" id="preferred_radius" name="preferred_radius"
+                                           min="0" max="9999" step="5"
+                                           value="<?php echo $currentRadius; ?>">
+                                    <span>χλμ</span>
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                <label>Επιπλέον διαθεσιμότητα</label>
+                            <div id="radiusMap" class="wr-map" aria-hidden="true"></div>
+
+                            <p id="radiusCoverage" class="wr-coverage"></p>
+
+                            <div class="wr-extra">
                                 <label class="reach-check">
                                     <input type="checkbox" name="willing_to_travel" value="1" <?php echo !empty($driverData['willing_to_travel']) ? 'checked' : ''; ?>>
                                     Δέχομαι ταξίδια εκτός έδρας (πολυήμερα δρομολόγια)
@@ -182,5 +199,7 @@
                             </div>
                         </div>
                         </div><!-- /.form-section Περιοχή Εργασίας -->
+
+                        <?= \Drivejob\Helpers\Asset::js('js/work-radius.js', true) ?>
 
 <?php /* Η «Αλλαγή Κωδικού Πρόσβασης» μεταφέρθηκε στη σελίδα drivers/security. */ ?>

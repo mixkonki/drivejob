@@ -42,6 +42,19 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$driverId]);
 $recentConversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+/*
+ * ΚΕΝΟ WIDGET = ΚΑΝΕΝΑ WIDGET (30/08).
+ *
+ * Χωρίς μηνύματα το πλαίσιο έπιανε τρεις σειρές για να πει «Δεν έχετε
+ * μηνύματα» και «Όταν οι εταιρείες επικοινωνήσουν μαζί σας, τα μηνύματα
+ * θα εμφανιστούν εδώ» — δύο προτάσεις για να εξηγήσουν το προφανές, στην
+ * κορυφή της πλαϊνής στήλης του προφίλ. Ο νέος οδηγός έβλεπε πρώτα ένα
+ * άδειο κουτί.
+ */
+if (empty($recentConversations)) {
+    return;
+}
 ?>
 
 <section class="profile-section messages-widget">

@@ -137,6 +137,8 @@ $router->group(['prefix' => 'drivers'], function ($router) {
      * έμενε πίσω κάθε φορά που ο οδηγός ενημέρωνε το προφίλ του.
      */
     $router->get('/cv', [DriversController::class, 'cv'])->name('drivers.cv');
+    $router->get('/cv/pdf', [DriversController::class, 'cvPdf'])->name('drivers.cv.pdf');
+    $router->post('/cv/settings', [DriversController::class, 'saveCvSettings'])->name('drivers.cv.settings');
 
     // Διαδρομές αναζήτησης
     $router->get('/search', [DriversController::class, 'search'])->name('drivers.search');

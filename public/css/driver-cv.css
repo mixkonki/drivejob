@@ -1,0 +1,370 @@
+/**
+ * Οθόνη βιογραφικού (31/08/2026).
+ *
+ * ΔΥΟ ΣΤΗΛΕΣ: ρυθμίσεις αριστερά, «χαρτί» δεξιά. Το χαρτί μοιάζει με
+ * σελίδα — λευκό, με σκιά, σε γκρι φόντο — ώστε να είναι προφανές ότι
+ * αυτό ακριβώς θα σταλεί. Μια προεπισκόπηση που μοιάζει με φόρμα δεν
+ * πείθει κανέναν ότι είναι προεπισκόπηση.
+ *
+ * ΤΟ MOBILE BLOCK ΕΙΝΑΙ ΣΤΟ ΤΕΛΟΣ (κανόνας του project).
+ */
+
+.cv-page { background: #f1f3f5; min-height: 70vh; padding-bottom: 2rem; }
+
+.cv-wrap { max-width: 1180px; margin: 0 auto; padding: 1.2rem 1rem 0; }
+
+/* ── Μπάρα τίτλου ──────────────────────────────────────────────────── */
+.cv-topbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .7rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.cv-topbar h1 {
+    margin: 0;
+    font-size: 1.35rem;
+    color: #1f2937;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.cv-topbar-note { margin: .2rem 0 0; font-size: .84rem; color: #6b7280; }
+
+.cv-topbar-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+.cv-btn {
+    display: inline-block;
+    padding: .55rem 1.1rem;
+    border-radius: 7px;
+    font-size: .9rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.cv-btn-primary { background: #b3261e; color: #fff; }
+.cv-btn-primary:hover { background: #92201a; }
+.cv-btn-ghost { background: #fff; color: #374151; border-color: #d1d5db; }
+.cv-btn-ghost:hover { background: #f9fafb; }
+
+/* ── Διάταξη ───────────────────────────────────────────────────────── */
+.cv-layout {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 1.2rem;
+    align-items: start;
+}
+
+/* Οι ρυθμίσεις μένουν ορατές όσο κυλά η προεπισκόπηση: αλλιώς ο οδηγός
+   που κατεβαίνει να δει το τέλος του CV χάνει τους διακόπτες. */
+.cv-side { position: sticky; top: 1rem; }
+
+.cv-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: .9rem 1rem;
+    margin-bottom: .8rem;
+}
+
+.cv-card h2 {
+    margin: 0 0 .15rem;
+    font-size: .95rem;
+    font-weight: 700;
+    color: #1f2937;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.cv-hint { margin: 0 0 .6rem; font-size: .78rem; color: #9ca3af; line-height: 1.4; }
+
+.cv-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: .55rem .65rem;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: .85rem;
+    line-height: 1.5;
+    resize: vertical;
+    color: #111827;
+}
+
+.cv-card textarea:focus {
+    outline: none;
+    border-color: #b3261e;
+    box-shadow: 0 0 0 3px rgba(179, 38, 30, .12);
+}
+
+.cv-summary-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: .35rem;
+    font-size: .75rem;
+    color: #9ca3af;
+}
+
+.cv-link {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: #b3261e;
+    font-size: .75rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.cv-link:hover { text-decoration: underline; }
+
+/* ── Διακόπτες ─────────────────────────────────────────────────────── */
+.cv-toggle {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .4rem 0;
+    cursor: pointer;
+    border-top: 1px solid #f3f4f6;
+}
+
+.cv-toggle:first-of-type { border-top: 0; }
+.cv-toggle.is-muted { cursor: default; opacity: .55; }
+
+.cv-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.cv-toggle-track {
+    position: relative;
+    flex-shrink: 0;
+    width: 34px;
+    height: 19px;
+    border-radius: 20px;
+    background: #d1d5db;
+    transition: background .18s ease;
+}
+
+.cv-toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+    transition: transform .18s ease;
+}
+
+.cv-toggle input:checked + .cv-toggle-track { background: #b3261e; }
+.cv-toggle input:checked + .cv-toggle-track .cv-toggle-knob { transform: translateX(15px); }
+.cv-toggle input:focus-visible + .cv-toggle-track { box-shadow: 0 0 0 3px rgba(179, 38, 30, .2); }
+
+.cv-toggle-label { font-size: .85rem; color: #374151; }
+.cv-toggle-label small { display: block; font-size: .72rem; color: #9ca3af; }
+
+/* ── Κενές ενότητες ────────────────────────────────────────────────── */
+.cv-card-gaps { border-color: #fde68a; background: #fffbeb; }
+.cv-card-gaps ul { list-style: none; margin: 0; padding: 0; }
+.cv-card-gaps li { font-size: .82rem; padding: .18rem 0; }
+.cv-card-gaps a { color: #b45309; font-weight: 600; text-decoration: none; }
+.cv-card-gaps a:hover { text-decoration: underline; }
+.cv-card-gaps small { display: block; color: #92400e; font-size: .74rem; }
+
+.cv-saved {
+    margin: 0;
+    padding: .4rem .6rem;
+    font-size: .8rem;
+    color: #047857;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 7px;
+    text-align: center;
+}
+
+.cv-saved.is-error { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+.cv-saved[hidden] { display: none; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ΤΟ ΧΑΡΤΙ — δείχνει ΑΚΡΙΒΩΣ ό,τι θα σταλεί
+   ══════════════════════════════════════════════════════════════════════ */
+
+.cv-paper {
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, .10);
+    padding: 2.2rem 2.4rem 2rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #111827;
+    /* Αναλογία Α4 ως ελάχιστο ύψος: το χαρτί μοιάζει με σελίδα ακόμη
+       και σε άδειο προφίλ. */
+    min-height: 640px;
+}
+
+.cvp-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid #b3261e;
+}
+
+.cvp-photo { flex-shrink: 0; }
+.cvp-photo[hidden] { display: none; }
+
+.cvp-photo img {
+    width: 84px;
+    height: 84px;
+    border-radius: 6px;
+    object-fit: cover;
+    display: block;
+}
+
+.cvp-head-main { min-width: 0; }
+
+.cvp-head-main h2 {
+    margin: 0 0 .25rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -.015em;
+}
+
+/* Το `display: flex` παρακάτω υπερισχύει του native `[hidden]` — χωρίς
+   αυτόν τον κανόνα η γραμμή «Αξιολόγηση 0.0/5 από 0 εργοδότες» έμενε
+   ορατή παρόλο που το PHP την είχε σημάνει hidden. */
+[hidden] { display: none !important; }
+
+.cvp-line1, .cvp-line2 {
+    margin: .1rem 0;
+    font-size: .86rem;
+    color: #6b7280;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .1rem .5rem;
+}
+
+.cvp-line1 { font-size: .92rem; color: #4b5563; }
+
+/* Διαχωριστικό ΜΟΝΟ ανάμεσα σε ορατά στοιχεία: με το `:not([hidden])` ο
+   κρυμμένος αριθμός δεν αφήνει ορφανή τελεία. */
+.cvp-line1 span:not([hidden]) ~ span:not([hidden])::before,
+.cvp-line2 span:not([hidden]) ~ span:not([hidden])::before {
+    content: '·';
+    color: #d1d5db;
+    margin-right: .5rem;
+}
+
+.cvp-summary {
+    margin: 1rem 0 .2rem;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: #374151;
+}
+
+.cvp-summary[hidden] { display: none; }
+
+.cvp-sec { margin-top: 1.4rem; }
+
+.cvp-sec h3 {
+    margin: 0 0 .5rem;
+    font-size: .82rem;
+    font-weight: 800;
+    letter-spacing: .06em;
+    color: #b3261e;
+    padding-bottom: .3rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.cvp-sec h3 small {
+    font-weight: 400;
+    letter-spacing: 0;
+    color: #9ca3af;
+    font-size: .76rem;
+}
+
+.cvp-row {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: .9rem;
+    padding: .4rem 0;
+}
+
+.cvp-when { font-size: .8rem; color: #9ca3af; padding-top: .1rem; }
+
+.cvp-what { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+.cvp-what strong { font-size: .92rem; font-weight: 650; }
+
+.cvp-now {
+    font-size: .7rem;
+    font-weight: 700;
+    color: #047857;
+    background: #ecfdf5;
+    border-radius: 20px;
+    padding: .05rem .4rem;
+    margin-left: .3rem;
+}
+
+.cvp-meta { font-size: .8rem; color: #9ca3af; }
+.cvp-sub { font-size: .82rem; color: #4b5563; }
+.cvp-desc { font-size: .84rem; color: #4b5563; line-height: 1.45; }
+.cvp-plain { font-size: .86rem; color: #374151; line-height: 1.5; }
+
+.cvp-group { margin-bottom: .7rem; }
+
+.cvp-group h4 {
+    margin: .5rem 0 .25rem;
+    font-size: .84rem;
+    font-weight: 700;
+    color: #374151;
+}
+
+.cvp-group h4 small { font-weight: 400; color: #9ca3af; margin-left: .5rem; }
+
+.cvp-qual {
+    display: flex;
+    flex-direction: column;
+    gap: .05rem;
+    padding: .22rem 0;
+}
+
+.cvp-qual strong { font-size: .88rem; font-weight: 650; }
+
+.cvp-foot {
+    margin: 2rem 0 0;
+    padding-top: .8rem;
+    border-top: 1px solid #f3f4f6;
+    text-align: center;
+    font-size: .72rem;
+    color: #9ca3af;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ΚΙΝΗΤΟ — ΕΝΑ BLOCK, ΣΤΟ ΤΕΛΟΣ
+   ══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+    /* Οι ρυθμίσεις πάνω, το χαρτί κάτω: στο κινητό ο οδηγός ρυθμίζει
+       πρώτα και κυλά μετά για να δει. Η sticky στήλη δεν έχει νόημα
+       όταν δεν υπάρχει διπλανή στήλη να κυλήσει. */
+    .cv-layout { grid-template-columns: 1fr; }
+    .cv-side { position: static; }
+
+    .cv-paper { padding: 1.3rem 1.2rem; min-height: 0; }
+    .cvp-head { gap: .8rem; }
+    .cvp-photo img { width: 64px; height: 64px; }
+    .cvp-head-main h2 { font-size: 1.25rem; }
+
+    /* Ημερομηνία πάνω από το περιεχόμενο αντί για στενή στήλη 120px που
+       στα 390px θα έσπαγε κάθε λέξη. */
+    .cvp-row { grid-template-columns: 1fr; gap: .1rem; }
+    .cvp-when { font-size: .76rem; }
+
+    .cv-topbar { align-items: flex-start; }
+    .cv-topbar-actions { width: 100%; }
+    .cv-btn { flex: 1; text-align: center; }
+}

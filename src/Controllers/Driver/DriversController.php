@@ -768,9 +768,93 @@ class DriversController extends BaseUserController
                 exit();
             }
 
+            $service = new \Drivejob\Services\Driver\DriverCvService();
+            $options = \Drivejob\Services\Driver\DriverCvService::optionsFromProfile($profile);
+
+            $viewData = [
+                'driverData' => $profile,
+                'cv' => $service->build($profile, false, $options),
+                'cvOptions' => $options,
+                'cvSummarySaved' => trim((string) ($profile['cv_summary'] ?? '')),
+                'cvSummaryAuto' => $service->autoSummary($profile),
+            ];
+
+            extract($viewData);
+            include ROOT_DIR . '/src/Views/drivers/cv.php';
+        } catch (\Throwable $e) {
+            Logger::error('CV screen failed', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            Session::set('error_message', 'Δεν ήταν δυνατή η προβολή του βιογραφικού.');
+            header('Location: ' . BASE_URL . 'drivers/profile');
+            exit();
+        }
+    }
+
+    /**
+     * POST /drivers/cv/settings — αποθήκευση προτιμήσεων (AJAX).
+     *
+     * Άμεση αποθήκευση ανά πράξη, όπως στα πιστοποιητικά και τις γλώσσες:
+     * ο οδηγός γυρίζει έναν διακόπτη και το βλέπει να ισχύει, χωρίς
+     * «Αποθήκευση Αλλαγών» στο τέλος μιας οθόνης με τέσσερα πεδία.
+     */
+    public function saveCvSettings()
+    {
+        AuthMiddleware::hasRole('driver');
+        $driverId = Session::get('user_id');
+
+        // JsonHelper::error/success — ΟΧΙ send(): η μέθοδος δεν υπάρχει και
+        // ο ExceptionHandler γύριζε ολόκληρη σελίδα HTML αντί για JSON,
+        // οπότε το fetch έσκαγε σιωπηλά με «Πρόβλημα σύνδεσης».
+        if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
+            JsonHelper::error('Η σελίδα έληξε. Ανανεώστε και δοκιμάστε ξανά.');
+        }
+
+        try {
+            $data = [
+                // Το κείμενο κόβεται στους 600 χαρακτήρες: μια σύνοψη
+                // βιογραφικού που δεν χωρά σε παράγραφο δεν είναι σύνοψη.
+                'cv_summary' => mb_substr(trim((string) ($_POST['cv_summary'] ?? '')), 0, 600),
+                'cv_show_photo' => !empty($_POST['cv_show_photo']) ? 1 : 0,
+                'cv_show_age' => !empty($_POST['cv_show_age']) ? 1 : 0,
+                'cv_show_phone' => !empty($_POST['cv_show_phone']) ? 1 : 0,
+                'cv_show_email' => !empty($_POST['cv_show_email']) ? 1 : 0,
+                'cv_show_rating' => !empty($_POST['cv_show_rating']) ? 1 : 0,
+            ];
+
+            // Ο έλεγχος του αποτελέσματος ΔΕΝ είναι τυπικός: το model
+            // επέστρεφε false σιωπηλά σε μερική ενημέρωση και ο χρήστης
+            // έβλεπε «Αποθηκεύτηκε» χωρίς να έχει γραφτεί τίποτα.
+            if (!$this->driverProfileService->updateBasicInfo($driverId, $data)) {
+                JsonHelper::error('Δεν αποθηκεύτηκε. Δοκιμάστε ξανά.');
+            }
+            JsonHelper::success('Αποθηκεύτηκε.');
+        } catch (\Throwable $e) {
+            Logger::error('CV settings save failed', ['driver_id' => $driverId, 'message' => $e->getMessage()]);
+            JsonHelper::error('Δεν αποθηκεύτηκε. Δοκιμάστε ξανά.');
+        }
+    }
+
+    /** GET /drivers/cv/pdf — το αρχείο. */
+    public function cvPdf()
+    {
+        AuthMiddleware::hasRole('driver');
+        $driverId = Session::get('user_id');
+
+        try {
+            $profile = $this->driverProfileService->getDriverProfile($driverId);
+            if (!$profile) {
+                Session::set('error_message', 'Τα στοιχεία του οδηγού δεν βρέθηκαν.');
+                header('Location: ' . BASE_URL . 'drivers/profile');
+                exit();
+            }
+
             // Δημόσια όψη: το «τι λείπει» αφορά μόνο τον ίδιο τον οδηγό,
             // δεν έχει καμία θέση σε βιογραφικό που πάει σε εργοδότη.
-            $cvData = (new \Drivejob\Services\Driver\DriverCvService())->build($profile, false);
+            $options = \Drivejob\Services\Driver\DriverCvService::optionsFromProfile($profile);
+            $cvData = (new \Drivejob\Services\Driver\DriverCvService())->build($profile, false, $options);
             $bytes = (new \Drivejob\Services\Driver\DriverCvPdf($cvData, $profile))->render();
 
             $name = trim(($profile['first_name'] ?? '') . '_' . ($profile['last_name'] ?? ''));
@@ -796,6 +880,16 @@ class DriversController extends BaseUserController
             header('Location: ' . BASE_URL . 'drivers/profile');
             exit();
         }
+    }
+
+    /** Έγκυρη συντεταγμένη ή null — ποτέ σκουπίδι στη βάση. */
+    private function coordinate($value, float $max): ?float
+    {
+        if ($value === null || $value === '' || !is_numeric($value)) {
+            return null;
+        }
+        $n = (float) $value;
+        return ($n >= -$max && $n <= $max && $n != 0.0) ? $n : null;
     }
 
     /** Ελληνικά σε λατινικά, μόνο για όνομα αρχείου. */
@@ -1329,6 +1423,19 @@ class DriversController extends BaseUserController
             'willing_to_relocate' => isset($_POST['reach_section'])
                 ? (isset($_POST['willing_to_relocate']) ? 1 : 0)
                 : null,
+
+            /*
+             * Συντεταγμένες έδρας — τις γεμίζει ΜΟΝΟΣ του ο χάρτης της
+             * ακτίνας (work-radius.js → Google Geocoder) και έρχονται σε
+             * κρυφά πεδία. Ήταν NULL για κάθε οδηγό, ενώ το MatchingModel
+             * τις διαβάζει για να υπολογίσει απόσταση.
+             *
+             * Δεν εμπιστευόμαστε ό,τι έρθει: εκτός εύρους → null. Ένα
+             * χαλασμένο ζεύγος θα έβαζε τον οδηγό στη μέση του ωκεανού
+             * και θα τον έκοβε από κάθε ταίριασμα.
+             */
+            'latitude' => $this->coordinate($_POST['latitude'] ?? null, 90),
+            'longitude' => $this->coordinate($_POST['longitude'] ?? null, 180),
 
             /*
              * ── Στοιχεία εντύπου άδειας (πίνακας drivers) ─────────────

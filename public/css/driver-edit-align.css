@@ -880,3 +880,113 @@ main .container > h1 {
 
 .crt-manager .crt-empty { color: #6b7280; font-size: .88rem; }
 .crt-manager .crt-add { background: #fafafa; margin-top: .8rem; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ΑΚΤΙΝΑ ΕΡΓΑΣΙΑΣ ΜΕ ΧΑΡΤΗ (30/08)
+
+   Ο χάρτης δεν είναι διακόσμηση: τα «100 χλμ» είναι αφηρημένα, ο κύκλος
+   πάνω στη γεωγραφία όχι. Δίπλα του τα ονόματα των πόλεων που πέφτουν
+   μέσα — ο οδηγός σκέφτεται σε προορισμούς, όχι σε χιλιόμετρα.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.wr { margin-top: .2rem; }
+
+.wr-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .5rem 1rem;
+}
+
+.wr-readout {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    gap: .45rem;
+}
+
+.wr-readout-label { font-size: .82rem; color: #6b7280; }
+
+.wr-readout strong {
+    font-size: 1.05rem;
+    color: #b3261e;
+    font-weight: 700;
+}
+
+.wr-slider {
+    width: 100%;
+    accent-color: #b3261e;
+    cursor: pointer;
+}
+
+.wr-exact {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .8rem;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.wr-exact label { font-size: .8rem !important; font-weight: 400 !important; margin: 0 !important; }
+
+.wr-exact input {
+    width: 78px !important;
+    padding: .3rem .4rem !important;
+    text-align: right;
+}
+
+.wr-map {
+    height: 210px;
+    margin-top: .7rem;
+    border-radius: 10px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+}
+
+/* Χωρίς Google Maps ο χάρτης δεν αφήνει κενό κουτί — εξαφανίζεται. */
+.wr-map:not(.is-ready) { display: none; }
+
+.wr-coverage {
+    margin: .6rem 0 0;
+    font-size: .8rem;
+    line-height: 1.9;
+    color: #4b5563;
+}
+
+.wr-cov-title { color: #6b7280; margin-right: .3rem; }
+.wr-cov-all { color: #15803d; font-weight: 600; }
+.wr-cov-none { color: #9ca3af; }
+
+.wr-city {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .25rem;
+    background: #f3f4f6;
+    border-radius: 20px;
+    padding: .1rem .5rem;
+    margin-right: .25rem;
+    color: #374151;
+    font-size: .78rem;
+}
+
+.wr-city small { color: #9ca3af; font-size: .68rem; }
+.wr-city small::after { content: ' χλμ'; }
+.wr-city-more { background: transparent; color: #9ca3af; }
+.wr-city-more small { display: none; }
+
+/* Με μετεγκατάσταση η ακτίνα δεν έχει νόημα — υποχωρεί αντί να
+   εξαφανιστεί, ώστε να φαίνεται ότι υπάρχει αν ξετσεκαριστεί. */
+.wr.is-nationwide .wr-controls,
+.wr.is-nationwide .wr-map { opacity: .4; pointer-events: none; }
+
+.wr-extra { margin-top: .5rem; }
+
+/* Κινητό για την ακτίνα — ΜΕΤΑ τους desktop κανόνες της, άρα κερδίζει.
+   (Το γενικό mobile block του αρχείου είναι πιο πάνω και δεν αφορά το .wr.) */
+@media (max-width: 720px) {
+    .wr-controls { grid-template-columns: 1fr; }
+    .wr-exact { justify-content: flex-end; }
+    .wr-map { height: 180px; }
+    .wr-coverage { line-height: 2; }
+}

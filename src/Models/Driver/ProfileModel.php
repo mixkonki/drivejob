@@ -56,13 +56,36 @@ class ProfileModel extends BaseModel
      */
     public function update($id, $data)
     {
-        // Επικύρωση των απαραίτητων πεδίων
+        /*
+         * ══════════════════════════════════════════════════════════════
+         *  ΜΕΡΙΚΗ ΕΝΗΜΕΡΩΣΗ ≠ ΕΛΛΙΠΗΣ ΕΝΗΜΕΡΩΣΗ (31/08/2026)
+         * ══════════════════════════════════════════════════════════════
+         *
+         * Ο έλεγχος απαιτούσε email, όνομα, επώνυμο και τηλέφωνο σε ΚΑΘΕ
+         * κλήση. Οποιαδήποτε μερική ενημέρωση επέστρεφε `false` ΣΙΩΠΗΛΑ:
+         *
+         *   - το toggle «Διαθέσιμος για εργασία»
+         *     (updateBasicInfo με ένα μόνο πεδίο)
+         *   - οι προτιμήσεις βιογραφικού (cv_show_*)
+         *
+         * Ο καλών έβλεπε «αποθηκεύτηκε» και τίποτα δεν είχε γραφτεί.
+         *
+         * Ο έλεγχος που έχει νόημα δεν είναι «πρέπει να στείλεις email»
+         * αλλά «αν στείλεις email, μην το στείλεις κενό». Η πλήρης
+         * ενημέρωση προφίλ στέλνει και τα τέσσερα, οπότε ελέγχονται
+         * κανονικά — καμία προστασία δεν χάνεται.
+         */
         $requiredFields = ['email', 'last_name', 'first_name', 'phone'];
         foreach ($requiredFields as $field) {
-            if (!isset($data[$field]) || $data[$field] === '') {
-                Logger::error("Missing required field for driver update: $field");
+            if (array_key_exists($field, $data) && (string) $data[$field] === '') {
+                Logger::error("Empty required field for driver update: $field");
                 return false;
             }
+        }
+
+        // Κλήση χωρίς κανένα πεδίο: δεν είναι σφάλμα, απλά δεν κάνει τίποτα.
+        if (empty($data)) {
+            return true;
         }
 
         return parent::update($data, ['id' => $id]);

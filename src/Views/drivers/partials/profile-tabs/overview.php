@@ -9,20 +9,13 @@
 
                 <div class="profile-content">
                     <div class="profile-main">
-                        <?php /* Τυπικά προσόντα σε ΟΠΤΙΚΕΣ ΟΜΑΔΕΣ (30/08).
-                           Ο ενιαίος πίνακας 4 στηλών έδινε την ίδια βαρύτητα σε
-                           δίπλωμα, ΠΕΙ, ADR, ταχογράφο, μηχανήματα έργου και
-                           ειδικές άδειες — τίποτα δεν ξεχώριζε. Δες το partial
-                           για τη λογική των τεσσάρων ομάδων. */ ?>
-                        <section class="profile-section profile-section--quals">
-                            <h2>Επαγγελματικά Προσόντα &amp; Άδειες</h2>
-                            <?php include __DIR__ . '/_qualification-groups.php'; ?>
-                        </section>
-
-                        <?php /* Προϋπηρεσία, σεμινάρια, γλώσσες, δεξιότητες (30/08).
-                           Έλειπαν εντελώς από την επισκόπηση ενώ είναι ακριβώς
-                           τα πεδία που ζητά το βιογραφικό. Όλα τα κείμενα
-                           έρχονται έτοιμα από τον DriverCvService. */ ?>
+                        <?php /* ΟΛΕΣ οι ενότητες με το ΙΔΙΟ στυλ ομάδας (οδηγία 30/08):
+                           προσόντα, προϋπηρεσία, σεμινάρια, γλώσσες. Το εξωτερικό
+                           «Επαγγελματικά Προσόντα & Άδειες» αφαιρέθηκε — ήταν
+                           τίτλος πάνω από τίτλους, χωρίς να προσθέτει τίποτα.
+                           Όλο το περιεχόμενο έρχεται έτοιμο από τον
+                           DriverCvService: ίδια πηγή με το PDF. */ ?>
+                        <?php include __DIR__ . '/_qualification-groups.php'; ?>
                         <?php include __DIR__ . '/_cv-sections.php'; ?>
                     </div>
 
@@ -37,17 +30,11 @@
                         <!-- Messages Widget -->
                         <?php include dirname(__DIR__, 2) . '/partials/messages-widget.php'; ?>
 
-                        <!-- Ενότητα Διαθεσιμότητας -->
-                        <section class="profile-section availability-section">
-                            <h3>Κατάσταση Διαθεσιμότητας</h3>
-                            <div class="availability-status <?php echo $driverData['available_for_work'] ? 'available' : 'unavailable'; ?>">
-                                <span class="status-icon"></span>
-                                <span class="status-text">
-                                    <?php echo $driverData['available_for_work'] ? 'Διαθέσιμος/η για εργασία' : 'Μη διαθέσιμος/η για εργασία'; ?>
-                                </span>
-                            </div>
-                            <p class="availability-note">Μπορείτε να αλλάξετε την κατάσταση διαθεσιμότητάς σας από την <a href="<?php echo BASE_URL; ?>drivers/edit-profile">επεξεργασία προφίλ</a>.</p>
-                        </section>
+                        <?php /* Η ΔΙΑΘΕΣΙΜΟΤΗΤΑ μετακόμισε στην κεφαλίδα, δίπλα στο
+                           όνομα (30/08). Ήταν κάρτα με τίτλο, εικονίδιο και μια
+                           πρόταση οδηγιών — τρία στοιχεία για να πουν μία λέξη.
+                           Ως σήμα στην κεφαλίδα φαίνεται αμέσως, χωρίς να
+                           καταλαμβάνει χώρο. */ ?>
                         <?php /* «Σχετικά με εμένα»: ΑΦΑΙΡΕΘΗΚΕ 30/08.
                            Το πεδίο είχε φύγει από τη φόρμα επεξεργασίας στις 25/08
                            αλλά έμεινε στην προβολή — έδειχνε παλιό περιεχόμενο που
@@ -56,41 +43,45 @@
                            (Η στήλη about_me μένει στη βάση· δεν χάνεται τίποτα αν
                            αποφασίσουμε να την επαναφέρουμε ως «Λίγα λόγια για
                            εμένα» στο βιογραφικό.) */ ?>
-                        <!-- Ενότητα Στοιχείων Επικοινωνίας -->
-                        <section class="profile-section">
-                            <h2>Στοιχεία Επικοινωνίας</h2>
-                            <ul class="contact-list">
-                                <li>
-                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/email_icon.png') ?>" alt="Email">
-                                    <span><?php echo htmlspecialchars($driverData['email']); ?></span>
-                                </li>
-                                <li>
-                                    <img src="<?= \Drivejob\Helpers\Asset::url('img/phone_icon.png') ?>" alt="Τηλέφωνο">
-                                    <span><?php echo htmlspecialchars($driverData['phone']); ?></span>
-                                </li>
-                                <?php if (isset($driverData['landline']) && $driverData['landline']) : ?>
+                        <?php /* Επικοινωνία: μία συμπαγής λίστα με inline SVG αντί για
+                           PNG που κατά τόπους λείπουν (404). */ ?>
+                        <section class="qgroup qgroup--contact">
+                            <header class="qgroup-head"><h3>Επικοινωνία</h3></header>
+                            <div class="qgroup-body">
+                                <ul class="contact-list">
                                     <li>
-                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/landline_icon.png') ?>" alt="Σταθερό Τηλέφωνο">
-                                        <span><?php echo htmlspecialchars($driverData['landline']); ?></span>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
+                                        <a href="mailto:<?php echo htmlspecialchars($driverData['email']); ?>"><?php echo htmlspecialchars($driverData['email']); ?></a>
                                     </li>
-                                <?php endif; ?>
-                                <?php if (isset($driverData['social_linkedin']) && $driverData['social_linkedin']) : ?>
-                                    <li>
-                                        <img src="<?= \Drivejob\Helpers\Asset::url('img/linkedin_icon.png') ?>" alt="LinkedIn">
-                                        <a href="<?php echo htmlspecialchars($driverData['social_linkedin']); ?>" target="_blank">LinkedIn Προφίλ</a>
-                                    </li>
-                                <?php endif; ?>
-                            </ul>
-                        </section>
-                        <!-- Απόρρητο & δεδομένα (GDPR — Πακέτο 7) -->
-                        <section class="profile-section privacy-section">
-                            <h2>Απόρρητο &amp; Δεδομένα</h2>
-                            <p style="margin:6px 0 12px; color:#555;">Διαχειριστείτε τα προσωπικά σας δεδομένα (GDPR).</p>
-                            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                                <a href="<?php echo BASE_URL; ?>gdpr/export" class="btn-secondary" style="padding:8px 16px; border-radius:6px; text-decoration:none; background:#eceff1; color:#333;">⬇️ Εξαγωγή δεδομένων (JSON)</a>
-                                <a href="<?php echo BASE_URL; ?>gdpr/delete" style="padding:8px 16px; border-radius:6px; text-decoration:none; background:#fdecea; color:#b71c1c;">🗑️ Διαγραφή λογαριασμού</a>
+                                    <?php if (!empty($driverData['phone'])) : ?>
+                                        <li>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+                                            <a href="tel:<?php echo htmlspecialchars($driverData['phone']); ?>"><?php echo htmlspecialchars($driverData['phone']); ?></a>
+                                        </li>
+                                    <?php endif; ?>
+                                    <?php if (!empty($driverData['landline'])) : ?>
+                                        <li>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.9 2.2z"/></svg>
+                                            <a href="tel:<?php echo htmlspecialchars($driverData['landline']); ?>"><?php echo htmlspecialchars($driverData['landline']); ?></a>
+                                        </li>
+                                    <?php endif; ?>
+                                    <?php if (!empty($driverData['social_linkedin'])) : ?>
+                                        <li>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+                                            <a href="<?php echo htmlspecialchars($driverData['social_linkedin']); ?>" target="_blank" rel="noopener">LinkedIn</a>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
                             </div>
                         </section>
+                        <?php /* GDPR: δύο σύνδεσμοι στο τέλος, χωρίς κάρτα και χωρίς
+                           επεξηγηματική πρόταση. Είναι δικαιώματα που πρέπει να
+                           υπάρχουν, όχι λειτουργίες που χρησιμοποιεί κανείς
+                           καθημερινά — δεν διεκδικούν χώρο στη μέση της σελίδας. */ ?>
+                        <p class="privacy-links">
+                            <a href="<?php echo BASE_URL; ?>gdpr/export">Εξαγωγή δεδομένων</a>
+                            <a href="<?php echo BASE_URL; ?>gdpr/delete" class="is-danger">Διαγραφή λογαριασμού</a>
+                        </p>
                         <?php
                         /*
                          * ΑΚΤΙΝΑ ΕΡΓΑΣΙΑΣ — αντικατέστησε τον χάρτη Google (30/08).
@@ -109,28 +100,43 @@
                          */
                         $reach = $cv['identity']['reach'] ?? ['declared' => false, 'label' => '', 'travel' => false];
                         ?>
-                        <section class="profile-section reach-section">
-                            <h2>Περιοχή Εργασίας</h2>
-                            <?php if (!empty($driverData['city'])) : ?>
-                                <p class="reach-base">
-                                    <span class="reach-key">Έδρα</span>
-                                    <?php echo htmlspecialchars(trim(($driverData['address'] ?? '') . ' ' . $driverData['city']), ENT_QUOTES, 'UTF-8'); ?>
-                                </p>
-                            <?php endif; ?>
-
-                            <?php if (!empty($reach['declared'])) : ?>
-                                <p class="reach-label"><?php echo htmlspecialchars($reach['label'], ENT_QUOTES, 'UTF-8'); ?></p>
-                                <?php if (!empty($reach['travel'])) : ?>
-                                    <p class="reach-extra">Δέχομαι ταξίδια εκτός έδρας</p>
+                        <section class="qgroup qgroup--reach">
+                            <header class="qgroup-head">
+                                <h3>Περιοχή Εργασίας</h3>
+                                <?php if (!empty($driverData['city'])) : ?>
+                                    <span class="qgroup-meta"><strong><?php echo htmlspecialchars($driverData['city'], ENT_QUOTES, 'UTF-8'); ?></strong></span>
                                 <?php endif; ?>
-                            <?php else : ?>
-                                <p class="reach-missing">
-                                    Δεν έχετε δηλώσει πόσο μακριά δέχεστε να εργαστείτε.
-                                    <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Δηλώστε το τώρα</a> —
-                                    χωρίς αυτό οι προτάσεις εργασίας δεν φιλτράρονται σωστά κατά απόσταση.
-                                </p>
-                            <?php endif; ?>
+                            </header>
+                            <div class="qgroup-body">
+                                <?php if (!empty($reach['declared'])) : ?>
+                                    <?php /* Ο ΙΔΙΟΣ κώδικας με τη φόρμα, χωρίς τα χειριστήρια:
+                                       ο χάρτης δείχνει τον κύκλο της ακτίνας και από κάτω οι
+                                       πόλεις που πέφτουν μέσα. Το work-radius.js αντέχει την
+                                       απουσία slider — μόνο ζωγραφίζει. */ ?>
+                                    <div id="workRadius" class="wr wr--view"
+                                         data-lat="<?php echo htmlspecialchars((string) ($driverData['latitude'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                         data-lng="<?php echo htmlspecialchars((string) ($driverData['longitude'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                         data-city="<?php echo htmlspecialchars((string) ($driverData['city'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                         data-address="<?php echo htmlspecialchars(trim(($driverData['address'] ?? '') . ' ' . ($driverData['city'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>">
+
+                                        <input type="hidden" id="preferred_radius" value="<?php echo (int) ($reach['radius'] ?: ($reach['relocate'] ? 9999 : 0)); ?>">
+                                        <p class="wr-view-label" id="radiusReadout"><?php echo htmlspecialchars($reach['label'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                        <div id="radiusMap" class="wr-map" aria-hidden="true"></div>
+                                        <p id="radiusCoverage" class="wr-coverage"></p>
+                                        <?php if (!empty($reach['travel'])) : ?>
+                                            <p class="wr-view-extra">Δέχεται ταξίδια εκτός έδρας</p>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php else : ?>
+                                    <p class="qrow-empty">
+                                        Δεν έχετε δηλώσει ακτίνα εργασίας.
+                                        <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Δηλώστε την</a> —
+                                        χωρίς αυτήν οι προτάσεις δεν φιλτράρονται κατά απόσταση.
+                                    </p>
+                                <?php endif; ?>
+                            </div>
                         </section>
+                        <?= \Drivejob\Helpers\Asset::js('js/work-radius.js', true) ?>
 
                     </div>
                 </div>

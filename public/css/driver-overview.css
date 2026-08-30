@@ -15,322 +15,308 @@
  */
 
 /* ══════════════════════════════════════════════════════════════════════
-   ΟΜΑΔΕΣ ΠΡΟΣΟΝΤΩΝ
-   ══════════════════════════════════════════════════════════════════════ */
+   ΟΜΑΔΕΣ — ΤΟ ΕΝΙΑΙΟ ΜΟΤΙΒΟ ΟΛΗΣ ΤΗΣ ΕΠΙΣΚΟΠΗΣΗΣ
+   ══════════════════════════════════════════════════════════════════════
 
-.qual-groups {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
-}
+   Ξαναγράφτηκε 30/08 μετά από feedback: «πιο μοντέρνα, πιο μαζεμένη,
+   χωρίς περιττά κείμενα». Τι άλλαξε και γιατί:
+
+   - ΕΞΙ ομάδες με το ίδιο μοτίβο (προσόντα ΚΑΙ προϋπηρεσία/σεμινάρια/
+     γλώσσες). Πριν οι μισές ενότητες είχαν έγχρωμη κεφαλίδα και οι
+     μισές όχι — η σελίδα φαινόταν να τελειώνει στη μέση.
+   - ΧΩΡΙΣ text-transform: uppercase. Ο browser κρατά τους τόνους στα
+     ελληνικά κεφαλαία («ΟΔΉΓΗΣΗ»), που είναι λάθος. Οι τίτλοι μένουν
+     πεζοί, με βάρος και χρώμα για ιεραρχία.
+   - ΧΩΡΙΣ υποτίτλους ομάδας. «Τι έχει δικαίωμα να οδηγεί» εξηγούσε το
+     προφανές σε κάθε φόρτωση.
+   - ΧΩΡΙΣ «Σε ισχύ» παντού. Επαναλαμβανόταν σε 8 γραμμές· ένδειξη
+     μπαίνει μόνο όταν κάτι λήγει, έληξε ή λείπει.
+   - Πυκνότερο κάθετο ρυθμό: λιγότερο κενό, περισσότερη πληροφορία σε
+     μία οθόνη. */
 
 .qgroup {
-    --qg: #64748b;          /* χρώμα ομάδας — το ορίζει κάθε παραλλαγή */
-    --qg-soft: #f1f5f9;
-    border: 1px solid #e5e7eb;
-    border-left: 5px solid var(--qg);   /* η «παχιά γραμμή» που ζητήθηκε */
-    border-radius: 10px;
+    --qg: #64748b;
+    --qg-soft: #f8fafc;
+    border: 1px solid #e8eaed;
+    border-radius: 12px;
     background: #fff;
+    margin-bottom: .8rem;
     overflow: hidden;
 }
 
-.qgroup--driving  { --qg: #1d4ed8; --qg-soft: #eff6ff; }   /* μπλε: οδήγηση */
-.qgroup--certs    { --qg: #b45309; --qg-soft: #fff7ed; }   /* πορτοκαλί: ADR/ταχογράφος */
-.qgroup--operator { --qg: #15803d; --qg-soft: #f0fdf4; }   /* πράσινο: μηχανήματα έργου */
-.qgroup--special  { --qg: #7c3aed; --qg-soft: #f5f3ff; }   /* μωβ: ειδικές άδειες */
+/* Χρώμα ανά ομάδα — ταυτότητα, όχι διακόσμηση: ο οδηγός μαθαίνει πού
+   να κοιτάξει χωρίς να διαβάσει τίτλο. */
+.qgroup--license  { --qg: #1d4ed8; --qg-soft: #f5f8ff; }
+.qgroup--certs    { --qg: #7c3aed; --qg-soft: #faf8ff; }
+.qgroup--operator { --qg: #15803d; --qg-soft: #f5fdf7; }
+.qgroup--exp      { --qg: #b45309; --qg-soft: #fffcf5; }
+.qgroup--sem      { --qg: #0e7490; --qg-soft: #f5fdff; }
+.qgroup--skl      { --qg: #475569; --qg-soft: #f8fafc; }
 
 .qgroup-head {
     display: flex;
     align-items: baseline;
-    flex-wrap: wrap;
-    gap: .2rem .7rem;
-    padding: .65rem .95rem;
+    justify-content: space-between;
+    gap: .5rem 1rem;
+    padding: .6rem .9rem;
     background: var(--qg-soft);
-    border-bottom: 2px solid var(--qg);
+    border-bottom: 1px solid #eef0f2;
 }
 
 .qgroup-head h3 {
     margin: 0;
-    font-size: .95rem;
-    font-weight: 800;              /* «έντονα γράμματα» */
-    letter-spacing: .02em;
-    text-transform: uppercase;
+    font-size: .92rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
     color: var(--qg);
 }
 
-.qgroup-note {
+.qgroup-meta {
     font-size: .78rem;
     color: #6b7280;
+    white-space: nowrap;
 }
 
-.qgroup-body { padding: .2rem .95rem .7rem; }
+.qgroup-meta strong { color: #374151; }
 
-.qgroup-meta {
-    margin: .6rem 0 .1rem;
-    font-size: .84rem;
-    color: #374151;
-}
+.qgroup-body { padding: .15rem .9rem .45rem; }
 
-/* ── Γραμμή προσόντος ───────────────────────────────────────────────── */
+/* ── Γραμμή ─────────────────────────────────────────────────────────── */
 .qrow {
     display: grid;
-    grid-template-columns: 34px minmax(0, 1fr) 130px 110px;
+    grid-template-columns: 30px minmax(0, 1fr) auto auto;
     align-items: start;
-    gap: .8rem;
-    padding: .75rem 0;
-    border-bottom: 1px solid #f1f2f4;
+    gap: .7rem;
+    padding: .55rem 0;
+    border-top: 1px solid #f4f5f7;
 }
 
-.qrow:last-child { border-bottom: 0; }
+.qrow:first-child { border-top: 0; }
 
-/* Ό,τι δεν διαθέτει ο οδηγός: παρόν αλλά διακριτικό. */
-.qrow--absent { opacity: .55; }
+/* Ό,τι δεν διαθέτει: παρόν αλλά υποχωρημένο — ο οδηγός βλέπει τι θα
+   μπορούσε να αποκτήσει, χωρίς να του τραβά την προσοχή. */
+.qrow--absent { opacity: .45; }
 
 .qrow-icon {
     color: var(--qg);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
     border-radius: 8px;
     background: var(--qg-soft);
 }
 
-.qrow-icon .qual-icon { width: 20px; height: 20px; display: block; }
+.qrow-icon .qual-icon { width: 17px; height: 17px; display: block; }
 
 .qrow-main { min-width: 0; }
 
 .qrow-main h4 {
-    margin: 0 0 .18rem;
-    font-size: .92rem;
-    font-weight: 700;
+    margin: 0;
+    font-size: .88rem;
+    font-weight: 650;
     color: #111827;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: .4rem;
+    line-height: 1.35;
 }
 
-.qrow-line {
-    margin: .12rem 0;
-    font-size: .82rem;
-    color: #374151;
-}
-
-.qrow-key {
+.qrow-sub {
+    margin: .05rem 0 0;
+    font-size: .8rem;
     color: #6b7280;
-    font-size: .76rem;
-    text-transform: uppercase;
-    letter-spacing: .03em;
+    line-height: 1.35;
+}
+
+.qrow-desc {
+    margin: .2rem 0 0;
+    font-size: .8rem;
+    color: #4b5563;
+    line-height: 1.4;
+}
+
+/* Τα μικρά στοιχεία σε ΜΙΑ σειρά με διαχωριστικά — όχι μια γραμμή το
+   καθένα, που τέντωνε κάθε καταχώρηση σε τέσσερις σειρές. */
+.qrow-lines {
+    margin: .12rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .1rem .55rem;
+    font-size: .79rem;
+    color: #4b5563;
+}
+
+.qrow-line { display: inline-flex; align-items: baseline; gap: .25rem; }
+
+.qrow-line + .qrow-line::before {
+    content: '·';
+    color: #d1d5db;
     margin-right: .3rem;
 }
 
-.qrow-empty { color: #9ca3af; font-style: italic; }
-.qrow-details { color: #4b5563; }
-.qrow-spec { color: #4b5563; font-size: .84rem; }
+.qrow-key { color: #9ca3af; }
 
-/* Κατηγορίες διπλώματος ως ξεχωριστά «πλακίδια»: διαβάζονται πολύ πιο
-   γρήγορα από μια λίστα χωρισμένη με κόμματα. */
+.qrow-empty {
+    margin: .3rem 0;
+    font-size: .8rem;
+    color: #9ca3af;
+}
+
+.qrow-empty a { color: #b3261e; font-weight: 600; }
+
+.qrow-more { margin: .45rem 0 .1rem; font-size: .8rem; }
+.qrow-more a { color: #b3261e; font-weight: 600; text-decoration: none; }
+.qrow-more a:hover { text-decoration: underline; }
+
+/* Κατηγορίες διπλώματος: πλακίδια — διαβάζονται μονομιάς */
 .qrow-cats {
-    margin: .3rem 0 .1rem;
+    margin: .3rem 0 0;
     display: flex;
     flex-wrap: wrap;
-    gap: .3rem;
+    gap: .25rem;
 }
 
 .qcat {
     display: inline-block;
-    padding: .1rem .4rem;
+    padding: .05rem .4rem;
     border: 1px solid var(--qg);
     border-radius: 4px;
-    font-size: .76rem;
+    font-size: .74rem;
     font-weight: 700;
     color: var(--qg);
-    background: #fff;
+    line-height: 1.5;
 }
 
-.qgroup-tag {
-    font-size: .72rem;
+.qtag {
+    font-size: .7rem;
     font-weight: 600;
     color: var(--qg);
     background: var(--qg-soft);
+    border: 1px solid currentColor;
     border-radius: 20px;
-    padding: .08rem .5rem;
-    text-transform: none;
-    letter-spacing: 0;
+    padding: 0 .45rem;
+    line-height: 1.5;
+}
+
+.qtag--now { color: #047857; background: #ecfdf5; }
+
+.qchip {
+    display: inline-block;
+    padding: .08rem .45rem;
+    border-radius: 4px;
+    font-size: .75rem;
+    background: #f3f4f6;
+    color: #4b5563;
 }
 
 .qrow-all {
-    margin: .3rem 0 0;
-    font-size: .82rem;
+    margin: .25rem 0 0;
+    font-size: .8rem;
     font-weight: 600;
-    color: #15803d;
+    color: var(--qg);
 }
 
-/* ── Υποειδικότητες μηχανημάτων ─────────────────────────────────────── */
+/* ── Υποειδικότητες ─────────────────────────────────────────────────── */
 .qsubs {
     list-style: none;
-    margin: .35rem 0 0;
+    margin: .3rem 0 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: .2rem .9rem;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: .12rem .9rem;
 }
 
 .qsubs li {
     display: flex;
     align-items: baseline;
     gap: .35rem;
-    font-size: .8rem;
-    color: #374151;
+    font-size: .78rem;
+    color: #4b5563;
+    line-height: 1.35;
 }
 
-.qsub-code {
-    flex-shrink: 0;
-    font-weight: 700;
-    color: var(--qg);
-    min-width: 2.1em;
-}
+.qsub-code { flex-shrink: 0; font-weight: 700; color: var(--qg); min-width: 2em; }
+.qsub-group { flex-shrink: 0; font-size: .72rem; color: #9ca3af; }
 
-.qsub-name {
-    /* Ολόκληρο το όνομα, σε δεύτερη γραμμή αν χρειαστεί. Με ellipsis
-       διαβαζόταν «Γερανοί μεταθετοί παντός τύπου (πλην αποκλειστικώς
-       ηλεκτρ…» — δηλαδή έκρυβε ακριβώς το μέρος που ξεχωρίζει τη μία
-       υποειδικότητα από την άλλη. */
-    line-height: 1.3;
-}
-
-.qsub-group {
-    flex-shrink: 0;
-    font-size: .72rem;
-    color: #6b7280;
-}
-
-/* ── Λήξη & κατάσταση ───────────────────────────────────────────────── */
+/* ── Λήξεις: ΣΕ ΣΕΙΡΑ, με ετικέτα πάνω από την ημερομηνία ──────────── */
 .qrow-expiry {
     display: flex;
-    flex-direction: column;
-    gap: .12rem;
-    font-size: .82rem;
+    gap: .9rem;
+    font-size: .8rem;
     color: #111827;
+    white-space: nowrap;
 }
 
-.qexp small {
-    display: block;
+.qexp { display: flex; flex-direction: column; line-height: 1.3; }
+
+.qexp-label {
     font-size: .68rem;
     color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: .03em;
+    font-weight: 500;
 }
 
-.qexp-empty { color: #9ca3af; }
-.qexp-open { color: #15803d; font-weight: 600; }
-
-.qrow-status { display: flex; justify-content: flex-end; }
+.qrow-status { display: flex; justify-content: flex-end; min-width: 0; }
 
 .qbadge {
     display: inline-block;
-    padding: .2rem .55rem;
+    padding: .1rem .5rem;
     border-radius: 20px;
-    font-size: .74rem;
+    font-size: .72rem;
     font-weight: 700;
     white-space: nowrap;
     border: 1px solid transparent;
 }
 
-.qbadge--valid   { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
 .qbadge--soon    { background: #fffbeb; color: #b45309; border-color: #fde68a; }
 .qbadge--expired { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-.qbadge--unknown { background: #f3f4f6; color: #4b5563; border-color: #e5e7eb; }
-.qbadge--none    { background: #f9fafb; color: #9ca3af; border-color: #f3f4f6; }
+.qbadge--unknown { background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
+.qbadge--none    { background: transparent; color: #9ca3af; border-color: #f3f4f6; }
 
-/* ══════════════════════════════════════════════════════════════════════
-   ΣΤΑΤΙΣΤΙΚΑ ΚΕΦΑΛΙΔΑΣ
-   ══════════════════════════════════════════════════════════════════════ */
-
-.profile-stats .stat-icon svg {
-    width: 22px;
-    height: 22px;
-    display: block;
+/* ── Γλώσσες & δεξιότητες ───────────────────────────────────────────── */
+.cv-two {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    gap: .8rem 1.6rem;
+    padding: .5rem 0 .2rem;
 }
 
-.stat-completeness.is-strong .stat-icon { color: #047857; }
-.stat-completeness.is-mid    .stat-icon { color: #b45309; }
-.stat-completeness.is-weak   .stat-icon { color: #b91c1c; }
+.cv-langs { list-style: none; margin: 0; padding: 0; }
 
-.stat-bar {
-    margin-top: .3rem;
-    width: 100%;
-    max-width: 130px;
-    height: 5px;
-    border-radius: 3px;
-    background: #e5e7eb;
-    overflow: hidden;
+.cv-langs li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .6rem;
+    padding: .22rem 0;
+    font-size: .82rem;
 }
 
-.stat-bar span {
-    display: block;
-    height: 100%;
-    border-radius: 3px;
-    background: #b91c1c;
-    transition: width .4s ease;
-}
+.cv-lang-name { color: #111827; font-weight: 600; }
 
-.is-mid .stat-bar span    { background: #d97706; }
-.is-strong .stat-bar span { background: #059669; }
-
-.stat-sub {
-    display: block;
+.cv-lang-level {
     font-size: .72rem;
-    color: #b45309;
-    margin-top: .1rem;
-}
-
-/* ── «Τι λείπει»: το ποσοστό χωρίς επόμενο βήμα είναι απλώς μια κρίση ── */
-.profile-missing {
-    margin-top: .7rem;
-    padding: .6rem .75rem;
-    border: 1px dashed #d1d5db;
-    border-radius: 8px;
-    background: #fafafa;
-}
-
-.profile-missing-title {
-    display: block;
-    font-size: .78rem;
-    font-weight: 700;
-    color: #374151;
-    margin-bottom: .25rem;
-}
-
-.profile-missing ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.profile-missing li {
-    font-size: .8rem;
-    line-height: 1.35;
-    margin-bottom: .18rem;
-}
-
-.profile-missing li a {
-    color: #b3261e;
     font-weight: 600;
-    text-decoration: none;
-}
-
-.profile-missing li a:hover { text-decoration: underline; }
-
-.profile-missing li small {
-    display: block;
     color: #6b7280;
-    font-size: .72rem;
+    white-space: nowrap;
 }
 
-.profile-missing-more { color: #9ca3af; font-style: italic; }
+.cv-lang-level--native { color: #047857; }
+.cv-lang-level--fluent { color: #1d4ed8; }
+
+.cv-skill-group { margin-bottom: .45rem; }
+
+.cv-skill-group-label {
+    display: block;
+    font-size: .72rem;
+    color: #9ca3af;
+    margin-bottom: .15rem;
+}
+
+.cv-skill-list { margin: 0; display: flex; flex-wrap: wrap; gap: .22rem; }
 
 /* ══════════════════════════════════════════════════════════════════════
    ΕΙΔΟΠΟΙΗΣΕΙΣ ΛΗΞΕΩΝ (εμφανίζονται ΜΟΝΟ όταν υπάρχουν)
@@ -400,318 +386,136 @@
 
 .expiry-action:hover { text-decoration: underline; }
 
-/* ══════════════════════════════════════════════════════════════════════
-   ΕΝΟΤΗΤΕΣ ΒΙΟΓΡΑΦΙΚΟΥ: ΠΡΟΫΠΗΡΕΣΙΑ, ΣΕΜΙΝΑΡΙΑ, ΓΛΩΣΣΕΣ, ΔΕΞΙΟΤΗΤΕΣ
-   ══════════════════════════════════════════════════════════════════════ */
-
-.cv-section { margin-top: 1.2rem; }
-
-.cv-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: .3rem .8rem;
-    margin-bottom: .2rem;
-}
-
-.cv-head h2 { margin: 0; }
-
-.cv-total { font-size: .82rem; color: #6b7280; }
-
-.cv-empty {
-    margin: .4rem 0 0;
-    font-size: .85rem;
-    color: #6b7280;
-    line-height: 1.5;
-}
-
-.cv-empty a { color: #b3261e; font-weight: 600; }
-
-.cv-muted { color: #6b7280; }
-.cv-more { margin: .5rem 0 0; font-size: .84rem; }
-.cv-more a { color: #b3261e; font-weight: 600; text-decoration: none; }
-.cv-more a:hover { text-decoration: underline; }
-
-.cv-chip {
-    display: inline-block;
-    padding: .1rem .45rem;
-    border-radius: 4px;
-    font-size: .76rem;
-    font-weight: 600;
-    background: #eef2ff;
-    color: #3730a3;
-}
-
-.cv-chip--soft { background: #f3f4f6; color: #4b5563; font-weight: 500; }
-
-/* ── Χρονολόγιο προϋπηρεσίας ────────────────────────────────────────── */
-.cv-timeline {
-    list-style: none;
-    margin: .7rem 0 0;
-    padding: 0 0 0 1.1rem;
-    border-left: 2px solid #e5e7eb;
-}
-
-.cv-exp { position: relative; padding: 0 0 1rem .9rem; }
-.cv-exp:last-child { padding-bottom: 0; }
-
-.cv-exp-marker {
-    position: absolute;
-    left: -1.45rem;
-    top: .3rem;
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: #fff;
-    border: 2px solid #9ca3af;
-}
-
-/* Η τρέχουσα θέση ξεχωρίζει: είναι η πιο σχετική πληροφορία. */
-.cv-exp--current .cv-exp-marker { border-color: #059669; background: #059669; }
-
-.cv-exp-body h4 {
-    margin: 0 0 .1rem;
-    font-size: .92rem;
-    font-weight: 700;
-    color: #111827;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: .45rem;
-}
-
-.cv-now {
-    font-size: .7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: #047857;
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    border-radius: 20px;
-    padding: .05rem .45rem;
-}
-
-.cv-exp-type { margin: 0 0 .2rem; font-size: .84rem; color: #4b5563; }
-
-.cv-exp-meta {
-    margin: .15rem 0 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: .35rem .7rem;
-    font-size: .8rem;
-}
-
-.cv-exp-desc {
-    margin: .3rem 0 0;
-    font-size: .82rem;
-    color: #4b5563;
-    line-height: 1.45;
-}
-
-/* ── Σεμινάρια ──────────────────────────────────────────────────────── */
-.cv-certs { list-style: none; margin: .6rem 0 0; padding: 0; }
-
-.cv-cert {
-    padding: .5rem 0;
-    border-bottom: 1px solid #f1f2f4;
-}
-
-.cv-cert:last-child { border-bottom: 0; }
-.cv-cert--expired { opacity: .7; }
-
-.cv-cert-main {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: .4rem;
-    font-size: .88rem;
-    color: #111827;
-}
-
-.cv-cert-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .2rem .8rem;
-    margin-top: .12rem;
-    font-size: .78rem;
-    color: #6b7280;
-}
-
-.cv-expired { color: #b91c1c; font-weight: 600; }
-
-/* ── Γλώσσες & δεξιότητες σε δύο στήλες ─────────────────────────────── */
-.cv-two {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
-    gap: 1rem 1.6rem;
-    margin-top: .6rem;
-}
-
-.cv-subhead {
-    margin: 0 0 .35rem;
-    font-size: .8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: #6b7280;
-    display: flex;
-    align-items: center;
-    gap: .4rem;
-}
-
-.cv-count {
-    background: #f3f4f6;
-    color: #4b5563;
-    border-radius: 20px;
-    padding: 0 .4rem;
-    font-size: .72rem;
-}
-
-.cv-langs { list-style: none; margin: 0; padding: 0; }
-
-.cv-langs li {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: .6rem;
-    padding: .28rem 0;
-    border-bottom: 1px solid #f1f2f4;
-    font-size: .85rem;
-}
-
-.cv-langs li:last-child { border-bottom: 0; }
-
-.cv-lang-name { color: #111827; font-weight: 600; }
-
-.cv-lang-level {
-    font-size: .74rem;
-    font-weight: 600;
-    color: #4b5563;
-    background: #f3f4f6;
-    border-radius: 20px;
-    padding: .08rem .5rem;
-    white-space: nowrap;
-}
-
-/* Η μητρική και το «άριστα» ξεχωρίζουν — αυτά ζητούν οι διεθνείς μεταφορές. */
-.cv-lang-level--native { background: #ecfdf5; color: #047857; }
-.cv-lang-level--fluent { background: #eff6ff; color: #1d4ed8; }
-
-.cv-skill-group { margin-bottom: .5rem; }
-
-.cv-skill-group-label {
-    display: block;
-    font-size: .74rem;
-    color: #9ca3af;
-    margin-bottom: .18rem;
-}
-
-.cv-skill-list {
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: .25rem;
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   ΠΕΡΙΟΧΗ ΕΡΓΑΣΙΑΣ (αντικατέστησε τον χάρτη Google)
-   ══════════════════════════════════════════════════════════════════════ */
-
-.reach-base { margin: .2rem 0 .4rem; font-size: .85rem; color: #374151; }
-
-.reach-key {
-    color: #6b7280;
-    font-size: .74rem;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-    margin-right: .3rem;
-}
-
-.reach-label {
-    margin: 0;
-    font-size: .95rem;
-    font-weight: 700;
-    color: #15803d;
-}
-
-.reach-extra { margin: .2rem 0 0; font-size: .82rem; color: #4b5563; }
-
-.reach-missing {
-    margin: .3rem 0 0;
-    font-size: .84rem;
-    color: #6b7280;
-    line-height: 1.5;
-}
-
-.reach-missing a { color: #b3261e; font-weight: 600; }
-
-/* Τα checkbox της φόρμας: κανονικό βάρος, όχι ετικέτα πεδίου */
-.reach-check {
-    display: flex !important;
-    align-items: flex-start;
-    gap: .4rem;
-    font-weight: 400 !important;
-    font-size: .84rem !important;
-    color: #374151;
-    margin-top: .3rem;
-    cursor: pointer;
-    line-height: 1.35;
-}
-
-.reach-check input { margin-top: .15rem; flex-shrink: 0; }
-
-.form-hint-lead { margin: -.2rem 0 .6rem; }
-
-/* Χωρίς αξιολογήσεις: κείμενο, όχι πέντε άδεια αστέρια που μοιάζουν με μηδέν */
-.rating-none {
-    margin: .3rem 0;
-    font-size: .84rem;
-    color: #9ca3af;
-    font-style: italic;
-}
+/* Οι παλιές κλάσεις .cv-section / .cv-timeline / .cv-cert / .reach-*
+   αφαιρέθηκαν στις 30/08: όλες οι ενότητες χρησιμοποιούν πλέον το ενιαίο
+   μοτίβο .qgroup, και η περιοχή εργασίας το .wr με τον χάρτη. */
 
 /* ══════════════════════════════════════════════════════════════════════
    ΚΙΝΗΤΟ — ΕΝΑ BLOCK, ΣΤΟ ΤΕΛΟΣ (κανόνας του project)
    ══════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 720px) {
-    /* Η γραμμή γίνεται κάρτα: εικονίδιο+τίτλος πάνω, λήξη/κατάσταση κάτω.
-       Χωρίς αυτό οι 4 στήλες συνθλίβονται και εμφανίζεται οριζόντια
-       κύλιση — ακριβώς το πρόβλημα του παλιού πίνακα. */
-    /* Λήξη και κατάσταση παίρνουν ΔΙΚΗ ΤΟΥΣ σειρά, σε δύο πραγματικές
-       στήλες του grid. Πρώτη γραφή τα έβαζε στο ίδιο κελί και τραβούσε
-       το badge προς τα πάνω με αρνητικό margin — που το έριχνε πάνω στα
-       πλακίδια κατηγοριών του διπλώματος. */
+    /* Λήξη και κατάσταση παίρνουν δική τους σειρά, σε δύο πραγματικές
+       στήλες του grid — όχι στοιβαγμένες με αρνητικό margin, που έριχνε
+       το badge πάνω στα πλακίδια κατηγοριών. */
     .qrow {
-        grid-template-columns: 34px minmax(0, 1fr) auto;
+        grid-template-columns: 30px minmax(0, 1fr) auto;
         grid-template-areas:
             "icon main   main"
             "meta meta   status";
-        gap: .5rem .55rem;
+        gap: .4rem .6rem;
     }
 
     .qrow-icon { grid-area: icon; }
     .qrow-main { grid-area: main; }
-    .qrow-expiry { grid-area: meta; }
+    .qrow-expiry { grid-area: meta; padding-left: calc(30px + .6rem); }
     .qrow-status { grid-area: status; align-items: center; }
 
-    .qrow-expiry {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: .1rem .6rem;
-        padding-left: calc(34px + .55rem);
-    }
-
-    .qexp small { display: inline; margin-left: .2rem; }
+    .qrow-expiry { flex-wrap: wrap; gap: .1rem .8rem; }
+    .qexp { flex-direction: row; align-items: baseline; gap: .3rem; }
 
     .qsubs { grid-template-columns: 1fr; }
-    .qsub-name { white-space: normal; }
+    .cv-two { grid-template-columns: 1fr; }
 
-    .qgroup-head { padding: .55rem .7rem; }
-    .qgroup-body { padding: .1rem .7rem .5rem; }
-    .qgroup-head h3 { font-size: .88rem; }
+    .qgroup-head { padding: .5rem .7rem; }
+    .qgroup-body { padding: .1rem .7rem .4rem; }
 }
+
+/* ── Περιοχή εργασίας στην επισκόπηση (30/08) ────────────────────────
+   Ο χάρτης δείχνει τον κύκλο της ακτίνας — τον σκοπό που είχε εξαρχής,
+   αντί για την πινέζα στη διεύθυνση του ίδιου του οδηγού. */
+.qgroup--reach { --qg: #0f766e; --qg-soft: #f2fdfb; }
+
+.wr--view { padding: .5rem 0 .2rem; }
+
+.wr-view-label {
+    margin: 0 0 .5rem;
+    font-size: .9rem;
+    font-weight: 700;
+    color: #0f766e;
+}
+
+.wr-view-extra { margin: .4rem 0 0; font-size: .8rem; color: #6b7280; }
+.wr--view .wr-map { height: 170px; margin-top: 0; }
+.wr--view .wr-coverage { margin-top: .5rem; }
+
+/* Τα κοινά στοιχεία της ακτίνας — δηλώνονται ΚΑΙ εδώ γιατί η σελίδα
+   προβολής δεν φορτώνει το driver-edit-align.css. */
+.wr-map {
+    height: 170px;
+    border-radius: 10px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+}
+
+.wr-map:not(.is-ready) { display: none; }
+
+.wr-coverage { margin: .5rem 0 0; font-size: .8rem; line-height: 1.9; color: #4b5563; }
+.wr-cov-title { color: #6b7280; margin-right: .3rem; }
+.wr-cov-all { color: #15803d; font-weight: 600; }
+.wr-cov-none { color: #9ca3af; }
+
+.wr-city {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .25rem;
+    background: #f3f4f6;
+    border-radius: 20px;
+    padding: .1rem .5rem;
+    margin-right: .22rem;
+    color: #374151;
+    font-size: .77rem;
+}
+
+.wr-city small { color: #9ca3af; font-size: .68rem; }
+.wr-city small::after { content: ' χλμ'; }
+.wr-city-more { background: transparent; color: #9ca3af; }
+.wr-city-more small { display: none; }
+
+/* ── Κεφαλίδα: διαθεσιμότητα, επικοινωνία, GDPR (30/08) ────────────── */
+.avail-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    margin: .4rem 0 0;
+    padding: .18rem .6rem;
+    border-radius: 20px;
+    font-size: .8rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.avail-pill.is-on  { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+.avail-pill.is-off { background: #f9fafb; color: #6b7280; border-color: #e5e7eb; }
+
+.avail-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+.qgroup--contact { --qg: #475569; --qg-soft: #f8fafc; }
+
+.contact-list { list-style: none; margin: 0; padding: .3rem 0; }
+
+.contact-list li {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .3rem 0;
+    font-size: .83rem;
+}
+
+.contact-list svg { width: 15px; height: 15px; color: #9ca3af; flex-shrink: 0; }
+.contact-list a { color: #374151; text-decoration: none; word-break: break-word; }
+.contact-list a:hover { color: #b3261e; }
+
+/* Δικαιώματα GDPR: παρόντα, διακριτικά, στο τέλος */
+.privacy-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: .8rem 0 0;
+    padding: 0 .2rem;
+    font-size: .78rem;
+}
+
+.privacy-links a { color: #9ca3af; text-decoration: none; }
+.privacy-links a:hover { text-decoration: underline; }
+.privacy-links a.is-danger:hover { color: #b91c1c; }

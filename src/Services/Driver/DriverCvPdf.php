@@ -2,41 +2,53 @@
 
 namespace Drivejob\Services\Driver;
 
-use Drivejob\Helpers\OperatorSpecialities;
-use Drivejob\Helpers\SpecialLicenseTypes;
+use Drivejob\Helpers\GreekText;
 use TCPDF;
 
 /**
- * Το βιογραφικό σε PDF — Ο ΔΕΥΤΕΡΟΣ RENDERER του DriverCvService.
- * (30/08/2026)
+ * ΤΟ ΒΙΟΓΡΑΦΙΚΟ ΣΕ PDF — δεύτερος renderer του DriverCvService.
+ * (ξαναγράφτηκε 30/08/2026)
  *
  * ══════════════════════════════════════════════════════════════════════
- *  Η ΑΡΧΗ
+ *  ΤΙ ΗΤΑΝ ΛΑΘΟΣ ΣΤΗΝ ΠΡΩΤΗ ΓΡΑΦΗ
  * ══════════════════════════════════════════════════════════════════════
  *
- * Αυτή η κλάση ΔΕΝ διαβάζει τη βάση, ΔΕΝ μεταφράζει κωδικούς, ΔΕΝ
- * υπολογίζει διάρκειες. Δέχεται τη δομή που φτιάχνει ο DriverCvService
- * — την ίδια που τυπώνει και η καρτέλα Επισκόπηση — και τη ζωγραφίζει
- * σε σελίδα.
+ * «Το βιογραφικό είναι μία σύνοψη της επισκόπησης ενώ θα έπρεπε να είναι
+ * βιογραφικό.» Σωστό, και η αιτία ήταν δομική:
  *
- * Έτσι, ό,τι βλέπει ο οδηγός στην οθόνη είναι ΑΚΡΙΒΩΣ ό,τι στέλνει στον
- * εργοδότη. Αν προστεθεί πεδίο, μπαίνει μία φορά στον service και
- * εμφανίζεται και στα δύο.
+ *  - ΞΕΚΙΝΟΥΣΕ ΜΕ ΚΑΤΑΛΟΓΟ ΑΔΕΙΩΝ. Ένα βιογραφικό ξεκινά με το ποιος
+ *    είσαι και τι έχεις κάνει· οι πιστοποιήσεις έρχονται μετά.
+ *  - ΚΑΜΙΑ ΣΥΝΟΨΗ. Ο αναγνώστης έπρεπε να συνθέσει μόνος του την εικόνα
+ *    από 15 σειρές «ετικέτα: τιμή».
+ *  - ΚΑΜΙΑ ΟΜΑΔΟΠΟΙΗΣΗ. Δίπλωμα, ΠΕΙ, ADR, ταχογράφος, ειδικές άδειες
+ *    και μηχανήματα έργου σε μία ενιαία στοίβα.
+ *  - ΚΑΜΙΑ ΗΛΙΚΙΑ — από τα πρώτα που κοιτάζει ένας εργοδότης.
+ *  - ΤΟΝΟΙ ΣΕ ΚΕΦΑΛΑΙΑ: «ΤΥΠΙΚΆ ΠΡΟΣΌΝΤΑ», «ΠΡΟΫΠΗΡΕΣΊΑ».
  *
- * ΓΙΑΤΙ TCPDF: είναι ήδη στο composer.json του project και υποστηρίζει
- * ελληνικά με τη γραμματοσειρά dejavusans. Το FPDF (επίσης παρόν) δεν
- * γράφει UTF-8 χωρίς πρόσθετα.
+ * ══════════════════════════════════════════════════════════════════════
+ *  Η ΝΕΑ ΔΟΜΗ — ΣΕΙΡΑ ΒΙΟΓΡΑΦΙΚΟΥ, ΟΧΙ ΣΕΙΡΑ ΒΑΣΗΣ ΔΕΔΟΜΕΝΩΝ
+ * ══════════════════════════════════════════════════════════════════════
  *
- * ΤΑ ΤΥΠΙΚΑ ΠΡΟΣΟΝΤΑ έρχονται από το ΩΜΟ προφίλ και όχι από τον
- * CvService: η ομαδοποίησή τους ζει σήμερα στην όψη
- * (_qualification-groups.php). Όταν μετακινηθεί στον service, αυτή η
- * κλάση θα διαβάζει κι αυτά από εκεί — το σχόλιο μένει ως σημάδι.
+ *   1. Κεφαλίδα     — όνομα, ηλικία, έδρα, επικοινωνία
+ *   2. Προφίλ       — δύο-τρεις γραμμές: ποιος είναι
+ *   3. Προϋπηρεσία  — ΠΡΩΤΑ, γιατί αυτή προσλαμβάνεται
+ *   4. Άδειες &     — σε ΟΜΑΔΕΣ, όπως στην οθόνη
+ *      πιστοποιήσεις
+ *   5. Επιμόρφωση   — σεμινάρια
+ *   6. Γλώσσες & δεξιότητες
+ *
+ * Η ομαδοποίηση έρχεται έτοιμη από τον service ($cv['qualifications']):
+ * ό,τι βλέπει ο οδηγός στην οθόνη είναι ό,τι στέλνει στον εργοδότη.
  */
 class DriverCvPdf
 {
     private const RED = [179, 38, 30];
-    private const GREY = [107, 114, 128];
+    private const GREY = [120, 128, 140];
     private const DARK = [17, 24, 39];
+    private const LINE = [223, 226, 230];
+
+    private const LEFT = 15;
+    private const RIGHT = 195;
 
     private TCPDF $pdf;
     private array $cv;
@@ -48,22 +60,22 @@ class DriverCvPdf
         $this->profile = $profile;
     }
 
-    /** @return string Το PDF ως bytes. */
     public function render(): string
     {
         $this->pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
         $this->pdf->SetCreator('DriveJob');
         $this->pdf->SetAuthor('DriveJob');
         $this->pdf->SetTitle('Βιογραφικό — ' . ($this->cv['identity']['full_name'] ?? ''));
-        $this->pdf->SetMargins(15, 15, 15);
-        $this->pdf->SetAutoPageBreak(true, 18);
+        $this->pdf->SetMargins(self::LEFT, 14, 15);
+        $this->pdf->SetAutoPageBreak(true, 16);
         $this->pdf->setPrintHeader(false);
         $this->pdf->setPrintFooter(false);
         $this->pdf->AddPage();
 
         $this->header();
-        $this->qualifications();
+        $this->summary();
         $this->experience();
+        $this->qualifications();
         $this->certifications();
         $this->languagesAndSkills();
         $this->footer();
@@ -72,187 +84,168 @@ class DriverCvPdf
     }
 
     // ══════════════════════════════════════════════════════════════════
+    //  1. ΚΕΦΑΛΙΔΑ
+    // ══════════════════════════════════════════════════════════════════
 
     private function header(): void
     {
         $id = $this->cv['identity'];
 
-        $this->pdf->SetFont('dejavusans', 'B', 20);
+        /*
+         * ΦΩΤΟΓΡΑΦΙΑ — μόνο αν την έχει επιλέξει ο οδηγός.
+         *
+         * Ο διακόπτης «Φωτογραφία» της οθόνης πρέπει να κάνει κάτι ΚΑΙ
+         * εδώ: ένας διακόπτης που αλλάζει την προεπισκόπηση αλλά όχι το
+         * αρχείο που στέλνεται είναι χειρότερος από κανέναν.
+         *
+         * Το identity['photo'] έρχεται ήδη null όταν η επιλογή είναι
+         * κλειστή — ο service το φιλτράρει, όχι εδώ.
+         */
+        $textWidth = 0;
+        if (!empty($id['photo'])) {
+            $file = ROOT_DIR . '/public/' . ltrim((string) $id['photo'], '/');
+            if (is_file($file) && is_readable($file)) {
+                try {
+                    // Δεξιά επάνω: δεν σπρώχνει το όνομα, δεν κλέβει πλάτος
+                    // από τη γραμμή επικοινωνίας.
+                    $this->pdf->Image($file, self::RIGHT - 26, 14, 26, 26, '', '', '', true, 300, '', false, false, 0, 'CT');
+                    $textWidth = 30;
+                } catch (\Throwable $e) {
+                    // Χαλασμένο ή άγνωστου τύπου αρχείο: το βιογραφικό
+                    // βγαίνει χωρίς φωτογραφία αντί να μη βγαίνει καθόλου.
+                    $textWidth = 0;
+                }
+            }
+        }
+
+        // Το κείμενο σταματά πριν από τη φωτογραφία όταν αυτή υπάρχει.
+        $w = $textWidth > 0 ? (self::RIGHT - self::LEFT - $textWidth) : 0;
+
+        $this->pdf->SetFont('dejavusans', 'B', 19);
         $this->pdf->SetTextColor(...self::DARK);
-        $this->pdf->Cell(0, 10, $id['full_name'], 0, 1);
+        $this->pdf->Cell($w, 9, $id['full_name'], 0, 1);
 
-        $this->pdf->SetFont('dejavusans', '', 9.5);
-        $this->pdf->SetTextColor(...self::GREY);
-
-        // Επικοινωνία σε μία γραμμή: ένα PDF βιογραφικό δεν έχει λόγο να
-        // σπαταλά τέσσερις σειρές για τηλέφωνο και email.
-        $contact = array_filter([
+        // Ηλικία και έδρα στην ίδια σειρά με το όνομα από κάτω: είναι τα
+        // δύο πρώτα που ζυγίζει ο εργοδότης.
+        $line1 = array_filter([
+            $id['age_label'] ?: null,
             $id['location'] ?: null,
+        ]);
+        if ($line1) {
+            $this->pdf->SetFont('dejavusans', '', 10);
+            $this->pdf->SetTextColor(...self::GREY);
+            $this->pdf->Cell($w, 5.5, implode('  ·  ', $line1), 0, 1);
+        }
+
+        $line2 = array_filter([
             $id['phone'] ?: null,
             $id['landline'] ?: null,
             $id['email'] ?: null,
         ]);
-        if ($contact) {
-            $this->pdf->MultiCell(0, 5, implode('  ·  ', $contact), 0, 'L');
+        if ($line2) {
+            $this->pdf->SetFont('dejavusans', '', 9.5);
+            $this->pdf->Cell($w, 5, implode('  ·  ', $line2), 0, 1);
         }
 
         $reach = $id['reach'] ?? [];
         if (!empty($reach['declared'])) {
             $extra = $reach['label'];
             if (!empty($reach['travel'])) {
-                $extra .= '  ·  Δέχομαι ταξίδια εκτός έδρας';
+                $extra .= '  ·  ταξίδια εκτός έδρας';
             }
-            $this->pdf->MultiCell(0, 5, $extra, 0, 'L');
+            $this->pdf->Cell($w, 5, $extra, 0, 1);
         }
 
         if (!empty($id['rating']['count'])) {
-            $this->pdf->MultiCell(
-                0,
-                5,
-                'Αξιολόγηση: ' . number_format($id['rating']['value'], 1) . '/5 (' . $id['rating']['count'] . ')',
-                0,
-                'L'
-            );
+            $this->pdf->Cell($w, 5, 'Αξιολόγηση ' . number_format($id['rating']['value'], 1) . '/5 από '
+                . $id['rating']['count'] . ' εργοδότες', 0, 1);
         }
 
-        $this->pdf->Ln(2);
-        $this->rule();
-    }
-
-    private function rule(): void
-    {
-        $y = $this->pdf->GetY();
+        $this->pdf->Ln(1.5);
+        // Κάτω από τη φωτογραφία, αν αυτή είναι ψηλότερα από το κείμενο.
+        $y = max($this->pdf->GetY(), $textWidth > 0 ? 43 : 0);
+        $this->pdf->SetY($y);
         $this->pdf->SetDrawColor(...self::RED);
-        $this->pdf->SetLineWidth(0.6);
-        $this->pdf->Line(15, $y, 195, $y);
-        $this->pdf->Ln(4);
+        $this->pdf->SetLineWidth(0.7);
+        $this->pdf->Line(self::LEFT, $y, self::RIGHT, $y);
+        $this->pdf->Ln(3);
     }
 
-    private function sectionTitle(string $text): void
-    {
-        // Νέα σελίδα αν δεν χωράει ούτε ο τίτλος με δύο γραμμές κάτω του:
-        // τίτλος μόνος στο τέλος σελίδας είναι σημάδι απροσεξίας.
-        if ($this->pdf->GetY() > 255) {
-            $this->pdf->AddPage();
-        }
-        $this->pdf->Ln(2);
-        $this->pdf->SetFont('dejavusans', 'B', 12);
-        $this->pdf->SetTextColor(...self::RED);
-        $this->pdf->Cell(0, 7, mb_strtoupper($text, 'UTF-8'), 0, 1);
-        $this->pdf->SetTextColor(...self::DARK);
-    }
+    // ══════════════════════════════════════════════════════════════════
+    //  2. ΠΡΟΦΙΛ
+    // ══════════════════════════════════════════════════════════════════
 
-    /** Γραμμή «ετικέτα: τιμή» με σταθερή στήλη ετικέτας. */
-    private function row(string $label, string $value, string $note = ''): void
+    private function summary(): void
     {
-        if ($value === '') {
+        $text = trim((string) ($this->cv['summary'] ?? ''));
+        if ($text === '') {
             return;
         }
-        $this->pdf->SetFont('dejavusans', 'B', 9.5);
+
+        $this->pdf->SetFont('dejavusans', '', 10);
+        $this->pdf->SetTextColor(60, 66, 76);
+        $this->pdf->MultiCell(0, 5.2, $text, 0, 'L');
+        $this->pdf->Ln(1);
         $this->pdf->SetTextColor(...self::DARK);
-        $this->pdf->Cell(52, 5.5, $label, 0, 0);
-
-        $this->pdf->SetFont('dejavusans', '', 9.5);
-        $text = $value . ($note !== '' ? '   (' . $note . ')' : '');
-        $this->pdf->MultiCell(0, 5.5, $text, 0, 'L');
     }
 
     // ══════════════════════════════════════════════════════════════════
-    //  ΤΥΠΙΚΑ ΠΡΟΣΟΝΤΑ
+    //  ΚΟΙΝΑ ΔΟΜΙΚΑ
     // ══════════════════════════════════════════════════════════════════
 
-    private function qualifications(): void
+    /**
+     * Τίτλος ενότητας. Τα κεφαλαία περνούν από τον GreekText: το
+     * mb_strtoupper κρατά τους τόνους («ΠΡΟΫΠΗΡΕΣΊΑ»), που στα ελληνικά
+     * κεφαλαία δεν μπαίνουν.
+     */
+    private function section(string $title, string $note = ''): void
     {
-        $p = $this->profile;
-        $this->sectionTitle('Τυπικά προσόντα');
-
-        // Δίπλωμα
-        $cats = array_column($p['licenses'] ?? [], 'license_type');
-        if ($cats) {
-            $this->row('Άδεια οδήγησης', implode(', ', $cats), $this->expiryNote($p['license_document_expiry'] ?? null));
+        if ($this->pdf->GetY() > 252) {
+            $this->pdf->AddPage();
         }
-        if (!empty($p['license_number'])) {
-            $this->row('Αριθμός άδειας', (string) $p['license_number']);
+        $this->pdf->Ln(2.5);
+
+        $y = $this->pdf->GetY();
+        $this->pdf->SetFont('dejavusans', 'B', 10.5);
+        $this->pdf->SetTextColor(...self::RED);
+        $this->pdf->Cell(0, 6, GreekText::upper($title), 0, 0);
+
+        if ($note !== '') {
+            $this->pdf->SetFont('dejavusans', '', 8.5);
+            $this->pdf->SetTextColor(...self::GREY);
+            $this->pdf->Cell(0, 6, $note, 0, 0, 'R');
         }
+        $this->pdf->Ln(6);
 
-        /*
-         * ΠΕΙ — ΜΙΑ φορά το καθένα.
-         *
-         * Οι στήλες pei_expiry_c/d επαναλαμβάνονται σε κάθε γραμμή
-         * κατηγορίας: οδηγός με C, CE, D, DE έβγαζε στο PDF τέσσερις
-         * σειρές «ΠΕΙ Εμπορευμάτων / ΠΕΙ Επιβατών» με ίδιες ημερομηνίες.
-         */
-        $peiC = null;
-        $peiD = null;
-        foreach (($p['licenses'] ?? []) as $lic) {
-            $peiC = $peiC ?? ($lic['pei_expiry_c'] ?: null);
-            $peiD = $peiD ?? ($lic['pei_expiry_d'] ?: null);
+        $this->pdf->SetDrawColor(...self::LINE);
+        $this->pdf->SetLineWidth(0.25);
+        $this->pdf->Line(self::LEFT, $this->pdf->GetY() - 0.6, self::RIGHT, $this->pdf->GetY() - 0.6);
+        $this->pdf->Ln(1.2);
+        $this->pdf->SetTextColor(...self::DARK);
+    }
+
+    /** Υποτίτλος ομάδας μέσα σε ενότητα (π.χ. «Άδεια Οδήγησης»). */
+    private function subSection(string $title): void
+    {
+        if ($this->pdf->GetY() > 258) {
+            $this->pdf->AddPage();
         }
-        if ($peiC) {
-            $this->row('ΠΕΙ Εμπορευμάτων', 'Ναι', $this->expiryNote($peiC));
-        }
-        if ($peiD) {
-            $this->row('ΠΕΙ Επιβατών', 'Ναι', $this->expiryNote($peiD));
-        }
+        $this->pdf->Ln(1.2);
+        $this->pdf->SetFont('dejavusans', 'B', 9);
+        $this->pdf->SetTextColor(70, 76, 88);
+        $this->pdf->Cell(0, 5, $title, 0, 1);
+        $this->pdf->SetTextColor(...self::DARK);
+    }
 
-        $adr = $p['adr_certificates'][0] ?? null;
-        if ($adr) {
-            $this->row('Πιστοποιητικό ADR', (string) ($adr['adr_type'] ?? 'Ναι'), $this->expiryNote($adr['expiry_date'] ?? null));
-        }
-
-        $tacho = $p['tachograph_cards'][0] ?? null;
-        if ($tacho) {
-            $this->row('Κάρτα ταχογράφου', (string) ($tacho['card_number'] ?? 'Ναι'), $this->expiryNote($tacho['expiry_date'] ?? null));
-        }
-
-        // Άδειες χειριστή: μία γραμμή ανά ειδικότητα, όπως στην οθόνη
-        $ops = $p['operator_licenses'] ?? [];
-        usort($ops, static fn($a, $b) => ((int) ($a['speciality'] ?? 0)) <=> ((int) ($b['speciality'] ?? 0)));
-
-        foreach ($ops as $op) {
-            $spec = (string) ($op['speciality'] ?? '');
-            $name = OperatorSpecialities::SPECIALITIES[$spec] ?? ('Ειδικότητα ' . $spec);
-            $group = strtoupper((string) ($op['group_type'] ?? 'A'));
-            $groupLabel = $group === 'M' ? 'μικτή ομάδα' : 'Ομάδα ' . $group . '΄';
-
-            if (!empty($op['covers_all'])) {
-                $detail = 'σύνολο μηχανημάτων';
-            } else {
-                $codes = [];
-                foreach (($op['sub_specialities'] ?? []) as $sub) {
-                    $codes[] = is_array($sub) ? ($sub['sub_speciality'] ?? '') : (string) $sub;
-                }
-                $detail = $codes ? implode(', ', $codes) : '—';
-            }
-
-            $this->row(
-                $spec . 'η ειδικότητα χειριστή',
-                $name,
-                $groupLabel . ' · ' . $detail
-            );
-        }
-
-        foreach (($p['special_licenses'] ?? []) as $sl) {
-            $this->row(
-                'Ειδική άδεια',
-                SpecialLicenseTypes::label((string) $sl['license_type']),
-                empty($sl['expiry_date']) ? 'αορίστου' : $this->expiryNote($sl['expiry_date'])
-            );
+    private function pageBreakIfNeeded(float $limit = 262): void
+    {
+        if ($this->pdf->GetY() > $limit) {
+            $this->pdf->AddPage();
         }
     }
 
-    private function expiryNote(?string $date): string
-    {
-        if (empty($date)) {
-            return '';
-        }
-        $ts = strtotime($date);
-        if ($ts === false) {
-            return '';
-        }
-        return ($ts < time() ? 'έληξε ' : 'έως ') . date('m/Y', $ts);
-    }
-
+    // ══════════════════════════════════════════════════════════════════
+    //  3. ΠΡΟΫΠΗΡΕΣΙΑ — ΠΡΩΤΑ
     // ══════════════════════════════════════════════════════════════════
 
     private function experience(): void
@@ -262,39 +255,150 @@ class DriverCvPdf
             return;
         }
 
-        $this->sectionTitle('Προϋπηρεσία — σύνολο ' . $exp['total_label']);
+        $this->section('Προϋπηρεσία', 'Σύνολο ' . $exp['total_label']);
 
         foreach ($exp['items'] as $item) {
-            if ($this->pdf->GetY() > 258) {
-                $this->pdf->AddPage();
-            }
+            $this->pageBreakIfNeeded(256);
 
+            // Διάρκεια αριστερά σε δική της στήλη — έτσι διαβάζεται η
+            // πορεία κάθετα, όπως σε κάθε βιογραφικό.
+            $y = $this->pdf->GetY();
+            $this->pdf->SetFont('dejavusans', '', 8.5);
+            $this->pdf->SetTextColor(...self::GREY);
+            $this->pdf->MultiCell(38, 4.6, $item['period_label'] ?: $item['duration_label'], 0, 'L', false, 1, self::LEFT, $y);
+
+            $this->pdf->SetXY(self::LEFT + 40, $y);
             $this->pdf->SetFont('dejavusans', 'B', 10);
+            $this->pdf->SetTextColor(...self::DARK);
             $title = $item['category_label'];
             if ($item['type_label'] !== '') {
                 $title .= ' — ' . $item['type_label'];
             }
-            $this->pdf->MultiCell(0, 5.5, $title . ($item['current'] ? '  (τρέχουσα)' : ''), 0, 'L');
+            $this->pdf->MultiCell(0, 4.8, $title . ($item['current'] ? '  (τρέχουσα)' : ''), 0, 'L');
 
             $meta = array_filter([
                 $item['duration_label'],
-                $item['period_label'] ?: null,
                 $item['transport_label'] ?: null,
                 $item['employment_label'] ?: null,
             ]);
-            $this->pdf->SetFont('dejavusans', '', 9);
-            $this->pdf->SetTextColor(...self::GREY);
-            $this->pdf->MultiCell(0, 5, implode('  ·  ', $meta), 0, 'L');
+            if ($meta) {
+                $this->pdf->SetX(self::LEFT + 40);
+                $this->pdf->SetFont('dejavusans', '', 8.8);
+                $this->pdf->SetTextColor(...self::GREY);
+                $this->pdf->MultiCell(0, 4.4, implode('  ·  ', $meta), 0, 'L');
+            }
 
             if ($item['description'] !== '') {
-                $this->pdf->SetTextColor(...self::DARK);
-                $this->pdf->MultiCell(0, 5, $item['description'], 0, 'L');
+                $this->pdf->SetX(self::LEFT + 40);
+                $this->pdf->SetFont('dejavusans', '', 9);
+                $this->pdf->SetTextColor(60, 66, 76);
+                $this->pdf->MultiCell(0, 4.5, $item['description'], 0, 'L');
             }
 
             $this->pdf->SetTextColor(...self::DARK);
-            $this->pdf->Ln(1.5);
+            $this->pdf->Ln(1.6);
         }
     }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  4. ΑΔΕΙΕΣ & ΠΙΣΤΟΠΟΙΗΣΕΙΣ — ΣΕ ΟΜΑΔΕΣ
+    // ══════════════════════════════════════════════════════════════════
+
+    private function qualifications(): void
+    {
+        $groups = $this->cv['qualifications'] ?? [];
+        if (!$groups) {
+            return;
+        }
+
+        $this->section('Άδειες & πιστοποιήσεις');
+
+        foreach ($groups as $group) {
+            // Ομάδα όπου ΤΙΠΟΤΑ δεν κατέχεται δεν μπαίνει στο βιογραφικό:
+            // ο εργοδότης δεν χρειάζεται λίστα με ό,τι ΔΕΝ έχει ο οδηγός.
+            $owned = array_filter($group['items'], static fn($i) => empty($i['absent']));
+            if (!$owned) {
+                continue;
+            }
+
+            $note = '';
+            if (!empty($group['meta'])) {
+                $note = $group['meta']['key'] . ' ' . $group['meta']['value'];
+            }
+
+            $this->subSection($group['title'] . ($note !== '' ? '   ·   ' . $note : ''));
+
+            foreach ($owned as $item) {
+                $this->pageBreakIfNeeded(264);
+                $this->qualItem($item);
+            }
+        }
+    }
+
+    private function qualItem(array $item): void
+    {
+        $left = [];
+        if ($item['title'] !== '') {
+            $left[] = $item['title'];
+        }
+        if (!empty($item['tag'])) {
+            $left[] = '(' . $item['tag'] . ')';
+        }
+        $head = implode(' ', $left);
+
+        // Κατηγορίες διπλώματος: μπαίνουν στον τίτλο, δεν αξίζουν σειρά.
+        if (!empty($item['cats'])) {
+            $head = ($head !== '' ? $head . ': ' : '') . implode(', ', $item['cats']);
+        }
+
+        $this->pdf->SetFont('dejavusans', 'B', 9);
+        $this->pdf->SetTextColor(...self::DARK);
+        if ($head !== '') {
+            $this->pdf->MultiCell(0, 4.6, $head, 0, 'L');
+        }
+
+        if (!empty($item['subtitle'])) {
+            $this->pdf->SetFont('dejavusans', '', 8.8);
+            $this->pdf->SetTextColor(70, 76, 88);
+            $this->pdf->MultiCell(0, 4.3, $item['subtitle'], 0, 'L');
+        }
+
+        // Λεπτομέρειες και λήξεις σε ΜΙΑ γραμμή: ένα PDF δεν έχει λόγο να
+        // ξοδεύει τέσσερις σειρές για αριθμό και ημερομηνία.
+        $meta = [];
+        foreach ($item['lines'] as $line) {
+            $meta[] = trim(($line['key'] !== '' ? $line['key'] . ' ' : '') . $line['value']);
+        }
+        foreach ($item['expiries'] as $exp) {
+            $meta[] = $exp['label'] . ' ' . $exp['date'];
+        }
+        if ($meta) {
+            $this->pdf->SetFont('dejavusans', '', 8.5);
+            $this->pdf->SetTextColor(...self::GREY);
+            $this->pdf->MultiCell(0, 4.2, implode('  ·  ', $meta), 0, 'L');
+        }
+
+        if (!empty($item['covers_all'])) {
+            $this->pdf->SetFont('dejavusans', '', 8.8);
+            $this->pdf->SetTextColor(70, 76, 88);
+            $this->pdf->MultiCell(0, 4.2, 'Σύνολο μηχανημάτων της ειδικότητας', 0, 'L');
+        } elseif (!empty($item['subs'])) {
+            $parts = [];
+            foreach ($item['subs'] as $sub) {
+                $parts[] = $sub['code'] . ' ' . $sub['name'] . ($sub['group'] !== '' ? ' (' . $sub['group'] . ')' : '');
+            }
+            $this->pdf->SetFont('dejavusans', '', 8.5);
+            $this->pdf->SetTextColor(70, 76, 88);
+            $this->pdf->MultiCell(0, 4.2, implode(' · ', $parts), 0, 'L');
+        }
+
+        $this->pdf->SetTextColor(...self::DARK);
+        $this->pdf->Ln(1);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  5. ΕΠΙΜΟΡΦΩΣΗ
+    // ══════════════════════════════════════════════════════════════════
 
     private function certifications(): void
     {
@@ -303,32 +407,42 @@ class DriverCvPdf
             return;
         }
 
-        $this->sectionTitle('Σεμινάρια & πιστοποιητικά');
+        $this->section('Επιμόρφωση & σεμινάρια');
 
         foreach ($certs['items'] as $c) {
-            if ($this->pdf->GetY() > 265) {
-                $this->pdf->AddPage();
-            }
+            $this->pageBreakIfNeeded(266);
 
-            $this->pdf->SetFont('dejavusans', 'B', 9.5);
-            $this->pdf->MultiCell(0, 5, $c['title'], 0, 'L');
+            $y = $this->pdf->GetY();
+            $this->pdf->SetFont('dejavusans', '', 8.5);
+            $this->pdf->SetTextColor(...self::GREY);
+            $this->pdf->MultiCell(38, 4.5, $c['date_label'], 0, 'L', false, 1, self::LEFT, $y);
+
+            $this->pdf->SetXY(self::LEFT + 40, $y);
+            $this->pdf->SetFont('dejavusans', 'B', 9);
+            $this->pdf->SetTextColor(...self::DARK);
+            $this->pdf->MultiCell(0, 4.5, $c['title'], 0, 'L');
 
             $meta = array_filter([
                 $c['provider'] ?: null,
                 $c['category_label'] ?: null,
-                $c['date_label'] ?: null,
                 $c['duration'] > 0 ? $c['duration'] . ' ώρες' : null,
                 $c['expiry_label'] !== '' ? ($c['expired'] ? 'έληξε ' : 'λήξη ') . $c['expiry_label'] : null,
             ]);
             if ($meta) {
+                $this->pdf->SetX(self::LEFT + 40);
                 $this->pdf->SetFont('dejavusans', '', 8.5);
                 $this->pdf->SetTextColor(...self::GREY);
-                $this->pdf->MultiCell(0, 4.5, implode('  ·  ', $meta), 0, 'L');
-                $this->pdf->SetTextColor(...self::DARK);
+                $this->pdf->MultiCell(0, 4.2, implode('  ·  ', $meta), 0, 'L');
             }
-            $this->pdf->Ln(1);
+
+            $this->pdf->SetTextColor(...self::DARK);
+            $this->pdf->Ln(0.8);
         }
     }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  6. ΓΛΩΣΣΕΣ & ΔΕΞΙΟΤΗΤΕΣ
+    // ══════════════════════════════════════════════════════════════════
 
     private function languagesAndSkills(): void
     {
@@ -339,32 +453,46 @@ class DriverCvPdf
             return;
         }
 
-        $this->sectionTitle('Γλώσσες & δεξιότητες');
+        $this->section('Γλώσσες & δεξιότητες');
 
         if ($langs) {
             $parts = [];
             foreach ($langs as $l) {
                 $parts[] = $l['name'] . ' (' . $l['level_label'] . ')';
             }
-            $this->row('Γλώσσες', implode(', ', $parts));
+            $this->labelled('Γλώσσες', implode(', ', $parts));
         }
 
         foreach ($skills['groups'] as $g) {
-            $this->row($g['label'], implode(', ', $g['items']));
+            $this->labelled($g['label'], implode(', ', $g['items']));
         }
+    }
+
+    /** «Ετικέτα | τιμή» με σταθερή στήλη ετικέτας. */
+    private function labelled(string $label, string $value): void
+    {
+        if ($value === '') {
+            return;
+        }
+        $this->pageBreakIfNeeded(268);
+
+        $y = $this->pdf->GetY();
+        $this->pdf->SetFont('dejavusans', 'B', 8.8);
+        $this->pdf->SetTextColor(70, 76, 88);
+        $this->pdf->MultiCell(42, 4.6, $label, 0, 'L', false, 1, self::LEFT, $y);
+
+        $this->pdf->SetXY(self::LEFT + 44, $y);
+        $this->pdf->SetFont('dejavusans', '', 9);
+        $this->pdf->SetTextColor(...self::DARK);
+        $this->pdf->MultiCell(0, 4.6, $value, 0, 'L');
+        $this->pdf->Ln(0.6);
     }
 
     private function footer(): void
     {
-        $this->pdf->Ln(4);
+        $this->pdf->Ln(3);
         $this->pdf->SetFont('dejavusans', '', 7.5);
         $this->pdf->SetTextColor(...self::GREY);
-        $this->pdf->MultiCell(
-            0,
-            4,
-            'Δημιουργήθηκε από το DriveJob στις ' . date('d/m/Y') . ' · drivejob.gr',
-            0,
-            'C'
-        );
+        $this->pdf->MultiCell(0, 4, 'Βιογραφικό από το DriveJob · ' . date('d/m/Y') . ' · drivejob.gr', 0, 'C');
     }
 }

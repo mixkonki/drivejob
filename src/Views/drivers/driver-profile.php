@@ -86,6 +86,15 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <p class="rating-none">Χωρίς αξιολογήσεις ακόμη</p>
                 <?php endif; ?>
 
+                <?php /* ΔΙΑΘΕΣΙΜΟΤΗΤΑ — μετακόμισε εδώ από την πλαϊνή στήλη (30/08).
+                   Ήταν κάρτα με τίτλο «Κατάσταση Διαθεσιμότητας», εικονίδιο και
+                   μια πρόταση οδηγιών· τρία στοιχεία για μία λέξη. Ως σήμα
+                   δίπλα στο όνομα το βλέπει και ο ίδιος και ο εργοδότης. */ ?>
+                <p class="avail-pill <?php echo !empty($driverData['available_for_work']) ? 'is-on' : 'is-off'; ?>">
+                    <span class="avail-dot" aria-hidden="true"></span>
+                    <?php echo !empty($driverData['available_for_work']) ? 'Διαθέσιμος για εργασία' : 'Μη διαθέσιμος'; ?>
+                </p>
+
                 <?php if (isset($driverData['experience_years']) && $driverData['experience_years']) : ?>
                     <div class="experience-badge">
                         <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="Εμπειρία">
@@ -181,7 +190,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                 ?>
                 <div class="profile-image-actions">
                     <a href="<?php echo BASE_URL; ?>drivers/edit-profile" class="btn-primary">Επεξεργασία Προφίλ</a>
-                    <a href="<?php echo BASE_URL; ?>drivers/cv" class="btn-secondary" target="_blank" rel="noopener">⬇ Λήψη βιογραφικού (PDF)</a>
+                    <a href="<?php echo BASE_URL; ?>drivers/cv" class="btn-secondary">Το βιογραφικό μου</a>
                 </div>
             </div>
 
