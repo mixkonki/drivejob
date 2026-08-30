@@ -1,576 +1,312 @@
 <?php
-// Συμπερίληψη του header
+
+/**
+ * Επεξεργασία προφίλ εταιρείας. (ξαναγράφτηκε 01/09/2026 — Φάση Β)
+ *
+ * ══════════════════════════════════════════════════════════════════════
+ *  ΤΙ ΑΝΤΙΚΑΤΕΣΤΗΣΕ
+ * ══════════════════════════════════════════════════════════════════════
+ *
+ * 575 γραμμές όπου τα πραγματικά στοιχεία της εταιρείας ήταν χωμένα
+ * ανάμεσα σε ολόκληρα «προϊόντα» που δεν υπάρχουν:
+ *
+ *   «DriveFleet Solutions» με Asset Management & AI Route Optimization,
+ *   «DriveManager Pro» με «Ψηφιακούς Φακέλους Οδηγών» και KPIs,
+ *   «DriveJob Legal Hub» με «AI-Powered Compliance Assistant»,
+ *   «Πακέτο Συνδρομής» με modules και API Access,
+ *   πιστοποιήσεις ISO/SQAS/GDP-Φάρμακα με σκέτα checkboxes.
+ *
+ * Μια φόρμα που ζητά από πραγματική επιχείρηση να «ενεργοποιήσει το
+ * Applicant Tracking System» που δεν υπάρχει, δεν είναι φιλόδοξη — είναι
+ * αναξιόπιστη. Και η αναξιοπιστία στη ΦΟΡΜΑ μολύνει την εμπιστοσύνη σε
+ * ό,τι αληθινό υπάρχει δίπλα της. Όταν κάποιο από αυτά χτιστεί στ'
+ * αλήθεια, ξαναμπαίνει — με λειτουργία, όχι με checkbox.
+ *
+ * Η φόρμα τώρα: τα στοιχεία που βλέπει ο οδηγός και το ταίριασμα —
+ * ταυτότητα, περιγραφή, στόλος, είδη μεταφορών, επικοινωνία.
+ *
+ * ΤΟ EMAIL ΕΜΦΑΝΙΖΕΤΑΙ ΑΛΛΑ ΔΕΝ ΑΛΛΑΖΕΙ ΕΔΩ: είναι το όνομα σύνδεσης.
+ * Αλλαγή χωρίς επαλήθευση της νέας διεύθυνσης = ένα ανοιχτό session
+ * αρκεί για να χαθεί ο λογαριασμός. Θα αποκτήσει δική του ροή με
+ * επιβεβαίωση, όπως ο κωδικός.
+ */
+
 include ROOT_DIR . '/src/Views/partials/header.php';
+// Η old() ορίζεται στο src/helpers.php (φορτώνεται από το bootstrap).
 
-// Ανάκτηση σφαλμάτων και παλιών τιμών από το session
-$errors = $_SESSION['errors'] ?? [];
-$oldInput = $_SESSION['old_input'] ?? [];
-
-// Καθαρισμός των session μεταβλητών μετά την ανάκτησή τους
-unset($_SESSION['errors'], $_SESSION['old_input']);
-
-// Σημείωση: Οι συναρτήσεις old(), hasError() και getError() ήδη ορίζονται στο form_helpers.php
-// και δεν πρέπει να οριστούν ξανά εδώ
+$transportTypes = json_decode($companyData['transport_types'] ?? '[]', true) ?: [];
+$operatingCountries = json_decode($companyData['operating_countries'] ?? '[]', true) ?: [];
 ?>
 
+<?= \Drivejob\Helpers\Asset::css('css/job-listings.css') ?>
+
 <main>
-    <div class="container">
-        <h1>Επεξεργασία Προφίλ Εταιρείας</h1>
+    <div class="container listing-form-page">
 
-        <?php if (isset($_SESSION['success_message'])) : ?>
-            <div class="success-message">
-                <?php echo $_SESSION['success_message']; ?>
-                <?php unset($_SESSION['success_message']); ?>
-            </div>
-        <?php endif; ?>
+        <div class="page-head">
+            <h1>Επεξεργασία προφίλ εταιρείας</h1>
+            <p class="muted">Αυτά βλέπουν οι οδηγοί όταν ανοίγουν τις αγγελίες σας.</p>
+        </div>
 
-        <?php if (isset($_SESSION['error_message'])) : ?>
-            <div class="error-message">
-                <?php echo $_SESSION['error_message']; ?>
-                <?php unset($_SESSION['error_message']); ?>
-            </div>
-        <?php endif; ?>
+        <?php include ROOT_DIR . '/src/Views/partials/alerts.php'; ?>
 
-        <form action="<?php echo BASE_URL; ?>companies/update-profile" method="POST" enctype="multipart/form-data" class="edit-profile-form">
-            <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
+        <form action="<?php echo BASE_URL; ?>companies/update-profile" method="POST"
+              enctype="multipart/form-data" class="listing-form">
+            <input type="hidden" name="csrf_token" value="<?php echo \Drivejob\Core\CSRF::token(); ?>">
 
-            <div class="form-tabs">
-                <div class="tab-nav">
-                    <button type="button" class="tab-btn active" data-tab="basic-info">Βασικές Πληροφορίες</button>
-                    <button type="button" class="tab-btn" data-tab="company-details">Στοιχεία Εταιρείας</button>
-                    <button type="button" class="tab-btn" data-tab="fleet-management">Διαχείριση Στόλου</button>
-                    <button type="button" class="tab-btn" data-tab="driver-management">Διαχείριση Οδηγών</button>
-                    <button type="button" class="tab-btn" data-tab="compliance">Συμμόρφωση & Νομικά</button>
-                    <button type="button" class="tab-btn" data-tab="services">Υπηρεσίες & Modules</button>
-                    <button type="button" class="tab-btn" data-tab="location">Τοποθεσία</button>
-                    <button type="button" class="tab-btn" data-tab="contact">Επικοινωνία</button>
-                    <button type="button" class="tab-btn" data-tab="social">Κοινωνικά Δίκτυα</button>
+            <!-- ─────────────────────── Ταυτότητα ─────────────────────── -->
+            <fieldset>
+                <legend>Η εταιρεία</legend>
+
+                <div class="field">
+                    <label for="company_name">Επωνυμία <span class="required">*</span></label>
+                    <input type="text" id="company_name" name="company_name" required maxlength="255"
+                           value="<?php echo old('company_name', $companyData['company_name'] ?? ''); ?>">
                 </div>
 
-                <div class="tab-content">
-                    <!-- Βασικές Πληροφορίες -->
-                    <div class="tab-pane active" id="basic-info">
-                        <h2>Βασικές Πληροφορίες</h2>
+                <div class="field">
+                    <label for="company_logo">Λογότυπο</label>
+                    <input type="file" id="company_logo" name="company_logo" accept="image/jpeg,image/png,image/gif">
+                    <p class="hint">JPEG/PNG/GIF έως 2MB. Το τρέχον λογότυπο μένει αν δεν επιλέξεις νέο.</p>
+                </div>
 
-                        <div class="form-group <?php echo hasError('company_name') ? 'has-error' : ''; ?>">
-                            <label for="company_name">Όνομα Εταιρείας</label>
-                            <input type="text" id="company_name" name="company_name" value="<?php echo old('company_name', $companyData['company_name'] ?? ''); ?>" required>
-                            <?php if (hasError('company_name')) : ?>
-                                <div class="error-message"><?php echo getError('company_name'); ?></div>
-                            <?php endif; ?>
-                        </div>
+                <div class="field">
+                    <label for="description">Περιγραφή</label>
+                    <textarea id="description" name="description" rows="5"
+                              placeholder="Τι μεταφέρετε, πού, με τι στόλο — ό,τι θα λέγατε σε οδηγό που ρωτά για εσάς."><?php echo old('description', $companyData['description'] ?? ''); ?></textarea>
+                </div>
 
-                        <div class="form-group">
-                            <label for="company_logo">Λογότυπο Εταιρείας</label>
-                            <?php if (isset($companyData['company_logo']) && $companyData['company_logo']) : ?>
-                                <div class="current-logo">
-                                    <img src="<?php echo BASE_URL . htmlspecialchars($companyData['company_logo']); ?>" alt="Τρέχον λογότυπο">
-                                    <p>Τρέχον λογότυπο</p>
-                                </div>
-                            <?php endif; ?>
-                            <input type="file" id="company_logo" name="company_logo" accept="image/jpeg, image/png, image/gif">
-                            <p class="form-hint">Μέγιστο μέγεθος: 2MB. Επιτρεπόμενοι τύποι: JPEG, PNG, GIF</p>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="description">Περιγραφή Εταιρείας</label>
-                            <textarea id="description" name="description" rows="6"><?php echo old('description', $companyData['description'] ?? ''); ?></textarea>
-                            <p class="form-hint">Περιγράψτε την εταιρεία σας, τις δραστηριότητες και το όραμά σας.</p>
-                        </div>
-                    </div>
-
-                    <!-- Στοιχεία Εταιρείας -->
-                    <div class="tab-pane" id="company-details">
-                        <h2>Στοιχεία Εταιρείας</h2>
-
-                        <div class="form-group">
-                            <label for="industry">Κλάδος</label>
-                            <select id="industry" name="industry">
-                                <option value="">Επιλέξτε Κλάδο</option>
-                                <option value="Μεταφορές & Logistics" <?php echo old('industry', $companyData['industry'] ?? '') === 'Μεταφορές & Logistics' ? 'selected' : ''; ?>>Μεταφορές & Logistics</option>
-                                <option value="Κατασκευές" <?php echo old('industry', $companyData['industry'] ?? '') === 'Κατασκευές' ? 'selected' : ''; ?>>Κατασκευές</option>
-                                <option value="Βιομηχανία" <?php echo old('industry', $companyData['industry'] ?? '') === 'Βιομηχανία' ? 'selected' : ''; ?>>Βιομηχανία</option>
-                                <option value="Τρόφιμα & Ποτά" <?php echo old('industry', $companyData['industry'] ?? '') === 'Τρόφιμα & Ποτά' ? 'selected' : ''; ?>>Τρόφιμα & Ποτά</option>
-                                <option value="Λιανεμπόριο" <?php echo old('industry', $companyData['industry'] ?? '') === 'Λιανεμπόριο' ? 'selected' : ''; ?>>Λιανεμπόριο</option>
-                                <option value="Υπηρεσίες" <?php echo old('industry', $companyData['industry'] ?? '') === 'Υπηρεσίες' ? 'selected' : ''; ?>>Υπηρεσίες</option>
-                                <option value="Άλλο" <?php echo old('industry', $companyData['industry'] ?? '') === 'Άλλο' ? 'selected' : ''; ?>>Άλλο</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="company_size">Μέγεθος Εταιρείας</label>
-                            <select id="company_size" name="company_size">
-                                <option value="">Επιλέξτε Μέγεθος</option>
-                                <option value="1-10 εργαζόμενοι" <?php echo old('company_size', $companyData['company_size'] ?? '') === '1-10 εργαζόμενοι' ? 'selected' : ''; ?>>1-10 εργαζόμενοι</option>
-                                <option value="11-50 εργαζόμενοι" <?php echo old('company_size', $companyData['company_size'] ?? '') === '11-50 εργαζόμενοι' ? 'selected' : ''; ?>>11-50 εργαζόμενοι</option>
-                                <option value="51-200 εργαζόμενοι" <?php echo old('company_size', $companyData['company_size'] ?? '') === '51-200 εργαζόμενοι' ? 'selected' : ''; ?>>51-200 εργαζόμενοι</option>
-                                <option value="201-500 εργαζόμενοι" <?php echo old('company_size', $companyData['company_size'] ?? '') === '201-500 εργαζόμενοι' ? 'selected' : ''; ?>>201-500 εργαζόμενοι</option>
-                                <option value="501+ εργαζόμενοι" <?php echo old('company_size', $companyData['company_size'] ?? '') === '501+ εργαζόμενοι' ? 'selected' : ''; ?>>501+ εργαζόμενοι</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="foundation_year">Έτος Ίδρυσης</label>
-                            <input type="number" id="foundation_year" name="foundation_year" min="1900" max="<?php echo date('Y'); ?>" value="<?php echo old('foundation_year', $companyData['foundation_year'] ?? ''); ?>">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="vat_number">ΑΦΜ</label>
-                            <input type="text" id="vat_number" name="vat_number" value="<?php echo old('vat_number', $companyData['vat_number'] ?? ''); ?>">
-                        </div>
-
-                        <!-- Νέα πεδία για τύπους μεταφορών -->
-                        <h3>Τύποι Μεταφορών</h3>
-                        <div class="form-group">
-                            <label>Επιλέξτε τους τύπους μεταφορών που εκτελείτε:</label>
-                            <div class="checkbox-group">
-                                <?php
-                                $transportTypes = json_decode($companyData['transport_types'] ?? '[]', true) ?: [];
-                                $availableTypes = [
-                                    'national' => 'Εθνικές Μεταφορές',
-                                    'international' => 'Διεθνείς Μεταφορές',
-                                    'urban' => 'Αστικές Διανομές',
-                                    'refrigerated' => 'Ψυγεία',
-                                    'hazmat' => 'Επικίνδυνα Φορτία (ADR)',
-                                    'bulk' => 'Χύδην Φορτία',
-                                    'container' => 'Containers',
-                                    'vehicle_transport' => 'Μεταφορά Οχημάτων',
-                                    'livestock' => 'Μεταφορά Ζώων',
-                                    'oversized' => 'Υπερμεγέθη Φορτία'
-                                ];
-                                foreach ($availableTypes as $value => $label) : ?>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="transport_types[]" value="<?php echo $value; ?>"
-                                            <?php echo in_array($value, $transportTypes) ? 'checked' : ''; ?>>
-                                        <?php echo $label; ?>
-                                    </label>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Διαχείριση Στόλου (νέο) -->
-                    <div class="tab-pane" id="fleet-management">
-                        <h2>Διαχείριση Στόλου - DriveFleet Solutions</h2>
-
-                        <div class="form-group">
-                            <label for="fleet_size">Μέγεθος Στόλου</label>
-                            <input type="number" id="fleet_size" name="fleet_size" min="0"
-                                value="<?php echo old('fleet_size', $companyData['fleet_size'] ?? 0); ?>">
-                            <p class="form-hint">Συνολικός αριθμός οχημάτων στον στόλο σας</p>
-                        </div>
-
-                        <h3>Συστήματα Διαχείρισης Στόλου</h3>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="has_fleet_management" value="1"
-                                    <?php echo old('has_fleet_management', $companyData['has_fleet_management'] ?? false) ? 'checked' : ''; ?>>
-                                Χρησιμοποιούμε σύστημα διαχείρισης στόλου
-                            </label>
-
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="has_telematics" value="1"
-                                    <?php echo old('has_telematics', $companyData['has_telematics'] ?? false) ? 'checked' : ''; ?>>
-                                Χρησιμοποιούμε σύστημα telematics
-                            </label>
-
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="has_route_optimization" value="1"
-                                    <?php echo old('has_route_optimization', $companyData['has_route_optimization'] ?? false) ? 'checked' : ''; ?>>
-                                Χρησιμοποιούμε βελτιστοποίηση διαδρομών
-                            </label>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="maintenance_provider">Πάροχος Συντήρησης</label>
-                            <input type="text" id="maintenance_provider" name="maintenance_provider"
-                                value="<?php echo old('maintenance_provider', $companyData['maintenance_provider'] ?? ''); ?>"
-                                placeholder="π.χ. Επίσημο Service Mercedes">
-                        </div>
-
-                        <div class="info-box">
-                            <h4>🚛 DriveFleet Solutions</h4>
-                            <p>Βελτιστοποιήστε τη λειτουργία του στόλου σας με:</p>
-                            <ul>
-                                <li>Asset Management & Maintenance Planning</li>
-                                <li>Route Optimization με AI</li>
-                                <li>Real-time Monitoring & Analytics</li>
-                                <li>Telematics Integration</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Διαχείριση Οδηγών (νέο) -->
-                    <div class="tab-pane" id="driver-management">
-                        <h2>Διαχείριση Οδηγών - DriveManager Pro</h2>
-
-                        <div class="form-group">
-                            <label for="active_drivers">Ενεργοί Οδηγοί</label>
-                            <input type="number" id="active_drivers" name="active_drivers" min="0"
-                                value="<?php echo old('active_drivers', $companyData['active_drivers'] ?? 0); ?>">
-                            <p class="form-hint">Αριθμός οδηγών που απασχολείτε αυτή τη στιγμή</p>
-                        </div>
-
-                        <h3>Συστήματα HR & Εκπαίδευσης</h3>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="has_hr_system" value="1"
-                                    <?php echo old('has_hr_system', $companyData['has_hr_system'] ?? false) ? 'checked' : ''; ?>>
-                                Διαθέτουμε σύστημα διαχείρισης προσωπικού
-                            </label>
-
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="has_payroll_system" value="1"
-                                    <?php echo old('has_payroll_system', $companyData['has_payroll_system'] ?? false) ? 'checked' : ''; ?>>
-                                Διαθέτουμε αυτοματοποιημένο σύστημα μισθοδοσίας
-                            </label>
-
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="has_training_program" value="1"
-                                    <?php echo old('has_training_program', $companyData['has_training_program'] ?? false) ? 'checked' : ''; ?>>
-                                Διαθέτουμε πρόγραμμα εκπαίδευσης οδηγών
-                            </label>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="average_hiring_time">Μέσος Χρόνος Πρόσληψης (ημέρες)</label>
-                            <input type="number" id="average_hiring_time" name="average_hiring_time" min="0"
-                                value="<?php echo old('average_hiring_time', $companyData['average_hiring_time'] ?? ''); ?>"
-                                placeholder="π.χ. 14">
-                        </div>
-
-                        <div class="info-box">
-                            <h4>👥 DriveManager Pro</h4>
-                            <p>Διαχειριστείτε αποτελεσματικά το προσωπικό σας με:</p>
-                            <ul>
-                                <li>Ψηφιακός Φάκελος Οδηγού</li>
-                                <li>Έξυπνο Scheduling με AI</li>
-                                <li>Παρακολούθηση Απόδοσης & KPIs</li>
-                                <li>Αυτοματοποιημένη Μισθοδοσία</li>
-                                <li>Training Management & Career Development</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Συμμόρφωση & Νομικά (νέο) -->
-                    <div class="tab-pane" id="compliance">
-                        <h2>Συμμόρφωση & Νομική Υποστήριξη</h2>
-
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="has_legal_support" value="1"
-                                    <?php echo old('has_legal_support', $companyData['has_legal_support'] ?? false) ? 'checked' : ''; ?>>
-                                Διαθέτουμε νομική υποστήριξη
-                            </label>
-
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="operates_internationally" value="1"
-                                    <?php echo old('operates_internationally', $companyData['operates_internationally'] ?? false) ? 'checked' : ''; ?>>
-                                Δραστηριοποιούμαστε διεθνώς
-                            </label>
-                        </div>
-
-                        <div class="form-group" id="operating_countries_group" style="display: none;">
-                            <label>Χώρες Δραστηριοποίησης</label>
-                            <div class="checkbox-group">
-                                <?php
-                                $operatingCountries = json_decode($companyData['operating_countries'] ?? '[]', true) ?: [];
-                                $countries = [
-                                    'GR' => 'Ελλάδα',
-                                    'DE' => 'Γερμανία',
-                                    'IT' => 'Ιταλία',
-                                    'FR' => 'Γαλλία',
-                                    'ES' => 'Ισπανία',
-                                    'NL' => 'Ολλανδία',
-                                    'BE' => 'Βέλγιο',
-                                    'AT' => 'Αυστρία',
-                                    'PL' => 'Πολωνία',
-                                    'RO' => 'Ρουμανία',
-                                    'BG' => 'Βουλγαρία',
-                                    'HU' => 'Ουγγαρία',
-                                    'CZ' => 'Τσεχία',
-                                    'SK' => 'Σλοβακία'
-                                ];
-                                foreach ($countries as $code => $name) : ?>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="operating_countries[]" value="<?php echo $code; ?>"
-                                            <?php echo in_array($code, $operatingCountries) ? 'checked' : ''; ?>>
-                                        <?php echo $name; ?>
-                                    </label>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-
-                        <h3>Πιστοποιήσεις & Εξειδικεύσεις</h3>
-                        <div class="form-group">
-                            <label>Εξειδικεύσεις Μεταφορών</label>
-                            <div class="checkbox-group">
-                                <?php
-                                $specializations = json_decode($companyData['specializations'] ?? '[]', true) ?: [];
-                                $availableSpecs = [
-                                    'ADR' => 'ADR - Επικίνδυνα Φορτία',
-                                    'ATP' => 'ATP - Ψυγεία',
-                                    'SQAS' => 'SQAS - Χημικά',
-                                    'GDP' => 'GDP - Φάρμακα',
-                                    'ISO9001' => 'ISO 9001',
-                                    'ISO14001' => 'ISO 14001',
-                                    'ISO45001' => 'ISO 45001',
-                                    'HACCP' => 'HACCP - Τρόφιμα'
-                                ];
-                                foreach ($availableSpecs as $value => $label) : ?>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="specializations[]" value="<?php echo $value; ?>"
-                                            <?php echo in_array($value, $specializations) ? 'checked' : ''; ?>>
-                                        <?php echo $label; ?>
-                                    </label>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-
-                        <div class="info-box">
-                            <h4>⚖️ DriveJob Legal Hub</h4>
-                            <p>Παραμείνετε συμμορφωμένοι με:</p>
-                            <ul>
-                                <li>Regulatory Updates & Compliance Tools</li>
-                                <li>Νομική Υποστήριξη & Συμβουλές</li>
-                                <li>Εξειδικευμένα Modules ανά τύπο μεταφοράς</li>
-                                <li>AI-Powered Compliance Assistant</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Υπηρεσίες & Modules (νέο) -->
-                    <div class="tab-pane" id="services">
-                        <h2>Υπηρεσίες & Subscription</h2>
-
-                        <div class="form-group">
-                            <label for="subscription_plan">Πακέτο Συνδρομής</label>
-                            <select id="subscription_plan" name="subscription_plan">
-                                <option value="basic" <?php echo old('subscription_plan', $companyData['subscription_plan'] ?? 'basic') === 'basic' ? 'selected' : ''; ?>>Basic - Βασικές Λειτουργίες</option>
-                                <option value="professional" <?php echo old('subscription_plan', $companyData['subscription_plan'] ?? '') === 'professional' ? 'selected' : ''; ?>>Professional - Προηγμένες Λειτουργίες</option>
-                                <option value="enterprise" <?php echo old('subscription_plan', $companyData['subscription_plan'] ?? '') === 'enterprise' ? 'selected' : ''; ?>>Enterprise - Πλήρες Πακέτο</option>
-                                <option value="custom" <?php echo old('subscription_plan', $companyData['subscription_plan'] ?? '') === 'custom' ? 'selected' : ''; ?>>Custom - Προσαρμοσμένο</option>
-                            </select>
-                        </div>
-
-                        <h3>Ενεργά Modules</h3>
-                        <div class="checkbox-group">
+                <div class="field-row">
+                    <div class="field">
+                        <label for="industry">Κλάδος</label>
+                        <select id="industry" name="industry">
+                            <option value="">Επίλεξε</option>
                             <?php
-                            $enabledModules = json_decode($companyData['enabled_modules'] ?? '[]', true) ?: [];
-                            $availableModules = [
-                                'job_posting' => '📢 Δημοσίευση Αγγελιών',
-                                'driver_search' => '🔍 Αναζήτηση Οδηγών',
-                                'ats' => '📋 Applicant Tracking System',
-                                'driver_management' => '👥 DriveManager Pro',
-                                'fleet_management' => '🚛 DriveFleet Solutions',
-                                'compliance' => '⚖️ Legal & Compliance Hub',
-                                'analytics' => '📊 Advanced Analytics',
-                                'api_access' => '🔌 API Access'
-                            ];
-                            foreach ($availableModules as $value => $label) : ?>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="enabled_modules[]" value="<?php echo $value; ?>"
-                                        <?php echo in_array($value, $enabledModules) ? 'checked' : ''; ?>>
-                                    <?php echo $label; ?>
-                                </label>
+                            $industries = ['Μεταφορές & Logistics', 'Κατασκευές', 'Βιομηχανία',
+                                'Τρόφιμα & Ποτά', 'Λιανεμπόριο', 'Τουρισμός & Μετακινήσεις', 'Άλλο'];
+                            foreach ($industries as $ind) : ?>
+                                <option value="<?php echo htmlspecialchars($ind); ?>"
+                                    <?php echo old('industry', $companyData['industry'] ?? '') === $ind ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($ind); ?>
+                                </option>
                             <?php endforeach; ?>
-                        </div>
-
-                        <h3>Στατιστικά Χρήσης</h3>
-                        <div class="stats-grid">
-                            <div class="stat-box">
-                                <label>Μηνιαίες Αγγελίες</label>
-                                <div class="stat-value"><?php echo $companyData['monthly_job_posts'] ?? 0; ?></div>
-                            </div>
-                            <div class="stat-box">
-                                <label>Επιτυχημένες Προσλήψεις</label>
-                                <div class="stat-value"><?php echo $companyData['successful_hires'] ?? 0; ?></div>
-                            </div>
-                        </div>
+                        </select>
                     </div>
-
-                    <!-- Τοποθεσία -->
-                    <div class="tab-pane" id="location">
-                        <h2>Τοποθεσία</h2>
-
-                        <div class="form-group">
-                            <label for="address">Διεύθυνση</label>
-                            <input type="text" id="address" name="address" value="<?php echo old('address', $companyData['address'] ?? ''); ?>">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="city">Πόλη</label>
-                            <input type="text" id="city" name="city" value="<?php echo old('city', $companyData['city'] ?? ''); ?>">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="country">Χώρα</label>
-                            <input type="text" id="country" name="country" value="<?php echo old('country', $companyData['country'] ?? ''); ?>">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="postal_code">Ταχυδρομικός Κώδικας</label>
-                            <input type="text" id="postal_code" name="postal_code" value="<?php echo old('postal_code', $companyData['postal_code'] ?? ''); ?>">
-                        </div>
+                    <div class="field">
+                        <label for="company_size">Εργαζόμενοι</label>
+                        <select id="company_size" name="company_size">
+                            <option value="">Επίλεξε</option>
+                            <?php foreach (['1-10', '11-50', '51-200', '201-500', '500+'] as $size) : ?>
+                                <option value="<?php echo $size; ?>"
+                                    <?php echo old('company_size', $companyData['company_size'] ?? '') === $size ? 'selected' : ''; ?>>
+                                    <?php echo $size; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
-
-                    <!-- Επικοινωνία -->
-                    <div class="tab-pane" id="contact">
-                        <h2>Στοιχεία Επικοινωνίας</h2>
-
-                        <div class="form-group <?php echo hasError('phone') ? 'has-error' : ''; ?>">
-                            <label for="phone">Τηλέφωνο</label>
-                            <input type="tel" id="phone" name="phone" value="<?php echo old('phone', $companyData['phone'] ?? ''); ?>" required>
-                            <?php if (hasError('phone')) : ?>
-                                <div class="error-message"><?php echo getError('phone'); ?></div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="form-group <?php echo hasError('website') ? 'has-error' : ''; ?>">
-                            <label for="website">Ιστοσελίδα</label>
-                            <input type="url" id="website" name="website" value="<?php echo old('website', $companyData['website'] ?? ''); ?>" placeholder="https://www.example.com">
-                            <?php if (hasError('website')) : ?>
-                                <div class="error-message"><?php echo getError('website'); ?></div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="contact_person">Υπεύθυνος Επικοινωνίας</label>
-                            <input type="text" id="contact_person" name="contact_person" value="<?php echo old('contact_person', $companyData['contact_person'] ?? ''); ?>">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="position">Θέση</label>
-                            <input type="text" id="position" name="position" value="<?php echo old('position', $companyData['position'] ?? ''); ?>" placeholder="π.χ. Διευθυντής HR">
-                        </div>
+                    <div class="field">
+                        <label for="foundation_year">Έτος ίδρυσης</label>
+                        <input type="number" id="foundation_year" name="foundation_year" min="1900" max="<?php echo date('Y'); ?>"
+                               value="<?php echo old('foundation_year', $companyData['foundation_year'] ?? ''); ?>">
                     </div>
-
-                    <!-- Κοινωνικά Δίκτυα -->
-                    <div class="tab-pane" id="social">
-                        <h2>Κοινωνικά Δίκτυα</h2>
-
-                        <div class="form-group">
-                            <label for="social_linkedin">LinkedIn</label>
-                            <input type="url" id="social_linkedin" name="social_linkedin" value="<?php echo old('social_linkedin', $companyData['social_linkedin'] ?? ''); ?>" placeholder="https://www.linkedin.com/company/yourcompany">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="social_facebook">Facebook</label>
-                            <input type="url" id="social_facebook" name="social_facebook" value="<?php echo old('social_facebook', $companyData['social_facebook'] ?? ''); ?>" placeholder="https://www.facebook.com/yourcompany">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="social_twitter">Twitter</label>
-                            <input type="url" id="social_twitter" name="social_twitter" value="<?php echo old('social_twitter', $companyData['social_twitter'] ?? ''); ?>" placeholder="https://twitter.com/yourcompany">
-                        </div>
+                    <div class="field">
+                        <label for="vat_number">ΑΦΜ</label>
+                        <input type="text" id="vat_number" name="vat_number" maxlength="20"
+                               value="<?php echo old('vat_number', $companyData['vat_number'] ?? ''); ?>">
                     </div>
                 </div>
-            </div>
+            </fieldset>
+
+            <!-- ──────────────────── Στόλος & μεταφορές ────────────────── -->
+            <fieldset>
+                <legend>Στόλος και μεταφορές</legend>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="fleet_size">Οχήματα στόλου</label>
+                        <input type="number" id="fleet_size" name="fleet_size" min="0" max="10000"
+                               value="<?php echo (int) old('fleet_size', $companyData['fleet_size'] ?? 0); ?>">
+                    </div>
+                    <div class="field">
+                        <label for="active_drivers">Οδηγοί που απασχολείτε</label>
+                        <input type="number" id="active_drivers" name="active_drivers" min="0" max="10000"
+                               value="<?php echo (int) old('active_drivers', $companyData['active_drivers'] ?? 0); ?>">
+                    </div>
+                </div>
+
+                <div class="check-group">
+                    <h4>Είδη μεταφορών</h4>
+                    <div class="check-grid">
+                        <?php
+                        $availableTypes = [
+                            'national' => 'Εθνικές μεταφορές',
+                            'international' => 'Διεθνείς μεταφορές',
+                            'urban' => 'Αστικές διανομές',
+                            'refrigerated' => 'Ψυγεία',
+                            'hazmat' => 'Επικίνδυνα φορτία (ADR)',
+                            'bulk' => 'Χύδην φορτία',
+                            'container' => 'Containers',
+                            'vehicle_transport' => 'Μεταφορά οχημάτων',
+                            'livestock' => 'Μεταφορά ζώων',
+                            'oversized' => 'Υπερμεγέθη φορτία',
+                        ];
+                        foreach ($availableTypes as $value => $label) : ?>
+                            <label class="check">
+                                <input type="checkbox" name="transport_types[]" value="<?php echo $value; ?>"
+                                    <?php echo in_array($value, $transportTypes, true) ? 'checked' : ''; ?>>
+                                <span><?php echo $label; ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <div class="check-group">
+                    <label class="check">
+                        <input type="checkbox" name="operates_internationally" id="operates_internationally" value="1"
+                            <?php echo !empty($companyData['operates_internationally']) ? 'checked' : ''; ?>>
+                        <span>Εκτελούμε διεθνή δρομολόγια</span>
+                    </label>
+                </div>
+
+                <div class="check-group" id="countries-block">
+                    <h4>Χώρες δραστηριοποίησης</h4>
+                    <div class="check-grid">
+                        <?php
+                        $countries = ['Ελλάδα', 'Βουλγαρία', 'Ρουμανία', 'Σερβία', 'Βόρεια Μακεδονία',
+                            'Αλβανία', 'Τουρκία', 'Ιταλία', 'Γερμανία', 'Αυστρία', 'Ουγγαρία',
+                            'Πολωνία', 'Τσεχία', 'Ολλανδία', 'Βέλγιο', 'Γαλλία', 'Ισπανία'];
+                        foreach ($countries as $countryName) : ?>
+                            <label class="check">
+                                <input type="checkbox" name="operating_countries[]" value="<?php echo htmlspecialchars($countryName); ?>"
+                                    <?php echo in_array($countryName, $operatingCountries, true) ? 'checked' : ''; ?>>
+                                <span><?php echo htmlspecialchars($countryName); ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- ───────────────────── Έδρα & επικοινωνία ───────────────── -->
+            <fieldset>
+                <legend>Έδρα και επικοινωνία</legend>
+
+                <div class="field">
+                    <label>Email σύνδεσης</label>
+                    <input type="text" value="<?php echo htmlspecialchars($companyData['email'] ?? ''); ?>" disabled>
+                    <p class="hint">Το email σύνδεσης δεν αλλάζει από εδώ — θα αποκτήσει δική του
+                        διαδικασία με επιβεβαίωση, όπως ο κωδικός.</p>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="contact_person">Υπεύθυνος επικοινωνίας</label>
+                        <input type="text" id="contact_person" name="contact_person" maxlength="120"
+                               value="<?php echo old('contact_person', $companyData['contact_person'] ?? ''); ?>">
+                    </div>
+                    <div class="field">
+                        <label for="position">Θέση</label>
+                        <input type="text" id="position" name="position" maxlength="120"
+                               value="<?php echo old('position', $companyData['position'] ?? ''); ?>">
+                    </div>
+                    <div class="field">
+                        <label for="phone">Τηλέφωνο</label>
+                        <input type="tel" id="phone" name="phone" maxlength="20"
+                               value="<?php echo old('phone', $companyData['phone'] ?? ''); ?>">
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="address">Διεύθυνση</label>
+                        <input type="text" id="address" name="address" maxlength="255"
+                               value="<?php echo old('address', $companyData['address'] ?? ''); ?>">
+                    </div>
+                    <div class="field">
+                        <label for="city">Πόλη</label>
+                        <input type="text" id="city" name="city" maxlength="100"
+                               value="<?php echo old('city', $companyData['city'] ?? ''); ?>">
+                    </div>
+                    <div class="field">
+                        <label for="postal_code">Τ.Κ.</label>
+                        <input type="text" id="postal_code" name="postal_code" maxlength="10"
+                               value="<?php echo old('postal_code', $companyData['postal_code'] ?? ''); ?>">
+                    </div>
+                    <div class="field">
+                        <label for="country">Χώρα</label>
+                        <input type="text" id="country" name="country" maxlength="100"
+                               value="<?php echo old('country', $companyData['country'] ?? 'Ελλάδα'); ?>">
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="website">Ιστοσελίδα</label>
+                        <input type="url" id="website" name="website" maxlength="255" placeholder="https://…"
+                               value="<?php echo old('website', $companyData['website'] ?? ''); ?>">
+                    </div>
+                    <div class="field">
+                        <label for="social_linkedin">LinkedIn</label>
+                        <input type="url" id="social_linkedin" name="social_linkedin" maxlength="255" placeholder="https://linkedin.com/company/…"
+                               value="<?php echo old('social_linkedin', $companyData['social_linkedin'] ?? ''); ?>">
+                    </div>
+                    <div class="field">
+                        <label for="social_facebook">Facebook</label>
+                        <input type="url" id="social_facebook" name="social_facebook" maxlength="255" placeholder="https://facebook.com/…"
+                               value="<?php echo old('social_facebook', $companyData['social_facebook'] ?? ''); ?>">
+                    </div>
+                </div>
+            </fieldset>
 
             <div class="form-actions">
-                <button type="submit" class="btn-primary">Αποθήκευση Αλλαγών</button>
-                <a href="<?php echo BASE_URL; ?>companies/company_profile" class="btn-secondary">Ακύρωση</a>
+                <button type="submit" class="btn-primary">Αποθήκευση αλλαγών</button>
+                <a href="<?php echo BASE_URL; ?>companies/profile" class="btn-link">Ακύρωση</a>
             </div>
         </form>
     </div>
 </main>
 
 <style>
-    /* Επιπλέον CSS για τα νέα πεδία */
-    .checkbox-group {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 10px;
-        margin-top: 10px;
+    /* Δανείζεται τη φόρμα των αγγελιών (listing-form) — ίδια σχεδίαση
+       σε όλες τις φόρμες της εταιρείας. Εδώ μόνο ό,τι λείπει. */
+    .listing-form-page { max-width: 860px; margin: 0 auto; padding: 0 1rem; }
+    .page-head { margin: 1.5rem 0 1rem; }
+    .page-head h1 { margin: 0 0 .25rem; font-size: 1.6rem; }
+    .page-head .muted { color: #6b7280; margin: 0; font-size: .95rem; }
+    .listing-form fieldset { border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.25rem 1.25rem 1rem; margin-bottom: 1.25rem; }
+    .listing-form legend { padding: 0 .5rem; font-weight: 600; font-size: 1.05rem; color: #111827; }
+    .listing-form input, .listing-form select, .listing-form textarea { box-sizing: border-box; }
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; margin-bottom: .35rem; font-weight: 500; font-size: .93rem; }
+    .field input, .field select, .field textarea {
+        width: 100%; padding: .55rem .7rem; border: 1px solid #d1d5db;
+        border-radius: 7px; font: inherit; background: #fff;
     }
-
-    .checkbox-label {
-        display: flex;
-        align-items: center;
-        padding: 8px;
-        background: #f5f5f5;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-
-    .checkbox-label:hover {
-        background: #e8e8e8;
-    }
-
-    .checkbox-label input[type="checkbox"] {
-        margin-right: 8px;
-    }
-
-    .info-box {
-        background: #e3f2fd;
-        border: 1px solid #1976d2;
-        border-radius: 8px;
-        padding: 20px;
-        margin-top: 20px;
-    }
-
-    .info-box h4 {
-        color: #1976d2;
-        margin-bottom: 10px;
-    }
-
-    .info-box ul {
-        margin-left: 20px;
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
-    }
-
-    .stat-box {
-        background: #f5f5f5;
-        padding: 20px;
-        border-radius: 8px;
-        text-align: center;
-    }
-
-    .stat-box label {
-        display: block;
-        color: #666;
-        margin-bottom: 10px;
-    }
-
-    .stat-value {
-        font-size: 2em;
-        font-weight: bold;
-        color: #aa3636;
-    }
-
-    .form-hint {
-        font-size: 0.9em;
-        color: #666;
-        margin-top: 5px;
-    }
-
-    /* Responsive για τα tabs */
-    @media (max-width: 768px) {
-        .tab-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .tab-btn {
-            font-size: 0.9em;
-            padding: 8px 12px;
-        }
-    }
+    .field input:disabled { background: #f3f4f6; color: #6b7280; }
+    .field textarea { resize: vertical; }
+    .field .required { color: #dc2626; }
+    .field-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .field-row .field { flex: 1 1 180px; }
+    .hint { color: #6b7280; font-size: .85rem; margin: .3rem 0 0; }
+    .check-group { margin-bottom: 1.1rem; }
+    .check-group h4 { margin: 0 0 .5rem; font-size: .92rem; color: #374151; font-weight: 600; }
+    .check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: .4rem .9rem; }
+    .check { display: flex; align-items: center; gap: .5rem; font-size: .93rem; cursor: pointer; }
+    .check input { width: auto; margin: 0; }
+    .form-actions { display: flex; align-items: center; gap: .75rem; margin: 1.5rem 0 2.5rem; flex-wrap: wrap; }
+    .btn-link { color: #6b7280; text-decoration: none; font-size: .93rem; }
+    @media (max-width: 640px) { .field-row { flex-direction: column; gap: 0; } }
 </style>
 
+<script>
+    // Οι χώρες εμφανίζονται μόνο για διεθνή δρομολόγια.
+    (function () {
+        var flag = document.getElementById('operates_internationally');
+        var block = document.getElementById('countries-block');
+        if (!flag || !block) return;
+        function toggle() { block.style.display = flag.checked ? '' : 'none'; }
+        flag.addEventListener('change', toggle);
+        toggle();
+    })();
+</script>
 
-<!-- Προσθήκη του JavaScript για τις λειτουργίες -->
-<?= \Drivejob\Helpers\Asset::js('js/company-features.js', false) ?>
-
-<?php
-// Συμπερίληψη του footer
-include ROOT_DIR . '/src/Views/partials/footer.php';
-?>
+<?php include ROOT_DIR . '/src/Views/partials/footer.php'; ?>

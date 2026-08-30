@@ -5,7 +5,18 @@ use Drivejob\Core\Session;
 // Ξεκίνημα συνεδρίας
 Session::start();
 // Ορισμός των Content Security Policy headers με υποστήριξη για WebAssembly
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://maps.googleapis.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' https: data: blob:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://maps.googleapis.com blob: data:; frame-src 'self' https://maps.google.com https://www.google.com; worker-src 'self' blob:;");
+/*
+ * CSP — σφίξιμο 01/09/2026 (Φάση Β):
+ *   - ΕΞΩ το maps.googleapis από script/connect: ο χάρτης είναι πλέον
+ *     Leaflet τοπικά (31/08) — κανένα Google script δεν φορτώνεται, άρα
+ *     καμία άδεια. Ό,τι δεν χρησιμοποιείται δεν επιτρέπεται.
+ *   - ΜΕΣΑ το nominatim.openstreetmap.org στο connect: είναι η εφεδρεία
+ *     γεωκωδικοποίησης του work-radius.js για πόλεις εκτός καταλόγου —
+ *     χωρίς την άδεια, το fetch κοβόταν σιωπηλά από το ίδιο μας το CSP.
+ *   - Το frame-src κρατά maps.google.com: το iframe embed της τοποθεσίας
+ *     στο προφίλ εταιρείας δεν θέλει ούτε κλειδί ούτε script.
+ */
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' https: data: blob:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://nominatim.openstreetmap.org blob: data:; frame-src 'self' https://maps.google.com https://www.google.com; worker-src 'self' blob:;");
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
