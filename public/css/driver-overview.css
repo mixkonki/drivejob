@@ -628,3 +628,8 @@
 @media (prefers-reduced-motion: reduce) {
     .deeplink-flash { animation: none; outline: 2px solid rgba(179, 38, 30, .5); }
 }
+
+/* Τα στατιστικά της κεφαλίδας είναι σύνδεσμοι (01/09): ο αριθμός
+   «3 αιτήσεις» που δεν ανοίγει πουθενά είναι κοροϊδία. */
+.stat-link { text-decoration: none; color: inherit; display: block; }
+.stat-link:hover .stat-label { text-decoration: underline; }

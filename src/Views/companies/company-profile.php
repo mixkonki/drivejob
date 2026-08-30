@@ -12,6 +12,9 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 <!-- Σύνδεση με τα CSS αρχεία -->
 <?= \Drivejob\Helpers\Asset::css('css/company-profile.css') ?>
 <?= \Drivejob\Helpers\Asset::css('css/company-components.css') ?>
+<?php /* Deep links καρτελών, όπως στο προφίλ οδηγού: το #candidates στη
+   διεύθυνση ανοίγει την καρτέλα, το refresh μένει εκεί. (01/09) */ ?>
+<?= \Drivejob\Helpers\Asset::js('js/tab-deeplink.js', true) ?>
 
 <style>
     /* Main layout */
@@ -41,10 +44,45 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
     .tabs-nav {
         display: flex;
+        /* Αναδίπλωση αντί για στρίμωγμα: το «Στόλος & Οδηγοί» έσπαγε
+           σε τρεις γραμμές μέσα στο κουμπί του. (01/09) */
+        flex-wrap: wrap;
         background: #f8f9fa;
         border-bottom: 2px solid #e0e0e0;
         margin: 0;
         padding: 0;
+    }
+
+    .tab-count {
+        display: inline-block;
+        min-width: 1.4em;
+        padding: .05rem .35rem;
+        border-radius: 999px;
+        background: #b3261e;
+        color: #fff;
+        font-size: .72rem;
+        font-weight: 700;
+    }
+
+    /* Λίστα αιτήσεων στην καρτέλα «Υποψήφιοι» */
+    .cand-list { display: flex; flex-direction: column; }
+    .cand-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .5rem 1rem;
+        padding: .65rem 0;
+        border-top: 1px solid #f0f1f3;
+    }
+    .cand-row:first-child { border-top: 0; }
+    .cand-main { flex: 1; min-width: min(260px, 100%); display: flex; flex-wrap: wrap; gap: .2rem .6rem; align-items: baseline; }
+    .cand-name { font-weight: 600; color: #1f2937; text-decoration: none; }
+    .cand-name:hover { text-decoration: underline; }
+    .cand-listing { font-size: .84rem; color: #6b7280; }
+    .cand-date { font-size: .76rem; color: #94a3b8; font-style: normal; }
+    .cand-status {
+        font-size: .74rem; font-weight: 700;
+        padding: .18rem .6rem; border-radius: 999px; white-space: nowrap;
     }
 
     .tab-btn {
@@ -284,11 +322,19 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                 <!-- Tabs Navigation -->
                 <div class="profile-tabs">
                     <nav class="tabs-nav">
+                        <?php /* Οι καρτέλες «Στόλος & Οδηγοί» και «Υπηρεσίες»
+                           ΑΦΑΙΡΕΘΗΚΑΝ (01/09): έδειχναν κάρτες ανύπαρκτων
+                           modules (DriveFleet Solutions, subscriptions, API) —
+                           προϊόντα που δεν υπάρχουν, παρουσιασμένα σαν να
+                           υπάρχουν. Μια πλατφόρμα που υπόσχεται ψέματα στην
+                           πρώτη οθόνη της εταιρείας δεν ξαναπείθει εύκολα.
+                           Όταν χτιστούν, θα ξαναμπούν — με περιεχόμενο. */ ?>
                         <button class="tab-btn active" data-tab="overview">Επισκόπηση</button>
                         <button class="tab-btn" data-tab="job-listings">Αγγελίες</button>
-                        <button class="tab-btn" data-tab="candidates">Υποψήφιοι</button>
-                        <button class="tab-btn" data-tab="fleet">Στόλος & Οδηγοί</button>
-                        <button class="tab-btn" data-tab="services">Υπηρεσίες</button>
+                        <button class="tab-btn" data-tab="candidates">Υποψήφιοι<?php
+                            echo !empty($companyStats['pending_applications'])
+                                ? ' <span class="tab-count">' . (int) $companyStats['pending_applications'] . '</span>'
+                                : ''; ?></button>
                     </nav>
 
                     <div class="tab-content">
@@ -354,7 +400,9 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                                 <p class="mt-2"><?php echo substr(htmlspecialchars($listing['description'] ?? ''), 0, 200); ?>...</p>
                                                 <div class="mt-3">
                                                     <a href="<?php echo BASE_URL; ?>job-listings/edit/<?php echo $listing['id']; ?>" class="btn btn-sm btn-outline-primary">Επεξεργασία</a>
-                                                    <a href="<?php echo BASE_URL; ?>api/matching/job/candidates?job_id=<?php echo $listing['id']; ?>" class="btn btn-sm btn-outline-info">Υποψήφιοι</a>
+                                                    <?php /* Πριν έδειχνε στο api/matching/... — η εταιρεία
+                                                       πατούσε «Υποψήφιοι» και έβλεπε ωμό JSON. */ ?>
+                                                    <a href="<?php echo BASE_URL; ?>job-applications/listing/<?php echo $listing['id']; ?>" class="btn btn-sm btn-outline-info">Αιτήσεις</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -369,43 +417,50 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             <?php endif; ?>
                         </div>
 
-                        <!-- Candidates Tab -->
+                        <!-- Candidates Tab: ΠΡΑΓΜΑΤΙΚΕΣ αιτήσεις (01/09) -->
+                        <?php /* Πριν: «AI Matching Widget» — μακέτα. Τώρα: οι
+                           αιτήσεις που έκαναν οδηγοί στις αγγελίες της
+                           εταιρείας, με κατάσταση και σύνδεσμο στο προφίλ
+                           του οδηγού. Αυτό είναι το ακροατήριο όλης της
+                           δουλειάς του προφίλ οδηγού — εδώ την βλέπει
+                           επιτέλους κάποιος. */ ?>
                         <div class="tab-pane" id="candidates">
-                            <h2>Προτεινόμενοι Υποψήφιοι</h2>
-                            <!-- AI Matching Widget -->
-                            <?php include __DIR__ . '/partials/ai-matching-widget.php'; ?>
-                        </div>
-
-                        <!-- Fleet & Drivers Tab -->
-                        <div class="tab-pane" id="fleet">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <!-- Fleet Management Component -->
-                                    <?php include ROOT_DIR . '/src/Views/components/company/fleet-management-card.php'; ?>
+                            <h2>Αιτήσεις Υποψηφίων</h2>
+                            <?php if (empty($recentApplications)) : ?>
+                                <p class="text-muted">Καμία αίτηση ακόμη. Όταν οδηγός κάνει αίτηση σε αγγελία σας, θα εμφανιστεί εδώ.</p>
+                            <?php else : ?>
+                                <?php
+                                $appStatus = [
+                                    'pending' => ['Νέα', '#b45309', '#fffcf5'],
+                                    'viewed' => ['Διαβασμένη', '#475569', '#f8fafc'],
+                                    'shortlisted' => ['Σε λίστα', '#1d4ed8', '#f5f8ff'],
+                                    'hired' => ['Πρόσληψη', '#15803d', '#f5fdf7'],
+                                    'rejected' => ['Απορρίφθηκε', '#b3261e', '#fff7f6'],
+                                    'withdrawn' => ['Αποσύρθηκε', '#6b7280', '#f8f9fa'],
+                                ];
+                                ?>
+                                <div class="cand-list">
+                                    <?php foreach ($recentApplications as $app) : ?>
+                                        <?php $st = $appStatus[$app['status']] ?? [$app['status'], '#6b7280', '#f8f9fa']; ?>
+                                        <div class="cand-row">
+                                            <div class="cand-main">
+                                                <a class="cand-name" href="<?php echo BASE_URL; ?>drivers/profile/<?php echo (int) $app['driver_id']; ?>">
+                                                    <?php echo htmlspecialchars(trim($app['first_name'] . ' ' . $app['last_name'])); ?>
+                                                </a>
+                                                <span class="cand-listing">για: <?php echo htmlspecialchars($app['listing_title']); ?></span>
+                                                <em class="cand-date"><?php echo date('d/m/Y', strtotime($app['created_at'])); ?></em>
+                                            </div>
+                                            <span class="cand-status" style="color: <?php echo $st[1]; ?>; background: <?php echo $st[2]; ?>;">
+                                                <?php echo $st[0]; ?>
+                                            </span>
+                                            <a class="btn btn-sm btn-outline-primary" href="<?php echo BASE_URL; ?>job-applications/listing/<?php echo (int) $app['job_listing_id']; ?>">Διαχείριση</a>
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
-                                <div class="col-md-6">
-                                    <!-- Driver Management Component -->
-                                    <?php include ROOT_DIR . '/src/Views/components/company/driver-management-card.php'; ?>
+                                <div class="mt-3">
+                                    <a href="<?php echo BASE_URL; ?>job-applications/company-applications" class="btn btn-primary">Όλες οι αιτήσεις</a>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Services Tab -->
-                        <div class="tab-pane" id="services">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <!-- Transport Types Component -->
-                                    <?php include ROOT_DIR . '/src/Views/components/company/transport-types-card.php'; ?>
-                                </div>
-                                <div class="col-md-4">
-                                    <!-- Compliance Component -->
-                                    <?php include ROOT_DIR . '/src/Views/components/company/compliance-card.php'; ?>
-                                </div>
-                                <div class="col-md-4">
-                                    <!-- Subscription Component -->
-                                    <?php include ROOT_DIR . '/src/Views/components/company/subscription-card.php'; ?>
-                                </div>
-                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

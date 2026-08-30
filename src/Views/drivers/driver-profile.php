@@ -174,8 +174,13 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-value"><?php echo (int) ($driverStats['applications'] ?? 0); ?></span>
-                            <span class="stat-label">Αιτήσεις που έκανα</span>
+                            <?php /* Ο αριθμός ΕΙΝΑΙ σύνδεσμος (01/09): «ο οδηγός
+                               βλέπει 3 αιτήσεις και δεν μπορεί να τις ανοίξει»
+                               — εκκρεμότητα από τον έλεγχο της 31/08. */ ?>
+                            <a class="stat-link" href="<?php echo BASE_URL; ?>job-applications/my-applications">
+                                <span class="stat-value"><?php echo (int) ($driverStats['applications'] ?? 0); ?></span>
+                                <span class="stat-label">Αιτήσεις που έκανα</span>
+                            </a>
                         </div>
                     </li>
                     <li>
@@ -183,8 +188,10 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5"/><line x1="12" y1="22" x2="12" y2="3"/></svg>
                         </div>
                         <div class="stat-info">
+                            <a class="stat-link" href="<?php echo BASE_URL; ?>drivers/job-offers">
                             <span class="stat-value"><?php echo (int) ($driverStats['offers'] ?? 0); ?></span>
                             <span class="stat-label">Προσφορές που έλαβα</span>
+                            </a>
                             <?php if (!empty($driverStats['pending_offers'])) : ?>
                                 <span class="stat-sub"><?php echo (int) $driverStats['pending_offers']; ?> σε αναμονή απάντησης</span>
                             <?php endif; ?>

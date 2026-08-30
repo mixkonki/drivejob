@@ -412,17 +412,70 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
                             </a>
                             <div class="dropdown-divider"></div>
                         <?php elseif ($userRole === 'company') : ?>
+                            <?php /* Μενού εταιρείας (01/09): ΟΛΕΣ οι δουλειές της —
+                               αγγελίες, υποψήφιοι, μηνύματα — και όχι μόνο «Προφίλ».
+                               Ό,τι δεν έχει σύνδεσμο στο μενού, δεν υπάρχει για
+                               τον χρήστη. */ ?>
                             <a href="<?php echo BASE_URL; ?>companies/profile">
-                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="Profile Icon" />
-                                Προφίλ
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="" />
+                                Το Προφίλ μας
                             </a>
+                            <a href="<?php echo BASE_URL; ?>job-listings/create">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="" />
+                                Νέα Αγγελία
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>job-listings/my-listings">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="" />
+                                Οι Αγγελίες μας
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>job-applications/company-applications">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="" />
+                                Αιτήσεις Υποψηφίων
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>companies/messages">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="" />
+                                Μηνύματα
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>companies/edit-profile">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="" />
+                                Επεξεργασία Προφίλ
+                            </a>
+                            <div class="dropdown-divider"></div>
                         <?php else : ?>
-                            <?php /* Μενού λογαριασμού οδηγού (25/08): στο πρότυπο μεγάλων
-                               πλατφορμών — προφίλ, επεξεργασία, ασφάλεια/κωδικός. */ ?>
+                            <?php /* Μενού οδηγού (01/09): κάθε νέα δυνατότητα —
+                               βιογραφικό, βαθμολογία, συστάσεις, ένσημα — μπήκε ΚΑΙ
+                               εδώ. Η ερώτηση του Κώστα «από πού θα τα φορτώνει ο
+                               οδηγός;» ήταν σωστή: οι σελίδες υπήρχαν, δρόμος προς
+                               αυτές όχι. */ ?>
                             <a href="<?php echo BASE_URL; ?>drivers/profile">
-                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="Profile Icon" />
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="" />
                                 Το Προφίλ μου
                             </a>
+                            <a href="<?php echo BASE_URL; ?>drivers/cv">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="" />
+                                Το Βιογραφικό μου
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>drivers/profile#self-assessment">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/professionalism_icon.png') ?>" alt="" />
+                                Η Βαθμολογία μου
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>drivers/references">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="" />
+                                Συστάσεις Εργοδοτών
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>drivers/insurance">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/safety_icon.png') ?>" alt="" />
+                                Ασφαλιστικό Ιστορικό
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>job-applications/my-applications">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="" />
+                                Οι Αιτήσεις μου
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>drivers/messages">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="" />
+                                Μηνύματα
+                            </a>
+                            <div class="dropdown-divider"></div>
                             <a href="<?php echo BASE_URL; ?>drivers/edit-profile">
                                 <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="" />
                                 Επεξεργασία Προφίλ

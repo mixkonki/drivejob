@@ -166,6 +166,29 @@ class CompaniesController extends BaseUserController
         ];
 
         // Φόρτωση του view
+        /*
+         * Οι πρόσφατες αιτήσεις για την καρτέλα «Υποψήφιοι» (01/09):
+         * πραγματικά δεδομένα στη θέση του «AI Matching Widget». Οι
+         * νεότερες πρώτες — η εκκρεμής αίτηση είναι αυτή που περιμένει
+         * απάντηση ανθρώπου.
+         */
+        try {
+            $appsStmt = $pdo->prepare(
+                'SELECT ja.id, ja.driver_id, ja.job_listing_id, ja.status, ja.created_at,
+                        d.first_name, d.last_name, jl.title AS listing_title
+                 FROM job_applications ja
+                 JOIN job_listings jl ON jl.id = ja.job_listing_id
+                 JOIN drivers d ON d.id = ja.driver_id
+                 WHERE jl.company_id = ?
+                 ORDER BY (ja.status = \'pending\') DESC, ja.created_at DESC
+                 LIMIT 15'
+            );
+            $appsStmt->execute([$companyId]);
+            $recentApplications = $appsStmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Throwable $e) {
+            $recentApplications = [];
+        }
+
         include ROOT_DIR . '/src/Views/companies/company-profile.php';
     }
 

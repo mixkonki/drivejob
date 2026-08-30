@@ -261,110 +261,31 @@ class MatchingModel
      */
     private function calculateMatchPercentage($listings, $driverProfile)
     {
+        /*
+         * ΞΑΝΑΓΡΑΦΤΗΚΕ 01/09/2026: ο υπολογισμός ζει πλέον στον
+         * RequirementsMatcher — σύγκριση απαίτηση-προς-απαίτηση με τα
+         * λεξικά του προφίλ (κατηγορίες διπλώματος με αλυσίδες κάλυψης,
+         * ΠΕΙ ανά είδος μεταφοράς, ADR/ταχογράφος/χειριστής με έλεγχο
+         * ΛΗΞΗΣ, εμπειρία αναλογικά, απόσταση πάντα στον παρονομαστή).
+         *
+         * Ο παλιός κώδικας εδώ ΔΕΝ διάβαζε καθόλου τις κατηγορίες
+         * διπλώματος: αγγελία που ζητούσε ΓΕ έβγαζε το ίδιο ποσοστό για
+         * οδηγό με Β και για οδηγό με ΓΕ.
+         *
+         * Κάθε αγγελία παίρνει επιπλέον match_missing / match_met /
+         * distance_km — το «τι μου λείπει» είναι πιο χρήσιμο από το
+         * ποσοστό, και για τον οδηγό και για τον όμιλο που πουλά
+         * τα σεμινάρια που το καλύπτουν.
+         */
+        $matcher = new \Drivejob\Services\Matching\RequirementsMatcher($this->pdo);
         $matchedListings = [];
 
         foreach ($listings as $listing) {
-            $score = 0;
-            $maxScore = 0;
-
-            // Τύπος απασχόλησης (20 βαθμοί)
-            if (!empty($driverProfile['preferred_job_type']) && !empty($listing['job_type'])) {
-                $maxScore += 20;
-                if ($driverProfile['preferred_job_type'] === $listing['job_type']) {
-                    $score += 20;
-                }
-            }
-
-            // Τύπος οχήματος (20 βαθμοί)
-            if (!empty($driverProfile['preferred_vehicle_type']) && !empty($listing['vehicle_types'])) {
-                $maxScore += 20;
-                if (in_array($driverProfile['preferred_vehicle_type'], $listing['vehicle_types'])) {
-                    $score += 20;
-                }
-            }
-
-            /*
-             * ══════════════════════════════════════════════════════════
-             *  ΑΠΟΣΤΑΣΗ (30 βαθμοί) — ΞΑΝΑΓΡΑΦΤΗΚΕ 31/08/2026
-             * ══════════════════════════════════════════════════════════
-             *
-             * ΤΟ ΛΑΘΟΣ: το `$maxScore += 30` ήταν ΜΕΣΑ στο if. Όταν
-             * έλειπαν συντεταγμένες (26 από 29 αγγελίες στην παραγωγή),
-             * η απόσταση δεν ήταν «χαμηλή» — ΕΞΑΦΑΝΙΖΟΤΑΝ από τον
-             * παρονομαστή. Το ποσοστό υπολογιζόταν στα υπόλοιπα
-             * κριτήρια, οπότε αγγελία Αθήνας και αγγελία Θεσσαλονίκης
-             * έβγαζαν ΤΟ ΙΔΙΟ σκορ για οδηγό Θεσσαλονίκης. Αυτό ήταν το
-             * «51-53% σε αγγελίες 500 χιλιόμετρα μακριά».
-             *
-             * ΤΩΡΑ: τα 30 μονάδες μετρούν ΠΑΝΤΑ στον παρονομαστή. Μια
-             * αγγελία χωρίς τοποθεσία δεν κερδίζει τίποτα από αυτά —
-             * δεν παίρνει «δωρεάν» τέλειο σκορ επειδή λείπει η μέτρηση.
-             *
-             * ΚΑΙ ΕΚΤΟΣ ΑΚΤΙΝΑΣ ΔΕΝ ΕΙΝΑΙ ΜΗΔΕΝ: ο οδηγός με ακτίνα 50
-             * χλμ δεν είναι αδιάφορος για κάτι στα 60 — είναι για κάτι
-             * στα 400. Η βαθμολογία σβήνει σταδιακά ως το διπλάσιο της
-             * ακτίνας αντί να πέφτει απότομα στο μηδέν, ώστε να μη
-             * χάνονται οριακές ευκαιρίες.
-             */
-            $maxScore += 30;
-
-            $hasDriverCoords = !empty($driverProfile['latitude']) && !empty($driverProfile['longitude']);
-            $hasListingCoords = !empty($listing['latitude']) && !empty($listing['longitude']);
-
-            if ($hasDriverCoords && $hasListingCoords) {
-                $distance = $this->calculateDistance(
-                    $driverProfile['latitude'],
-                    $driverProfile['longitude'],
-                    $listing['latitude'],
-                    $listing['longitude']
-                );
-
-                // Αδήλωτη ακτίνα: 50 χλμ, όσο και πριν.
-                $preferredRadius = (int) ($driverProfile['preferred_radius'] ?? 0) ?: 50;
-
-                // «Όλη την Ελλάδα»: η απόσταση παύει να είναι κριτήριο.
-                if ($preferredRadius >= 9999 || !empty($driverProfile['willing_to_relocate'])) {
-                    $score += 30;
-                } elseif ($distance <= $preferredRadius) {
-                    // Εντός ακτίνας: όσο πιο κοντά, τόσο υψηλότερο.
-                    $score += 30 * (1 - ($distance / $preferredRadius) * 0.5);
-                } elseif ($distance <= $preferredRadius * 2) {
-                    // Έως διπλάσια απόσταση: φθίνουσα, όχι μηδέν.
-                    $score += 15 * (1 - (($distance - $preferredRadius) / $preferredRadius));
-                }
-                // Πέρα από το διπλάσιο: 0 βαθμοί, χωρίς να κρύβεται.
-            }
-
-            // Ειδικές απαιτήσεις (20 βαθμοί)
-            // ADR (10 βαθμοί)
-            if (!empty($listing['adr_certificate']) && $listing['adr_certificate'] == 1) {
-                $maxScore += 10;
-                if (!empty($driverProfile['adr_certificate']) && $driverProfile['adr_certificate'] == 1) {
-                    $score += 10;
-                }
-            }
-
-            // Άδεια χειριστή (10 βαθμοί)
-            if (!empty($listing['operator_license']) && $listing['operator_license'] == 1) {
-                $maxScore += 10;
-                if (!empty($driverProfile['operator_license']) && $driverProfile['operator_license'] == 1) {
-                    $score += 10;
-                }
-            }
-
-            // Εμπειρία (10 βαθμοί)
-            if (!empty($listing['experience_years'])) {
-                $maxScore += 10;
-                if (!empty($driverProfile['experience_years']) && $driverProfile['experience_years'] >= $listing['experience_years']) {
-                    $score += 10;
-                }
-            }
-
-            // Υπολογισμός τελικού ποσοστού
-            $matchPercentage = ($maxScore > 0) ? round(($score / $maxScore) * 100) : 0;
-
-            // Προσθήκη του ποσοστού ταιριάσματος στην αγγελία
-            $listing['match_percentage'] = $matchPercentage;
+            $result = $matcher->match($listing, $driverProfile);
+            $listing['match_percentage'] = $result['percent'];
+            $listing['match_missing'] = $result['missing'];
+            $listing['match_met'] = $result['met'];
+            $listing['distance_km'] = $result['distance_km'];
             $matchedListings[] = $listing;
         }
 
@@ -380,110 +301,27 @@ class MatchingModel
      */
     private function calculateDriverMatchPercentage($drivers, $listing)
     {
+        /*
+         * Ίδιος matcher και για τις δύο κατευθύνσεις (01/09/2026): η
+         * εταιρεία και ο οδηγός βλέπουν τον ΙΔΙΟ αριθμό για το ίδιο
+         * ζευγάρι — δύο διαφορετικοί υπολογισμοί θα έβγαζαν αργά ή
+         * γρήγορα δύο διαφορετικά ποσοστά και κανείς δεν θα ήξερε
+         * ποιο ισχύει. Ο matcher κρατά cache ανά οδηγό, οπότε η λίστα
+         * υποψηφίων δεν πληρώνει Ν×πηγές ερωτήματα.
+         */
+        $matcher = new \Drivejob\Services\Matching\RequirementsMatcher($this->pdo);
         $matchedDrivers = [];
 
         foreach ($drivers as $driver) {
-            $driver['match_percentage'] = $this->calculateSingleDriverMatchPercentage($driver, $listing);
+            $result = $matcher->match($listing, $driver);
+            $driver['match_percentage'] = $result['percent'];
+            $driver['match_missing'] = $result['missing'];
+            $driver['match_met'] = $result['met'];
+            $driver['distance_km'] = $result['distance_km'];
             $matchedDrivers[] = $driver;
         }
 
         return $matchedDrivers;
-    }
-
-    /**
-     * Υπολογίζει το ποσοστό ταιριάσματος για έναν οδηγό με βάση μια αγγελία
-     *
-     * @param array $driver Ο οδηγός
-     * @param array $listing Η αγγελία
-     * @return int Το ποσοστό ταιριάσματος (0-100)
-     */
-    private function calculateSingleDriverMatchPercentage($driver, $listing)
-    {
-        $score = 0;
-        $maxScore = 0;
-
-        // Τύπος απασχόλησης (20 βαθμοί)
-        if (!empty($driver['preferred_job_type']) && !empty($listing['job_type'])) {
-            $maxScore += 20;
-            if ($driver['preferred_job_type'] === $listing['job_type']) {
-                $score += 20;
-            }
-        }
-
-        // Τύπος οχήματος (20 βαθμοί)
-        if (!empty($driver['preferred_vehicle_type']) && !empty($listing['vehicle_types'])) {
-            $maxScore += 20;
-            if (in_array($driver['preferred_vehicle_type'], $listing['vehicle_types'])) {
-                $score += 20;
-            }
-        }
-
-        /*
-         * ΑΠΟΣΤΑΣΗ (30 βαθμοί) — ίδια διόρθωση με την άλλη κατεύθυνση
-         * (31/08). Το `$maxScore += 30` βγήκε ΕΞΩ από το if: αγγελία
-         * χωρίς συντεταγμένες δεν πρέπει να κερδίζει τέλειο σκορ επειδή
-         * απλώς λείπει η μέτρηση. Δες το εκτενές σχόλιο παραπάνω.
-         *
-         * Εδώ κρίνει η ΑΓΓΕΛΙΑ ποιος οδηγός της ταιριάζει, οπότε μετράει
-         * η ακτίνα ΤΗΣ αγγελίας — αλλά αν ο οδηγός δηλώνει μεγαλύτερη
-         * διάθεση μετακίνησης, τιμάται η δική του: είναι αυτός που θα
-         * κάνει τη διαδρομή.
-         */
-        $maxScore += 30;
-
-        if (
-            !empty($driver['latitude']) && !empty($driver['longitude']) &&
-            !empty($listing['latitude']) && !empty($listing['longitude'])
-        ) {
-            $distance = $this->calculateDistance(
-                $driver['latitude'],
-                $driver['longitude'],
-                $listing['latitude'],
-                $listing['longitude']
-            );
-
-            $listingRadius = (int) ($listing['radius'] ?? 0) ?: 50;
-            $driverRadius = (int) ($driver['preferred_radius'] ?? 0) ?: 0;
-            $radius = max($listingRadius, $driverRadius);
-
-            if ($radius >= 9999 || !empty($driver['willing_to_relocate'])) {
-                $score += 30;
-            } elseif ($distance <= $radius) {
-                $score += 30 * (1 - ($distance / $radius) * 0.5);
-            } elseif ($distance <= $radius * 2) {
-                $score += 15 * (1 - (($distance - $radius) / $radius));
-            }
-        }
-
-        // Ειδικές απαιτήσεις (20 βαθμοί)
-        // ADR (10 βαθμοί)
-        if (!empty($listing['adr_certificate']) && $listing['adr_certificate'] == 1) {
-            $maxScore += 10;
-            if (!empty($driver['adr_certificate']) && $driver['adr_certificate'] == 1) {
-                $score += 10;
-            }
-        }
-
-        // Άδεια χειριστή (10 βαθμοί)
-        if (!empty($listing['operator_license']) && $listing['operator_license'] == 1) {
-            $maxScore += 10;
-            if (!empty($driver['operator_license']) && $driver['operator_license'] == 1) {
-                $score += 10;
-            }
-        }
-
-        // Εμπειρία (10 βαθμοί)
-        if (!empty($listing['experience_years'])) {
-            $maxScore += 10;
-            if (!empty($driver['experience_years']) && $driver['experience_years'] >= $listing['experience_years']) {
-                $score += 10;
-            }
-        }
-
-        // Υπολογισμός τελικού ποσοστού
-        $matchPercentage = ($maxScore > 0) ? round(($score / $maxScore) * 100) : 0;
-
-        return $matchPercentage;
     }
 
     /**

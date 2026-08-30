@@ -148,10 +148,20 @@ $evidenceFull = ScoreSource::EVIDENCE_LABELS;
                                     <li>
                                         <strong><?php echo htmlspecialchars($s['label'], ENT_QUOTES, 'UTF-8'); ?></strong>
                                         <span><?php echo htmlspecialchars($s['hint'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                        <?php /* Η πιο σημαντική έλλειψη έχει και δρόμο: η
-                                           σελίδα προσκλήσεων υπάρχει (01/09). */ ?>
-                                        <?php if ($key === 'employer_review') : ?>
-                                            <a class="score-todo-cta" href="<?php echo BASE_URL; ?>drivers/references">Στείλε πρόσκληση →</a>
+                                        <?php /* Κάθε έλλειψη με έτοιμη σελίδα παίρνει σύνδεσμο —
+                                           η περιγραφή χωρίς δρόμο είναι γκρίνια, όχι οδηγία. */ ?>
+                                        <?php
+                                        $todoLinks = [
+                                            'employer_review' => ['drivers/references', 'Στείλε πρόσκληση →'],
+                                            'insurance_record' => ['drivers/insurance', 'Ανέβασε τα ένσημα →'],
+                                            'license' => ['drivers/edit-profile#driving-licenses', 'Συμπλήρωσε →'],
+                                            'certificate' => ['drivers/edit-profile#special-licenses', 'Συμπλήρωσε →'],
+                                            'operator' => ['drivers/edit-profile#operator-licenses', 'Συμπλήρωσε →'],
+                                            'training' => ['drivers/certifications?from=profile', 'Πρόσθεσε →'],
+                                        ];
+                                        ?>
+                                        <?php if (isset($todoLinks[$key])) : ?>
+                                            <a class="score-todo-cta" href="<?php echo BASE_URL . $todoLinks[$key][0]; ?>"><?php echo $todoLinks[$key][1]; ?></a>
                                         <?php endif; ?>
                                     </li>
                                 <?php endforeach; ?>
