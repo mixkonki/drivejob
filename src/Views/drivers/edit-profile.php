@@ -23,10 +23,14 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 <?= \Drivejob\Helpers\Asset::css('css/form-buttons-fix.css') ?>
 <?php /* ΤΕΛΕΥΤΑΙΟ επίτηδες: το πακέτο ευθυγράμμισης κερδίζει το cascade */ ?>
 <?= \Drivejob\Helpers\Asset::css('css/driver-edit-align.css') ?>
-<?php /* Ο χάρτης της ακτίνας εργασίας (30/08). Το `async defer` δεν
-   μπλοκάρει τη φόρτωση της φόρμας· αν το API δεν έρθει, το work-radius.js
-   δουλεύει χωρίς χάρτη — δείκτης και λίστα πόλεων μένουν λειτουργικά. */ ?>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgZpJWVYyrY0U8U1jBGelEWryur3vIrzc&libraries=places" async defer></script>
+<?php /* ΧΑΡΤΗΣ: Leaflet + OpenStreetMap, ΤΟΠΙΚΑ (31/08).
+   Αντικατέστησε το Google Maps, που έβγαζε «For development purposes only»
+   και popup σφάλματος επειδή το κλειδί δεν είχε ενεργή χρέωση. Δωρεάν,
+   χωρίς κλειδί, χωρίς εξάρτηση από CDN — άρα και χωρίς αλλαγή στο CSP. */ ?>
+<link rel="stylesheet" href="<?= \Drivejob\Helpers\Asset::url('vendor/leaflet/leaflet.css') ?>">
+<script src="<?= \Drivejob\Helpers\Asset::url('vendor/leaflet/leaflet.js') ?>"></script>
+
+
 <?php /* Τα παλιά tesseract-bundle/tesseract-fallback αφαιρέθηκαν: φόρτωναν
    έναν TesseractWrapper που δεν καλούσε κανείς — τα κουμπιά «Σκανάρισμα»
    δεν είχαν ΚΑΝΕΝΑΝ χειριστή. Ο πραγματικός χειριστής είναι το

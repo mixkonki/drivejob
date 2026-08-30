@@ -27,9 +27,33 @@
  *     Ο οδηγός ρυθμίζει μια ακτίνα· η πλατφόρμα αποκτά το κλειδί του
  *     ταιριάσματος.
  *
- * ΧΩΡΙΣ GOOGLE MAPS: αν το API δεν φορτώσει (μπλοκαρισμένο, offline,
- * χωρίς κλειδί), ο δείκτης και η λίστα πόλεων δουλεύουν κανονικά — μόνο
- * ο χάρτης λείπει. Καμία λειτουργία δεν εξαρτάται από αυτόν.
+ * ══════════════════════════════════════════════════════════════════════
+ *  ΓΙΑΤΙ LEAFLET ΚΑΙ ΟΧΙ GOOGLE MAPS (31/08/2026)
+ * ══════════════════════════════════════════════════════════════════════
+ *
+ * Ο χάρτης Google έβγαζε στην παραγωγή «Αυτή η σελίδα δεν μπορεί να
+ * φορτώσει σωστά τους Χάρτες Google» με υδατογράφημα «For development
+ * purposes only»: το κλειδί δεν έχει ενεργή χρέωση στο Google Cloud.
+ * Κάθε οδηγός έβλεπε σπασμένο χάρτη και ένα popup σφάλματος.
+ *
+ * Τρεις λόγοι που δεν το λύσαμε ενεργοποιώντας χρέωση:
+ *
+ *  1. ΚΟΣΤΟΣ ΠΟΥ ΜΕΓΑΛΩΝΕΙ. Το Maps JavaScript API χρεώνεται ανά
+ *     φόρτωση. Με χίλιους οδηγούς που ανοίγουν το προφίλ τους, ο
+ *     λογαριασμός δεν είναι μηδέν — για έναν κύκλο πάνω σε χάρτη.
+ *  2. ΕΚΤΕΘΕΙΜΕΝΟ ΚΛΕΙΔΙ. Το κλειδί ήταν γραμμένο μέσα στα views, ορατό
+ *     σε κάθε επισκέπτη. Χωρίς περιορισμό referrer, οποιοσδήποτε το
+ *     χρησιμοποιεί και χρεώνεται ο λογαριασμός μας.
+ *  3. ΕΞΑΡΤΗΣΗ ΠΟΥ ΣΠΑΕΙ ΣΙΩΠΗΛΑ. Μια λήξη κάρτας στο Google Cloud και
+ *     ο χάρτης σβήνει σε όλη την πλατφόρμα, χωρίς καμία ειδοποίηση.
+ *
+ * Το Leaflet με πλακίδια OpenStreetMap είναι δωρεάν, χωρίς κλειδί και
+ * χωρίς λογαριασμό. Σερβίρεται ΤΟΠΙΚΑ από το public/vendor/leaflet/ —
+ * καμία εξάρτηση από CDN, καμία αλλαγή στο CSP.
+ *
+ * ΧΩΡΙΣ ΧΑΡΤΗ: αν για οποιονδήποτε λόγο δεν φορτώσει το Leaflet, ο
+ * δείκτης και η λίστα πόλεων δουλεύουν κανονικά — μόνο ο χάρτης λείπει.
+ * Καμία λειτουργία δεν εξαρτάται από αυτόν.
  */
 (function () {
     'use strict';
@@ -190,16 +214,19 @@
 
         function drawCircle(km) {
             if (!map || !circle) { return; }
+
             if (km >= 9999 || km <= 0) {
-                circle.setMap(null);
-                if (km >= 9999) { map.setZoom(6); }
+                if (map.hasLayer(circle)) { map.removeLayer(circle); }
+                // Όλη η Ελλάδα: ζουμ που τη δείχνει ολόκληρη.
+                if (km >= 9999) { map.setView([38.5, 23.5], 5.4); }
                 return;
             }
-            circle.setMap(map);
+
+            if (!map.hasLayer(circle)) { circle.addTo(map); }
             circle.setRadius(km * 1000);
-            // Το πλαίσιο του κύκλου γεμίζει τον χάρτη: ο οδηγός βλέπει
-            // την ακτίνα σε σχέση με τη γεωγραφία, όχι μια κουκκίδα.
-            map.fitBounds(circle.getBounds());
+            // Ο κύκλος γεμίζει το πλαίσιο: ο οδηγός βλέπει την ακτίνα σε
+            // σχέση με τη γεωγραφία, όχι μια κουκκίδα σε άδειο χάρτη.
+            map.fitBounds(circle.getBounds(), { padding: [8, 8] });
         }
 
         function update(km, fromSlider) {
@@ -214,33 +241,50 @@
 
         // ── Χάρτης (προαιρετικός) ────────────────────────────────────────
         function initMap() {
-            if (!mapBox || typeof google === 'undefined' || !google.maps) { return; }
+            if (!mapBox || typeof L === 'undefined') { return; }
 
-            var center = { lat: lat || 39.0742, lng: lng || 21.8243 };  // κέντρο Ελλάδας
-            map = new google.maps.Map(mapBox, {
+            var center = [lat || 39.0742, lng || 21.8243];   // κέντρο Ελλάδας
+
+            map = L.map(mapBox, {
                 center: center,
                 zoom: 9,
-                disableDefaultUI: true,
                 zoomControl: true,
-                gestureHandling: 'cooperative',   // δεν κλέβει τη κύλιση της σελίδας
-                styles: [
-                    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-                    { featureType: 'transit', stylers: [{ visibility: 'off' }] }
-                ]
+                attributionControl: true,
+                // Δεν κλέβει την κύλιση της σελίδας: ο χρήστης που σκρολάρει
+                // το προφίλ του δεν θέλει να ζουμάρει κατά λάθος τον χάρτη.
+                scrollWheelZoom: false,
+                dragging: !readOnly
             });
 
-            marker = new google.maps.Marker({ position: center, map: map });
-            circle = new google.maps.Circle({
-                strokeColor: '#b3261e',
-                strokeOpacity: 0.85,
-                strokeWeight: 2,
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            // Κουκκίδα αντί για εικόνα-πινέζα: το Leaflet τραβά PNG marker
+            // από το CDN του, που δεν θέλουμε — ο CircleMarker είναι SVG.
+            marker = L.circleMarker(center, {
+                radius: 5,
+                color: '#fff',
+                weight: 2,
                 fillColor: '#b3261e',
-                fillOpacity: 0.10,
-                center: center
+                fillOpacity: 1
+            }).addTo(map);
+
+            circle = L.circle(center, {
+                radius: 1000,
+                color: '#b3261e',
+                weight: 2,
+                opacity: 0.85,
+                fillColor: '#b3261e',
+                fillOpacity: 0.10
             });
 
             mapBox.classList.add('is-ready');
-            drawCircle(currentKm());
+            // Το Leaflet υπολογίζει διαστάσεις κατά τη δημιουργία· μόλις
+            // πήρε το στοιχείο πλάτος (αφού βγήκε το display:none), πρέπει
+            // να ξαναμετρήσει — αλλιώς ο χάρτης βγαίνει κομμένος.
+            setTimeout(function () { map.invalidateSize(); drawCircle(currentKm()); }, 60);
         }
 
         /**
@@ -284,35 +328,47 @@
             if (localGeocode()) {
                 // Βρέθηκε τοπικά — ο Geocoder θα ήταν σπατάλη κλήσης.
                 if (map) {
-                    map.setCenter({ lat: lat, lng: lng });
-                    marker.setPosition({ lat: lat, lng: lng });
-                    circle.setCenter({ lat: lat, lng: lng });
+                    map.setView([lat, lng], map.getZoom());
+                    marker.setLatLng([lat, lng]);
+                    circle.setLatLng([lat, lng]);
                 }
                 return;
             }
             if (lat && lng) { return; }
-            if (typeof google === 'undefined' || !google.maps || !google.maps.Geocoder) { return; }
 
+            /*
+             * Πόλη εκτός του τοπικού πίνακα (χωριό, οικισμός): ρωτάμε το
+             * Nominatim του OpenStreetMap — δωρεάν, χωρίς κλειδί.
+             *
+             * ΜΟΝΟ ΟΤΑΝ ΧΡΕΙΑΖΕΤΑΙ: ο πίνακας CITIES καλύπτει κάθε
+             * πρωτεύουσα νομού, οπότε αυτό τρέχει σπάνια. Το Nominatim
+             * ζητά να μην το βομβαρδίζουμε — και δεν το κάνουμε.
+             */
             var address = root.dataset.address || city;
             if (!address) { return; }
 
-            new google.maps.Geocoder().geocode(
-                { address: address + ', Ελλάδα', region: 'gr' },
-                function (results, status) {
-                    if (status !== 'OK' || !results || !results[0]) { return; }
-                    var loc = results[0].geometry.location;
-                    lat = loc.lat();
-                    lng = loc.lng();
+            fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=gr&q='
+                  + encodeURIComponent(address))
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .then(function (results) {
+                    if (!results || !results.length) { return; }
+                    lat = parseFloat(results[0].lat);
+                    lng = parseFloat(results[0].lon);
+                    if (!lat || !lng) { return; }
+
                     if (latField) { latField.value = lat.toFixed(8); }
                     if (lngField) { lngField.value = lng.toFixed(8); }
                     if (map) {
-                        map.setCenter({ lat: lat, lng: lng });
-                        marker.setPosition({ lat: lat, lng: lng });
-                        circle.setCenter({ lat: lat, lng: lng });
+                        map.setView([lat, lng], map.getZoom());
+                        marker.setLatLng([lat, lng]);
+                        circle.setLatLng([lat, lng]);
                     }
                     update(currentKm(), false);
-                }
-            );
+                })
+                .catch(function () {
+                    // Χωρίς δίκτυο ή μπλοκαρισμένο: η ακτίνα και ο δείκτης
+                    // δουλεύουν· μόνο η λίστα πόλεων μένει κενή.
+                });
         }
 
         // ── Χειριστές ────────────────────────────────────────────────────

@@ -360,11 +360,15 @@
 .skl-group { padding: .35rem 0; border-top: 1px solid #f4f5f7; }
 .skl-group:first-child { border-top: 0; }
 
+/* Έντονοι τίτλοι ομάδων (αίτημα 31/08): σε γκρι κανονικό βάρος
+   χάνονταν μέσα στα πλακίδια — δεν φαινόταν πού τελειώνει η μία ομάδα
+   και πού αρχίζει η άλλη. */
 .skl-group-label {
     display: block;
-    font-size: .72rem;
-    color: #9ca3af;
-    margin-bottom: .2rem;
+    font-size: .74rem;
+    font-weight: 700;
+    color: #4b5563;
+    margin-bottom: .28rem;
 }
 
 .skl-list { margin: 0; display: flex; flex-wrap: wrap; gap: .22rem; }
@@ -486,7 +490,12 @@
 }
 
 .wr-view-extra { margin: .4rem 0 0; font-size: .8rem; color: #6b7280; }
-.wr--view .wr-map { height: 170px; margin-top: 0; }
+/* ΧΩΡΙΣ height ΕΔΩ (31/08): το `.wr--view .wr-map` είναι πιο specific
+   από το `.wr-map` παρακάτω, οπότε το σταθερό `height: 170px` ΝΙΚΟΥΣΕ το
+   `aspect-ratio: 1` και ο χάρτης έμενε ορθογώνιος παρότι το είχαμε
+   «διορθώσει». Το μάθημα: όταν μια ιδιότητα δεν εφαρμόζεται, ψάξε ποιος
+   πιο ειδικός επιλογέας την ακυρώνει — μην την ξαναγράψεις πιο κάτω. */
+.wr--view .wr-map { margin-top: 0; }
 .wr--view .wr-coverage { margin-top: .5rem; }
 
 /* Τα κοινά στοιχεία της ακτίνας — δηλώνονται ΚΑΙ εδώ γιατί η σελίδα

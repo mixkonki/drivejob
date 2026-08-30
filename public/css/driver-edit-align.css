@@ -106,7 +106,12 @@ main .container > h1 {
    Απάντηση στο «όχι ένα κατεβατό» (25/08). */
 .edit-profile-form .form-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    /* `min(220px, 100%)` και ΟΧΙ σκέτο 220px (31/08): το auto-fit με
+       σταθερό ελάχιστο δεν συρρικνώνεται κάτω από αυτό, οπότε σε στενό
+       container (μετρημένο στα 768px: υπερχείλιση 38px) η στήλη έβγαινε
+       έξω από τη σελίδα. Με το min() το ελάχιστο πέφτει στο διαθέσιμο
+       πλάτος και το πλέγμα διπλώνει αντί να ξεχειλίσει. */
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
     gap: .2rem .9rem;
     margin-bottom: 0;
 }

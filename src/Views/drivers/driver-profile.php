@@ -11,6 +11,13 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 <?php /* Τελευταίο: υπερισχύει των παλιών κανόνων του driver-profile.css
    για τον πίνακα προσόντων που αντικαταστάθηκε από ομάδες (30/08). */ ?>
 <?= \Drivejob\Helpers\Asset::css('css/driver-overview.css') ?>
+<?php /* ΧΑΡΤΗΣ: Leaflet + OpenStreetMap, ΤΟΠΙΚΑ (31/08).
+   Αντικατέστησε το Google Maps, που έβγαζε «For development purposes only»
+   και popup σφάλματος επειδή το κλειδί δεν είχε ενεργή χρέωση. Δωρεάν,
+   χωρίς κλειδί, χωρίς εξάρτηση από CDN — άρα και χωρίς αλλαγή στο CSP. */ ?>
+<link rel="stylesheet" href="<?= \Drivejob\Helpers\Asset::url('vendor/leaflet/leaflet.css') ?>">
+<script src="<?= \Drivejob\Helpers\Asset::url('vendor/leaflet/leaflet.js') ?>"></script>
+
 
 
 <script>
@@ -18,8 +25,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
     const BASE_URL = '<?php echo BASE_URL; ?>';
 </script>
 <?= \Drivejob\Helpers\Asset::js('js/driver-profile.js', false) ?>
-<!-- Μετά το link του CSS και πριν το </head> -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgZpJWVYyrY0U8U1jBGelEWryur3vIrzc&libraries=places"></script>
+
 
 <main>
     <div class="container">
