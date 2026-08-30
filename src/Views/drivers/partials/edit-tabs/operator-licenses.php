@@ -12,32 +12,13 @@
                             </div>
 
                             <div id="operator_license_tab" class="license-details-tab <?php echo (!isset($driverOperator) || !$driverOperator) ? 'hidden' : ''; ?>">
-                                <!-- Εικόνες άδειας χειριστή και σκανάρισμα -->
-                                <div class="license-visual">
-                                    <?php
-                                    $operatorImages = [
-                                        ['id' => 'operator_front_image', 'label' => 'Εμπρόσθια Όψη Άδειας Χειριστή', 'scan_id' => 'scan-operator-front'],
-                                        ['id' => 'operator_back_image', 'label' => 'Οπίσθια Όψη Άδειας Χειριστή', 'scan_id' => 'scan-operator-back']
-                                    ];
-
-                                    foreach ($operatorImages as $image) :
-                                    ?>
-                                        <div class="form-group">
-                                            <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
-                                            <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]) : ?>
-                                                <div class="current-image">
-                                                    <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
-                                                    <p>Τρέχουσα εικόνα</p>
-                                                </div>
-                                            <?php endif; ?>
-                                            <input type="file" id="<?php echo $image['id']; ?>" name="<?php echo $image['id']; ?>" accept="image/jpeg, image/png, image/gif">
-                                            <button type="button" id="<?php echo $image['scan_id']; ?>" class="btn-scan">
-                                                <img src="<?= \Drivejob\Helpers\Asset::url('img/scan_icon.png') ?>" alt="Scan" class="scan-icon">
-                                                Σκανάρισμα με OCR
-                                            </button>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
+                                <?php // Κάρτες εικόνων: κοινό partial (κλικ = επιλογή, live preview)
+                                $docImages = [
+                                    ['id' => 'operator_front_image', 'label' => 'Εμπρόσθια Όψη Άδειας Χειριστή', 'scan_id' => 'scan-operator-front'],
+                                    ['id' => 'operator_back_image', 'label' => 'Οπίσθια Όψη Άδειας Χειριστή', 'scan_id' => 'scan-operator-back']
+                                ];
+                                include __DIR__ . '/_doc-upload.php';
+                                ?>
 
                                 <!-- Βασικές πληροφορίες άδειας χειριστή -->
                                 <div class="license-basic-info">

@@ -12,32 +12,13 @@
                             </div>
 
                             <div id="adr_certificate_tab" class="license-details-tab <?php echo (!$driverADR) ? 'hidden' : ''; ?>">
-                                <!-- Εικόνες πιστοποιητικού ADR και σκανάρισμα -->
-                                <div class="license-visual">
-                                    <?php
-                                    $adrImages = [
-                                        ['id' => 'adr_front_image', 'label' => 'Εμπρόσθια Όψη Πιστοποιητικού ADR', 'scan_id' => 'scan-adr-front'],
-                                        ['id' => 'adr_back_image', 'label' => 'Οπίσθια Όψη Πιστοποιητικού ADR', 'scan_id' => 'scan-adr-back']
-                                    ];
-
-                                    foreach ($adrImages as $image) :
-                                    ?>
-                                        <div class="form-group">
-                                            <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
-                                            <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]) : ?>
-                                                <div class="current-image">
-                                                    <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
-                                                    <p>Τρέχουσα εικόνα</p>
-                                                </div>
-                                            <?php endif; ?>
-                                            <input type="file" id="<?php echo $image['id']; ?>" name="<?php echo $image['id']; ?>" accept="image/jpeg, image/png, image/gif">
-                                            <button type="button" id="<?php echo $image['scan_id']; ?>" class="btn-scan">
-                                                <img src="<?= \Drivejob\Helpers\Asset::url('img/scan_icon.png') ?>" alt="Scan" class="scan-icon">
-                                                Σκανάρισμα με OCR
-                                            </button>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
+                                <?php // Κάρτες εικόνων: κοινό partial (κλικ = επιλογή, live preview)
+                                $docImages = [
+                                    ['id' => 'adr_front_image', 'label' => 'Εμπρόσθια Όψη Πιστοποιητικού ADR', 'scan_id' => 'scan-adr-front'],
+                                    ['id' => 'adr_back_image', 'label' => 'Οπίσθια Όψη Πιστοποιητικού ADR', 'scan_id' => 'scan-adr-back']
+                                ];
+                                include __DIR__ . '/_doc-upload.php';
+                                ?>
 
                                 <!-- Βασικές πληροφορίες πιστοποιητικού ADR -->
                                 <div class="license-basic-info">
