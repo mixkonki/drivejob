@@ -370,10 +370,120 @@
         return false;
     }
 
+    /*
+     * ΣΤΟΧΕΥΜΕΝΟ ΣΚΑΝΑΡΙΣΜΑ ΑΝΑ ΕΓΓΡΑΦΟ (25/08).
+     *
+     * Μάθημα από δοκιμή του Κώστα: το κουμπί της κάρτας ταχογράφου έτρεχε
+     * το parse ΤΟΥ ΔΙΠΛΩΜΑΤΟΣ, «έβρισκε» κατηγορία C μέσα σε άσχετο
+     * κείμενο και την τσέκαρε στον πίνακα αδειών — σε άλλη καρτέλα, χωρίς
+     * ο χρήστης να το δει. Κάθε κουμπί πλέον διαβάζει ΜΟΝΟ ό,τι αφορά το
+     * δικό του έγγραφο και γράφει ΜΟΝΟ στα δικά του πεδία.
+     */
+    var SCAN_PROFILES = [
+        { prefix: 'scan-license', mode: 'license' },
+        {
+            prefix: 'scan-tachograph', mode: 'doc',
+            docLabel: 'της κάρτας ταχογράφου',
+            numberField: 'tachograph_card_number',
+            expiryField: 'tachograph_card_expiry',
+            // 5β = αριθμός κάρτας οδηγού (πανευρωπαϊκή διάταξη πεδίων)
+            numberPattern: /5\s*[bβ][.:\s]{0,3}([A-Z0-9]{8,20})/i,
+            // 5α = αριθμός ΔΙΠΛΩΜΑΤΟΣ του κατόχου → έλεγχος ταυτοπροσωπίας
+            licensePattern: /5\s*[aα][.:\s]{0,3}([A-Z0-9]{6,20})/i
+        },
+        {
+            prefix: 'scan-adr', mode: 'doc',
+            docLabel: 'του πιστοποιητικού ADR',
+            numberField: 'adr_certificate_number',
+            expiryField: 'adr_certificate_expiry'
+        },
+        {
+            prefix: 'scan-operator', mode: 'doc',
+            docLabel: 'της άδειας χειριστή',
+            numberField: 'operator_license_number',
+            expiryField: 'operator_license_expiry'
+        }
+    ];
+
+    function profileFor(button) {
+        var id = button.id || '';
+        for (var i = 0; i < SCAN_PROFILES.length; i++) {
+            if (id.indexOf(SCAN_PROFILES[i].prefix) === 0) {
+                return SCAN_PROFILES[i];
+            }
+        }
+        return SCAN_PROFILES[0];
+    }
+
+    /** Όλες οι ημερομηνίες του κειμένου· η πιο μακρινή μελλοντική = λήξη. */
+    function extractExpiry(text) {
+        var re = /(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{4})/g;
+        var m, best = null;
+        var today = new Date();
+        while ((m = re.exec(text)) !== null) {
+            var d = new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+            if (isNaN(d) || d.getFullYear() < 2000 || d.getFullYear() > 2060) { continue; }
+            if (d > today && (!best || d > best)) { best = d; }
+        }
+        if (!best) { return null; }
+        var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+        return best.getFullYear() + '-' + pad(best.getMonth() + 1) + '-' + pad(best.getDate());
+    }
+
+    /** Γενικός αριθμός εγγράφου: το πιο μακρύ αλφαριθμητικό με ≥6 ψηφία. */
+    function extractDocNumber(text, pattern) {
+        if (pattern) {
+            var m = text.match(pattern);
+            if (m) { return m[1]; }
+        }
+        var best = null;
+        (text.match(/\b[A-Z]{0,3}\d[A-Z0-9]{6,18}\b/g) || []).forEach(function (tok) {
+            var digits = (tok.match(/\d/g) || []).length;
+            if (digits >= 6 && (!best || tok.length > best.length)) { best = tok; }
+        });
+        return best;
+    }
+
+    function norm(v) { return String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+
+    /** Σκανάρισμα εγγράφου (ταχογράφος/ADR/χειριστής): μόνο δικά του πεδία. */
+    function applyDocScan(profile, text, lines) {
+        var number = extractDocNumber(text, profile.numberPattern);
+        var expiry = extractExpiry(text);
+
+        if (number && fillIfEmpty(profile.numberField, number)) {
+            lines.push('Αριθμός: <strong>' + number + '</strong> — συμπληρώθηκε');
+        } else if (number) {
+            lines.push('Αριθμός: <strong>' + number + '</strong> (το πεδίο είχε ήδη τιμή — δεν άλλαξε)');
+        }
+        if (expiry && fillIfEmpty(profile.expiryField, expiry)) {
+            lines.push('Λήξη: <strong>' + expiry.split('-').reverse().join('/') + '</strong> — συμπληρώθηκε');
+        }
+
+        // Έλεγχος ταυτοπροσωπίας: το 5α της κάρτας ΠΡΕΠΕΙ να ταιριάζει με
+        // τον αριθμό διπλώματος του προφίλ. Δεν μπλοκάρουμε — προειδοποιούμε
+        // καθαρά, και ο τελικός έλεγχος γίνεται από τον admin στην επαλήθευση.
+        if (profile.licensePattern) {
+            var lm = text.match(profile.licensePattern);
+            var profileLicense = document.getElementById('license_number');
+            if (lm && profileLicense && profileLicense.value) {
+                if (norm(lm[1]) === norm(profileLicense.value)) {
+                    lines.push('Ταυτοποίηση: το δίπλωμα πάνω στην κάρτα (5α) <strong>ταιριάζει</strong> με το προφίλ σου.');
+                } else {
+                    lines.push('<span style="color:#991b1b;">⚠ Το δίπλωμα πάνω στην κάρτα (5α: <strong>' + lm[1]
+                        + '</strong>) ΔΕΝ ταιριάζει με τον αριθμό διπλώματος του προφίλ σου (<strong>'
+                        + profileLicense.value + '</strong>). Βεβαιώσου ότι ανέβασες τη δική σου κάρτα.</span>');
+                }
+            }
+        }
+        return lines;
+    }
+
     async function scan(button, fileInput) {
         var file = fileInput.files && fileInput.files[0];
+        var profile = profileFor(button);
         if (!file) {
-            showResult(button, 'Διάλεξε πρώτα τη φωτογραφία του διπλώματος στο πεδίο από πάνω, και μετά πάτησε «Σκανάρισμα».', true);
+            showResult(button, 'Διάλεξε πρώτα τη φωτογραφία του εγγράφου, και μετά πάτησε «Σκανάρισμα».', true);
             return;
         }
 
@@ -404,6 +514,30 @@
              */
             var plain = await preprocess(file, false);
             var result = await worker.recognize(plain);
+
+            /* Έγγραφα ΕΚΤΟΣ διπλώματος: διαβάζουν μόνο τα δικά τους πεδία —
+               ούτε κατηγορίες, ούτε άνοιγμα της ενότητας αδειών. */
+            if (profile.mode === 'doc') {
+                var docLines = [];
+                applyDocScan(profile, result.data.text || '', docLines);
+                if (!docLines.length) {
+                    setBusy(button, 'Δεύτερο πέρασμα…');
+                    var enhancedDoc = await preprocess(file, true);
+                    var secondDoc = await worker.recognize(enhancedDoc);
+                    applyDocScan(profile, secondDoc.data.text || '', docLines);
+                }
+                await worker.terminate();
+                if (!docLines.length) {
+                    showResult(button,
+                        'Δεν διαβάστηκε κάτι αξιοποιήσιμο από τη φωτογραφία ' + profile.docLabel + '. '
+                        + 'Δοκίμασε καλύτερο φωτισμό και κάθετη λήψη, ή συμπλήρωσε τα πεδία με το χέρι.', true);
+                } else {
+                    docLines.push('<span style="color:#4d7c0f;">Έλεγξε τις τιμές πριν την αποθήκευση — το σκανάρισμα βοηθά, δεν αποφασίζει.</span>');
+                    showResult(button, docLines.join('<br>'), false);
+                }
+                return;
+            }
+
             var parsed = parseLicense(result.data.text || '');
 
             if (parsed.number || parsed.expiry || parsed.codes.length || parsed.categories.length) {
