@@ -11,6 +11,10 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 <?php /* Τελευταίο: υπερισχύει των παλιών κανόνων του driver-profile.css
    για τον πίνακα προσόντων που αντικαταστάθηκε από ομάδες (30/08). */ ?>
 <?= \Drivejob\Helpers\Asset::css('css/driver-overview.css') ?>
+<?php /* Βαθμολογία ομαδοποιημένη κατά ισχύ τεκμηρίου (01/09). Μετά το
+   driver-overview.css: δανείζεται τις κάρτες .qgroup και προσθέτει τα
+   δικά της χρώματα ομάδας. */ ?>
+<?= \Drivejob\Helpers\Asset::css('css/driver-score.css') ?>
 <?php /* ΧΑΡΤΗΣ: Leaflet + OpenStreetMap, ΤΟΠΙΚΑ (31/08).
    Αντικατέστησε το Google Maps, που έβγαζε «For development purposes only»
    και popup σφάλματος επειδή το κλειδί δεν είχε ενεργή χρέωση. Δωρεάν,

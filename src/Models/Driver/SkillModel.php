@@ -387,15 +387,28 @@ class SkillModel extends BaseModel
     }
 
     /**
-     * Επιστρέφει τα δεδομένα αυτοαξιολόγησης ενός οδηγού
-     * 
+     * Επιστρέφει τα δεδομένα αυτοαξιολόγησης ενός οδηγού.
+     *
+     * ΑΛΛΑΞΕ ΠΙΝΑΚΑ (01/09/2026): διάβαζε τον `driver_assessment`
+     * (ενικός), που ήταν ο ΔΕΥΤΕΡΟΣ πίνακας αυτοαξιολόγησης της βάσης —
+     * ο άλλος, `driver_assessments`, τον διαβάζει ο AssessmentModel και
+     * τον γράφει ο DriversController. Δύο πίνακες για το ίδιο πράγμα,
+     * και οι δύο άδειοι, με διαφορετικές στήλες.
+     *
+     * Ο ενικός καταργήθηκε στο migration 2026_09_01. Εδώ μένει ο
+     * πληθυντικός — ένας πίνακας, μία αλήθεια.
+     *
+     * ΠΡΟΣΟΧΗ: η αυτοαξιολόγηση ΔΕΝ μπαίνει πλέον στη βαθμολογία
+     * (βλ. Services\Score\Collectors\SelfAssessmentCollector). Είναι
+     * εργαλείο αυτογνωσίας και καθοδήγησης, όχι βαθμός.
+     *
      * @param int $driverId ID του οδηγού
      * @return array Στοιχεία αυτοαξιολόγησης οδηγού ή κενός πίνακας αν δεν βρέθηκαν
      */
     public function getDriverAssessment($driverId)
     {
         try {
-            $table = 'driver_assessment';
+            $table = 'driver_assessments';
             $sql = "SELECT * FROM $table WHERE driver_id = ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$driverId]);
@@ -434,7 +447,7 @@ class SkillModel extends BaseModel
             // Συγχώνευση των δεδομένων αυτοαξιολόγησης με τις βαθμολογίες
             $data = array_merge($assessmentData, $scores);
 
-            $table = 'driver_assessment';
+            $table = 'driver_assessments';
             // Έλεγχος αν υπάρχει ήδη εγγραφή
             $existingAssessment = $this->getDriverAssessment($driverId);
 

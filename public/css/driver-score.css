@@ -1,0 +1,273 @@
+/* ══════════════════════════════════════════════════════════════════════
+   ΒΑΘΜΟΛΟΓΙΑ ΟΔΗΓΟΥ — καρτέλα «Αξιολόγηση Οδηγού». (01/09/2026)
+
+   Ίδια σχεδιαστική γλώσσα με την Επισκόπηση και τα Προσόντα: κάρτες
+   `.qgroup` με χρώμα ανά ομάδα (driver-overview.css). Εδώ μόνο ό,τι
+   είναι δικό της.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.qgroup--todo { --qg: #b45309; --qg-soft: #fffcf5; }
+.qgroup--why  { --qg: #475569; --qg-soft: #f8fafc; }
+
+/* ── Η κορυφή: συνολικός + τα δύο μεγέθη ────────────────────────────── */
+.score-top {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+    gap: 1rem;
+    align-items: start;
+    margin-bottom: 1rem;
+}
+
+.score-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid #e8eaed;
+    border-radius: 12px;
+    background: #fff;
+    min-width: 0;
+}
+
+/* Χωρίς αριθμό η κάρτα δεν είναι «σπασμένη» — είναι εξήγηση. Ουδέτερο
+   φόντο, χωρίς κόκκινο: το κενό δεν είναι σφάλμα του οδηγού. */
+.score-hero--empty {
+    background: #f8fafc;
+    border-style: dashed;
+}
+
+.score-ring {
+    position: relative;
+    width: 108px;
+    height: 108px;
+    flex-shrink: 0;
+}
+
+.score-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.ring-bg { stroke: #eef0f2; stroke-width: 9; }
+
+.ring-fg {
+    stroke: #b3261e;
+    stroke-width: 9;
+    stroke-linecap: round;
+    stroke-dasharray: 283.5;
+    transition: stroke-dashoffset .6s ease;
+}
+
+.score-ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.05;
+}
+
+.score-ring-text strong { font-size: 1.9rem; font-weight: 700; color: #1f2937; }
+.score-ring-text span { font-size: .68rem; color: #94a3b8; }
+
+.score-hero-side { min-width: 0; }
+
+.score-hero-side h3 {
+    margin: 0 0 .35rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.score-hero-side p {
+    margin: 0 0 .4rem;
+    font-size: .82rem;
+    line-height: 1.5;
+    color: #6b7280;
+}
+
+.score-hero-side p:last-child { margin-bottom: 0; }
+.score-conf { font-size: .78rem !important; }
+.score-conf strong { color: #374151; }
+
+/* ── Τα δύο μεγέθη ──────────────────────────────────────────────────── */
+.score-pair {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+    gap: .8rem;
+    min-width: 0;
+}
+
+.score-metric {
+    padding: .8rem .9rem;
+    border: 1px solid #e8eaed;
+    border-radius: 12px;
+    background: #fff;
+    min-width: 0;
+}
+
+.score-metric--empty { background: #f8fafc; border-style: dashed; }
+
+.score-metric-key {
+    display: block;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #94a3b8;
+}
+
+.score-metric-val {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1.25;
+}
+
+.score-metric-val i { font-size: .8rem; font-style: normal; color: #b0b7c3; font-weight: 500; }
+.score-metric-val--none { color: #cbd5e1; }
+
+.score-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: #eef0f2;
+    overflow: hidden;
+    margin: .35rem 0 .4rem;
+}
+
+.score-bar > div {
+    height: 100%;
+    border-radius: 999px;
+    background: #b3261e;
+    transition: width .6s ease;
+}
+
+.score-metric-note {
+    display: block;
+    font-size: .76rem;
+    line-height: 1.45;
+    color: #6b7280;
+}
+
+/* ── Τι λείπει ──────────────────────────────────────────────────────── */
+.score-todo {
+    list-style: none;
+    margin: 0;
+    padding: .3rem 0 .2rem;
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+}
+
+.score-todo li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .2rem .6rem;
+    align-items: baseline;
+    font-size: .83rem;
+}
+
+.score-todo strong { color: #1f2937; }
+.score-todo span { color: #6b7280; }
+
+/* ── Από πού βγαίνει ────────────────────────────────────────────────── */
+.score-src { padding: .5rem 0; border-top: 1px solid #f4f5f7; }
+.score-src:first-child { border-top: 0; }
+
+/* Πηγή χωρίς δεδομένα: παρούσα αλλά υποχωρημένη — ο οδηγός βλέπει ΟΛΕΣ
+   τις πιθανές πηγές και ποιες λείπουν, αντί να μαντεύει. */
+.score-src--empty { opacity: .55; }
+
+.score-src-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+}
+
+.score-src-name { font-size: .85rem; font-weight: 700; color: #334155; }
+
+.score-src-state {
+    font-size: .74rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.score-src-sum {
+    margin-left: auto;
+    font-size: .82rem;
+    font-weight: 700;
+    color: #15803d;
+    font-variant-numeric: tabular-nums;
+}
+
+.score-src-hint {
+    margin: .25rem 0 0;
+    font-size: .78rem;
+    color: #94a3b8;
+}
+
+/* Πλακίδιο επιπέδου τεκμηρίου — η ΚΕΝΤΡΙΚΗ ιδέα του συστήματος, άρα
+   ορατή σε κάθε γραμμή και όχι κρυμμένη σε υποσημείωση. */
+.ev {
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    padding: .1rem .38rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.ev--verified  { background: #eef4ff; color: #1d4ed8; }
+.ev--certified { background: #f6f0ff; color: #7c3aed; }
+.ev--attested  { background: #eefaf1; color: #15803d; }
+.ev--measured  { background: #eef9fd; color: #0e7490; }
+.ev--declared  { background: #f1f3f5; color: #64748b; }
+.ev--off       { background: #fff1f0; color: #b3261e; }
+
+.score-lines {
+    list-style: none;
+    margin: .3rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+}
+
+.score-lines li {
+    display: flex;
+    align-items: baseline;
+    gap: .6rem;
+    font-size: .8rem;
+    color: #475569;
+}
+
+.score-line-label { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.score-line-label em { font-style: normal; color: #94a3b8; }
+.score-line-label em::before { content: " · "; }
+
+.score-line-pts {
+    font-weight: 600;
+    color: #15803d;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.score-line-pts--neg { color: #b3261e; }
+.score-line-pts--off { color: #cbd5e1; font-weight: 500; }
+
+.score-foot {
+    margin: .9rem 0 0;
+    font-size: .78rem;
+    line-height: 1.55;
+    color: #94a3b8;
+}
+
+.score-foot strong { color: #6b7280; }
+
+@media (prefers-reduced-motion: reduce) {
+    .ring-fg, .score-bar > div { transition: none; }
+}

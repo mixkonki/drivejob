@@ -154,6 +154,13 @@ class DriversController extends BaseUserController
             'driverSpecialLicenses' => $driverProfile['special_licenses'] ?? [],
             'driverADR' => $driverProfile['adr_certificates'][0] ?? null,
             'driverRating' => $driverProfile['rating_details'] ?? null,
+            /*
+             * Η νέα βαθμολογία (01/09/2026): ομαδοποιημένη κατά ΙΣΧΥ
+             * ΤΕΚΜΗΡΙΟΥ, με πλήρη ανάλυση του «γιατί». Το παλιό
+             * $driverRating μένει προσωρινά για όποιο view το διαβάζει
+             * ακόμη — βλ. Services\Score\DriverScoreService.
+             */
+            'driverScore' => $driverProfile['score'] ?? null,
             'recentIncidents' => array_slice($driverProfile['incidents'] ?? [], 0, 3),
             'telemetryData' => $driverProfile['telemetry_data'] ?? null
         ];

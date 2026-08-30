@@ -13,6 +13,7 @@ use Drivejob\Models\Driver\SkillModel;
 use Drivejob\Models\Driver\RatingModel;
 use Drivejob\Models\Driver\IncidentModel;
 use Drivejob\Services\FileService;
+use Drivejob\Services\Score\DriverScoreService;
 
 /**
  * Υπηρεσία για τη διαχείριση των προφίλ οδηγών
@@ -133,6 +134,22 @@ class DriverProfileService implements DriverProfileServiceInterface
 
             // Προσθήκη του πεδίου legal_status (υπεύθυνη δήλωση)
             $driver['legal_status'] = $driver['legal_status'] ?? null;
+
+            /*
+             * ── Βαθμολογία (01/09/2026) ─────────────────────────────────
+             *
+             * Υπολογίζεται ΕΔΩ, στο τέλος, από το ίδιο ακριβώς $driver που
+             * μόλις συναρμολογήθηκε — το ίδιο που τρώει και ο
+             * DriverCvService. Έτσι βαθμολογία και βιογραφικό δεν μπορούν
+             * να διαφωνήσουν: δεν υπάρχει δεύτερη ανάγνωση της βάσης που
+             * θα μπορούσε να δει κάτι άλλο.
+             *
+             * ΥΠΟΛΟΓΙΣΜΟΣ ΧΩΡΙΣ ΑΠΟΘΗΚΕΥΣΗ στην ανάγνωση: η εγγραφή γίνεται
+             * στο updateDriverRating(), όταν κάτι όντως άλλαξε. Μια σελίδα
+             * που γράφει στη βάση κάθε φορά που τη βλέπεις είναι σελίδα που
+             * κλειδώνει γραμμές χωρίς λόγο.
+             */
+            $driver['score'] = (new DriverScoreService($this->pdo))->build($driver)->toArray();
 
             return $driver;
         } catch (PDOException $e) {
@@ -540,11 +557,26 @@ class DriverProfileService implements DriverProfileServiceInterface
     public function updateDriverRating($driverId)
     {
         try {
-            // Υπολογισμός συνολικής βαθμολογίας
-            $ratings = $this->ratingModel->calculateTotalRating($driverId);
+            /*
+             * ΞΑΝΑΓΡΑΦΤΗΚΕ 01/09/2026. Πριν καλούσε τον
+             * RatingModel::calculateTotalRating(), που:
+             *   - έπαιρνε το 45% της βαθμολογίας από αυτοβαθμολόγηση σε
+             *     πεδία που δεν εμφανίζονταν σε καμία φόρμα (άρα σταθερά 50),
+             *   - ξεκινούσε την «ασφάλεια» από το 100 και δεν την έριχνε
+             *     ποτέ, γιατί κανείς δεν καταχωρούσε συμβάντα,
+             *   - και ΔΕΝ διάβαζε καθόλου τις αξιολογήσεις εργοδοτών, τη
+             *     μόνη μαρτυρία τρίτου που υπάρχει στη βάση.
+             *
+             * Τώρα ο υπολογισμός ζει στο Services\Score, ομαδοποιημένος
+             * κατά ΙΣΧΥ ΤΕΚΜΗΡΙΟΥ αντί για θέμα.
+             */
+            $profile = $this->getDriverProfile($driverId);
+            if (!$profile) {
+                return false;
+            }
 
-            // Ενημέρωση της βαθμολογίας στη βάση
-            return $this->ratingModel->updateDriverRating($driverId, $ratings);
+            $service = new DriverScoreService($this->pdo);
+            return $service->persist($service->build($profile));
         } catch (PDOException $e) {
             Logger::error('Error in updateDriverRating: ' . $e->getMessage());
             return false;
