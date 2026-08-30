@@ -15,6 +15,11 @@ require_once __DIR__ . '/../../../src/bootstrap.php';
 $pdo = require ROOT_DIR . '/config/database.php';
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+// CLI: ο web ExceptionHandler (από bootstrap) τυπώνει σελίδα 500 σε σφάλμα —
+// τον βγάζουμε ώστε το πραγματικό σφάλμα να φανεί ΩΜΟ στο log του deploy.
+restore_exception_handler();
+restore_error_handler();
+
 $col = $pdo->query("SHOW COLUMNS FROM driver_tachograph_cards LIKE 'issue_date'")->fetch();
 
 if ($col) {

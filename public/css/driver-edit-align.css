@@ -675,3 +675,12 @@ main .container > h1 {
         font-size: 16px; /* κάτω από 16px το iOS κάνει zoom στο focus */
     }
 }
+
+/* Μίνι επιλογή ομάδας ανά υποειδικότητα (μικτές άδειες χειριστή) */
+.edit-profile-form .op-sub-group {
+    width: auto !important;
+    padding: .2rem .35rem !important;
+    font-size: .8rem !important;
+    margin-left: auto;
+    flex-shrink: 0;
+}

@@ -65,7 +65,8 @@
                                     $opInspectionUntil ?: null,
                                     \Drivejob\Helpers\RenewalAlerts::WINDOW_OPERATOR,
                                     'Η θεώρηση του βιβλιαρίου χειριστή',
-                                    'Η θεώρηση γίνεται στη Διεύθυνση Ανάπτυξης της Περιφέρειας εντός του πρώτου εξαμήνου μετά τη λήξη. Δεν απαιτείται για όσους απασχολούνται αποκλειστικά με εξαρτημένη σχέση εργασίας.'
+                                    'Η θεώρηση γίνεται στη Διεύθυνση Ανάπτυξης της Περιφέρειας εντός του πρώτου εξαμήνου μετά τη λήξη — δεν απαιτείται για όσους απασχολούνται αποκλειστικά με εξαρτημένη σχέση εργασίας. Οδηγίες, δικαιολογητικά και παράβολα: '
+                                        . \Drivejob\Helpers\RenewalAlerts::link('https://www.xeiristis.gr/anatheorisi-adeias-cheiristi-michanimaton-ergoy/', 'xeiristis.gr — Αναθεώρηση άδειας χειριστή')
                                 );
                                 ?>
 
@@ -82,11 +83,18 @@
                                     $spec = (string) ($lic['speciality'] ?? '');
                                     $group = strtoupper((string) ($lic['group_type'] ?? 'A'));
                                     $coversAll = !empty($lic['covers_all']);
-                                    $subs = array_map(
-                                        static fn($s) => is_array($s) ? ($s['sub_speciality'] ?? '') : $s,
-                                        $lic['sub_specialities'] ?? []
-                                    );
-                                    $subsJson = htmlspecialchars(json_encode(array_values(array_filter($subs))), ENT_QUOTES, 'UTF-8');
+                                    // Χάρτης code => ομάδα: η ομάδα πάει ΑΝΑ υποειδικότητα
+                                    // (feedback Κώστα 25/08) — σε «μικτή» άδεια άλλα μηχανήματα
+                                    // είναι Α΄ και άλλα Β΄.
+                                    $subsMap = [];
+                                    foreach ($lic['sub_specialities'] ?? [] as $s) {
+                                        if (is_array($s) && !empty($s['sub_speciality'])) {
+                                            $subsMap[$s['sub_speciality']] = strtoupper($s['group_type'] ?? 'A');
+                                        } elseif (is_string($s) && $s !== '') {
+                                            $subsMap[$s] = 'A';
+                                        }
+                                    }
+                                    $subsJson = htmlspecialchars(json_encode($subsMap, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
                                 ?>
                                 <div class="op-lic-item form-section" data-idx="<?php echo $idx; ?>" data-selected-subs="<?php echo $subsJson; ?>">
                                     <div class="form-row">
@@ -102,10 +110,11 @@
 
                                         <div class="form-group">
                                             <label>Ομάδα</label>
-                                            <select name="op_lic[<?php echo $idx; ?>][group]">
+                                            <select name="op_lic[<?php echo $idx; ?>][group]" class="op-group">
                                                 <?php foreach (\Drivejob\Helpers\OperatorSpecialities::GROUP_LABELS as $gid => $glabel) : ?>
                                                     <option value="<?php echo $gid; ?>" <?php echo $group === $gid ? 'selected' : ''; ?>><?php echo $glabel; ?></option>
                                                 <?php endforeach; ?>
+                                                <option value="M" <?php echo $group === 'M' ? 'selected' : ''; ?>>Μικτή — επιλογή ομάδας ανά μηχάνημα</option>
                                             </select>
                                         </div>
 

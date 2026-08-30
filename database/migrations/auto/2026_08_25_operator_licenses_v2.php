@@ -22,6 +22,11 @@ require_once __DIR__ . '/../../../src/bootstrap.php';
 $pdo = require ROOT_DIR . '/config/database.php';
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+// CLI: ο web ExceptionHandler (από bootstrap) τυπώνει σελίδα 500 σε σφάλμα —
+// τον βγάζουμε ώστε το πραγματικό σφάλμα να φανεί ΩΜΟ στο log του deploy.
+restore_exception_handler();
+restore_error_handler();
+
 function ensureColumn(PDO $pdo, string $table, string $column, string $ddl): void
 {
     $stmt = $pdo->prepare('SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?');

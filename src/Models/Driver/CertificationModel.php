@@ -716,7 +716,13 @@ class CertificationModel extends BaseModel
                 $licenseId = (int) $this->pdo->lastInsertId();
 
                 foreach ($lic['subs'] as $sub) {
-                    $this->addDriverOperatorSubSpeciality($licenseId, $sub, $lic['group_type']);
+                    // Η ομάδα ανά υποειδικότητα (μικτές άδειες) — σε ενιαία
+                    // άδεια το service περνά την ίδια ομάδα σε όλες.
+                    if (is_array($sub)) {
+                        $this->addDriverOperatorSubSpeciality($licenseId, $sub['code'], $sub['group']);
+                    } else {
+                        $this->addDriverOperatorSubSpeciality($licenseId, $sub, $lic['group_type']);
+                    }
                 }
             }
 

@@ -211,21 +211,28 @@ class DriverLicenseService
                     continue; // κενό/άκυρο block — αγνοείται
                 }
 
+                // Ομάδα: Α΄, Β΄ ή Μ (μικτή — ομάδα ΑΝΑ υποειδικότητα).
                 $group = strtoupper(trim((string) ($row['group'] ?? '')));
-                if (!in_array($group, ['A', 'B'], true)) {
+                if (!in_array($group, ['A', 'B', 'M'], true)) {
                     $group = 'A';
                 }
 
-                $coversAll = !empty($row['covers_all']) && $row['covers_all'] == '1';
+                // Μικτή άδεια αφορά πάντα συγκεκριμένα μηχανήματα.
+                $coversAll = $group !== 'M' && !empty($row['covers_all']) && $row['covers_all'] == '1';
 
-                // Υποειδικότητες: μόνο έγκυρες ΚΑΙ της ίδιας ειδικότητας.
+                // Υποειδικότητες: μόνο έγκυρες ΚΑΙ της ίδιας ειδικότητας,
+                // καθεμία με τη δική της ομάδα (σε μικτή) ή την ενιαία.
+                $subGroups = (array) ($row['sub_group'] ?? []);
                 $subs = [];
                 if (!$coversAll) {
                     foreach ((array) ($row['subs'] ?? []) as $sub) {
                         $sub = trim((string) $sub);
                         if (\Drivejob\Helpers\OperatorSpecialities::isValidSub($sub)
                             && strpos($sub, $speciality . '.') === 0) {
-                            $subs[$sub] = $sub;
+                            $subGroup = $group === 'M'
+                                ? (strtoupper((string) ($subGroups[$sub] ?? 'A')) === 'B' ? 'B' : 'A')
+                                : $group;
+                            $subs[$sub] = ['code' => $sub, 'group' => $subGroup];
                         }
                     }
                 }
