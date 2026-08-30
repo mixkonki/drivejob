@@ -664,6 +664,19 @@ main .container > h1 {
         padding: .8rem 1rem;
     }
 
+    /* Κουμπιά πιστοποιητικών: τυλίγονται και δεν ξεχειλίζουν (9px στα 390px) */
+    .crt-manager .crt-view-actions,
+    .crt-manager .crt-edit-actions {
+        flex-wrap: wrap;
+    }
+    .crt-manager .crt-view-actions button,
+    .crt-manager .crt-edit-actions button {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: .45rem .6rem;
+        font-size: .82rem;
+    }
+
     /* Πεδία λίγο ψηλότερα για δάχτυλο (44px στόχος αφής) */
     .edit-profile-form input[type="text"],
     .edit-profile-form input[type="email"],
@@ -766,3 +779,76 @@ main .container > h1 {
     margin-top: .35rem;
     cursor: pointer;
 }
+
+/* ── Διαχείριση πιστοποιητικών μέσα στην καρτέλα (30/08) ─────────────── */
+.crt-manager .crt-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    padding: .7rem .9rem;
+    margin-bottom: .6rem;
+    background: #fff;
+}
+
+.crt-manager .crt-view-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+    margin-bottom: .25rem;
+}
+
+.crt-manager .crt-title { font-size: .95rem; color: #1f2937; }
+
+.crt-manager .crt-chip {
+    font-size: .72rem;
+    padding: .12rem .5rem;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #3730a3;
+    white-space: nowrap;
+}
+.crt-manager .crt-chip-soft { background: #f3f4f6; color: #4b5563; }
+.crt-manager .crt-chip-ok { background: #dcfce7; color: #166534; }
+.crt-manager .crt-chip-expired { background: #fee2e2; color: #991b1b; }
+
+.crt-manager .crt-view-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .8rem;
+    font-size: .8rem;
+    color: #6b7280;
+}
+
+.crt-manager .crt-view-actions {
+    display: flex;
+    gap: .4rem;
+    margin-top: .5rem;
+}
+.crt-manager .crt-view-actions button {
+    font-size: .8rem;
+    padding: .3rem .7rem;
+}
+
+.crt-manager .crt-edit-form {
+    border-top: 1px dashed #e5e7eb;
+    margin-top: .6rem;
+    padding-top: .7rem;
+}
+
+.crt-manager .crt-edit-actions {
+    display: flex;
+    gap: .5rem;
+    margin-top: .3rem;
+}
+
+.crt-manager .crt-msg {
+    padding: .6rem .9rem;
+    border-radius: 8px;
+    font-size: .88rem;
+    margin-bottom: .7rem;
+}
+.crt-manager .crt-msg-ok { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+.crt-manager .crt-msg-error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+
+.crt-manager .crt-empty { color: #6b7280; font-size: .88rem; }
+.crt-manager .crt-add { background: #fafafa; margin-top: .8rem; }

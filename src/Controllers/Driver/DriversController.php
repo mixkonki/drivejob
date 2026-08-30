@@ -361,24 +361,11 @@ class DriversController extends BaseUserController
     }
 
     /** Θεματολογίες σεμιναρίων/πιστοποιητικών — μία πηγή για UI και έλεγχο. */
-    private const CERT_CATEGORIES = [
-        'road_safety' => 'Οδική ασφάλεια',
-        'tachograph' => 'Ταχογράφος',
-        'loading_securing' => 'Φόρτωση - Πρόσδεση',
-        'technical' => 'Τεχνική επιμόρφωση',
-        'commercial' => 'Εμπορική επιμόρφωση',
-        'procedures' => 'Διαδικασίες',
-        'inspections' => 'Έλεγχοι',
-        'first_aid' => 'Πρώτες βοήθειες',
-        'adr' => 'ADR / Επικίνδυνα φορτία',
-        'other' => 'Άλλο',
-    ];
-
-    private const CERT_TRANSPORT = [
-        'both' => 'Όλες οι μεταφορές',
-        'freight' => 'Εμπορευματικές',
-        'passenger' => 'Επιβατικές',
-    ];
+    /*
+     * Οι θεματολογίες μετακινήθηκαν στον κατάλογο (lookup_values) 30/08 —
+     * τις συντηρεί ο διαχειριστής. Ο τύπος μεταφοράς μένει σταθερός:
+     * τρεις τιμές πάνω στις οποίες υπολογίζει το ταίριασμα.
+     */
 
     /**
      * GET /drivers/certifications — σελίδα σεμιναρίων & πιστοποιητικών.
@@ -393,8 +380,8 @@ class DriversController extends BaseUserController
         try {
             $certModel = new \Drivejob\Models\Driver\CertificationModel($this->container->get('pdo'));
             $rows = $certModel->getDriverCertifications($driverId) ?: [];
-            $categories = self::CERT_CATEGORIES;
-            $transports = self::CERT_TRANSPORT;
+            $categories = \Drivejob\Helpers\CertificationCategories::options();
+            $transports = \Drivejob\Helpers\CertificationCategories::TRANSPORT;
             $pageTitle = 'Σεμινάρια & Πιστοποιητικά';
 
             include ROOT_DIR . '/src/Views/partials/header.php';
@@ -431,10 +418,10 @@ class DriversController extends BaseUserController
         if ($title === '' || mb_strlen($title) > 255) {
             JsonHelper::error('Συμπληρώστε τον τίτλο της πιστοποίησης (έως 255 χαρακτήρες).');
         }
-        if ($category !== '' && !isset(self::CERT_CATEGORIES[$category])) {
+        if ($category !== '' && !\Drivejob\Helpers\CertificationCategories::isValid($category)) {
             JsonHelper::error('Επιλέξτε θεματολογία από τη λίστα.');
         }
-        if (!isset(self::CERT_TRANSPORT[$transport])) {
+        if (!isset(\Drivejob\Helpers\CertificationCategories::TRANSPORT[$transport])) {
             $transport = 'both';
         }
         if ($date && $expiry && $expiry < $date) {
@@ -477,13 +464,100 @@ class DriversController extends BaseUserController
                 'id' => $newId,
                 'title' => $title,
                 'provider' => $provider,
-                'category_label' => $category !== '' ? self::CERT_CATEGORIES[$category] : '',
-                'transport_label' => self::CERT_TRANSPORT[$transport],
+                'category_label' => $category !== '' ? \Drivejob\Helpers\CertificationCategories::label($category) : '',
+                'transport_label' => \Drivejob\Helpers\CertificationCategories::transportLabel($transport),
                 'date' => $date ? date('d/m/Y', strtotime($date)) : '',
                 'expiry' => $expiry ? date('d/m/Y', strtotime($expiry)) : '',
                 'expired' => $expired,
                 'duration' => $duration,
                 'file_url' => $filePath ? BASE_URL . $filePath : null,
+            ],
+        ]);
+    }
+
+    /**
+     * POST /drivers/certifications/update/{id} — διόρθωση πιστοποίησης.
+     *
+     * Έλειπε εντελώς (30/08): ο οδηγός μπορούσε μόνο να προσθέσει ή να
+     * διαγράψει — ένα λάθος στην ημερομηνία σήμαινε διαγραφή και εκ νέου
+     * καταχώρηση, με το αρχείο της βεβαίωσης να ανεβαίνει ξανά.
+     */
+    public function updateCertification($id)
+    {
+        AuthMiddleware::hasRole('driver');
+
+        if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
+            JsonHelper::error('Η φόρμα έληξε. Ανανεώστε τη σελίδα και δοκιμάστε ξανά.');
+        }
+
+        $driverId = Session::get('user_id');
+
+        $title = trim($this->sanitize($_POST['title'] ?? ''));
+        $provider = trim($this->sanitize($_POST['provider'] ?? ''));
+        $category = $_POST['category'] ?? '';
+        $transport = $_POST['transport_type'] ?? 'both';
+        $date = $this->sanitizeDate($_POST['date'] ?? null);
+        $expiry = $this->sanitizeDate($_POST['expiry'] ?? null);
+        $duration = ($_POST['duration'] ?? '') !== '' ? max(0, (int) $_POST['duration']) : null;
+        $description = trim($this->sanitize($_POST['description'] ?? ''));
+
+        if ($title === '' || mb_strlen($title) > 255) {
+            JsonHelper::error('Συμπληρώστε τον τίτλο της πιστοποίησης (έως 255 χαρακτήρες).');
+        }
+        if ($category !== '' && !\Drivejob\Helpers\CertificationCategories::isValid($category)) {
+            JsonHelper::error('Επιλέξτε θεματολογία από τη λίστα.');
+        }
+        if (!isset(\Drivejob\Helpers\CertificationCategories::TRANSPORT[$transport])) {
+            $transport = 'both';
+        }
+        if ($date && $expiry && $expiry < $date) {
+            JsonHelper::error('Η λήξη πρέπει να είναι μετά την ημερομηνία απόκτησης.');
+        }
+
+        // Νέο αρχείο μόνο αν ανέβηκε — αλλιώς κρατιέται το υπάρχον.
+        $filePath = null;
+        if (!empty($_FILES['certificate_file']) && $_FILES['certificate_file']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $fileService = new \Drivejob\Services\FileService();
+            $result = $fileService->uploadFile($_FILES['certificate_file'], 'certificate_file', 'all');
+            if (empty($result['success'])) {
+                JsonHelper::error('Το αρχείο δεν ανέβηκε: ' . ($result['message'] ?? 'άγνωστο σφάλμα'));
+            }
+            $filePath = $result['file_path'];
+        }
+
+        $certModel = new \Drivejob\Models\Driver\CertificationModel($this->container->get('pdo'));
+        $ok = $certModel->updateDriverCertificationRow($driverId, (int) $id, [
+            'title' => $title,
+            'provider' => $provider !== '' ? $provider : null,
+            'category' => $category !== '' ? $category : null,
+            'transport_type' => $transport,
+            'date' => $date,
+            'expiry' => $expiry,
+            'duration' => $duration,
+            'description' => $description !== '' ? $description : null,
+            'certificate_file' => $filePath,
+        ]);
+
+        if (!$ok) {
+            JsonHelper::error('Η πιστοποίηση δεν βρέθηκε ή δεν ήταν δυνατή η αποθήκευση.');
+        }
+
+        JsonHelper::success('Η πιστοποίηση ενημερώθηκε.', [
+            'row' => [
+                'id' => (int) $id,
+                'title' => $title,
+                'provider' => $provider,
+                'category' => $category,
+                'category_label' => $category !== '' ? \Drivejob\Helpers\CertificationCategories::label($category) : '',
+                'transport_type' => $transport,
+                'transport_label' => \Drivejob\Helpers\CertificationCategories::transportLabel($transport),
+                'date' => $date ? date('d/m/Y', strtotime($date)) : '',
+                'date_raw' => $date,
+                'expiry' => $expiry ? date('d/m/Y', strtotime($expiry)) : '',
+                'expiry_raw' => $expiry,
+                'expired' => $expiry !== null && $expiry < date('Y-m-d'),
+                'duration' => $duration,
+                'description' => $description,
             ],
         ]);
     }

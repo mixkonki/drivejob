@@ -165,6 +165,60 @@ class CertificationModel extends BaseModel
     }
 
     /**
+     * Ενημέρωση ΜΙΑΣ πιστοποίησης — πλήρης, με έλεγχο ιδιοκτησίας (30/08).
+     *
+     * Η updateDriverCertification παραπάνω αγνοούσε category, transport_type,
+     * duration και certificate_file: μια διόρθωση θεματολογίας δεν
+     * αποθηκευόταν ποτέ. Εδώ ενημερώνονται όλα, και το αρχείο μόνο όταν
+     * ανέβηκε νέο (null = κρατάμε το υπάρχον, δεν το σβήνουμε).
+     *
+     * @return bool true μόνο αν άλλαξε πράγματι γραμμή του ΣΥΓΚΕΚΡΙΜΕΝΟΥ οδηγού
+     */
+    public function updateDriverCertificationRow($driverId, $rowId, array $cert): bool
+    {
+        try {
+            $sql = 'UPDATE driver_certifications
+                    SET title = ?, provider = ?, category = ?, transport_type = ?,
+                        date = ?, expiry = ?, duration = ?, description = ?';
+            $params = [
+                $cert['title'],
+                $cert['provider'] ?? null,
+                $cert['category'] ?? null,
+                $cert['transport_type'] ?? 'both',
+                $cert['date'] ?? null,
+                $cert['expiry'] ?? null,
+                $cert['duration'] ?? null,
+                $cert['description'] ?? null,
+            ];
+
+            if (!empty($cert['certificate_file'])) {
+                $sql .= ', certificate_file = ?';
+                $params[] = $cert['certificate_file'];
+            }
+
+            $sql .= ' WHERE id = ? AND driver_id = ?';
+            $params[] = (int) $rowId;
+            $params[] = (int) $driverId;
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+
+            // rowCount() = 0 και όταν ο χρήστης πάτησε αποθήκευση χωρίς
+            // αλλαγή· ελέγχουμε ξεχωριστά ότι η γραμμή του ανήκει.
+            if ($stmt->rowCount() > 0) {
+                return true;
+            }
+
+            $check = $this->pdo->prepare('SELECT 1 FROM driver_certifications WHERE id = ? AND driver_id = ?');
+            $check->execute([(int) $rowId, (int) $driverId]);
+            return (bool) $check->fetchColumn();
+        } catch (PDOException $e) {
+            Logger::error('Error in updateDriverCertificationRow: ' . $e->getMessage(), ['driver_id' => $driverId]);
+            return false;
+        }
+    }
+
+    /**
      * Διαγράφει ΜΙΑ πιστοποίηση και λέει την αλήθεια: true ΜΟΝΟ αν
      * όντως διαγράφηκε γραμμή. (Η deleteDriverCertification παραπάνω
      * επιστρέφει true και όταν δεν βρέθηκε τίποτα — το execute()

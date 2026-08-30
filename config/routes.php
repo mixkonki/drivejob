@@ -125,6 +125,7 @@ $router->group(['prefix' => 'drivers'], function ($router) {
     // Πιστοποιητικών» έδειχνε εδώ από καιρό, αλλά η διαδρομή δεν υπήρχε (404).
     $router->get('/certifications', [DriversController::class, 'certifications'])->name('drivers.certifications');
     $router->post('/certifications', [DriversController::class, 'addCertification'])->name('drivers.certifications.add');
+    $router->post('/certifications/update/{id}', [DriversController::class, 'updateCertification'])->name('drivers.certifications.update');
     $router->post('/certifications/delete/{id}', [DriversController::class, 'deleteCertification'])->name('drivers.certifications.delete');
     $router->post('/change-password', [DriversController::class, 'changePassword'])->name('drivers.change-password');
     $router->get('/security', [DriversController::class, 'security'])->name('drivers.security');

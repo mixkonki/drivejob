@@ -29,6 +29,7 @@ class LookupModel
     /** Κατάλογοι που μπορεί να διαχειριστεί ο admin. */
     public const DOMAINS = [
         'special_license' => 'Ειδικές άδειες & πιστοποιητικά οδηγού',
+        'cert_category'   => 'Θεματολογίες σεμιναρίων & πιστοποιητικών',
     ];
 
     public function __construct(PDO $pdo)
@@ -194,6 +195,7 @@ class LookupModel
     {
         $map = [
             'special_license' => ['table' => 'driver_special_licenses', 'column' => 'license_type'],
+            'cert_category'   => ['table' => 'driver_certifications', 'column' => 'category'],
         ];
 
         if (!isset($map[$domain])) {
