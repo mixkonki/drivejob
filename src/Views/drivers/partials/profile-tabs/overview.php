@@ -2,6 +2,11 @@
    Μοιράζεται το scope μεταβλητών του γονικού view (include). */ ?>
             <!-- Καρτέλα Επισκόπησης -->
             <div class="tab-pane active" id="overview">
+                <?php /* Λήξεις ΠΡΩΤΑ και έξω από τις στήλες: αν κάτι έχει λήξει, ο
+                   οδηγός πρέπει να το δει πριν από οτιδήποτε άλλο. Το partial
+                   δεν τυπώνει τίποτα όταν δεν λήγει τίποτα. */ ?>
+                <?php include __DIR__ . '/_expiry-alerts.php'; ?>
+
                 <div class="profile-content">
                     <div class="profile-main">
                         <?php /* Τυπικά προσόντα σε ΟΠΤΙΚΕΣ ΟΜΑΔΕΣ (30/08).
@@ -14,7 +19,11 @@
                             <?php include __DIR__ . '/_qualification-groups.php'; ?>
                         </section>
 
-
+                        <?php /* Προϋπηρεσία, σεμινάρια, γλώσσες, δεξιότητες (30/08).
+                           Έλειπαν εντελώς από την επισκόπηση ενώ είναι ακριβώς
+                           τα πεδία που ζητά το βιογραφικό. Όλα τα κείμενα
+                           έρχονται έτοιμα από τον DriverCvService. */ ?>
+                        <?php include __DIR__ . '/_cv-sections.php'; ?>
                     </div>
 
                     <div class="profile-sidebar">
@@ -39,17 +48,14 @@
                             </div>
                             <p class="availability-note">Μπορείτε να αλλάξετε την κατάσταση διαθεσιμότητάς σας από την <a href="<?php echo BASE_URL; ?>drivers/edit-profile">επεξεργασία προφίλ</a>.</p>
                         </section>
-                        <!-- Τμήμα Σχετικά με εμένα -->
-                        <section class="profile-section">
-                            <h2>Σχετικά με εμένα</h2>
-                            <div class="profile-about">
-                                <?php if (isset($driverData['about_me']) && $driverData['about_me']) : ?>
-                                    <?php echo nl2br(htmlspecialchars($driverData['about_me'])); ?>
-                                <?php else : ?>
-                                    <p class="profile-empty">Δεν έχετε προσθέσει πληροφορίες για τον εαυτό σας. <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Προσθέστε τώρα!</a></p>
-                                <?php endif; ?>
-                            </div>
-                        </section>
+                        <?php /* «Σχετικά με εμένα»: ΑΦΑΙΡΕΘΗΚΕ 30/08.
+                           Το πεδίο είχε φύγει από τη φόρμα επεξεργασίας στις 25/08
+                           αλλά έμεινε στην προβολή — έδειχνε παλιό περιεχόμενο που
+                           ο οδηγός ΔΕΝ είχε τρόπο να διορθώσει. Ένα πεδίο ή
+                           επεξεργάζεται και φαίνεται, ή δεν υπάρχει καθόλου.
+                           (Η στήλη about_me μένει στη βάση· δεν χάνεται τίποτα αν
+                           αποφασίσουμε να την επαναφέρουμε ως «Λίγα λόγια για
+                           εμένα» στο βιογραφικό.) */ ?>
                         <!-- Ενότητα Στοιχείων Επικοινωνίας -->
                         <section class="profile-section">
                             <h2>Στοιχεία Επικοινωνίας</h2>
@@ -85,29 +91,46 @@
                                 <a href="<?php echo BASE_URL; ?>gdpr/delete" style="padding:8px 16px; border-radius:6px; text-decoration:none; background:#fdecea; color:#b71c1c;">🗑️ Διαγραφή λογαριασμού</a>
                             </div>
                         </section>
-                        <!-- Ενότητα Τοποθεσίας -->
-                        <?php if (isset($driverData['address']) && $driverData['address'] && isset($driverData['city']) && $driverData['city']) : ?>
-                            <section class="profile-section">
-                                <div class="location-details">
-                                    <div class="location-address">
-                                        <h2>Τοποθεσία: <span><?php echo htmlspecialchars($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']); ?></span></h2>
+                        <?php
+                        /*
+                         * ΑΚΤΙΝΑ ΕΡΓΑΣΙΑΣ — αντικατέστησε τον χάρτη Google (30/08).
+                         *
+                         * Ο χάρτης έπιανε 200px ύψος για να δείξει στον οδηγό πού
+                         * μένει ο ίδιος: μηδενική πληροφορία, εξωτερικό iframe,
+                         * κόστος API και θέμα GDPR.
+                         *
+                         * Στη θέση του μπαίνει κάτι που ΛΕΙΠΕΙ πραγματικά: πόσο
+                         * μακριά δέχεται να εργαστεί. Το πεδίο preferred_radius
+                         * υπάρχει στη βάση από την αρχή και το ΔΙΑΒΑΖΕΙ το
+                         * ταίριασμα (MatchingModel), αλλά δεν το συμπλήρωνε ποτέ
+                         * κανείς γιατί δεν υπήρχε πουθενά στη φόρμα — έμενε 0,
+                         * το ταίριασμα έπεφτε σε προεπιλογή, και έβγαζε αγγελίες
+                         * Αθηνών σε οδηγό Θεσσαλονίκης.
+                         */
+                        $reach = $cv['identity']['reach'] ?? ['declared' => false, 'label' => '', 'travel' => false];
+                        ?>
+                        <section class="profile-section reach-section">
+                            <h2>Περιοχή Εργασίας</h2>
+                            <?php if (!empty($driverData['city'])) : ?>
+                                <p class="reach-base">
+                                    <span class="reach-key">Έδρα</span>
+                                    <?php echo htmlspecialchars(trim(($driverData['address'] ?? '') . ' ' . $driverData['city']), ENT_QUOTES, 'UTF-8'); ?>
+                                </p>
+                            <?php endif; ?>
 
-
-
-                                    </div>
-                                </div>
-                                <div class="profile-map">
-                                    <iframe
-                                        width="100%"
-                                        height="200"
-                                        frameborder="0"
-                                        scrolling="no"
-                                        marginheight="0"
-                                        marginwidth="0"
-                                        src="https://maps.google.com/maps?q=<?php echo urlencode($driverData['address'] . ', ' . $driverData['city'] . ', ' . $driverData['country']); ?>&output=embed"></iframe>
-                                </div>
-                            </section>
-                        <?php endif; ?>
+                            <?php if (!empty($reach['declared'])) : ?>
+                                <p class="reach-label"><?php echo htmlspecialchars($reach['label'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                <?php if (!empty($reach['travel'])) : ?>
+                                    <p class="reach-extra">Δέχομαι ταξίδια εκτός έδρας</p>
+                                <?php endif; ?>
+                            <?php else : ?>
+                                <p class="reach-missing">
+                                    Δεν έχετε δηλώσει πόσο μακριά δέχεστε να εργαστείτε.
+                                    <a href="<?php echo BASE_URL; ?>drivers/edit-profile">Δηλώστε το τώρα</a> —
+                                    χωρίς αυτό οι προτάσεις εργασίας δεν φιλτράρονται σωστά κατά απόσταση.
+                                </p>
+                            <?php endif; ?>
+                        </section>
 
                     </div>
                 </div>

@@ -69,7 +69,19 @@ $fmtPeriod = static function (array $row): string {
     .vxp-totals td { border-bottom: 0; border-top: 2px solid #e5e7eb; font-size: .85rem; }
     .vxp-empty { color: #6b7280; padding: 1rem 0; }
     .vxp-back { margin-top: 1.2rem; }
-    @media (max-width: 860px) { .vxp-grid { grid-template-columns: 1fr; } }
+    /* minmax(0, 1fr) και ΟΧΙ σκέτο 1fr: το «1fr» δεν συρρικνώνεται κάτω
+       από το min-content των παιδιών του, οπότε στο κινητό η κάρτα έβγαινε
+       471px σε οθόνη 390px και η σελίδα κυλούσε οριζόντια. (30/08) */
+    /* Ο πίνακας κυλά ΜΕΣΑ στο δικό του πλαίσιο· η σελίδα δεν κυλά ποτέ
+       οριζόντια. Πέντε στήλες δεν στριμώχνονται σε 390px χωρίς να γίνουν
+       αδιάβαστες, οπότε η κύλιση είναι η τίμια λύση. */
+    .vxp-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    @media (max-width: 860px) {
+        .vxp-grid { grid-template-columns: minmax(0, 1fr); }
+        .vxp-card { min-width: 0; padding: 1rem; }
+        .vxp-table { min-width: 420px; }
+    }
 </style>
 
 <main class="vxp-wrap">
@@ -142,6 +154,7 @@ $fmtPeriod = static function (array $row): string {
         <div class="vxp-card">
             <h2>Καταχωρημένη Προϋπηρεσία</h2>
 
+            <div class="vxp-scroll">
             <table class="vxp-table" id="vxp-table">
                 <thead>
                     <tr>
@@ -172,6 +185,7 @@ $fmtPeriod = static function (array $row): string {
                     <tr class="vxp-totals"><td colspan="3"><strong>Συνολική Προϋπηρεσία</strong></td><td id="vxp-total-all" colspan="2"><strong><?= htmlspecialchars($totals['all'], ENT_QUOTES, 'UTF-8') ?></strong></td></tr>
                 </tfoot>
             </table>
+            </div><!-- /.vxp-scroll -->
 
             <p class="vxp-empty" id="vxp-empty" <?= !empty($rows) ? 'style="display:none;"' : '' ?>>
                 Δεν έχεις καταχωρήσει ακόμη προϋπηρεσία — πρόσθεσε την πρώτη από τη φόρμα.

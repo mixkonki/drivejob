@@ -9,9 +9,20 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 <?= \Drivejob\Helpers\Asset::css('css/driver-edit-align.css') ?>
 
 <main>
-    <div class="container" style="max-width: 680px;">
+    <?php /* Τα πεδία κωδικού δεν κληρονομούν το box-sizing της φόρμας
+       επεξεργασίας (δεν φορτώνεται εδώ το driver-edit-align.css) και στο
+       κινητό ξεπερνούσαν το πλάτος της οθόνης κατά 13px. (30/08) */ ?>
+    <style>
+        .security-page input[type="password"] {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
 
-        <h1>Ασφάλεια & Κωδικός</h1>
+    <div class="container security-page" style="max-width: 680px;">
+
+        <h1>Ασφάλεια &amp; Κωδικός</h1>
 
         <?php if (isset($_SESSION['success_message'])) : ?>
             <div class="success-message">

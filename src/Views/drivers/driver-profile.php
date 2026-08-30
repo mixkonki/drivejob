@@ -46,30 +46,45 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     </p>
                 <?php endif; ?>
 
-                <div class="driver-rating">
-                    <div class="rating-stars">
-                        <?php
-                        $rating = isset($driverData['rating']) ? floatval($driverData['rating']) : 0;
-                        $fullStars = floor($rating);
-                        $halfStar = $rating - $fullStars >= 0.5;
-                        $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
+                <?php
+                /*
+                 * ΑΞΙΟΛΟΓΗΣΕΙΣ — 30/08.
+                 *
+                 * Πριν: πέντε άδεια αστέρια και «0.0 (0 αξιολογήσεις)». Ίδιο
+                 * πρόβλημα με τα παλιά στατιστικά: ένας δείκτης στο μηδέν
+                 * διαβάζεται ως ΚΑΚΗ βαθμολογία, όχι ως απουσία βαθμολογίας.
+                 * Ο νέος οδηγός έμπαινε στο προφίλ του και έβλεπε μηδενικό.
+                 */
+                $rating = isset($driverData['rating']) ? (float) $driverData['rating'] : 0;
+                $ratingCount = (int) ($driverData['rating_count'] ?? 0);
+                ?>
+                <?php if ($ratingCount > 0) : ?>
+                    <div class="driver-rating">
+                        <div class="rating-stars">
+                            <?php
+                            $fullStars = floor($rating);
+                            $halfStar = $rating - $fullStars >= 0.5;
+                            $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
 
-                        for ($i = 0; $i < $fullStars; $i++) : ?>
-                            <i class="star full"></i>
-                        <?php endfor; ?>
+                            for ($i = 0; $i < $fullStars; $i++) : ?>
+                                <i class="star full"></i>
+                            <?php endfor; ?>
 
-                        <?php if ($halfStar) : ?>
-                            <i class="star half"></i>
-                        <?php endif; ?>
+                            <?php if ($halfStar) : ?>
+                                <i class="star half"></i>
+                            <?php endif; ?>
 
-                        <?php for ($i = 0; $i < $emptyStars; $i++) : ?>
-                            <i class="star empty"></i>
-                        <?php endfor; ?>
+                            <?php for ($i = 0; $i < $emptyStars; $i++) : ?>
+                                <i class="star empty"></i>
+                            <?php endfor; ?>
 
-                        <span class="rating-value"><?php echo number_format($rating, 1); ?></span>
+                            <span class="rating-value"><?php echo number_format($rating, 1); ?></span>
+                        </div>
+                        <span class="rating-count">(<?php echo $ratingCount; ?> <?php echo $ratingCount === 1 ? 'αξιολόγηση' : 'αξιολογήσεις'; ?>)</span>
                     </div>
-                    <span class="rating-count">(<?php echo $driverData['rating_count'] ?? 0; ?> αξιολογήσεις)</span>
-                </div>
+                <?php else : ?>
+                    <p class="rating-none">Χωρίς αξιολογήσεις ακόμη</p>
+                <?php endif; ?>
 
                 <?php if (isset($driverData['experience_years']) && $driverData['experience_years']) : ?>
                     <div class="experience-badge">
@@ -149,14 +164,24 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         </ul>
                     </div>
                 <?php endif; ?>
+                <?php
+                /*
+                 * ΚΟΥΜΠΙΑ — 30/08.
+                 *
+                 * Πριν υπήρχαν «Προβολή Βιογραφικού» και «Ενημέρωση
+                 * Βιογραφικού»: κουμπιά του ΠΑΛΙΟΥ μοντέλου, όπου το CV ήταν
+                 * ένα αρχείο που ανέβαζε ο οδηγός. Αυτό το πεδίο αφαιρέθηκε
+                 * από την επεξεργασία στις 25/08, με τη λογική «το προφίλ
+                 * ΕΙΝΑΙ το βιογραφικό» — αλλά τα κουμπιά έμειναν, στέλνοντας
+                 * σε σελίδες ενός μοντέλου που δεν ισχύει πια.
+                 *
+                 * Τώρα ένα κουμπί: το βιογραφικό ΠΑΡΑΓΕΤΑΙ από τα δεδομένα
+                 * του προφίλ, δεν ανεβαίνει.
+                 */
+                ?>
                 <div class="profile-image-actions">
                     <a href="<?php echo BASE_URL; ?>drivers/edit-profile" class="btn-primary">Επεξεργασία Προφίλ</a>
-
-                    <?php if (isset($driverData['resume_file']) && $driverData['resume_file']) : ?>
-                        <a href="<?php echo BASE_URL . htmlspecialchars($driverData['resume_file']); ?>" class="btn-secondary" target="_blank">Προβολή Βιογραφικού</a>
-                    <?php endif; ?>
-
-                    <a href="<?php echo BASE_URL; ?>drivers/edit-resume" class="btn-secondary">Ενημέρωση Βιογραφικού</a>
+                    <a href="<?php echo BASE_URL; ?>drivers/cv" class="btn-secondary" target="_blank" rel="noopener">⬇ Λήψη βιογραφικού (PDF)</a>
                 </div>
             </div>
 

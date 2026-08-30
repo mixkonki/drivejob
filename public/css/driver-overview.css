@@ -333,6 +333,347 @@
 .profile-missing-more { color: #9ca3af; font-style: italic; }
 
 /* ══════════════════════════════════════════════════════════════════════
+   ΕΙΔΟΠΟΙΗΣΕΙΣ ΛΗΞΕΩΝ (εμφανίζονται ΜΟΝΟ όταν υπάρχουν)
+   ══════════════════════════════════════════════════════════════════════ */
+
+.expiry-alerts {
+    margin: 0 0 1.2rem;
+    padding: .85rem 1rem;
+    border: 1px solid #fde68a;
+    border-left: 5px solid #d97706;
+    border-radius: 10px;
+    background: #fffbeb;
+}
+
+/* Κάτι που ΗΔΗ έληξε δεν είναι υπενθύμιση — είναι πρόβλημα. */
+.expiry-alerts--critical {
+    border-color: #fecaca;
+    border-left-color: #b91c1c;
+    background: #fef2f2;
+}
+
+.expiry-alerts-head {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    color: #b45309;
+    margin-bottom: .5rem;
+}
+
+.expiry-alerts--critical .expiry-alerts-head { color: #b91c1c; }
+
+.expiry-alerts-head svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+.expiry-alerts-head h3 {
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 800;
+}
+
+.expiry-list { list-style: none; margin: 0; padding: 0; }
+
+.expiry-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: baseline;
+    gap: .4rem .9rem;
+    padding: .32rem 0;
+    border-top: 1px solid rgba(0, 0, 0, .06);
+    font-size: .84rem;
+}
+
+.expiry-item:first-child { border-top: 0; }
+
+.expiry-label { color: #1f2937; font-weight: 600; }
+
+.expiry-date { color: #4b5563; white-space: nowrap; }
+.expiry-date em { font-style: normal; color: #b45309; font-weight: 700; }
+.expiry-item--expired .expiry-date em { color: #b91c1c; }
+
+.expiry-action {
+    color: #b3261e;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    font-size: .8rem;
+}
+
+.expiry-action:hover { text-decoration: underline; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ΕΝΟΤΗΤΕΣ ΒΙΟΓΡΑΦΙΚΟΥ: ΠΡΟΫΠΗΡΕΣΙΑ, ΣΕΜΙΝΑΡΙΑ, ΓΛΩΣΣΕΣ, ΔΕΞΙΟΤΗΤΕΣ
+   ══════════════════════════════════════════════════════════════════════ */
+
+.cv-section { margin-top: 1.2rem; }
+
+.cv-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .3rem .8rem;
+    margin-bottom: .2rem;
+}
+
+.cv-head h2 { margin: 0; }
+
+.cv-total { font-size: .82rem; color: #6b7280; }
+
+.cv-empty {
+    margin: .4rem 0 0;
+    font-size: .85rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.cv-empty a { color: #b3261e; font-weight: 600; }
+
+.cv-muted { color: #6b7280; }
+.cv-more { margin: .5rem 0 0; font-size: .84rem; }
+.cv-more a { color: #b3261e; font-weight: 600; text-decoration: none; }
+.cv-more a:hover { text-decoration: underline; }
+
+.cv-chip {
+    display: inline-block;
+    padding: .1rem .45rem;
+    border-radius: 4px;
+    font-size: .76rem;
+    font-weight: 600;
+    background: #eef2ff;
+    color: #3730a3;
+}
+
+.cv-chip--soft { background: #f3f4f6; color: #4b5563; font-weight: 500; }
+
+/* ── Χρονολόγιο προϋπηρεσίας ────────────────────────────────────────── */
+.cv-timeline {
+    list-style: none;
+    margin: .7rem 0 0;
+    padding: 0 0 0 1.1rem;
+    border-left: 2px solid #e5e7eb;
+}
+
+.cv-exp { position: relative; padding: 0 0 1rem .9rem; }
+.cv-exp:last-child { padding-bottom: 0; }
+
+.cv-exp-marker {
+    position: absolute;
+    left: -1.45rem;
+    top: .3rem;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #9ca3af;
+}
+
+/* Η τρέχουσα θέση ξεχωρίζει: είναι η πιο σχετική πληροφορία. */
+.cv-exp--current .cv-exp-marker { border-color: #059669; background: #059669; }
+
+.cv-exp-body h4 {
+    margin: 0 0 .1rem;
+    font-size: .92rem;
+    font-weight: 700;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .45rem;
+}
+
+.cv-now {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #047857;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 20px;
+    padding: .05rem .45rem;
+}
+
+.cv-exp-type { margin: 0 0 .2rem; font-size: .84rem; color: #4b5563; }
+
+.cv-exp-meta {
+    margin: .15rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .35rem .7rem;
+    font-size: .8rem;
+}
+
+.cv-exp-desc {
+    margin: .3rem 0 0;
+    font-size: .82rem;
+    color: #4b5563;
+    line-height: 1.45;
+}
+
+/* ── Σεμινάρια ──────────────────────────────────────────────────────── */
+.cv-certs { list-style: none; margin: .6rem 0 0; padding: 0; }
+
+.cv-cert {
+    padding: .5rem 0;
+    border-bottom: 1px solid #f1f2f4;
+}
+
+.cv-cert:last-child { border-bottom: 0; }
+.cv-cert--expired { opacity: .7; }
+
+.cv-cert-main {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .4rem;
+    font-size: .88rem;
+    color: #111827;
+}
+
+.cv-cert-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .2rem .8rem;
+    margin-top: .12rem;
+    font-size: .78rem;
+    color: #6b7280;
+}
+
+.cv-expired { color: #b91c1c; font-weight: 600; }
+
+/* ── Γλώσσες & δεξιότητες σε δύο στήλες ─────────────────────────────── */
+.cv-two {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+    gap: 1rem 1.6rem;
+    margin-top: .6rem;
+}
+
+.cv-subhead {
+    margin: 0 0 .35rem;
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+.cv-count {
+    background: #f3f4f6;
+    color: #4b5563;
+    border-radius: 20px;
+    padding: 0 .4rem;
+    font-size: .72rem;
+}
+
+.cv-langs { list-style: none; margin: 0; padding: 0; }
+
+.cv-langs li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .6rem;
+    padding: .28rem 0;
+    border-bottom: 1px solid #f1f2f4;
+    font-size: .85rem;
+}
+
+.cv-langs li:last-child { border-bottom: 0; }
+
+.cv-lang-name { color: #111827; font-weight: 600; }
+
+.cv-lang-level {
+    font-size: .74rem;
+    font-weight: 600;
+    color: #4b5563;
+    background: #f3f4f6;
+    border-radius: 20px;
+    padding: .08rem .5rem;
+    white-space: nowrap;
+}
+
+/* Η μητρική και το «άριστα» ξεχωρίζουν — αυτά ζητούν οι διεθνείς μεταφορές. */
+.cv-lang-level--native { background: #ecfdf5; color: #047857; }
+.cv-lang-level--fluent { background: #eff6ff; color: #1d4ed8; }
+
+.cv-skill-group { margin-bottom: .5rem; }
+
+.cv-skill-group-label {
+    display: block;
+    font-size: .74rem;
+    color: #9ca3af;
+    margin-bottom: .18rem;
+}
+
+.cv-skill-list {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ΠΕΡΙΟΧΗ ΕΡΓΑΣΙΑΣ (αντικατέστησε τον χάρτη Google)
+   ══════════════════════════════════════════════════════════════════════ */
+
+.reach-base { margin: .2rem 0 .4rem; font-size: .85rem; color: #374151; }
+
+.reach-key {
+    color: #6b7280;
+    font-size: .74rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    margin-right: .3rem;
+}
+
+.reach-label {
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 700;
+    color: #15803d;
+}
+
+.reach-extra { margin: .2rem 0 0; font-size: .82rem; color: #4b5563; }
+
+.reach-missing {
+    margin: .3rem 0 0;
+    font-size: .84rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.reach-missing a { color: #b3261e; font-weight: 600; }
+
+/* Τα checkbox της φόρμας: κανονικό βάρος, όχι ετικέτα πεδίου */
+.reach-check {
+    display: flex !important;
+    align-items: flex-start;
+    gap: .4rem;
+    font-weight: 400 !important;
+    font-size: .84rem !important;
+    color: #374151;
+    margin-top: .3rem;
+    cursor: pointer;
+    line-height: 1.35;
+}
+
+.reach-check input { margin-top: .15rem; flex-shrink: 0; }
+
+.form-hint-lead { margin: -.2rem 0 .6rem; }
+
+/* Χωρίς αξιολογήσεις: κείμενο, όχι πέντε άδεια αστέρια που μοιάζουν με μηδέν */
+.rating-none {
+    margin: .3rem 0;
+    font-size: .84rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
    ΚΙΝΗΤΟ — ΕΝΑ BLOCK, ΣΤΟ ΤΕΛΟΣ (κανόνας του project)
    ══════════════════════════════════════════════════════════════════════ */
 

@@ -130,6 +130,14 @@ $router->group(['prefix' => 'drivers'], function ($router) {
     $router->post('/change-password', [DriversController::class, 'changePassword'])->name('drivers.change-password');
     $router->get('/security', [DriversController::class, 'security'])->name('drivers.security');
 
+    /*
+     * Βιογραφικό σε PDF — παράγεται ζωντανά από τα δεδομένα του προφίλ
+     * (DriverCvService → DriverCvPdf). Αντικατέστησε το παλιό μοντέλο
+     * «ανέβασε το CV σου» (edit-resume / resume_file), όπου το αρχείο
+     * έμενε πίσω κάθε φορά που ο οδηγός ενημέρωνε το προφίλ του.
+     */
+    $router->get('/cv', [DriversController::class, 'cv'])->name('drivers.cv');
+
     // Διαδρομές αναζήτησης
     $router->get('/search', [DriversController::class, 'search'])->name('drivers.search');
 

@@ -179,6 +179,27 @@ class DriversController extends BaseUserController
         }
 
         /*
+         * ΤΟ ΒΙΟΓΡΑΦΙΚΟ ΩΣ ΔΟΜΗ (30/08) — μία πηγή για την επισκόπηση και
+         * για το PDF. Δες DriverCvService: αν οι δύο όψεις χτίζονταν
+         * χωριστά θα απέκλιναν, και ο οδηγός θα έβλεπε στην οθόνη άλλα
+         * από όσα στέλνει στον εργοδότη.
+         */
+        try {
+            $viewData['cv'] = (new \Drivejob\Services\Driver\DriverCvService())->build($driverProfile, true);
+        } catch (\Throwable $e) {
+            Logger::error('CV build failed', ['message' => $e->getMessage()]);
+            // Κενή δομή: οι όψεις δείχνουν «δεν έχει καταχωρηθεί», δεν σπάνε.
+            $viewData['cv'] = [
+                'identity' => ['reach' => ['declared' => false, 'label' => '', 'travel' => false]],
+                'alerts' => [],
+                'experience' => ['items' => [], 'count' => 0, 'total_label' => '—'],
+                'certifications' => ['items' => [], 'count' => 0],
+                'languages' => [],
+                'skills' => ['groups' => [], 'count' => 0],
+            ];
+        }
+
+        /*
          * Υποειδικότητες άδειας χειριστή — ΟΛΩΝ των αδειών (30/08).
          *
          * ΗΤΑΝ BUG: διαβαζόταν μόνο η ΠΡΩΤΗ άδεια (operator_licenses[0]).
@@ -723,6 +744,73 @@ class DriversController extends BaseUserController
      * Σελίδα «Ασφάλεια & Κωδικός» — φόρμα αλλαγής κωδικού (POST στο
      * υπάρχον drivers/change-password του BaseUserController).
      */
+    /**
+     * GET /drivers/cv — το βιογραφικό σε PDF.
+     *
+     * Παράγεται ΚΑΘΕ ΦΟΡΑ από τα τρέχοντα δεδομένα, δεν αποθηκεύεται ως
+     * αρχείο. Το παλιό μοντέλο («ανέβασε το CV σου», resume_file) είχε το
+     * κλασικό πρόβλημα του αντιγράφου: ο οδηγός ανανέωνε το ΠΕΙ στο
+     * προφίλ και έστελνε βιογραφικό που έγραφε την παλιά λήξη.
+     *
+     * Το ΙΔΙΟ DriverCvService τροφοδοτεί και την καρτέλα Επισκόπηση —
+     * οθόνη και PDF δεν μπορούν να αποκλίνουν.
+     */
+    public function cv()
+    {
+        AuthMiddleware::hasRole('driver');
+        $driverId = Session::get('user_id');
+
+        try {
+            $profile = $this->driverProfileService->getDriverProfile($driverId);
+            if (!$profile) {
+                Session::set('error_message', 'Τα στοιχεία του οδηγού δεν βρέθηκαν.');
+                header('Location: ' . BASE_URL . 'drivers/profile');
+                exit();
+            }
+
+            // Δημόσια όψη: το «τι λείπει» αφορά μόνο τον ίδιο τον οδηγό,
+            // δεν έχει καμία θέση σε βιογραφικό που πάει σε εργοδότη.
+            $cvData = (new \Drivejob\Services\Driver\DriverCvService())->build($profile, false);
+            $bytes = (new \Drivejob\Services\Driver\DriverCvPdf($cvData, $profile))->render();
+
+            $name = trim(($profile['first_name'] ?? '') . '_' . ($profile['last_name'] ?? ''));
+            // Ο τίτλος γίνεται όνομα αρχείου: μόνο ασφαλείς χαρακτήρες,
+            // αλλιώς σπάει το Content-Disposition σε ελληνικά ονόματα.
+            $safe = preg_replace('/[^A-Za-z0-9_\-]/', '', $this->latinize($name)) ?: 'driver';
+
+            if (ob_get_length()) {
+                ob_end_clean();
+            }
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: inline; filename="drivejob_cv_' . $safe . '.pdf"');
+            header('Content-Length: ' . strlen($bytes));
+            echo $bytes;
+            exit();
+        } catch (\Throwable $e) {
+            Logger::error('CV PDF failed', [
+                'driver_id' => $driverId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            Session::set('error_message', 'Δεν ήταν δυνατή η δημιουργία του βιογραφικού. Δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'drivers/profile');
+            exit();
+        }
+    }
+
+    /** Ελληνικά σε λατινικά, μόνο για όνομα αρχείου. */
+    private function latinize(string $text): string
+    {
+        $map = [
+            'α'=>'a','ά'=>'a','β'=>'v','γ'=>'g','δ'=>'d','ε'=>'e','έ'=>'e','ζ'=>'z','η'=>'i','ή'=>'i',
+            'θ'=>'th','ι'=>'i','ί'=>'i','ϊ'=>'i','ΐ'=>'i','κ'=>'k','λ'=>'l','μ'=>'m','ν'=>'n','ξ'=>'x',
+            'ο'=>'o','ό'=>'o','π'=>'p','ρ'=>'r','σ'=>'s','ς'=>'s','τ'=>'t','υ'=>'y','ύ'=>'y','ϋ'=>'y',
+            'ΰ'=>'y','φ'=>'f','χ'=>'ch','ψ'=>'ps','ω'=>'o','ώ'=>'o',
+        ];
+        $lower = mb_strtolower($text, 'UTF-8');
+        return strtr($lower, $map);
+    }
+
     public function security()
     {
         AuthMiddleware::hasRole('driver');
@@ -1219,6 +1307,28 @@ class DriversController extends BaseUserController
             // ── Κατάσταση ────────────────────────────────────────────
             'legal_status' => (($_POST['legal_status'] ?? '') === 'yes') ? 'yes' : 'no',
             'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
+
+            /*
+             * ── Περιοχή εργασίας (30/08) ──────────────────────────────
+             *
+             * Στήλες που υπήρχαν στη βάση από την αρχή και τις διάβαζε το
+             * ταίριασμα, αλλά ΔΕΝ γράφονταν από πουθενά: δεν υπήρχαν στη
+             * φόρμα. Έμεναν 0 και το MatchingModel έπεφτε σε προεπιλογή
+             * 50 χλμ για όλους.
+             *
+             * Τα δύο checkbox ακολουθούν τον κανόνα «ό,τι δεν ήρθε δεν το
+             * αγγίζουμε» μέσω του κρυφού δείκτη reach_section: χωρίς
+             * αυτόν, μια αποθήκευση από άλλη καρτέλα θα τα μηδένιζε.
+             */
+            'preferred_radius' => isset($_POST['preferred_radius'])
+                ? max(0, (int) $_POST['preferred_radius'])
+                : null,
+            'willing_to_travel' => isset($_POST['reach_section'])
+                ? (isset($_POST['willing_to_travel']) ? 1 : 0)
+                : null,
+            'willing_to_relocate' => isset($_POST['reach_section'])
+                ? (isset($_POST['willing_to_relocate']) ? 1 : 0)
+                : null,
 
             /*
              * ── Στοιχεία εντύπου άδειας (πίνακας drivers) ─────────────
