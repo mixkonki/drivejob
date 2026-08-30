@@ -149,17 +149,34 @@ class DriverLicenseService
             // Διαγραφή των υπαρχουσών ειδικών αδειών
             $this->certificationModel->deleteDriverSpecialLicenses($driverId);
 
-            // Αν έχουν υποβληθεί ειδικές άδειες, τις προσθέτουμε στη βάση
+            /*
+             * ΔΙΟΡΘΩΣΗ 30/08: η κενή ημερομηνία λήξης έστελνε '' σε στήλη DATE.
+             * Με STRICT_TRANS_TABLES η MariaDB απορρίπτει ΟΛΟ το INSERT
+             * («Incorrect date value: ''») — ο οδηγός πατούσε Αποθήκευση, δεν
+             * έβλεπε σφάλμα, και η ειδική άδεια δεν αποθηκευόταν ποτέ. Ίδιο
+             * μοτίβο με το ENUM των γλωσσών (25/08): κενό = NULL, όχι ''.
+             *
+             * Ο τύπος ελέγχεται πλέον στην ταξινομία (SpecialLicenseTypes) —
+             * ελεύθερο κείμενο δεν μπαίνει στη βάση.
+             */
             if (isset($formData['special_license_type']) && is_array($formData['special_license_type'])) {
                 foreach ($formData['special_license_type'] as $index => $type) {
-                    // Αν ο τύπος άδειας δεν είναι κενός, προσθέτουμε την άδεια
-                    if (!empty(trim($type))) {
-                        $licenseNumber = $formData['special_license_number'][$index] ?? '';
-                        $expiryDate = $formData['special_license_expiry'][$index] ?? null;
-                        $details = $formData['special_license_details'][$index] ?? '';
-
-                        $this->certificationModel->addDriverSpecialLicense($driverId, $type, $licenseNumber, $expiryDate, $details);
+                    $type = trim((string) $type);
+                    if ($type === '' || !\Drivejob\Helpers\SpecialLicenseTypes::isValid($type)) {
+                        continue;
                     }
+
+                    $licenseNumber = trim((string) ($formData['special_license_number'][$index] ?? ''));
+                    $expiryDate = trim((string) ($formData['special_license_expiry'][$index] ?? ''));
+                    $details = trim((string) ($formData['special_license_details'][$index] ?? ''));
+
+                    $this->certificationModel->addDriverSpecialLicense(
+                        $driverId,
+                        $type,
+                        $licenseNumber !== '' ? $licenseNumber : null,
+                        $expiryDate !== '' ? $expiryDate : null,
+                        $details !== '' ? $details : null
+                    );
                 }
             }
 

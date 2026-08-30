@@ -1,74 +1,117 @@
-<?php /* Καρτέλα «special-licenses» της φόρμας επεξεργασίας προφίλ — αποσπάστηκε από το edit-profile.php (Πακέτο 5.4).
-   Μοιράζεται το scope μεταβλητών του γονικού view (include). */ ?>
+<?php /* Καρτέλα «Ειδικές Άδειες» — v2 (30/08/2026).
+   Ο «Τύπος Άδειας» ήταν ελεύθερο κείμενο: ο ένας έγραφε «εδχ», ο άλλος
+   «ΕΔΧ ταξί» — τίποτα δεν φιλτραριζόταν. Τώρα επιλογή από τυποποιημένη
+   λίστα (Helpers\SpecialLicenseTypes) ώστε οι άδειες να μπορούν να
+   μπουν σε φίλτρα αγγελιών, ταίριασμα και βαθμολογία. */ ?>
                     <div class="tab-pane" id="special-licenses">
-                        <h2>Ειδικές Άδειες</h2>
+                        <div class="form-section">
+                        <h2>Ειδικές Άδειες & Πιστοποιητικά Οδηγού</h2>
+                        <p class="form-info">Άδειες και πιστοποιητικά πέρα από το δίπλωμα, το ΠΕΙ, το ADR, τον ταχογράφο και την άδεια χειριστή — που έχουν δικές τους καρτέλες.</p>
 
-                        <div id="special-licenses-container">
-                            <!-- Λίστα ειδικών αδειών -->
-                            <?php if (isset($driverSpecialLicenses) && count($driverSpecialLicenses) > 0) : ?>
-                                <?php foreach ($driverSpecialLicenses as $index => $license) : ?>
-                                    <div class="special-license-item" id="special-license-item-<?php echo $index; ?>">
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label for="special_license_type_<?php echo $index; ?>">Τύπος Άδειας</label>
-                                                <input type="text" id="special_license_type_<?php echo $index; ?>" name="special_license_type[]" value="<?php echo htmlspecialchars($license['license_type']); ?>" required>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="special_license_number_<?php echo $index; ?>">Αριθμός Άδειας</label>
-                                                <input type="text" id="special_license_number_<?php echo $index; ?>" name="special_license_number[]" value="<?php echo htmlspecialchars($license['license_number'] ?? ''); ?>">
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="special_license_expiry_<?php echo $index; ?>">Ημερομηνία Λήξης</label>
-                                                <input type="date" id="special_license_expiry_<?php echo $index; ?>" name="special_license_expiry[]" value="<?php echo $license['expiry_date'] ?? ''; ?>">
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="special_license_details_<?php echo $index; ?>">Περιγραφή/Λεπτομέρειες</label>
-                                            <textarea id="special_license_details_<?php echo $index; ?>" name="special_license_details[]" rows="2"><?php echo htmlspecialchars($license['details'] ?? ''); ?></textarea>
-                                        </div>
-
-                                        <button type="button" class="btn-secondary remove-special-license" data-index="<?php echo $index; ?>">Αφαίρεση</button>
-                                        <hr class="section-divider">
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-
-                            <!-- Κενό στοιχείο για προσθήκη νέας άδειας (κρυμμένο αρχικά) -->
-                            <div class="special-license-item" id="special-license-template" style="display: none;">
+                        <?php
+                        /**
+                         * Ένα μπλοκ ειδικής άδειας. Ίδια συνάρτηση για τις
+                         * υπάρχουσες εγγραφές και για το JS template — ένα markup,
+                         * όχι δύο αντίγραφα που ξεσυγχρονίζονται.
+                         */
+                        $renderSpecialLicense = function ($idx, array $license = []) {
+                            $type = (string) ($license['license_type'] ?? '');
+                            // Παλιές ελεύθερες τιμές (π.χ. «εδχ») δεν ταιριάζουν σε
+                            // κωδικό: πέφτουν στο «Άλλο» και κρατούν το κείμενό τους.
+                            $isKnown = \Drivejob\Helpers\SpecialLicenseTypes::isValid($type);
+                            $selected = $isKnown ? $type : ($type === '' ? '' : 'other');
+                            $details = (string) ($license['details'] ?? '');
+                            if (!$isKnown && $type !== '' && $details === '') {
+                                $details = $type; // μη χαθεί ο παλιός ελεύθερος τίτλος
+                            }
+                        ?>
+                            <div class="special-license-item form-section" data-idx="<?php echo $idx; ?>">
                                 <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="special_license_type_new">Τύπος Άδειας</label>
-                                        <input type="text" id="special_license_type_new" name="special_license_type[]">
+                                    <div class="form-group sl-type-group">
+                                        <label>Τύπος Άδειας</label>
+                                        <select name="special_license_type[]" class="sl-type" required>
+                                            <option value="">Επιλέξτε τύπο</option>
+                                            <?php foreach (\Drivejob\Helpers\SpecialLicenseTypes::TYPES as $code => $label) : ?>
+                                                <option value="<?php echo $code; ?>" <?php echo $selected === $code ? 'selected' : ''; ?>><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="special_license_number_new">Αριθμός Άδειας</label>
-                                        <input type="text" id="special_license_number_new" name="special_license_number[]">
+                                        <label>Αριθμός Άδειας</label>
+                                        <input type="text" name="special_license_number[]" value="<?php echo htmlspecialchars((string) ($license['license_number'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="special_license_expiry_new">Ημερομηνία Λήξης</label>
-                                        <input type="date" id="special_license_expiry_new" name="special_license_expiry[]">
+                                        <label>Ημερομηνία Λήξης</label>
+                                        <input type="date" name="special_license_expiry[]" value="<?php echo htmlspecialchars((string) ($license['expiry_date'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
                                     </div>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="special_license_details_new">Περιγραφή/Λεπτομέρειες</label>
-                                    <textarea id="special_license_details_new" name="special_license_details[]" rows="2"></textarea>
+                                    <label>Περιγραφή / Λεπτομέρειες</label>
+                                    <input type="text" name="special_license_details[]" value="<?php echo htmlspecialchars($details, ENT_QUOTES, 'UTF-8'); ?>" placeholder="π.χ. εκδούσα αρχή, περιοχή ή τίτλος πιστοποιητικού">
+                                    <p class="form-hint sl-other-hint" <?php echo $selected === 'other' ? '' : 'style="display:none;"'; ?>>Γράψε εδώ τον ακριβή τίτλο του πιστοποιητικού.</p>
                                 </div>
 
-                                <button type="button" class="btn-secondary remove-special-license" data-index="new">Αφαίρεση</button>
-                                <hr class="section-divider">
+                                <button type="button" class="btn-secondary remove-special-license">Αφαίρεση</button>
                             </div>
+                        <?php };
+
+                        foreach (array_values($driverSpecialLicenses ?? []) as $i => $license) {
+                            $renderSpecialLicense($i, $license);
+                        }
+                        ?>
+
+                        <div id="special-licenses-container"><!-- εδώ προστίθενται νέα μπλοκ --></div>
+
+                        <template id="specialLicenseTemplate">
+                            <?php $renderSpecialLicense('__IDX__'); ?>
+                        </template>
+
+                        <button type="button" id="add-special-license" class="btn-secondary">+ Προσθήκη ειδικής άδειας</button>
                         </div>
 
-                        <!-- Το κουμπί εμφανίζεται μόνο στην καρτέλα ειδικών αδειών -->
-                        <button type="button" id="add-special-license" class="btn-primary">Προσθήκη Ειδικής Άδειας</button>
+                        <script>
+                        /*
+                         * Προσθήκη/αφαίρεση μπλοκ ειδικών αδειών. Το παλιό
+                         * initSpecialLicenses() του driver_edit_profile.js δούλευε με
+                         * κρυφό template και clone — αντικαταστάθηκε από <template>.
+                         */
+                        (function () {
+                            function wire(item) {
+                                var remove = item.querySelector('.remove-special-license');
+                                if (remove) {
+                                    remove.addEventListener('click', function () { item.remove(); });
+                                }
+                                var type = item.querySelector('.sl-type');
+                                var hint = item.querySelector('.sl-other-hint');
+                                if (type && hint) {
+                                    type.addEventListener('change', function () {
+                                        hint.style.display = this.value === 'other' ? '' : 'none';
+                                    });
+                                }
+                            }
+
+                            document.addEventListener('DOMContentLoaded', function () {
+                                document.querySelectorAll('#special-licenses .special-license-item').forEach(function (item) {
+                                    if (!item.closest('template')) { wire(item); }
+                                });
+
+                                var addBtn = document.getElementById('add-special-license');
+                                var list = document.getElementById('special-licenses-container');
+                                var tpl = document.getElementById('specialLicenseTemplate');
+                                if (!addBtn || !list || !tpl) { return; }
+
+                                addBtn.addEventListener('click', function () {
+                                    var holder = document.createElement('div');
+                                    holder.innerHTML = tpl.innerHTML.replace(/__IDX__/g, 'n' + Date.now());
+                                    var item = holder.querySelector('.special-license-item');
+                                    if (!item) { return; }
+                                    list.appendChild(item);
+                                    wire(item);
+                                });
+                            });
+                        })();
+                        </script>
                     </div>
-            <!-- ΔΙΟΡΘΩΣΗ 25/08/2026: εδώ υπήρχαν ΔΥΟ πλεονάζοντα </div>
-                 που έκλειναν πρόωρα το .tab-content/.form-tabs — γι αυτό ό,τι
-                 ακολουθούσε (φόρμα, κουμπιά) έπεφτε ΕΞΩ από τη φόρμα στο DOM. -->
-            <!-- Προσθήκη στο αρχείο edit_profile.php στο κατάλληλο σημείο, όπου βρίσκονται οι καρτέλες -->

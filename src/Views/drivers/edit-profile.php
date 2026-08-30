@@ -69,8 +69,8 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                     <button type="button" class="tab-btn" data-tab="tachograph-card">Κάρτα Ταχογράφου</button>
                     <button type="button" class="tab-btn" data-tab="adr-certificates">Πιστοποιητικά ADR</button>
                     <button type="button" class="tab-btn" data-tab="operator-licenses">Άδειες Χειριστή</button>
-                    <button type="button" class="tab-btn" data-tab="skills-tab">Προσόντα & Πιστοποιήσεις</button>
                     <button type="button" class="tab-btn" data-tab="special-licenses">Ειδικές Άδειες</button>
+                    <button type="button" class="tab-btn" data-tab="skills-tab">Προσόντα & Πιστοποιήσεις</button>
                 </nav>
 
                 <div class="tab-content">
@@ -81,8 +81,10 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
                     <?php include __DIR__ . '/partials/edit-tabs/tachograph-card.php'; ?>
                     <?php include __DIR__ . '/partials/edit-tabs/adr-certificates.php'; ?>
                     <?php include __DIR__ . '/partials/edit-tabs/operator-licenses.php'; ?>
-                    <?php include __DIR__ . '/partials/edit-tabs/skills.php'; ?>
+                    <?php /* Οι ειδικές άδειες ΠΡΙΝ τα προσόντα (30/08): όλες οι
+                       άδειες/πιστοποιητικά μαζί, τα προσόντα κλείνουν τη φόρμα. */ ?>
                     <?php include __DIR__ . '/partials/edit-tabs/special-licenses.php'; ?>
+                    <?php include __DIR__ . '/partials/edit-tabs/skills.php'; ?>
 
 
 

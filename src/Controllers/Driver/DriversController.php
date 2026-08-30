@@ -161,10 +161,20 @@ class DriversController extends BaseUserController
         // Εξαγωγή τύπων αδειών
         $viewData['driverLicenseTypes'] = array_column($viewData['driverLicenses'], 'license_type');
 
-        // Λήψη υποειδικοτήτων άδειας χειριστή
+        /*
+         * Υποειδικότητες άδειας χειριστή — ΟΛΩΝ των αδειών (30/08).
+         *
+         * ΗΤΑΝ BUG: διαβαζόταν μόνο η ΠΡΩΤΗ άδεια (operator_licenses[0]).
+         * Με το v2 ο χειριστής έχει πολλές άδειες· αν η πρώτη κάλυπτε
+         * «το σύνολο της ειδικότητας» (καμία υποειδικότητα), το προφίλ
+         * έγραφε «Δεν έχουν καταχωρηθεί υποειδικότητες» ενώ οι υπόλοιπες
+         * άδειες υπήρχαν κανονικά στη βάση.
+         */
         $viewData['operatorSubSpecialities'] = [];
-        if ($viewData['driverOperator']) {
-            $viewData['operatorSubSpecialities'] = $viewData['driverOperator']['sub_specialities'] ?? [];
+        foreach ($viewData['driverOperatorLicenses'] as $opLicense) {
+            foreach ($opLicense['sub_specialities'] ?? [] as $opSub) {
+                $viewData['operatorSubSpecialities'][] = $opSub;
+            }
         }
 
         // Έλεγχος για ΠΕΙ

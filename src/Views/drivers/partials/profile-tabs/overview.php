@@ -296,77 +296,55 @@
                                                 <span>Άδεια Χειριστή</span>
                                             </td>
                                             <td>
-                                                <?php if (isset($operatorSubSpecialities) && !empty($operatorSubSpecialities)) : ?>
-                                                    <div class="operator-subspecialities">
-                                                        <strong>Υποειδικότητες & Ομάδες:</strong>
-                                                        <?php
-                                                        // Ομαδοποίηση των υποειδικοτήτων ανά ειδικότητα και αφαίρεση διπλοτύπων
-                                                        $specialityGroups = [];
-                                                        $processedSubSpecialities = []; // Για την αποφυγή διπλοτύπων
-
-                                                        foreach ($operatorSubSpecialities as $subSpec) {
-                                                            $specialityId = substr($subSpec['sub_speciality'], 0, 1);
-                                                            $key = $subSpec['sub_speciality']; // Κλειδί για έλεγχο διπλοτύπων
-
-                                                            // Έλεγχος αν έχουμε ήδη επεξεργαστεί αυτή την υποειδικότητα
-                                                            if (in_array($key, $processedSubSpecialities)) {
-                                                                continue;
-                                                            }
-
-                                                            // Προσθήκη στο σύνολο των επεξεργασμένων υποειδικοτήτων
-                                                            $processedSubSpecialities[] = $key;
-
-                                                            // Προσθήκη στην κατάλληλη ομάδα
-                                                            if (!isset($specialityGroups[$specialityId])) {
-                                                                $specialityGroups[$specialityId] = [];
-                                                            }
-                                                            $specialityGroups[$specialityId][] = $subSpec;
-                                                        }
-
-                                                        // Ορισμός των ονομάτων ειδικοτήτων
-                                                        $specialityNames = [
-                                                            '1' => 'Εργασίες εκσκαφής και χωματουργικές',
-                                                            '2' => 'Εργασίες ανύψωσης και μεταφοράς φορτίων',
-                                                            '3' => 'Εργασίες οδοστρωσίας',
-                                                            '4' => 'Εργασίες εξυπηρέτησης οδών και αεροδρομίων',
-                                                            '5' => 'Εργασίες υπόγειων έργων και μεταλλείων',
-                                                            '6' => 'Εργασίες έλξης',
-                                                            '7' => 'Εργασίες διάτρησης και κοπής εδαφών',
-                                                            '8' => 'Ειδικές εργασίες ανύψωσης'
-                                                        ];
+                                                <?php
+                                                /*
+                                                 * v2 (30/08): εμφάνιση ΟΛΩΝ των αδειών του βιβλιαρίου.
+                                                 * Πριν διαβαζόταν μόνο η πρώτη — και οι άδειες που
+                                                 * καλύπτουν «το σύνολο της ειδικότητας» (χωρίς
+                                                 * υποειδικότητες) δεν φαίνονταν καθόλου.
+                                                 */
+                                                $opList = $driverOperatorLicenses ?? [];
+                                                ?>
+                                                <?php if (!empty($opList)) : ?>
+                                                    <div class="operator-licenses-list">
+                                                        <?php foreach ($opList as $opLic) :
+                                                            $opSpec = (string) ($opLic['speciality'] ?? '');
+                                                            $opGroup = strtoupper((string) ($opLic['group_type'] ?? 'A'));
+                                                            $opName = \Drivejob\Helpers\OperatorSpecialities::SPECIALITIES[$opSpec] ?? ('Ειδικότητα ' . $opSpec);
+                                                            $opSubs = $opLic['sub_specialities'] ?? [];
+                                                            $groupLabel = $opGroup === 'M' ? 'μικτή' : 'Ομάδα ' . $opGroup . '΄';
                                                         ?>
-                                                        <div class="subspecialities-groups">
-                                                            <?php foreach ($specialityGroups as $specialityId => $subSpecialities) : ?>
-                                                                <div class="speciality-group">
-                                                                    <h6><?php echo $specialityId . ' - ' . ($specialityNames[$specialityId] ?? 'Ειδικότητα ' . $specialityId); ?></h6>
+                                                            <div class="speciality-group">
+                                                                <h6>
+                                                                    <?php echo htmlspecialchars($opSpec . 'η ειδικότητα — ' . $opName, ENT_QUOTES, 'UTF-8'); ?>
+                                                                    <span class="subspeciality-group">(<?php echo htmlspecialchars($groupLabel, ENT_QUOTES, 'UTF-8'); ?>)</span>
+                                                                </h6>
+                                                                <?php if (!empty($opLic['covers_all'])) : ?>
+                                                                    <p class="operator-covers-all">Σύνολο μηχανημάτων της ειδικότητας</p>
+                                                                <?php elseif (!empty($opSubs)) : ?>
                                                                     <ul class="selected-subspecialities">
-                                                                        <?php foreach ($subSpecialities as $subSpec) :
-                                                                            $subspecialityId = $subSpec['sub_speciality'];
-                                                                            $groupType = $subSpec['group_type'] ?? 'A';
+                                                                        <?php foreach ($opSubs as $subSpec) :
+                                                                            $subCode = is_array($subSpec) ? ($subSpec['sub_speciality'] ?? '') : (string) $subSpec;
+                                                                            $subGroup = is_array($subSpec) ? strtoupper($subSpec['group_type'] ?? $opGroup) : $opGroup;
+                                                                            $subName = \Drivejob\Helpers\OperatorSpecialities::subName($subCode);
                                                                         ?>
                                                                             <li class="subspeciality-item">
-                                                                                <span class="subspeciality-code"><?php echo htmlspecialchars($subspecialityId); ?></span>
-                                                                                <?php if (isset($subSpec['name']) && $subSpec['name']) : ?>
-                                                                                    <span class="subspeciality-name"><?php echo htmlspecialchars($subSpec['name']); ?></span>
-                                                                                <?php else : ?>
-                                                                                    <?php
-                                                                                    // Αν δεν υπάρχει το όνομα, χρησιμοποιούμε τη συνάρτηση getSubSpecialityName του Controller
-                                                                                    $name = isset($this) && method_exists($this, 'getSubSpecialityName')
-                                                                                        ? $this->getSubSpecialityName($subspecialityId)
-                                                                                        : "Υποειδικότητα {$subspecialityId}";
-                                                                                    ?>
-                                                                                    <span class="subspeciality-name"><?php echo htmlspecialchars($name); ?></span>
+                                                                                <span class="subspeciality-code"><?php echo htmlspecialchars($subCode, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                                                <span class="subspeciality-name"><?php echo htmlspecialchars($subName ?: ('Υποειδικότητα ' . $subCode), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                                                <?php if ($opGroup === 'M') : ?>
+                                                                                    <span class="subspeciality-group">(Ομάδα <?php echo htmlspecialchars($subGroup, ENT_QUOTES, 'UTF-8'); ?>΄)</span>
                                                                                 <?php endif; ?>
-                                                                                <span class="subspeciality-group">(Ομάδα <?php echo htmlspecialchars($groupType); ?>)</span>
                                                                             </li>
                                                                         <?php endforeach; ?>
                                                                     </ul>
-                                                                </div>
-                                                            <?php endforeach; ?>
-                                                        </div>
+                                                                <?php else : ?>
+                                                                    <p class="not-available">Δεν έχουν επιλεγεί μηχανήματα</p>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        <?php endforeach; ?>
                                                     </div>
                                                 <?php else : ?>
-                                                    <span class="not-available">Δεν έχουν καταχωρηθεί υποειδικότητες</span>
+                                                    <span class="not-available">Δεν έχει καταχωρηθεί άδεια χειριστή</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
@@ -412,7 +390,7 @@
                                                         <ul>
                                                             <?php foreach ($driverSpecialLicenses as $specialLicense) : ?>
                                                                 <li>
-                                                                    <strong><?php echo htmlspecialchars($specialLicense['license_type']); ?></strong>
+                                                                    <strong><?php echo htmlspecialchars(\Drivejob\Helpers\SpecialLicenseTypes::label((string) $specialLicense['license_type']), ENT_QUOTES, 'UTF-8'); ?></strong>
                                                                     <?php if (!empty($specialLicense['license_number'])) : ?>
                                                                         - Αρ: <?php echo htmlspecialchars($specialLicense['license_number']); ?>
                                                                     <?php endif; ?>
