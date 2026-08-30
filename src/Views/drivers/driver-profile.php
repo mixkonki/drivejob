@@ -101,10 +101,31 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     <?php echo !empty($driverData['available_for_work']) ? 'Διαθέσιμος για εργασία' : 'Μη διαθέσιμος'; ?>
                 </p>
 
-                <?php if (isset($driverData['experience_years']) && $driverData['experience_years']) : ?>
+                <?php
+                /*
+                 * ΕΤΗ ΕΜΠΕΙΡΙΑΣ — ΜΙΑ ΠΗΓΗ (31/08).
+                 *
+                 * Πριν: η κεφαλίδα έδειχνε τη στήλη `experience_years`
+                 * («8 έτη») και η ενότητα Προϋπηρεσία το άθροισμα των
+                 * εγγραφών («7 έτη 8 μήνες») — δύο διαφορετικά νούμερα
+                 * για το ίδιο πράγμα, στην ίδια οθόνη. Η στήλη έμεινε
+                 * ως κρυφό πεδίο όταν αφαιρέθηκε από τη φόρμα (25/08)
+                 * και δεν συγχρονίζεται ποτέ.
+                 *
+                 * Τώρα δείχνεται ΤΟ ΑΘΡΟΙΣΜΑ ΤΗΣ ΠΡΟΫΠΗΡΕΣΙΑΣ — αυτό που
+                 * ο οδηγός μπορεί να τεκμηριώσει και αυτό που μπαίνει
+                 * στο βιογραφικό. Η στήλη μένει μόνο ως εφεδρεία για
+                 * παλιά προφίλ χωρίς καταχωρημένη προϋπηρεσία.
+                 */
+                $expMonths = (int) ($cv['experience']['total_months'] ?? 0);
+                $expText = $expMonths > 0
+                    ? ($cv['experience']['total_label'] ?? null)
+                    : (!empty($driverData['experience_years']) ? $driverData['experience_years'] . ' έτη' : null);
+                ?>
+                <?php if ($expText) : ?>
                     <div class="experience-badge">
-                        <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="Εμπειρία">
-                        <span><?php echo $driverData['experience_years']; ?> έτη εμπειρίας</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+                        <span><?php echo htmlspecialchars($expText, ENT_QUOTES, 'UTF-8'); ?> προϋπηρεσία</span>
                     </div>
                 <?php endif; ?>
 

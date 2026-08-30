@@ -283,14 +283,35 @@ class MatchingModel
                 }
             }
 
-            // Απόσταση (30 βαθμοί)
-            if (
-                !empty($driverProfile['latitude']) && !empty($driverProfile['longitude']) &&
-                !empty($listing['latitude']) && !empty($listing['longitude'])
-            ) {
-                $maxScore += 30;
+            /*
+             * ══════════════════════════════════════════════════════════
+             *  ΑΠΟΣΤΑΣΗ (30 βαθμοί) — ΞΑΝΑΓΡΑΦΤΗΚΕ 31/08/2026
+             * ══════════════════════════════════════════════════════════
+             *
+             * ΤΟ ΛΑΘΟΣ: το `$maxScore += 30` ήταν ΜΕΣΑ στο if. Όταν
+             * έλειπαν συντεταγμένες (26 από 29 αγγελίες στην παραγωγή),
+             * η απόσταση δεν ήταν «χαμηλή» — ΕΞΑΦΑΝΙΖΟΤΑΝ από τον
+             * παρονομαστή. Το ποσοστό υπολογιζόταν στα υπόλοιπα
+             * κριτήρια, οπότε αγγελία Αθήνας και αγγελία Θεσσαλονίκης
+             * έβγαζαν ΤΟ ΙΔΙΟ σκορ για οδηγό Θεσσαλονίκης. Αυτό ήταν το
+             * «51-53% σε αγγελίες 500 χιλιόμετρα μακριά».
+             *
+             * ΤΩΡΑ: τα 30 μονάδες μετρούν ΠΑΝΤΑ στον παρονομαστή. Μια
+             * αγγελία χωρίς τοποθεσία δεν κερδίζει τίποτα από αυτά —
+             * δεν παίρνει «δωρεάν» τέλειο σκορ επειδή λείπει η μέτρηση.
+             *
+             * ΚΑΙ ΕΚΤΟΣ ΑΚΤΙΝΑΣ ΔΕΝ ΕΙΝΑΙ ΜΗΔΕΝ: ο οδηγός με ακτίνα 50
+             * χλμ δεν είναι αδιάφορος για κάτι στα 60 — είναι για κάτι
+             * στα 400. Η βαθμολογία σβήνει σταδιακά ως το διπλάσιο της
+             * ακτίνας αντί να πέφτει απότομα στο μηδέν, ώστε να μη
+             * χάνονται οριακές ευκαιρίες.
+             */
+            $maxScore += 30;
 
-                // Υπολογισμός απόστασης σε χιλιόμετρα
+            $hasDriverCoords = !empty($driverProfile['latitude']) && !empty($driverProfile['longitude']);
+            $hasListingCoords = !empty($listing['latitude']) && !empty($listing['longitude']);
+
+            if ($hasDriverCoords && $hasListingCoords) {
                 $distance = $this->calculateDistance(
                     $driverProfile['latitude'],
                     $driverProfile['longitude'],
@@ -298,13 +319,20 @@ class MatchingModel
                     $listing['longitude']
                 );
 
-                // Προτιμώμενη ακτίνα του οδηγού
-                $preferredRadius = $driverProfile['preferred_radius'] ?? 50;
+                // Αδήλωτη ακτίνα: 50 χλμ, όσο και πριν.
+                $preferredRadius = (int) ($driverProfile['preferred_radius'] ?? 0) ?: 50;
 
-                if ($distance <= $preferredRadius) {
-                    // Όσο πιο κοντά, τόσο υψηλότερο το σκορ
-                    $score += 30 * (1 - ($distance / $preferredRadius));
+                // «Όλη την Ελλάδα»: η απόσταση παύει να είναι κριτήριο.
+                if ($preferredRadius >= 9999 || !empty($driverProfile['willing_to_relocate'])) {
+                    $score += 30;
+                } elseif ($distance <= $preferredRadius) {
+                    // Εντός ακτίνας: όσο πιο κοντά, τόσο υψηλότερο.
+                    $score += 30 * (1 - ($distance / $preferredRadius) * 0.5);
+                } elseif ($distance <= $preferredRadius * 2) {
+                    // Έως διπλάσια απόσταση: φθίνουσα, όχι μηδέν.
+                    $score += 15 * (1 - (($distance - $preferredRadius) / $preferredRadius));
                 }
+                // Πέρα από το διπλάσιο: 0 βαθμοί, χωρίς να κρύβεται.
             }
 
             // Ειδικές απαιτήσεις (20 βαθμοί)
@@ -390,14 +418,23 @@ class MatchingModel
             }
         }
 
-        // Απόσταση (30 βαθμοί)
+        /*
+         * ΑΠΟΣΤΑΣΗ (30 βαθμοί) — ίδια διόρθωση με την άλλη κατεύθυνση
+         * (31/08). Το `$maxScore += 30` βγήκε ΕΞΩ από το if: αγγελία
+         * χωρίς συντεταγμένες δεν πρέπει να κερδίζει τέλειο σκορ επειδή
+         * απλώς λείπει η μέτρηση. Δες το εκτενές σχόλιο παραπάνω.
+         *
+         * Εδώ κρίνει η ΑΓΓΕΛΙΑ ποιος οδηγός της ταιριάζει, οπότε μετράει
+         * η ακτίνα ΤΗΣ αγγελίας — αλλά αν ο οδηγός δηλώνει μεγαλύτερη
+         * διάθεση μετακίνησης, τιμάται η δική του: είναι αυτός που θα
+         * κάνει τη διαδρομή.
+         */
+        $maxScore += 30;
+
         if (
             !empty($driver['latitude']) && !empty($driver['longitude']) &&
             !empty($listing['latitude']) && !empty($listing['longitude'])
         ) {
-            $maxScore += 30;
-
-            // Υπολογισμός απόστασης σε χιλιόμετρα
             $distance = $this->calculateDistance(
                 $driver['latitude'],
                 $driver['longitude'],
@@ -405,12 +442,16 @@ class MatchingModel
                 $listing['longitude']
             );
 
-            // Ακτίνα της αγγελίας
-            $listingRadius = $listing['radius'] ?? 50;
+            $listingRadius = (int) ($listing['radius'] ?? 0) ?: 50;
+            $driverRadius = (int) ($driver['preferred_radius'] ?? 0) ?: 0;
+            $radius = max($listingRadius, $driverRadius);
 
-            if ($distance <= $listingRadius) {
-                // Όσο πιο κοντά, τόσο υψηλότερο το σκορ
-                $score += 30 * (1 - ($distance / $listingRadius));
+            if ($radius >= 9999 || !empty($driver['willing_to_relocate'])) {
+                $score += 30;
+            } elseif ($distance <= $radius) {
+                $score += 30 * (1 - ($distance / $radius) * 0.5);
+            } elseif ($distance <= $radius * 2) {
+                $score += 15 * (1 - (($distance - $radius) / $radius));
             }
         }
 

@@ -1436,6 +1436,12 @@ class DriversController extends BaseUserController
              */
             'latitude' => $this->coordinate($_POST['latitude'] ?? null, 90),
             'longitude' => $this->coordinate($_POST['longitude'] ?? null, 180),
+            // Το κλειδί που λείπει το βάζει ο server (31/08): αν ο
+            // browser δεν έστειλε συντεταγμένες — JS απενεργοποιημένο,
+            // παλιά συνεδρία, αποτυχία χάρτη — τις βρίσκουμε από την
+            // πόλη. Χωρίς αυτές ο οδηγός είναι αόρατος στο ταίριασμα
+            // απόστασης, και δεν το μαθαίνει ποτέ.
+            '__geo_fallback' => true,
 
             /*
              * ── Στοιχεία εντύπου άδειας (πίνακας drivers) ─────────────
@@ -1491,6 +1497,22 @@ class DriversController extends BaseUserController
          * Ο κανόνας τώρα: γράφουμε μόνο ό,τι ΗΡΘΕ. Ό,τι λείπει μένει
          * ανέγγιχτο στη βάση.
          */
+        /*
+         * Server-side συμπλήρωση συντεταγμένων. Τρέχει ΜΟΝΟ όταν ο
+         * browser δεν έστειλε — δεν ακυρώνει ποτέ ακριβέστερη τιμή που
+         * ήρθε από τον χάρτη.
+         */
+        unset($raw['__geo_fallback']);
+        if (empty($raw['latitude']) || empty($raw['longitude'])) {
+            $place = \Drivejob\Helpers\GreekPlaces::locate(
+                $raw['city'] ?? ($_POST['city'] ?? null)
+            );
+            if ($place) {
+                $raw['latitude'] = $place[0];
+                $raw['longitude'] = $place[1];
+            }
+        }
+
         $alwaysWrite = [
             // Checkbox: όταν δεν είναι τσεκαρισμένο ΔΕΝ έρχεται στο POST,
             // και τότε η τιμή 0 είναι η σωστή — όχι «μην το αγγίξεις».
