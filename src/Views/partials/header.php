@@ -74,6 +74,9 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
     <!-- Σύνδεση με το CSS αρχείο -->
     <?= \Drivejob\Helpers\Asset::css('css/styles.css') ?>
     <?= \Drivejob\Helpers\Asset::css('css/job-listings.css') ?>
+    <?php /* ΜΕΤΑ το styles.css επίτηδες: διορθώνει το header σε ενδιάμεσα
+       πλάτη (800-1050px) και σταματά το stretch των ενεργειών χρήστη. */ ?>
+    <?= \Drivejob\Helpers\Asset::css('css/header-responsive.css') ?>
     <link rel="icon" href="<?= \Drivejob\Helpers\Asset::url('img/favicon.ico') ?>" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 

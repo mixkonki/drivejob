@@ -24,7 +24,7 @@ $col = $pdo->query("SHOW COLUMNS FROM driver_tachograph_cards LIKE 'issue_date'"
 
 if ($col) {
     echo "OK: η στήλη issue_date υπάρχει ήδη.\n";
-    exit(0);
+    return;
 }
 
 $pdo->exec("ALTER TABLE driver_tachograph_cards ADD COLUMN issue_date DATE NULL AFTER card_number");
