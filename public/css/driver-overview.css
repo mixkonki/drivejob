@@ -52,6 +52,10 @@
 .qgroup--exp      { --qg: #b45309; --qg-soft: #fffcf5; }
 .qgroup--sem      { --qg: #0e7490; --qg-soft: #f5fdff; }
 .qgroup--skl      { --qg: #475569; --qg-soft: #f8fafc; }
+/* Προστέθηκαν 31/08 για την καρτέλα «Προσόντα & Πιστοποιήσεις», που
+   πέρασε στην ίδια σχεδιαστική γλώσσα με την Επισκόπηση. */
+.qgroup--pers     { --qg: #be123c; --qg-soft: #fff5f7; }
+.qgroup--lang     { --qg: #0369a1; --qg-soft: #f5fafd; }
 
 .qgroup-head {
     display: flex;
@@ -582,3 +586,45 @@
 .privacy-links a { color: #9ca3af; text-decoration: none; }
 .privacy-links a:hover { text-decoration: underline; }
 .privacy-links a.is-danger:hover { color: #b91c1c; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   DEEP LINKS — σύνδεσμοι επεξεργασίας ανά ομάδα (31/08)
+   ══════════════════════════════════════════════════════════════════════
+
+   Ο οδηγός βλέπει «ΠΕΙ Εμπορευμάτων — δεν διαθέτει» και θέλει να το
+   προσθέσει. Χωρίς σύνδεσμο, πρέπει να θυμηθεί σε ποια από τις επτά
+   καρτέλες ζει. Ο σύνδεσμος τον πάει κατευθείαν. */
+
+.qgroup-edit {
+    margin-left: auto;
+    font-size: .76rem;
+    font-weight: 600;
+    color: var(--qg);
+    text-decoration: none;
+    opacity: .75;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+.qgroup-edit:hover { opacity: 1; text-decoration: underline; }
+.qgroup-edit svg { width: 12px; height: 12px; }
+
+/* Το στοιχείο που φωτίζεται όταν φτάνει ο σύνδεσμος στον προορισμό.
+   Χωρίς αυτό ο χρήστης προσγειώνεται σε μια οθόνη με 30 πεδία και δεν
+   ξέρει ποιο ήταν το ζητούμενο. */
+.deeplink-flash {
+    animation: deeplinkFlash 2.2s ease-out;
+    border-radius: 8px;
+}
+
+@keyframes deeplinkFlash {
+    0%, 55% { background: rgba(179, 38, 30, .10); box-shadow: 0 0 0 4px rgba(179, 38, 30, .10); }
+    100%    { background: transparent; box-shadow: 0 0 0 4px rgba(179, 38, 30, 0); }
+}
+
+/* Όποιος έχει δηλώσει «λιγότερη κίνηση» δεν θέλει αναλαμπές. */
+@media (prefers-reduced-motion: reduce) {
+    .deeplink-flash { animation: none; outline: 2px solid rgba(179, 38, 30, .5); }
+}

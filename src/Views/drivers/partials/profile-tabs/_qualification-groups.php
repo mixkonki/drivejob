@@ -53,6 +53,15 @@ $icon = static function (string $code): string {
                     <strong><?php echo htmlspecialchars($group['meta']['value'], ENT_QUOTES, 'UTF-8'); ?></strong>
                 </span>
             <?php endif; ?>
+            <?php /* Σύνδεσμος που πάει ΑΚΡΙΒΩΣ στην καρτέλα αυτής της ομάδας
+               (31/08). Πριν, ο οδηγός που έβλεπε «δεν διαθέτει» έπρεπε να
+               θυμηθεί σε ποια από τις επτά καρτέλες ζει το πεδίο. */ ?>
+            <?php if (!empty($group['edit'])) : ?>
+                <a class="qgroup-edit" href="<?php echo BASE_URL; ?>drivers/edit-profile#<?php echo htmlspecialchars($group['edit'], ENT_QUOTES, 'UTF-8'); ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+                    Επεξεργασία
+                </a>
+            <?php endif; ?>
         </header>
 
         <div class="qgroup-body">

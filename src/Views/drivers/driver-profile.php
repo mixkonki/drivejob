@@ -25,6 +25,11 @@ include ROOT_DIR . '/src/Views/partials/header.php';
     const BASE_URL = '<?php echo BASE_URL; ?>';
 </script>
 <?= \Drivejob\Helpers\Asset::js('js/driver-profile.js', false) ?>
+<?php /* Deep links: το #skills-tab στη διεύθυνση ανοίγει την καρτέλα
+   «Προσόντα», το #driving-licenses~pei_c_number ανοίγει την καρτέλα ΚΑΙ
+   φωτίζει το πεδίο. Πριν, το hash δεν σήμαινε τίποτα: οι καρτέλες είναι
+   JavaScript και η σελίδα άνοιγε πάντα στην πρώτη. (31/08) */ ?>
+<?= \Drivejob\Helpers\Asset::js('js/tab-deeplink.js', true) ?>
 
 
 <main>

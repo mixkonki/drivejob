@@ -468,7 +468,14 @@ class DriverCvService
             ];
         }
 
-        return ['key' => 'license', 'title' => 'Άδεια Οδήγησης', 'items' => $items];
+        return [
+            'key' => 'license',
+            'title' => 'Άδεια Οδήγησης',
+            // Πού επεξεργάζεται αυτή η ομάδα: ο σύνδεσμος ανοίγει την
+            // ακριβή καρτέλα της φόρμας (tab-deeplink.js).
+            'edit' => 'driving-licenses',
+            'items' => $items,
+        ];
     }
 
     // ── Ομάδα 2: Πιστοποιητικά & ειδικές άδειες ────────────────────────
@@ -537,7 +544,15 @@ class DriverCvService
             ];
         }
 
-        return ['key' => 'certs', 'title' => 'Πιστοποιητικά & Ειδικές Άδειες', 'items' => $items];
+        // Τα ADR/ταχογράφος έχουν δική τους καρτέλα, οι ειδικές άδειες
+        // άλλη — στέλνουμε στις ειδικές άδειες, που είναι και οι
+        // περισσότερες εγγραφές.
+        return [
+            'key' => 'certs',
+            'title' => 'Πιστοποιητικά & Ειδικές Άδειες',
+            'edit' => 'special-licenses',
+            'items' => $items,
+        ];
     }
 
     // ── Ομάδα 3: Άδεια χειριστή μηχανημάτων έργου ──────────────────────
@@ -612,6 +627,7 @@ class DriverCvService
         return [
             'key' => 'operator',
             'title' => 'Άδεια Χειριστή Μηχανημάτων Έργου',
+            'edit' => 'operator-licenses',
             'meta' => $registry ? ['key' => 'Αριθμός μητρώου', 'value' => (string) $registry] : null,
             'items' => $items,
         ];

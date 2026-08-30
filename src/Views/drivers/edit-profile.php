@@ -41,6 +41,11 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 <?= \Drivejob\Helpers\Asset::js('js/country-phone-codes.js', false) ?>
 <?= \Drivejob\Helpers\Asset::js('js/vehicle-experience.js', false) ?>
 <?= \Drivejob\Helpers\Asset::js('js/driver-languages.js', true) ?>
+<?php /* Deep links: το #skills-tab στη διεύθυνση ανοίγει την καρτέλα
+   «Προσόντα», το #driving-licenses~pei_c_number ανοίγει την καρτέλα ΚΑΙ
+   φωτίζει το πεδίο. Πριν, το hash δεν σήμαινε τίποτα: οι καρτέλες είναι
+   JavaScript και η σελίδα άνοιγε πάντα στην πρώτη. (31/08) */ ?>
+<?= \Drivejob\Helpers\Asset::js('js/tab-deeplink.js', true) ?>
 <?php /* Το παλιό inline state των υποειδικοτήτων (window.selectedSubSpecialities
    κλπ) αφαιρέθηκε 25/08: το v2 των αδειών χειριστή δουλεύει με απλά
    πεδία φόρμας op_lic[N][...] — δες operator-licenses.php/.js */ ?>

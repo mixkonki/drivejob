@@ -31,6 +31,11 @@ $skills = $cv['skills'] ?? ['groups' => [], 'count' => 0];
         <?php if (!empty($langs)) : ?>
             <span class="qgroup-meta"><strong><?php echo count($langs); ?></strong></span>
         <?php endif; ?>
+            <?php /* Deep link: πάει στην ακριβή καρτέλα/σελίδα επεξεργασίας. */ ?>
+            <a class="qgroup-edit" href="<?php echo BASE_URL; ?>drivers/edit-profile#skills-tab~dj-languages">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+                Επεξεργασία
+            </a>
     </header>
     <div class="qgroup-body">
         <?php if (empty($langs)) : ?>
@@ -65,6 +70,11 @@ $skills = $cv['skills'] ?? ['groups' => [], 'count' => 0];
         <?php if ($skills['count'] > 0) : ?>
             <span class="qgroup-meta"><strong><?php echo (int) $skills['count']; ?></strong></span>
         <?php endif; ?>
+            <?php /* Deep link: πάει στην ακριβή καρτέλα/σελίδα επεξεργασίας. */ ?>
+            <a class="qgroup-edit" href="<?php echo BASE_URL; ?>drivers/edit-profile#skills-tab">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+                Επεξεργασία
+            </a>
     </header>
     <div class="qgroup-body">
         <?php if (empty($skills['groups'])) : ?>

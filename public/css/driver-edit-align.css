@@ -995,3 +995,20 @@ main .container > h1 {
     .wr-map { height: 180px; }
     .wr-coverage { line-height: 2; }
 }
+
+
+/* Deep link flash — ο προορισμός του συνδέσμου φωτίζεται ώστε να πέσει
+   το μάτι μέσα σε οθόνη με δεκάδες πεδία. (31/08) */
+.deeplink-flash {
+    animation: deeplinkFlash 2.2s ease-out;
+    border-radius: 8px;
+}
+
+@keyframes deeplinkFlash {
+    0%, 55% { background: rgba(179, 38, 30, .10); box-shadow: 0 0 0 5px rgba(179, 38, 30, .10); }
+    100%    { background: transparent; box-shadow: 0 0 0 5px rgba(179, 38, 30, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .deeplink-flash { animation: none; outline: 2px solid rgba(179, 38, 30, .5); }
+}
