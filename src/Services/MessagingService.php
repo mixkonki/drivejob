@@ -23,12 +23,23 @@ class MessagingService
         try {
             $this->pdo->beginTransaction();
 
-            // Create conversation
+            /*
+             * ΔΙΟΡΘΩΣΗ 01/09/2026: το INSERT αγνοούσε τις στήλες
+             * participant1_id/participant2_id (NOT NULL χωρίς default) και
+             * σκοτωνόταν με 1364 — δηλαδή η έναρξη συνομιλίας ΔΕΝ ΕΙΧΕ
+             * ΔΟΥΛΕΨΕΙ ΠΟΤΕ. Πιάστηκε στο e2e του κουμπιού «Μήνυμα στον
+             * οδηγό» (Φάση Α). Ο πίνακας κρατά και τα δύο ζεύγη στηλών
+             * (γενικά participants + ειδικά company/driver) — γεμίζουμε
+             * και τα δύο ώστε κάθε παλιός αναγνώστης να βρίσκει ό,τι
+             * περιμένει.
+             */
             $stmt = $this->pdo->prepare("
-                INSERT INTO conversations (company_id, driver_id, job_id, subject, last_message_at)
-                VALUES (?, ?, ?, ?, NOW())
+                INSERT INTO conversations
+                    (participant1_id, participant1_type, participant2_id, participant2_type,
+                     company_id, driver_id, job_id, subject, last_message_at)
+                VALUES (?, 'company', ?, 'driver', ?, ?, ?, ?, NOW())
             ");
-            $stmt->execute([$companyId, $driverId, $jobId, $subject]);
+            $stmt->execute([$companyId, $driverId, $companyId, $driverId, $jobId, $subject]);
             $conversationId = $this->pdo->lastInsertId();
 
             // Add initial message (without starting new transaction)
@@ -77,15 +88,30 @@ class MessagingService
      */
     private function sendMessageInternal($conversationId, $senderType, $senderId, $message, $attachments = null)
     {
+        /*
+         * ΔΙΟΡΘΩΣΗ 01/09/2026: το receiver_id είναι NOT NULL και το INSERT
+         * το αγνοούσε (ίδιο πρόβλημα με το startConversation — η αποστολή
+         * μηνύματος σε νέα συνομιλία δεν είχε δουλέψει ποτέ). Ο παραλήπτης
+         * είναι «ο άλλος» της συνομιλίας — διαβάζεται από τη συνομιλία,
+         * όχι από παραμέτρους, ώστε να μην μπορεί να αποκλίνει.
+         */
+        $conv = $this->pdo->prepare('SELECT company_id, driver_id FROM conversations WHERE id = ?');
+        $conv->execute([$conversationId]);
+        $pair = $conv->fetch(PDO::FETCH_ASSOC) ?: ['company_id' => 0, 'driver_id' => 0];
+        $receiverId = $senderType === 'company' ? (int) $pair['driver_id'] : (int) $pair['company_id'];
+        $receiverType = $senderType === 'company' ? 'driver' : 'company';
+
         // Insert message
         $stmt = $this->pdo->prepare("
-            INSERT INTO messages (conversation_id, sender_type, sender_id, message, attachments)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO messages (conversation_id, sender_type, sender_id, receiver_id, receiver_type, message, attachments)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $conversationId,
             $senderType,
             $senderId,
+            $receiverId,
+            $receiverType,
             $message,
             $attachments ? json_encode($attachments) : null
         ]);
@@ -248,9 +274,15 @@ class MessagingService
      */
     public function createNotification($userType, $userId, $type, $title, $message, $data = null)
     {
+        /*
+         * ΔΙΟΡΘΩΣΗ 01/09/2026: ο πίνακας απαιτεί method + sent_at
+         * (NOT NULL, χωρίς default). Τρίτο κατά σειρά INSERT της ίδιας
+         * υπηρεσίας γραμμένο για σχήμα που δεν υπάρχει — ολόκληρη η
+         * αλυσίδα «νέα συνομιλία» δεν είχε εκτελεστεί ποτέ ως το τέλος.
+         */
         $stmt = $this->pdo->prepare("
-            INSERT INTO notifications (user_type, user_id, type, title, message, data)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO notifications (user_type, user_id, type, title, message, data, method, sent_at)
+            VALUES (?, ?, ?, ?, ?, ?, 'app', NOW())
         ");
         $stmt->execute([
             $userType,

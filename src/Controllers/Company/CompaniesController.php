@@ -810,4 +810,70 @@ class CompaniesController extends BaseUserController
 
         return $data;
     }
+
+    /**
+     * POST /companies/message-driver — άνοιγμα συνομιλίας από το προφίλ
+     * υποψηφίου. (01/09/2026 — Φάση Α)
+     *
+     * Οι συνομιλίες δένονται με αγγελία (conversations.job_id), οπότε το
+     * πλαίσιο είναι η ΠΙΟ ΠΡΟΣΦΑΤΗ αίτηση του οδηγού προς την εταιρεία —
+     * αυτή που την έφερε στο προφίλ του. Αν υπάρχει ήδη συνομιλία για το
+     * ζευγάρι, συνεχίζεται· δεν ανοίγουμε δεύτερο νήμα για το ίδιο θέμα.
+     */
+    public function messageDriver()
+    {
+        \Drivejob\Core\AuthMiddleware::hasRole('company');
+        $companyId = (int) \Drivejob\Core\Session::get('user_id');
+
+        if (!\Drivejob\Core\CSRF::validateToken($_POST['csrf_token'] ?? '')) {
+            \Drivejob\Core\Session::set('error_message', 'Η φόρμα έληξε. Δοκιμάστε ξανά.');
+            header('Location: ' . BASE_URL . 'companies/profile');
+            exit;
+        }
+
+        $driverId = (int) ($_POST['driver_id'] ?? 0);
+        $pdo = $this->container->get('pdo');
+
+        // Το πλαίσιο: η τελευταία αίτηση του οδηγού σε αγγελία της εταιρείας.
+        $stmt = $pdo->prepare(
+            'SELECT ja.job_listing_id, jl.title
+             FROM job_applications ja
+             JOIN job_listings jl ON jl.id = ja.job_listing_id
+             WHERE ja.driver_id = ? AND jl.company_id = ?
+             ORDER BY ja.created_at DESC LIMIT 1'
+        );
+        $stmt->execute([$driverId, $companyId]);
+        $app = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$app) {
+            // Χωρίς αίτηση δεν υπάρχει κανάλι: ίδιος κανόνας με την ορατότητα
+            // προφίλ — η επικοινωνία ξεκινά από τον οδηγό, με την αίτησή του.
+            \Drivejob\Core\Session::set('error_message', 'Ο οδηγός δεν έχει αίτηση σε αγγελία σας.');
+            header('Location: ' . BASE_URL . 'companies/profile');
+            exit;
+        }
+
+        // Υπάρχουσα συνομιλία για το ζευγάρι και την αγγελία;
+        $existing = $pdo->prepare(
+            'SELECT id FROM conversations
+             WHERE company_id = ? AND driver_id = ? AND job_id = ?
+             ORDER BY id DESC LIMIT 1'
+        );
+        $existing->execute([$companyId, $driverId, (int) $app['job_listing_id']]);
+        $conversationId = $existing->fetchColumn();
+
+        if (!$conversationId) {
+            $svc = new \Drivejob\Services\MessagingService();
+            $conversationId = $svc->startConversation(
+                $companyId,
+                $driverId,
+                (int) $app['job_listing_id'],
+                'Σχετικά με την αίτησή σας: ' . $app['title'],
+                'Καλησπέρα! Είδαμε την αίτησή σας για τη θέση «' . $app['title'] . '» και θα θέλαμε να συζητήσουμε.'
+            );
+        }
+
+        header('Location: ' . BASE_URL . 'companies/conversation?id=' . (int) $conversationId);
+        exit;
+    }
 }

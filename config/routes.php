@@ -226,6 +226,8 @@ $router->group(['prefix' => 'companies'], function ($router) {
     $router->get('/search', [CompaniesController::class, 'search'])->name('companies.search');
     $router->post('/add-review/{id}', [CompaniesController::class, 'addReview'])->name('companies.add-review');
 
+    // Άνοιγμα συνομιλίας από το προφίλ υποψηφίου (Φάση Α, 01/09)
+    $router->post('/message-driver', [CompaniesController::class, 'messageDriver'])->name('companies.message-driver');
     $router->get('/messages', [\Drivejob\Controllers\MessagesController::class, 'companyMessages'])->name('companies.messages');
     $router->get('/conversation', [\Drivejob\Controllers\MessagesController::class, 'companyConversation'])->name('companies.conversation');
     $router->post('/conversation', [\Drivejob\Controllers\MessagesController::class, 'companyConversation']);

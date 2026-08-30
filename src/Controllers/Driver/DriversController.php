@@ -1325,14 +1325,42 @@ class DriversController extends BaseUserController
                   $driverData['house_number'], $driverData['latitude'], $driverData['longitude']);
         }
 
-        $driverSkills = $driverProfile['skills'] ?? [];
-        $driverLicenses = $driverProfile['licenses'] ?? [];
-        $driverLicenseTypes = array_column($driverLicenses, 'license_type');
-        $driverReviews = $driverProfile['reviews'] ?? [];
-        $averageRating = $driverProfile['average_rating'] ?? 0;
+        /*
+         * ΦΑΣΗ Α (01/09/2026): η δημόσια όψη είναι πλέον ΤΟ ΒΙΟΓΡΑΦΙΚΟ —
+         * χτισμένο από τον DriverCvService με includePrivate=false και τις
+         * επιλογές cv_show_* του οδηγού. Η εταιρεία βλέπει ακριβώς ό,τι
+         * βλέπει ο οδηγός στην προεπισκόπηση του βιογραφικού του, γιατί
+         * είναι το ίδιο partial (_cv-paper.php) — καμία δεύτερη όψη που
+         * θα ξεχνούσε έναν διακόπτη.
+         */
+        $cvService = new \Drivejob\Services\Driver\DriverCvService();
+        $cvOptions = \Drivejob\Services\Driver\DriverCvService::optionsFromProfile($driverData);
+        $cv = $cvService->build($driverData, false, $cvOptions);
+        $cvSummarySaved = trim((string) ($driverData['cv_summary'] ?? ''));
+        $cvSummaryAuto = $cvService->autoSummary($driverData);
+
+        // Η αίτηση που έφερε την εταιρεία εδώ — για την μπάρα ενεργειών.
+        $viewerApplications = [];
+        if (Session::get('user_role') === 'company') {
+            try {
+                $appsStmt = $this->container->get('pdo')->prepare(
+                    'SELECT ja.id, ja.job_listing_id, ja.status, ja.created_at, jl.title
+                     FROM job_applications ja
+                     JOIN job_listings jl ON jl.id = ja.job_listing_id
+                     WHERE ja.driver_id = ? AND jl.company_id = ?
+                     ORDER BY ja.created_at DESC LIMIT 5'
+                );
+                $appsStmt->execute([(int) $id, (int) Session::get('user_id')]);
+                $viewerApplications = $appsStmt->fetchAll(\PDO::FETCH_ASSOC);
+            } catch (\Throwable $e) {
+                $viewerApplications = [];
+            }
+        }
 
         // Φόρτωση του view
+        include ROOT_DIR . '/src/Views/partials/header.php';
         include ROOT_DIR . '/src/Views/drivers/public-profile.php';
+        include ROOT_DIR . '/src/Views/partials/footer.php';
     }
 
     /**
