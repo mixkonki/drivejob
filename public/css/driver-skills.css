@@ -372,33 +372,42 @@
    `.skills-category` / `.skill-tag` / `.personal-details-*` παραμένουν
    παραπάνω γιατί τους χρησιμοποιεί ακόμη η φόρμα επεξεργασίας. */
 
-/* ── Προσωπικά στοιχεία: μία σειρά που αναδιπλώνεται ─────────────────
+/* ── Πίνακας ετικέτα → τιμή ───────────────────────────────────────────
+   Χρησιμοποιείται ΚΑΙ από τα Προσωπικά Στοιχεία ΚΑΙ από τις Γλώσσες:
+   οι δύο κάρτες στέκονται δίπλα-δίπλα και οι γραμμές τους έχουν το
+   ίδιο ύψος, οπότε το μάτι τις διαβάζει σαν ένα πράγμα.
+
    Πριν: πέντε κάρτες με εικονίδιο 40px, ~400px ύψος για πέντε λέξεις.
-   Τώρα: ~70px. Η ίδια πληροφορία διαβάζεται με μια ματιά. */
-.pd-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
-    gap: .55rem .9rem;
-    padding: .45rem 0 .3rem;
+   Ενδιάμεσα: μία οριζόντια σειρά πέντε στηλών — συμπαγές, αλλά πέντε
+   ετικέτες απλωμένες σε 1400px δεν διαβάζονται ως πίνακας. */
+.pd-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .15rem 0 .1rem;
 }
 
-.pd-item {
-    display: flex;
-    flex-direction: column;
-    gap: .1rem;
-    min-width: 0;
+.pd-table th,
+.pd-table td {
+    padding: .42rem .2rem;
+    text-align: left;
+    vertical-align: baseline;
+    border-top: 1px solid #f4f5f7;
 }
 
-.pd-key {
-    font-size: .7rem;
+.pd-table tr:first-child th,
+.pd-table tr:first-child td { border-top: 0; }
+
+.pd-table th {
+    width: 42%;
+    font-size: .78rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: #94a3b8;
+    color: #6b7280;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
-.pd-val {
-    font-size: .88rem;
+.pd-table td {
+    font-size: .86rem;
     font-weight: 600;
     color: #1f2937;
     overflow-wrap: anywhere;
@@ -408,6 +417,14 @@
     font-weight: 500;
     font-style: italic;
     color: #b0b7c3;
+}
+
+/* Το επίπεδο γλώσσας κρατά το χρωματιστό «σήμα» του (.native/.fluent/…
+   ορίζονται παραπάνω) αλλά μέσα σε κελί πίνακα. */
+.pd-table .language-level {
+    display: inline-block;
+    font-size: .72rem;
+    white-space: nowrap;
 }
 
 /* ── Δεξιότητες: τέσσερις ομάδες, ΙΔΙΑ διάταξη σε όλες ───────────────
@@ -530,27 +547,6 @@
 }
 
 /* ── Οι λίστες μέσα στις κάρτες: πιο πυκνές απ' ό,τι ήταν αυτόνομες ── */
-/* auto-FILL και όχι auto-fit: με fit, τρεις γλώσσες μοιράζονταν όλο το
-   πλάτος και το «Άριστα» έφευγε 400px μακριά από το «Αγγλικά». Το fill
-   κρατά τις στήλες στο φυσικό τους πλάτος και αφήνει κενό δεξιά. */
-.qgroup .languages-list {
-    grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
-    gap: .5rem;
-    padding: .4rem 0 .3rem;
-}
-
-.qgroup .language-item {
-    background: #f8fafc;
-    border: 1px solid #eef0f2;
-    padding: .4rem .6rem;
-    border-radius: 8px;
-    gap: .5rem;
-    min-width: 0;
-}
-
-.qgroup .language-name { font-size: .85rem; overflow-wrap: anywhere; }
-.qgroup .language-level { font-size: .7rem; white-space: nowrap; }
-
 .qgroup .vehicle-experience-list,
 .qgroup .certifications-list { gap: .5rem; padding: .4rem 0 .3rem; }
 

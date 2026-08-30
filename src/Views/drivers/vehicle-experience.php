@@ -193,8 +193,12 @@ $fmtPeriod = static function (array $row): string {
         </div>
     </div>
 
+    <?php /* Πίσω ΕΚΕΙ ΑΠ' ΟΠΟΥ ΗΡΘΕ (31/08): ο σύνδεσμος ήταν καρφωμένος
+       στην επεξεργασία προφίλ, οπότε όποιος ερχόταν από το προφίλ ή το
+       βιογραφικό έχανε και τη σελίδα του και την καρτέλα του — και η
+       ετικέτα έλεγε «στο προφίλ» ενώ πήγαινε αλλού. */ ?>
     <div class="vxp-back">
-        <a href="<?= BASE_URL ?>drivers/edit-profile" class="btn-secondary" style="text-decoration:none;">← Επιστροφή στο προφίλ</a>
+        <a href="<?= \Drivejob\Helpers\ReturnTo::url() ?>" class="btn-secondary" style="text-decoration:none;">← <?= htmlspecialchars(\Drivejob\Helpers\ReturnTo::label(), ENT_QUOTES, 'UTF-8') ?></a>
     </div>
 </main>
 

@@ -177,8 +177,9 @@ $today = date('Y-m-d');
         </div>
     </div>
 
+    <?php /* Πίσω ΕΚΕΙ ΑΠ' ΟΠΟΥ ΗΡΘΕ — βλ. ReturnTo. (31/08) */ ?>
     <div style="margin-top:1.2rem;">
-        <a href="<?= BASE_URL ?>drivers/edit-profile" class="btn-secondary" style="text-decoration:none;">← Επιστροφή στο προφίλ</a>
+        <a href="<?= \Drivejob\Helpers\ReturnTo::url() ?>" class="btn-secondary" style="text-decoration:none;">← <?= htmlspecialchars(\Drivejob\Helpers\ReturnTo::label(), ENT_QUOTES, 'UTF-8') ?></a>
     </div>
 </main>
 

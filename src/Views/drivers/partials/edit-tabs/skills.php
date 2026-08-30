@@ -253,7 +253,7 @@
                 <?php include ROOT_DIR . '/src/Views/drivers/vehicle-experience-summary.php'; ?>
 
                 <div class="vehicle-experience-link" style="margin-top: 15px;">
-                    <a href="<?php echo BASE_URL; ?>drivers/vehicle-experience" class="btn-primary">Διαχείριση Προϋπηρεσίας σε Οχήματα</a>
+                    <a href="<?php echo BASE_URL; ?>drivers/vehicle-experience?from=edit" class="btn-primary">Διαχείριση Προϋπηρεσίας σε Οχήματα</a>
                 </div>
             </div>
 

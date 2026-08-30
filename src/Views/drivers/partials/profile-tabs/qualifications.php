@@ -18,10 +18,14 @@
  *    διαβάζουν το βιογραφικό και το PDF. −170 γραμμές.
  *
  * 3. ΔΙΑΤΑΞΗ (οδηγία 31/08):
- *      Προσωπικά Στοιχεία  → συμπαγή, μία σειρά που αναδιπλώνεται
- *      Γλωσσικές Ικανότητες → αμέσως από κάτω
- *      Δεξιότητες Οδηγού    → τέσσερις ομάδες, ΙΔΙΑ διάταξη σε όλες
- *      Προϋπηρεσία | Πιστοποιήσεις → δύο στήλες στην ίδια γραμμή
+ *      Προσωπικά Στοιχεία | Γλώσσες → πίνακες δύο στηλών, δίπλα-δίπλα
+ *      Δεξιότητες Οδηγού            → τέσσερις ομάδες, ΙΔΙΑ διάταξη
+ *      Προϋπηρεσία | Πιστοποιήσεις  → δύο στήλες στην ίδια γραμμή
+ *
+ *    Πρώτη απόπειρα είχε τα προσωπικά στοιχεία σε μία οριζόντια σειρά
+ *    πέντε στηλών σε όλο το πλάτος. Ήταν συμπαγές αλλά δεν διαβαζόταν:
+ *    πέντε ετικέτες-κεφαλαία απλωμένες σε 1400px δεν είναι πίνακας,
+ *    είναι μπάρα. Ο πίνακας ετικέτα → τιμή διαβάζεται κάθετα.
  *
  *    Η ασυνέπεια «οι Οδηγικές σε δύο στήλες, οι άλλες σε μία» ερχόταν
  *    από τα `inline-block` ροζέ: όποιες ετικέτες ήταν κοντές χωρούσαν
@@ -133,34 +137,11 @@ foreach (DriverSkills::LABELS as $code => $_) {
             <!-- Καρτέλα Προσόντων & Πιστοποιήσεων -->
             <div class="tab-pane" id="qualifications">
 
-                <?php /* ═══ ΠΡΟΣΩΠΙΚΑ ΣΤΟΙΧΕΙΑ ══════════════════════════
-                   Ήταν πέντε κάρτες με εικονίδιο 40px η καθεμία, ~400px
-                   ύψος για πέντε λέξεις. Τώρα μία σειρά που αναδιπλώνεται
-                   μόνη της: ίδια πληροφορία, ~70px. */ ?>
-                <section class="qgroup qgroup--pers">
-                    <header class="qgroup-head">
-                        <h3>Προσωπικά Στοιχεία</h3>
-                        <?php echo $editLink($editUrl . '#personal-info~birth_date'); ?>
-                    </header>
-                    <div class="qgroup-body">
-                        <div class="pd-grid">
-                            <?php foreach ($personal as [$label, $value]) : ?>
-                                <div class="pd-item">
-                                    <span class="pd-key"><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></span>
-                                    <?php if ($value !== null && $value !== '') : ?>
-                                        <span class="pd-val"><?php echo htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); ?></span>
-                                    <?php else : ?>
-                                        <span class="pd-val pd-val--empty">Δεν έχει καταχωρηθεί</span>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </section>
-
-                <?php /* ═══ ΓΛΩΣΣΙΚΕΣ ΙΚΑΝΟΤΗΤΕΣ ════════════════════════
-                   Μετακόμισαν εδώ (31/08): ήταν δίπλα στην Προϋπηρεσία,
-                   που ζητήθηκε να πάει με τις Πιστοποιήσεις. */ ?>
+                <?php /* ═══ ΠΡΟΣΩΠΙΚΑ ΣΤΟΙΧΕΙΑ | ΓΛΩΣΣΕΣ ════════════════
+                   Δύο στήλες στην ίδια γραμμή (οδηγία 31/08). Τα προσωπικά
+                   στοιχεία ως πίνακας ετικέτα → τιμή: πέντε γραμμές που
+                   διαβάζονται κάθετα, αντί για πέντε στήλες απλωμένες σε
+                   όλο το πλάτος. Οι γλώσσες γεμίζουν τη δεξιά στήλη. */ ?>
                 <?php
                 $languageLevelLabels = [
                     'native' => 'Μητρική Γλώσσα',
@@ -169,31 +150,65 @@ foreach (DriverSkills::LABELS as $code => $_) {
                     'basic' => 'Βασικά',
                 ];
                 ?>
-                <section class="qgroup qgroup--lang">
-                    <header class="qgroup-head">
-                        <h3>Γλωσσικές Ικανότητες</h3>
-                        <?php if (!empty($driverLanguages)) : ?>
-                            <span class="qgroup-meta"><strong><?php echo count($driverLanguages); ?></strong></span>
-                        <?php endif; ?>
-                        <?php echo $editLink($editUrl . '#skills-tab~dj-languages'); ?>
-                    </header>
-                    <div class="qgroup-body">
-                        <?php if (empty($driverLanguages)) : ?>
-                            <p class="qrow-empty">Δεν έχουν καταχωρηθεί γλώσσες.</p>
-                        <?php else : ?>
-                            <div class="languages-list">
-                                <?php foreach ($driverLanguages as $lang) : ?>
-                                    <div class="language-item">
-                                        <div class="language-name"><?php echo htmlspecialchars($lang['language_name'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                        <div class="language-level <?php echo htmlspecialchars($lang['level'], ENT_QUOTES, 'UTF-8'); ?>">
-                                            <?php echo htmlspecialchars($languageLevelLabels[$lang['level']] ?? $lang['level'], ENT_QUOTES, 'UTF-8'); ?>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </section>
+                <div class="profile-two-col">
+
+                    <section class="qgroup qgroup--pers">
+                        <header class="qgroup-head">
+                            <h3>Προσωπικά Στοιχεία</h3>
+                            <?php echo $editLink($editUrl . '#personal-info~birth_date'); ?>
+                        </header>
+                        <div class="qgroup-body">
+                            <table class="pd-table">
+                                <tbody>
+                                    <?php foreach ($personal as [$label, $value]) : ?>
+                                        <tr>
+                                            <th scope="row"><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></th>
+                                            <?php if ($value !== null && $value !== '') : ?>
+                                                <td><?php echo htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <?php else : ?>
+                                                <td class="pd-val--empty">Δεν έχει καταχωρηθεί</td>
+                                            <?php endif; ?>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="qgroup qgroup--lang">
+                        <header class="qgroup-head">
+                            <h3>Γλωσσικές Ικανότητες</h3>
+                            <?php if (!empty($driverLanguages)) : ?>
+                                <span class="qgroup-meta"><strong><?php echo count($driverLanguages); ?></strong></span>
+                            <?php endif; ?>
+                            <?php echo $editLink($editUrl . '#skills-tab~dj-languages'); ?>
+                        </header>
+                        <div class="qgroup-body">
+                            <?php if (empty($driverLanguages)) : ?>
+                                <p class="qrow-empty">Δεν έχουν καταχωρηθεί γλώσσες.</p>
+                            <?php else : ?>
+                                <?php /* Ίδιος πίνακας δύο στηλών με τα προσωπικά στοιχεία:
+                                   οι δύο κάρτες στέκονται δίπλα-δίπλα και οι γραμμές τους
+                                   ευθυγραμμίζονται οπτικά. */ ?>
+                                <table class="pd-table">
+                                    <tbody>
+                                        <?php foreach ($driverLanguages as $lang) : ?>
+                                            <tr>
+                                                <th scope="row"><?php echo htmlspecialchars($lang['language_name'], ENT_QUOTES, 'UTF-8'); ?></th>
+                                                <td>
+                                                    <span class="language-level <?php echo htmlspecialchars($lang['level'], ENT_QUOTES, 'UTF-8'); ?>">
+                                                        <?php echo htmlspecialchars($languageLevelLabels[$lang['level']] ?? $lang['level'], ENT_QUOTES, 'UTF-8'); ?>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            <?php endif; ?>
+                        </div>
+                    </section>
+
+                </div><!-- /.profile-two-col -->
 
                 <?php /* ═══ ΔΕΞΙΟΤΗΤΕΣ ΟΔΗΓΟΥ ═══════════════════════════
                    Οι ομάδες και τα ονόματα έρχονται από τον DriverSkills:
@@ -263,7 +278,7 @@ foreach (DriverSkills::LABELS as $code => $_) {
                             <?php if (!empty($driverVehicleExperience)) : ?>
                                 <span class="qgroup-meta"><strong><?php echo count($driverVehicleExperience); ?></strong></span>
                             <?php endif; ?>
-                            <?php echo $editLink(BASE_URL . 'drivers/vehicle-experience', 'Διαχείριση'); ?>
+                            <?php echo $editLink(BASE_URL . 'drivers/vehicle-experience?from=profile', 'Διαχείριση'); ?>
                         </header>
                         <div class="qgroup-body">
                             <?php if (empty($driverVehicleExperience)) : ?>
@@ -329,7 +344,7 @@ foreach (DriverSkills::LABELS as $code => $_) {
                             <?php if (!empty($driverCertifications)) : ?>
                                 <span class="qgroup-meta"><strong><?php echo count($driverCertifications); ?></strong></span>
                             <?php endif; ?>
-                            <?php echo $editLink(BASE_URL . 'drivers/certifications', 'Διαχείριση'); ?>
+                            <?php echo $editLink(BASE_URL . 'drivers/certifications?from=profile', 'Διαχείριση'); ?>
                         </header>
                         <div class="qgroup-body">
                             <?php if (empty($driverCertifications)) : ?>

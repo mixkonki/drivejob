@@ -131,16 +131,16 @@ $groups = $cv['qualifications'] ?? [];
                  */
                 $gaps = [];
                 if ($exp['count'] === 0) {
-                    $gaps[] = ['Προϋπηρεσία', 'drivers/vehicle-experience', 'Η ενότητα που κοιτάζει πρώτη ο εργοδότης.'];
+                    $gaps[] = ['Προϋπηρεσία', 'drivers/vehicle-experience?from=cv', 'Η ενότητα που κοιτάζει πρώτη ο εργοδότης.'];
                 }
                 if ($certs['count'] === 0) {
-                    $gaps[] = ['Σεμινάρια', 'drivers/certifications', ''];
+                    $gaps[] = ['Σεμινάρια', 'drivers/certifications?from=cv', ''];
                 }
                 if (empty($langs)) {
-                    $gaps[] = ['Γλώσσες', 'drivers/edit-profile', ''];
+                    $gaps[] = ['Γλώσσες', 'drivers/edit-profile#skills-tab~dj-languages', ''];
                 }
                 if (empty($skills['groups'])) {
-                    $gaps[] = ['Δεξιότητες', 'drivers/edit-profile', ''];
+                    $gaps[] = ['Δεξιότητες', 'drivers/edit-profile#skills-tab~dj-skills', ''];
                 }
                 ?>
                 <?php if ($gaps) : ?>
