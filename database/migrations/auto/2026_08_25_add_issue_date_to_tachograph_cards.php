@@ -6,11 +6,11 @@
  * η κάρτα οδηγού φέρει 4α έκδοση, 4β λήξη, 5α αρ. διπλώματος,
  * 5β αρ. κάρτας. Idempotent: τρέχει όσες φορές θες.
  *
- * Τοπικά:  php database/migrations/add_issue_date_to_tachograph_cards.php
- * Server:  ssh drivejob 'cd ~/drivejob && /usr/php83/usr/bin/php database/migrations/add_issue_date_to_tachograph_cards.php'
+ * Τοπικά:  php database/migrate.php
+ * Server:  τρέχει αυτόματα στο deploy (database/migrate.php)
  */
 
-require_once __DIR__ . '/../../src/bootstrap.php';
+require_once __DIR__ . '/../../../src/bootstrap.php';
 
 $pdo = require ROOT_DIR . '/config/database.php';
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

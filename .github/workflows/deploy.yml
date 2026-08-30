@@ -12,8 +12,10 @@
 # Απαιτεί ΕΝΑ secret στο GitHub: DEPLOY_SSH_KEY (ιδιωτικό κλειδί SSH
 # αποκλειστικά για deploy — οδηγίες στη συνομιλία / project doc).
 #
-# Οι migrations ΔΕΝ τρέχουν αυτόματα — παραμένουν συνειδητό, χειροκίνητο
-# βήμα στον server, όπως μέχρι τώρα.
+# Migrations (25/08/2026): μετά το reset τρέχει το database/migrate.php,
+# που εκτελεί ΜΟΝΟ τα νέα αρχεία του database/migrations/auto/ (μητρώο
+# schema_migrations, idempotent scripts). Αν κάποιο αποτύχει, το deploy
+# κοκκινίζει. Τα παλιά/βοηθητικά scripts του migrations/ μένουν χειροκίνητα.
 
 name: Deploy σε παραγωγή
 
@@ -49,7 +51,7 @@ jobs:
         # τη σύνδεση (rate limiting) πριν την αυθεντικοποίηση.
         run: |
           for i in 1 2 3; do
-            if ssh -o ConnectTimeout=15 -i ~/.ssh/deploy_key drivejob.gr@ssh.gb.stackcp.com "cd ~/drivejob && git fetch origin main && git reset --hard ${{ github.sha }} && test \"\$(git rev-parse HEAD)\" = \"${{ github.sha }}\" && echo \"Παραγωγή στο commit: \$(git rev-parse --short HEAD)\""; then
+            if ssh -o ConnectTimeout=15 -i ~/.ssh/deploy_key drivejob.gr@ssh.gb.stackcp.com "cd ~/drivejob && git fetch origin main && git reset --hard ${{ github.sha }} && test \"\$(git rev-parse HEAD)\" = \"${{ github.sha }}\" && /usr/php83/usr/bin/php database/migrate.php && echo \"Παραγωγή στο commit: \$(git rev-parse --short HEAD)\""; then
               exit 0
             fi
             echo "Προσπάθεια $i απέτυχε — νέα προσπάθεια σε 20 δευτερόλεπτα..."
