@@ -94,8 +94,15 @@ $message = trim((string) ($application['message'] ?? ''));
                         </a>
                     </dd>
                     <?php if ($isCompany): ?>
-                        <dt>Email</dt><dd><?= htmlspecialchars($driver['email'] ?? '—') ?></dd>
-                        <dt>Τηλέφωνο</dt><dd><?= htmlspecialchars($driver['phone'] ?? '—') ?></dd>
+                        <?php
+                        // Πλήρη στοιχεία μόνο μετά την προεπιλογή (01/09) —
+                        // ίδιος κανόνας με προφίλ και λίστες αιτήσεων.
+                        $engaged = in_array((string) ($application['status'] ?? ''), ['shortlisted', 'hired'], true);
+                        $shownEmail = $engaged ? ($driver['email'] ?? '—') : \Drivejob\Services\Visibility::maskEmail($driver['email'] ?? null);
+                        $shownPhone = $engaged ? ($driver['phone'] ?? '—') : \Drivejob\Services\Visibility::maskPhone($driver['phone'] ?? null);
+                        ?>
+                        <dt>Email</dt><dd><?= htmlspecialchars($shownEmail ?: '—') ?></dd>
+                        <dt>Τηλέφωνο</dt><dd><?= htmlspecialchars($shownPhone ?: '—') ?></dd>
                     <?php endif; ?>
                     <dt>Πόλη</dt><dd><?= htmlspecialchars($driver['city'] ?? '—') ?></dd>
                     <?php if (isset($driver['experience_years']) && $driver['experience_years'] !== null): ?>

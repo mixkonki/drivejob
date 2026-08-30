@@ -43,6 +43,11 @@ $applications = $applications ?? [];
             <tbody>
             <?php foreach ($applications as $app):
                 $name = trim(($app['first_name'] ?? '') . ' ' . ($app['last_name'] ?? ''));
+                // Ίδιο μασκάρισμα με τη σελίδα ανά αγγελία (01/09):
+                // πλήρη στοιχεία μόνο μετά την προεπιλογή.
+                $engaged = in_array((string) ($app['status'] ?? ''), ['shortlisted', 'hired'], true);
+                $shownEmail = $engaged ? ($app['email'] ?? '') : \Drivejob\Services\Visibility::maskEmail($app['email'] ?? null);
+                $shownPhone = $engaged ? ($app['phone'] ?? '') : \Drivejob\Services\Visibility::maskPhone($app['phone'] ?? null);
             ?>
                 <tr>
                     <td data-label="Υποψήφιος">
@@ -62,11 +67,11 @@ $applications = $applications ?? [];
                         <?php endif; ?>
                     </td>
                     <td data-label="Επικοινωνία">
-                        <?php if (!empty($app['email'])): ?>
-                            <div><?= htmlspecialchars($app['email']) ?></div>
+                        <?php if (!empty($shownEmail)): ?>
+                            <div><?= htmlspecialchars($shownEmail) ?></div>
                         <?php endif; ?>
-                        <?php if (!empty($app['phone'])): ?>
-                            <div class="muted"><?= htmlspecialchars($app['phone']) ?></div>
+                        <?php if (!empty($shownPhone)): ?>
+                            <div class="muted"><?= htmlspecialchars($shownPhone) ?></div>
                         <?php endif; ?>
                     </td>
                     <td data-label="Υποβλήθηκε"><?= applicationDate($app['created_at'] ?? null) ?></td>

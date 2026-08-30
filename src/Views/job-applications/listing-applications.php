@@ -52,8 +52,21 @@ $listingId = (int) ($listing['id'] ?? 0);
             <tbody>
             <?php foreach ($applications as $app):
                 $name = trim(($app['first_name'] ?? '') . ' ' . ($app['last_name'] ?? ''));
-                $isPending = ($app['status'] ?? '') === 'pending';
+                $status = (string) ($app['status'] ?? '');
+                $isPending = in_array($status, ['pending', 'viewed'], true);
+                $isShortlisted = $status === 'shortlisted';
                 $message = trim((string) ($app['message'] ?? ''));
+
+                /*
+                 * ΜΑΣΚΑΡΙΣΜΑ (01/09): η στήλη έδειχνε email και τηλέφωνο
+                 * ΚΑΘΕ αιτούντος — δηλαδή μια απλή αίτηση χάριζε στην
+                 * εταιρεία τα πλήρη στοιχεία, παρακάμπτοντας το μοντέλο
+                 * «πλήρη στοιχεία μετά την προεπιλογή» που ήδη τηρεί το
+                 * προφίλ. Ίδιος κανόνας, ίδιες σταθερές (ENGAGED_STATUSES).
+                 */
+                $engaged = in_array($status, ['shortlisted', 'hired'], true);
+                $shownEmail = $engaged ? ($app['email'] ?? '') : \Drivejob\Services\Visibility::maskEmail($app['email'] ?? null);
+                $shownPhone = $engaged ? ($app['phone'] ?? '') : \Drivejob\Services\Visibility::maskPhone($app['phone'] ?? null);
             ?>
                 <tr>
                     <td data-label="Υποψήφιος">
@@ -65,11 +78,14 @@ $listingId = (int) ($listing['id'] ?? 0);
                         <?php endif; ?>
                     </td>
                     <td data-label="Επικοινωνία">
-                        <?php if (!empty($app['email'])): ?>
-                            <div><?= htmlspecialchars($app['email']) ?></div>
+                        <?php if (!empty($shownEmail)): ?>
+                            <div><?= htmlspecialchars($shownEmail) ?></div>
                         <?php endif; ?>
-                        <?php if (!empty($app['phone'])): ?>
-                            <div class="muted"><?= htmlspecialchars($app['phone']) ?></div>
+                        <?php if (!empty($shownPhone)): ?>
+                            <div class="muted"><?= htmlspecialchars($shownPhone) ?></div>
+                        <?php endif; ?>
+                        <?php if (!$engaged): ?>
+                            <div class="muted" style="font-size:.75rem;">πλήρη στοιχεία μετά την προεπιλογή</div>
                         <?php endif; ?>
                     </td>
                     <td data-label="Μήνυμα">
@@ -86,13 +102,27 @@ $listingId = (int) ($listing['id'] ?? 0);
                             <a class="app-btn app-btn-view"
                                href="<?= BASE_URL ?>job-applications/view/<?= (int) $app['id'] ?>">Προβολή</a>
 
+                            <?php /* Η ΠΡΟΕΠΙΛΟΓΗ είναι το ενδιάμεσο βήμα που έλειπε
+                               (01/09): το route υπήρχε, κουμπί όχι — η εταιρεία
+                               πήγαινε από «νέα» κατευθείαν σε «πρόσληψη». Η
+                               προεπιλογή είναι και το κλειδί της ιδιωτικότητας:
+                               ΑΥΤΗ ξεκλειδώνει τα πλήρη στοιχεία επικοινωνίας. */ ?>
                             <?php if ($isPending): ?>
                                 <form method="post"
-                                      action="<?= BASE_URL ?>job-applications/accept/<?= (int) $app['id'] ?>"
-                                      onsubmit="return confirm('Να γίνει αποδεκτή η αίτηση;');">
+                                      action="<?= BASE_URL ?>job-applications/shortlist/<?= (int) $app['id'] ?>">
                                     <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
-                                    <button type="submit" class="app-btn app-btn-ok">Αποδοχή</button>
+                                    <button type="submit" class="app-btn app-btn-ok">Προεπιλογή</button>
                                 </form>
+                            <?php endif; ?>
+                            <?php if ($isShortlisted): ?>
+                                <form method="post"
+                                      action="<?= BASE_URL ?>job-applications/accept/<?= (int) $app['id'] ?>"
+                                      onsubmit="return confirm('Να προσληφθεί ο οδηγός;');">
+                                    <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
+                                    <button type="submit" class="app-btn app-btn-ok">Πρόσληψη</button>
+                                </form>
+                            <?php endif; ?>
+                            <?php if ($isPending || $isShortlisted): ?>
                                 <form method="post"
                                       action="<?= BASE_URL ?>job-applications/reject/<?= (int) $app['id'] ?>"
                                       onsubmit="return confirm('Να απορριφθεί η αίτηση;');">
@@ -100,6 +130,11 @@ $listingId = (int) ($listing['id'] ?? 0);
                                     <button type="submit" class="app-btn app-btn-no">Απόρριψη</button>
                                 </form>
                             <?php endif; ?>
+                            <form method="post" action="<?= BASE_URL ?>companies/message-driver">
+                                <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
+                                <input type="hidden" name="driver_id" value="<?= (int) $app['driver_id'] ?>">
+                                <button type="submit" class="app-btn app-btn-view">Μήνυμα</button>
+                            </form>
                         </div>
                     </td>
                 </tr>
