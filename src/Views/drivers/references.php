@@ -40,9 +40,18 @@ $answered = array_filter($invites, static fn($i) => $i['rating'] !== null);
             </header>
             <div class="qgroup-body">
                 <form id="ref-form" class="refs-form" autocomplete="off">
+                    <?php /* Η σχέση ΠΡΩΤΗ: αλλάζει το νόημα των επόμενων
+                       πεδίων. Ο αυτοαπασχολούμενος (ταξί, δικό του φορτηγό)
+                       δεν έχει εργοδότη — ζητά σύσταση από ΠΕΛΑΤΗ. */ ?>
+                    <div class="refs-rehire refs-relation">
+                        <label><input type="radio" name="reviewer_relation" value="employer" checked> <span>Εργοδότης μου</span></label>
+                        <label><input type="radio" name="reviewer_relation" value="client" > <span>Πελάτης μου (αυτοαπασχόληση)</span></label>
+                        <label><input type="radio" name="reviewer_relation" value="supervisor"> <span>Προϊστάμενος / υπεύθυνος κίνησης</span></label>
+                    </div>
+
                     <div class="refs-grid">
                         <label>
-                            Ονοματεπώνυμο εργοδότη <i>*</i>
+                            Ονοματεπώνυμο <i>*</i>
                             <input type="text" name="reviewer_name" maxlength="120" required
                                    placeholder="π.χ. Γιώργος Παπαδόπουλος">
                         </label>

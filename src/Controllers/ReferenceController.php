@@ -105,6 +105,16 @@ class ReferenceController extends BaseController
 
         $name = trim((string) ($_POST['reviewer_name'] ?? ''));
         $company = trim((string) ($_POST['reviewer_company'] ?? ''));
+        /*
+         * Η ΣΧΕΣΗ (01/09): ο αυτοαπασχολούμενος δεν έχει εργοδότη —
+         * έχει ΠΕΛΑΤΕΣ. Η μεταφορική που του έδινε δρομολόγια πέντε
+         * χρόνια ξέρει για τη δουλειά του ό,τι θα ήξερε εργοδότης.
+         * Λευκή λίστα: ό,τι άλλο έρθει γίνεται employer.
+         */
+        $relation = (string) ($_POST['reviewer_relation'] ?? 'employer');
+        if (!in_array($relation, ['employer', 'client', 'supervisor'], true)) {
+            $relation = 'employer';
+        }
         $email = trim((string) ($_POST['reviewer_email'] ?? ''));
         $from = trim((string) ($_POST['employment_from'] ?? ''));
         $to = trim((string) ($_POST['employment_to'] ?? ''));
@@ -157,12 +167,12 @@ class ReferenceController extends BaseController
         $ins = $this->db->prepare(
             'INSERT INTO driver_reviews
                 (driver_id, rating, reviewer_name, reviewer_company, reviewer_email,
-                 employment_from, employment_to, invite_token, invited_at, created_at)
-             VALUES (?, NULL, ?, ?, ?, ?, ?, ?, NOW(), NOW())'
+                 reviewer_relation, employment_from, employment_to, invite_token, invited_at, created_at)
+             VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())'
         );
         $ins->execute([
             $driverId, $name, $company,
-            $email ?: null, $fromDate, $toDate, $token,
+            $email ?: null, $relation, $fromDate, $toDate, $token,
         ]);
         // Αμέσως μετά το INSERT — πριν τρέξει οποιοδήποτε άλλο ερώτημα.
         $inviteId = (int) $this->db->lastInsertId();

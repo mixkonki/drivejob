@@ -10,6 +10,7 @@ use Drivejob\Controllers\HomeController;
 use Drivejob\Controllers\NotificationController;
 use Drivejob\Controllers\AuthController;
 use Drivejob\Controllers\ReferenceController;
+use Drivejob\Controllers\InsuranceController;
 
 // Controllers με Repository pattern
 use Drivejob\Controllers\Driver\DriversController;
@@ -141,6 +142,15 @@ $router->group(['prefix' => 'drivers'], function ($router) {
     $router->get('/references', [ReferenceController::class, 'index'])->name('drivers.references');
     $router->post('/references', [ReferenceController::class, 'invite'])->name('drivers.references.invite');
     $router->post('/references/delete/{id}', [ReferenceController::class, 'cancel'])->name('drivers.references.cancel');
+
+    /*
+     * Ασφαλιστικό ιστορικό (01/09/2026): ανέβασμα Αναλυτικού Λογαριασμού
+     * Ασφάλισης e-ΕΦΚΑ (.xlsx) — αποδεικνύει και μισθωτή εργασία ΚΑΙ
+     * αυτοαπασχόληση. Το αρχείο δεν αποθηκεύεται, μόνο η σύνοψη.
+     */
+    $router->get('/insurance', [InsuranceController::class, 'index'])->name('drivers.insurance');
+    $router->post('/insurance', [InsuranceController::class, 'upload'])->name('drivers.insurance.upload');
+    $router->post('/insurance/delete', [InsuranceController::class, 'destroy'])->name('drivers.insurance.delete');
 
     $router->post('/change-password', [DriversController::class, 'changePassword'])->name('drivers.change-password');
     $router->get('/security', [DriversController::class, 'security'])->name('drivers.security');

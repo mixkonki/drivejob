@@ -16,6 +16,15 @@ $refError = $refError ?? null;
 $alreadyDone = $alreadyDone ?? false;
 
 $driverName = $invite ? trim($invite['first_name'] . ' ' . $invite['last_name']) : '';
+
+/* Το λεκτικό ακολουθεί τη σχέση: ο πελάτης δεν «απασχόλησε» τον οδηγό —
+   συνεργάστηκε μαζί του. (01/09) */
+$relation = $invite['reviewer_relation'] ?? 'employer';
+$relationText = [
+    'employer' => 'εργάστηκε στην επιχείρησή σας',
+    'client' => 'συνεργάστηκε μαζί σας ως επαγγελματίας οδηγός',
+    'supervisor' => 'εργάστηκε υπό την εποπτεία σας',
+][$relation] ?? 'εργάστηκε στην επιχείρησή σας';
 ?>
 <?= \Drivejob\Helpers\Asset::css('css/driver-references.css') ?>
 
@@ -44,9 +53,9 @@ $driverName = $invite ? trim($invite['first_name'] . ' ' . $invite['last_name'])
                 <h1>Σύσταση για τον οδηγό <?php echo htmlspecialchars($driverName, ENT_QUOTES, 'UTF-8'); ?></h1>
                 <p class="refs-lead">
                     Ο/η <strong><?php echo htmlspecialchars($driverName, ENT_QUOTES, 'UTF-8'); ?></strong>
-                    δήλωσε ότι εργάστηκε
+                    δήλωσε ότι <?php echo $relationText; ?>
                     <?php if (!empty($invite['reviewer_company'])) : ?>
-                        στην επιχείρηση <strong><?php echo htmlspecialchars($invite['reviewer_company'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                        (<strong><?php echo htmlspecialchars($invite['reviewer_company'], ENT_QUOTES, 'UTF-8'); ?></strong>)
                     <?php endif; ?>
                     <?php if (!empty($invite['employment_from'])) : ?>
                         (<?php echo date('m/Y', strtotime($invite['employment_from'])); ?>
@@ -76,7 +85,7 @@ $driverName = $invite ? trim($invite['first_name'] . ' ' . $invite['last_name'])
                        Δεσμευτικό ερώτημα = ειλικρινής απάντηση. Στα αστέρια
                        όλοι βάζουν 4-5· στο «θα τον έπαιρνες πίσω;» όχι. */ ?>
                     <fieldset class="refs-field">
-                        <legend>Θα τον ξαναπροσλαμβάνατε; <i>*</i></legend>
+                        <legend><?php echo $relation === 'client' ? 'Θα του αναθέτατε ξανά δουλειά;' : 'Θα τον ξαναπροσλαμβάνατε;'; ?> <i>*</i></legend>
                         <div class="refs-rehire">
                             <label><input type="radio" name="would_rehire" value="1" required> <span>Ναι, χωρίς δεύτερη σκέψη</span></label>
                             <label><input type="radio" name="would_rehire" value="0"> <span>Όχι / Έχω επιφυλάξεις</span></label>
