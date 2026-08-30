@@ -159,6 +159,36 @@ class OperatorSpecialities
      * @param string|null $lastInspection Ημ. τελευταίας θεώρησης, αν έχει γίνει
      * @return array{start:string,end:string}|null ['start'=>'Y-01-01','end'=>'Y-06-30']
      */
+    /**
+     * Μηχάνημα της φόρμας αγγελίας → ειδικότητα βιβλιαρίου χειριστή.
+     * (01/09/2026)
+     *
+     * Η αγγελία μιλά σε μηχανήματα («τσάπα», «κλαρκ») γιατί έτσι
+     * σκέφτεται ο εργοδότης· το βιβλιάριο μιλά σε ειδικότητες 1-8 γιατί
+     * έτσι το εκδίδει το κράτος. Το ταίριασμα χρειάζεται τη μετάφραση:
+     * «ζητά εκσκαφέα» = «απαιτεί ειδικότητα 1», που συγκρίνεται με το
+     * driver_operator_licenses.speciality του χειριστή.
+     *
+     *   1 = εκσκαφή/χωματουργικά   → τσάπα, μπουλντόζα, φορτωτής
+     *   2 = ανύψωση/μεταφορά       → γερανός, κλαρκ
+     *   3 = οδοστρωσία             → γκρέιντερ
+     */
+    public const MACHINE_TO_SPECIALITY = [
+        'excavator' => '1',
+        'bulldozer' => '1',
+        'loader' => '1',
+        'grader' => '3',
+        'crane' => '2',
+        'forklift' => '2',
+        // 'other' σκόπιμα ΧΩΡΙΣ αντιστοίχιση: δεν ξέρουμε τι είναι,
+        // δεν μαντεύουμε ειδικότητα.
+    ];
+
+    public static function specialityForMachine(string $machine): ?string
+    {
+        return self::MACHINE_TO_SPECIALITY[strtolower(trim($machine))] ?? null;
+    }
+
     public static function inspectionWindow(?string $issueDate, ?string $lastInspection = null): ?array
     {
         if ($lastInspection && ($ts = strtotime($lastInspection)) !== false) {
