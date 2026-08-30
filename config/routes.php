@@ -9,6 +9,7 @@ use Drivejob\Core\Router;
 use Drivejob\Controllers\HomeController;
 use Drivejob\Controllers\NotificationController;
 use Drivejob\Controllers\AuthController;
+use Drivejob\Controllers\ReferenceController;
 
 // Controllers με Repository pattern
 use Drivejob\Controllers\Driver\DriversController;
@@ -47,6 +48,10 @@ $router->group(['prefix' => 'auth'], function ($router) {
 // /access-denied, /forgot-password και /reset-password/{token}. Χωρίς αυτές
 // τις διαδρομές κάθε τέτοια ανακατεύθυνση κατέληγε σε 404 — π.χ. αμέσως
 // μετά από επιτυχημένη εγγραφή.
+// Δημόσια φόρμα σύστασης — ΧΩΡΙΣ λογαριασμό: το token είναι η πρόσβαση.
+$router->get('/reference/{token}', [ReferenceController::class, 'show'])->name('reference.show');
+$router->post('/reference/{token}', [ReferenceController::class, 'submit'])->name('reference.submit');
+
 $router->get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 $router->post('/login', [AuthController::class, 'login']);
 $router->get('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -127,6 +132,16 @@ $router->group(['prefix' => 'drivers'], function ($router) {
     $router->post('/certifications', [DriversController::class, 'addCertification'])->name('drivers.certifications.add');
     $router->post('/certifications/update/{id}', [DriversController::class, 'updateCertification'])->name('drivers.certifications.update');
     $router->post('/certifications/delete/{id}', [DriversController::class, 'deleteCertification'])->name('drivers.certifications.delete');
+    /*
+     * Συστάσεις εργοδοτών (01/09/2026): ο οδηγός φτιάχνει πρόσκληση με
+     * σύνδεσμο και τον στέλνει όπως θέλει (Viber/email/SMS). Η δημόσια
+     * φόρμα του εργοδότη ζει στο /reference/{token}, εκτός του prefix
+     * drivers — ο εργοδότης δεν έχει λογαριασμό.
+     */
+    $router->get('/references', [ReferenceController::class, 'index'])->name('drivers.references');
+    $router->post('/references', [ReferenceController::class, 'invite'])->name('drivers.references.invite');
+    $router->post('/references/delete/{id}', [ReferenceController::class, 'cancel'])->name('drivers.references.cancel');
+
     $router->post('/change-password', [DriversController::class, 'changePassword'])->name('drivers.change-password');
     $router->get('/security', [DriversController::class, 'security'])->name('drivers.security');
 

@@ -1,0 +1,316 @@
+/* ══════════════════════════════════════════════════════════════════════
+   ΣΥΣΤΑΣΕΙΣ ΕΡΓΟΔΟΤΩΝ. (01/09/2026)
+
+   Δύο σελίδες: η λίστα του οδηγού (/drivers/references) και η δημόσια
+   φόρμα του εργοδότη (/reference/{token}). Η δεύτερη ανοίγει σχεδόν
+   πάντα σε ΚΙΝΗΤΟ μέσα από Viber/WhatsApp — τα μεγέθη αφής (44px+)
+   δεν είναι πολυτέλεια εδώ, είναι το κανονικό σενάριο χρήσης.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.refs-container { max-width: 860px; margin: 0 auto; padding: 1.2rem 1rem 2rem; }
+
+.refs-title { font-size: 1.35rem; margin: 0 0 .4rem; color: #1f2937; }
+
+.refs-lead {
+    font-size: .88rem;
+    line-height: 1.55;
+    color: #6b7280;
+    margin: 0 0 1.1rem;
+}
+
+/* Χρώματα ομάδων — συνέχεια της παλέτας qgroup. */
+.qgroup--invite { --qg: #b3261e; --qg-soft: #fff7f6; }
+.qgroup--pend   { --qg: #b45309; --qg-soft: #fffcf5; }
+.qgroup--done   { --qg: #15803d; --qg-soft: #f5fdf7; }
+
+/* ── Φόρμα πρόσκλησης ───────────────────────────────────────────────── */
+.refs-form { padding: .5rem 0 .3rem; }
+
+.refs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+    gap: .8rem 1rem;
+}
+
+.refs-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: #374151;
+    min-width: 0;
+}
+
+.refs-grid label i { color: #b3261e; font-style: normal; }
+.refs-opt { font-weight: 400; color: #94a3b8; }
+
+.refs-grid input {
+    padding: .55rem .7rem;
+    border: 1px solid #d7dbe0;
+    border-radius: 8px;
+    font-size: .88rem;
+    min-width: 0;
+}
+
+.refs-period-inputs {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.refs-period-inputs span { font-weight: 400; color: #94a3b8; font-size: .8rem; }
+.refs-period-inputs input { flex: 1; min-width: 0; }
+
+.refs-actions { margin-top: .9rem; }
+
+.refs-msg {
+    margin-top: .7rem;
+    padding: .55rem .8rem;
+    border-radius: 8px;
+    font-size: .85rem;
+}
+
+.refs-msg--ok { background: #eefaf1; color: #15803d; }
+.refs-msg--err { background: #fff1f0; color: #b3261e; }
+
+/* ── Το κουτί του συνδέσμου ─────────────────────────────────────────── */
+.refs-linkbox {
+    margin-top: .9rem;
+    padding: .8rem .9rem;
+    border: 1px dashed #b3261e55;
+    border-radius: 10px;
+    background: #fff7f6;
+}
+
+.refs-linkbox-label {
+    display: block;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #b3261e;
+    margin-bottom: .35rem;
+}
+
+.refs-linkbox-row { display: flex; gap: .5rem; }
+
+.refs-linkbox-row input {
+    flex: 1;
+    min-width: 0;
+    padding: .5rem .6rem;
+    border: 1px solid #d7dbe0;
+    border-radius: 8px;
+    font-size: .8rem;
+    font-family: monospace;
+    background: #fff;
+}
+
+.refs-linkbox p { margin: .45rem 0 0; font-size: .78rem; color: #6b7280; }
+
+/* ── Στοιχεία λίστας ────────────────────────────────────────────────── */
+.refs-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem 1rem;
+    padding: .6rem 0;
+    border-top: 1px solid #f4f5f7;
+}
+
+.refs-item:first-child { border-top: 0; }
+
+.refs-item-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .2rem .6rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.refs-item-main strong { font-size: .88rem; color: #1f2937; }
+.refs-item-main span { font-size: .8rem; color: #6b7280; }
+.refs-item-main em { font-size: .74rem; font-style: normal; color: #94a3b8; }
+
+.refs-item-actions { display: flex; gap: .5rem; flex-shrink: 0; }
+
+.refs-copybtn { font-size: .76rem; padding: .35rem .7rem; }
+
+.refs-cancel {
+    background: none;
+    border: none;
+    color: #b3261e;
+    font-size: .76rem;
+    cursor: pointer;
+    opacity: .7;
+    padding: .35rem .3rem;
+}
+
+.refs-cancel:hover { opacity: 1; text-decoration: underline; }
+
+.refs-done-badge {
+    font-size: .74rem;
+    font-weight: 600;
+    color: #15803d;
+    background: #eefaf1;
+    border-radius: 999px;
+    padding: .2rem .6rem;
+    white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Η ΔΗΜΟΣΙΑ ΦΟΡΜΑ
+   ══════════════════════════════════════════════════════════════════════ */
+
+.refs-public { max-width: 640px; }
+
+.refs-card {
+    border: 1px solid #e8eaed;
+    border-radius: 14px;
+    background: #fff;
+    padding: 1.4rem 1.5rem;
+}
+
+.refs-card h1 { font-size: 1.25rem; margin: 0 0 .5rem; color: #1f2937; }
+.refs-card--ok { border-color: #15803d44; background: #f5fdf7; }
+.refs-card--error { border-color: #b3261e44; background: #fff7f6; }
+
+.refs-field {
+    border: 0;
+    padding: 0;
+    margin: 1.1rem 0 0;
+}
+
+.refs-field legend {
+    font-size: .92rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: .5rem;
+    padding: 0;
+}
+
+.refs-field legend i { color: #b3261e; font-style: normal; }
+
+/* ── Αστέρια ─────────────────────────────────────────────────────────
+   :has() για τον φωτισμό «μέχρι εδώ»: όλα τα προηγούμενα του
+   επιλεγμένου ανάβουν. Χωρίς JS, χωρίς αντεστραμμένη σειρά DOM. */
+.refs-stars {
+    display: flex;
+    gap: .15rem;
+}
+
+.refs-star {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .1rem;
+    cursor: pointer;
+    /* 44px+: το πάτημα γίνεται με αντίχειρα σε κινητό. */
+    min-width: 44px;
+    padding: .25rem .1rem;
+}
+
+.refs-star input { position: absolute; opacity: 0; pointer-events: none; }
+
+.refs-star span {
+    font-size: 1.7rem;
+    line-height: 1;
+    color: #d7dbe0;
+    transition: color .12s ease, transform .12s ease;
+}
+
+.refs-star em {
+    font-size: .62rem;
+    font-style: normal;
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* Φωτίζονται όλα ΜΕΧΡΙ το επιλεγμένο. */
+.refs-stars:has(input:checked) .refs-star span { color: #f59e0b; }
+.refs-star:has(input:checked) ~ .refs-star span { color: #d7dbe0; }
+
+/* Προεπισκόπηση στο πέρασμα του δείκτη. */
+.refs-stars:hover .refs-star span { color: #f59e0b; }
+.refs-star:hover ~ .refs-star span { color: #d7dbe0 !important; }
+
+.refs-star:has(input:checked) span { transform: scale(1.15); }
+
+.refs-stars--small .refs-star { min-width: 34px; }
+.refs-stars--small .refs-star span { font-size: 1.25rem; }
+
+/* ── Θα τον ξαναπροσλάμβανες; ───────────────────────────────────────── */
+.refs-rehire { display: flex; flex-wrap: wrap; gap: .6rem; }
+
+.refs-rehire label {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    border: 1px solid #d7dbe0;
+    border-radius: 10px;
+    padding: .6rem .9rem;
+    font-size: .86rem;
+    color: #374151;
+    cursor: pointer;
+    flex: 1;
+    min-width: min(220px, 100%);
+}
+
+.refs-rehire label:has(input:checked) {
+    border-color: #b3261e;
+    background: #fff7f6;
+    font-weight: 600;
+}
+
+/* ── Προαιρετικά ────────────────────────────────────────────────────── */
+.refs-more {
+    margin-top: 1.1rem;
+    border-top: 1px solid #f1f3f5;
+    padding-top: .8rem;
+}
+
+.refs-more summary {
+    font-size: .84rem;
+    font-weight: 600;
+    color: #b3261e;
+    cursor: pointer;
+}
+
+.refs-facets { margin-top: .7rem; display: flex; flex-direction: column; gap: .35rem; }
+
+.refs-facet {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .2rem .8rem;
+}
+
+.refs-facet > span { font-size: .82rem; color: #475569; }
+
+.refs-comment {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    margin-top: .8rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.refs-comment textarea {
+    padding: .55rem .7rem;
+    border: 1px solid #d7dbe0;
+    border-radius: 8px;
+    font-size: .86rem;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.refs-fineprint {
+    margin: .9rem 0 0;
+    font-size: .72rem;
+    line-height: 1.5;
+    color: #94a3b8;
+}

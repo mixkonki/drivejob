@@ -206,6 +206,11 @@ if ($hasTable($pdo, 'driver_reviews')) {
         $pdo->exec('ALTER TABLE driver_reviews MODIFY COLUMN company_id INT(11) DEFAULT NULL');
     }
 
+    // Το rating πρέπει να δέχεται NULL: η ΕΚΚΡΕΜΗΣ πρόσκληση είναι
+    // γραμμή με rating NULL (ώστε ο EmployerReviewCollector, που μετρά
+    // μόνο rating > 0, να την προσπερνά μέχρι να απαντηθεί).
+    $pdo->exec('ALTER TABLE driver_reviews MODIFY COLUMN rating INT(11) DEFAULT NULL');
+
     echo $added
         ? 'OK: driver_reviews — προστέθηκαν ' . implode(', ', $added) . ".\n"
         : "OK: driver_reviews — ήταν ήδη ενημερωμένος.\n";

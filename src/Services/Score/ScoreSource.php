@@ -133,6 +133,16 @@ final class ScoreSource
             'hint' => 'Πρόσθεσε σεμινάρια με φορέα και ημερομηνία.',
         ],
 
+        'insurance_record' => [
+            'label' => 'Ασφαλιστικό ιστορικό (ένσημα)',
+            'evidence' => self::VERIFIED,
+            'group' => self::GROUP_CREDENTIALS,
+            'weight' => 30,
+            'active' => false,   // βλ. InsuranceRecordCollector για το πλάνο
+            'collector' => Collectors\InsuranceRecordCollector::class,
+            'hint' => 'Θα μπορείς να ανεβάζεις τη Βεβαίωση Ασφαλιστικής Ιστορίας από το gov.gr — η προϋπηρεσία σου γίνεται επαληθευμένη.',
+        ],
+
         // ── Φήμη ────────────────────────────────────────────────────────
         'employer_review' => [
             'label' => 'Αξιολογήσεις εργοδοτών',

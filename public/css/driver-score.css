@@ -271,3 +271,14 @@
 @media (prefers-reduced-motion: reduce) {
     .ring-fg, .score-bar > div { transition: none; }
 }
+
+/* Ο σύνδεσμος δράσης στη λίστα «τι λείπει» (01/09): η έλλειψη που έχει
+   έτοιμο δρόμο δεν αρκεί να περιγράφεται — πρέπει να πατιέται. */
+.score-todo-cta {
+    font-size: .78rem;
+    font-weight: 700;
+    color: #b3261e;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.score-todo-cta:hover { text-decoration: underline; }
