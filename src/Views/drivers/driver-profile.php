@@ -8,6 +8,9 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 <?= \Drivejob\Helpers\Asset::css('css/expiring-licenses.css') ?>
 <?= \Drivejob\Helpers\Asset::css('css/driver-rating-profile.css') ?>
 <?= \Drivejob\Helpers\Asset::css('css/toggle-switch.css') ?>
+<?php /* Τελευταίο: υπερισχύει των παλιών κανόνων του driver-profile.css
+   για τον πίνακα προσόντων που αντικαταστάθηκε από ομάδες (30/08). */ ?>
+<?= \Drivejob\Helpers\Asset::css('css/driver-overview.css') ?>
 
 
 <script>
@@ -78,38 +81,74 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
             </div>
 
-            <!-- Ενότητα Στατιστικών Προφίλ μεταφέρθηκε εδώ -->
+            <?php
+            /*
+             * Στατιστικά κεφαλίδας — ΞΑΝΑΓΡΑΦΤΗΚΑΝ 30/08.
+             *
+             * Έδειχναν πάντα «0 Προβολές · 0 Αιτήσεις · 0 Ταιριάσματα»
+             * επειδή η $driverStats δεν οριζόταν πουθενά. Τώρα έρχεται από
+             * τον DriverStatsService με πραγματικά νούμερα, και η θέση των
+             * «Προβολών» (που δεν καταγράφονται πουθενά) πήρε τον δείκτη
+             * πληρότητας προφίλ — ο ίδιος που δείχνει και πόσο έτοιμο
+             * είναι το αυτόματο βιογραφικό.
+             */
+            $pc = $driverStats['completeness'] ?? null;
+            $pcPercent = $pc['percent'] ?? 0;
+            $pcClass = $pcPercent >= 85 ? 'is-strong' : ($pcPercent >= 55 ? 'is-mid' : 'is-weak');
+            ?>
             <div class="profile-stats-header">
                 <h3>Στατιστικά Προφίλ</h3>
                 <ul class="profile-stats">
-                    <li>
-                        <div class="stat-icon">
-                            <img src="<?= \Drivejob\Helpers\Asset::url('img/view_icon.png') ?>" alt="Προβολές">
+                    <li class="stat-completeness <?php echo $pcClass; ?>">
+                        <div class="stat-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-value"><?php echo isset($driverStats['profile_views']) ? $driverStats['profile_views'] : '0'; ?></span>
-                            <span class="stat-label">Προβολές Προφίλ</span>
+                            <span class="stat-value"><?php echo (int) $pcPercent; ?>%</span>
+                            <span class="stat-label">Πληρότητα Προφίλ</span>
+                            <div class="stat-bar"><span style="width:<?php echo (int) $pcPercent; ?>%"></span></div>
                         </div>
                     </li>
                     <li>
-                        <div class="stat-icon">
-                            <img src="<?= \Drivejob\Helpers\Asset::url('img/application_icon.png') ?>" alt="Αιτήσεις">
+                        <div class="stat-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-value"><?php echo isset($driverStats['applications']) ? $driverStats['applications'] : '0'; ?></span>
-                            <span class="stat-label">Αιτήσεις για Θέσεις</span>
+                            <span class="stat-value"><?php echo (int) ($driverStats['applications'] ?? 0); ?></span>
+                            <span class="stat-label">Αιτήσεις που έκανα</span>
                         </div>
                     </li>
                     <li>
-                        <div class="stat-icon">
-                            <img src="<?= \Drivejob\Helpers\Asset::url('img/match_icon.png') ?>" alt="Ταιριάσματα">
+                        <div class="stat-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5"/><line x1="12" y1="22" x2="12" y2="3"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-value"><?php echo isset($driverStats['matches']) ? $driverStats['matches'] : '0'; ?></span>
-                            <span class="stat-label">Ταιριάσματα Εργασίας</span>
+                            <span class="stat-value"><?php echo (int) ($driverStats['offers'] ?? 0); ?></span>
+                            <span class="stat-label">Προσφορές που έλαβα</span>
+                            <?php if (!empty($driverStats['pending_offers'])) : ?>
+                                <span class="stat-sub"><?php echo (int) $driverStats['pending_offers']; ?> σε αναμονή απάντησης</span>
+                            <?php endif; ?>
                         </div>
                     </li>
                 </ul>
+
+                <?php /* Τι λείπει: το ποσοστό χωρίς «τι να κάνω» είναι απλώς μια κρίση. */ ?>
+                <?php if (!empty($pc['missing'])) : ?>
+                    <div class="profile-missing">
+                        <span class="profile-missing-title">Για πληρέστερο προφίλ &amp; βιογραφικό:</span>
+                        <ul>
+                            <?php foreach (array_slice($pc['missing'], 0, 3) as $miss) : ?>
+                                <li>
+                                    <a href="<?php echo BASE_URL . htmlspecialchars($miss['link'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($miss['label'], ENT_QUOTES, 'UTF-8'); ?></a>
+                                    <?php if (!empty($miss['why'])) : ?><small><?php echo htmlspecialchars($miss['why'], ENT_QUOTES, 'UTF-8'); ?></small><?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                            <?php if (count($pc['missing']) > 3) : ?>
+                                <li class="profile-missing-more">…και <?php echo count($pc['missing']) - 3; ?> ακόμη</li>
+                            <?php endif; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
                 <div class="profile-image-actions">
                     <a href="<?php echo BASE_URL; ?>drivers/edit-profile" class="btn-primary">Επεξεργασία Προφίλ</a>
 

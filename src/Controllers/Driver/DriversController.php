@@ -162,6 +162,23 @@ class DriversController extends BaseUserController
         $viewData['driverLicenseTypes'] = array_column($viewData['driverLicenses'], 'license_type');
 
         /*
+         * Στατιστικά κεφαλίδας (30/08). Το view διάβαζε $driverStats — μια
+         * μεταβλητή που ΔΕΝ οριζόταν πουθενά, οπότε έδειχνε πάντα 0/0/0.
+         * Τώρα ορίζεται με πραγματικά δεδομένα· δες DriverStatsService.
+         */
+        try {
+            $statsService = new \Drivejob\Services\Driver\DriverStatsService($this->container->get('pdo'));
+            $viewData['driverStats'] = $statsService->forDriver(
+                (int) ($driverProfile['id'] ?? $driverProfile['user_id'] ?? 0),
+                $driverProfile
+            );
+        } catch (\Throwable $e) {
+            // Η κεφαλίδα δεν αξίζει να ρίξει το προφίλ.
+            Logger::error('Driver stats failed', ['message' => $e->getMessage()]);
+            $viewData['driverStats'] = null;
+        }
+
+        /*
          * Υποειδικότητες άδειας χειριστή — ΟΛΩΝ των αδειών (30/08).
          *
          * ΗΤΑΝ BUG: διαβαζόταν μόνο η ΠΡΩΤΗ άδεια (operator_licenses[0]).

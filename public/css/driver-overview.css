@@ -1,0 +1,376 @@
+/**
+ * Καρτέλα Επισκόπησης — ομάδες τυπικών προσόντων & στατιστικά κεφαλίδας.
+ * (30/08/2026)
+ *
+ * ΑΡΧΗ ΣΧΕΔΙΑΣΗΣ: ο οδηγός πρέπει να καταλαβαίνει σε ΜΙΑ ματιά τι έχει,
+ * τι λήγει και τι λείπει. Γι' αυτό:
+ *   - κάθε ομάδα προσόντων έχει δικό της χρώμα και παχιά αριστερή γραμμή
+ *   - η κατάσταση είναι πάντα στην ίδια θέση, δεξιά
+ *   - ό,τι δεν διαθέτει ο οδηγός ξεθωριάζει αντί να εξαφανίζεται (ώστε
+ *     να φαίνεται τι ΘΑ μπορούσε να αποκτήσει)
+ *
+ * ΤΟ MOBILE BLOCK ΕΙΝΑΙ ΣΤΟ ΤΕΛΟΣ ΤΟΥ ΑΡΧΕΙΟΥ — καθιερωμένος κανόνας
+ * του project: media queries χωρίς βαρύτητα χάνουν από τους κανόνες
+ * desktop που γράφτηκαν μετά.
+ */
+
+/* ══════════════════════════════════════════════════════════════════════
+   ΟΜΑΔΕΣ ΠΡΟΣΟΝΤΩΝ
+   ══════════════════════════════════════════════════════════════════════ */
+
+.qual-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.qgroup {
+    --qg: #64748b;          /* χρώμα ομάδας — το ορίζει κάθε παραλλαγή */
+    --qg-soft: #f1f5f9;
+    border: 1px solid #e5e7eb;
+    border-left: 5px solid var(--qg);   /* η «παχιά γραμμή» που ζητήθηκε */
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.qgroup--driving  { --qg: #1d4ed8; --qg-soft: #eff6ff; }   /* μπλε: οδήγηση */
+.qgroup--certs    { --qg: #b45309; --qg-soft: #fff7ed; }   /* πορτοκαλί: ADR/ταχογράφος */
+.qgroup--operator { --qg: #15803d; --qg-soft: #f0fdf4; }   /* πράσινο: μηχανήματα έργου */
+.qgroup--special  { --qg: #7c3aed; --qg-soft: #f5f3ff; }   /* μωβ: ειδικές άδειες */
+
+.qgroup-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: .2rem .7rem;
+    padding: .65rem .95rem;
+    background: var(--qg-soft);
+    border-bottom: 2px solid var(--qg);
+}
+
+.qgroup-head h3 {
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 800;              /* «έντονα γράμματα» */
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: var(--qg);
+}
+
+.qgroup-note {
+    font-size: .78rem;
+    color: #6b7280;
+}
+
+.qgroup-body { padding: .2rem .95rem .7rem; }
+
+.qgroup-meta {
+    margin: .6rem 0 .1rem;
+    font-size: .84rem;
+    color: #374151;
+}
+
+/* ── Γραμμή προσόντος ───────────────────────────────────────────────── */
+.qrow {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) 130px 110px;
+    align-items: start;
+    gap: .8rem;
+    padding: .75rem 0;
+    border-bottom: 1px solid #f1f2f4;
+}
+
+.qrow:last-child { border-bottom: 0; }
+
+/* Ό,τι δεν διαθέτει ο οδηγός: παρόν αλλά διακριτικό. */
+.qrow--absent { opacity: .55; }
+
+.qrow-icon {
+    color: var(--qg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--qg-soft);
+}
+
+.qrow-icon .qual-icon { width: 20px; height: 20px; display: block; }
+
+.qrow-main { min-width: 0; }
+
+.qrow-main h4 {
+    margin: 0 0 .18rem;
+    font-size: .92rem;
+    font-weight: 700;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+
+.qrow-line {
+    margin: .12rem 0;
+    font-size: .82rem;
+    color: #374151;
+}
+
+.qrow-key {
+    color: #6b7280;
+    font-size: .76rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    margin-right: .3rem;
+}
+
+.qrow-empty { color: #9ca3af; font-style: italic; }
+.qrow-details { color: #4b5563; }
+.qrow-spec { color: #4b5563; font-size: .84rem; }
+
+/* Κατηγορίες διπλώματος ως ξεχωριστά «πλακίδια»: διαβάζονται πολύ πιο
+   γρήγορα από μια λίστα χωρισμένη με κόμματα. */
+.qrow-cats {
+    margin: .3rem 0 .1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+}
+
+.qcat {
+    display: inline-block;
+    padding: .1rem .4rem;
+    border: 1px solid var(--qg);
+    border-radius: 4px;
+    font-size: .76rem;
+    font-weight: 700;
+    color: var(--qg);
+    background: #fff;
+}
+
+.qgroup-tag {
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--qg);
+    background: var(--qg-soft);
+    border-radius: 20px;
+    padding: .08rem .5rem;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.qrow-all {
+    margin: .3rem 0 0;
+    font-size: .82rem;
+    font-weight: 600;
+    color: #15803d;
+}
+
+/* ── Υποειδικότητες μηχανημάτων ─────────────────────────────────────── */
+.qsubs {
+    list-style: none;
+    margin: .35rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: .2rem .9rem;
+}
+
+.qsubs li {
+    display: flex;
+    align-items: baseline;
+    gap: .35rem;
+    font-size: .8rem;
+    color: #374151;
+}
+
+.qsub-code {
+    flex-shrink: 0;
+    font-weight: 700;
+    color: var(--qg);
+    min-width: 2.1em;
+}
+
+.qsub-name {
+    /* Ολόκληρο το όνομα, σε δεύτερη γραμμή αν χρειαστεί. Με ellipsis
+       διαβαζόταν «Γερανοί μεταθετοί παντός τύπου (πλην αποκλειστικώς
+       ηλεκτρ…» — δηλαδή έκρυβε ακριβώς το μέρος που ξεχωρίζει τη μία
+       υποειδικότητα από την άλλη. */
+    line-height: 1.3;
+}
+
+.qsub-group {
+    flex-shrink: 0;
+    font-size: .72rem;
+    color: #6b7280;
+}
+
+/* ── Λήξη & κατάσταση ───────────────────────────────────────────────── */
+.qrow-expiry {
+    display: flex;
+    flex-direction: column;
+    gap: .12rem;
+    font-size: .82rem;
+    color: #111827;
+}
+
+.qexp small {
+    display: block;
+    font-size: .68rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.qexp-empty { color: #9ca3af; }
+.qexp-open { color: #15803d; font-weight: 600; }
+
+.qrow-status { display: flex; justify-content: flex-end; }
+
+.qbadge {
+    display: inline-block;
+    padding: .2rem .55rem;
+    border-radius: 20px;
+    font-size: .74rem;
+    font-weight: 700;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.qbadge--valid   { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+.qbadge--soon    { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+.qbadge--expired { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+.qbadge--unknown { background: #f3f4f6; color: #4b5563; border-color: #e5e7eb; }
+.qbadge--none    { background: #f9fafb; color: #9ca3af; border-color: #f3f4f6; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ΣΤΑΤΙΣΤΙΚΑ ΚΕΦΑΛΙΔΑΣ
+   ══════════════════════════════════════════════════════════════════════ */
+
+.profile-stats .stat-icon svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+
+.stat-completeness.is-strong .stat-icon { color: #047857; }
+.stat-completeness.is-mid    .stat-icon { color: #b45309; }
+.stat-completeness.is-weak   .stat-icon { color: #b91c1c; }
+
+.stat-bar {
+    margin-top: .3rem;
+    width: 100%;
+    max-width: 130px;
+    height: 5px;
+    border-radius: 3px;
+    background: #e5e7eb;
+    overflow: hidden;
+}
+
+.stat-bar span {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: #b91c1c;
+    transition: width .4s ease;
+}
+
+.is-mid .stat-bar span    { background: #d97706; }
+.is-strong .stat-bar span { background: #059669; }
+
+.stat-sub {
+    display: block;
+    font-size: .72rem;
+    color: #b45309;
+    margin-top: .1rem;
+}
+
+/* ── «Τι λείπει»: το ποσοστό χωρίς επόμενο βήμα είναι απλώς μια κρίση ── */
+.profile-missing {
+    margin-top: .7rem;
+    padding: .6rem .75rem;
+    border: 1px dashed #d1d5db;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.profile-missing-title {
+    display: block;
+    font-size: .78rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: .25rem;
+}
+
+.profile-missing ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-missing li {
+    font-size: .8rem;
+    line-height: 1.35;
+    margin-bottom: .18rem;
+}
+
+.profile-missing li a {
+    color: #b3261e;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.profile-missing li a:hover { text-decoration: underline; }
+
+.profile-missing li small {
+    display: block;
+    color: #6b7280;
+    font-size: .72rem;
+}
+
+.profile-missing-more { color: #9ca3af; font-style: italic; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ΚΙΝΗΤΟ — ΕΝΑ BLOCK, ΣΤΟ ΤΕΛΟΣ (κανόνας του project)
+   ══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 720px) {
+    /* Η γραμμή γίνεται κάρτα: εικονίδιο+τίτλος πάνω, λήξη/κατάσταση κάτω.
+       Χωρίς αυτό οι 4 στήλες συνθλίβονται και εμφανίζεται οριζόντια
+       κύλιση — ακριβώς το πρόβλημα του παλιού πίνακα. */
+    /* Λήξη και κατάσταση παίρνουν ΔΙΚΗ ΤΟΥΣ σειρά, σε δύο πραγματικές
+       στήλες του grid. Πρώτη γραφή τα έβαζε στο ίδιο κελί και τραβούσε
+       το badge προς τα πάνω με αρνητικό margin — που το έριχνε πάνω στα
+       πλακίδια κατηγοριών του διπλώματος. */
+    .qrow {
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        grid-template-areas:
+            "icon main   main"
+            "meta meta   status";
+        gap: .5rem .55rem;
+    }
+
+    .qrow-icon { grid-area: icon; }
+    .qrow-main { grid-area: main; }
+    .qrow-expiry { grid-area: meta; }
+    .qrow-status { grid-area: status; align-items: center; }
+
+    .qrow-expiry {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .1rem .6rem;
+        padding-left: calc(34px + .55rem);
+    }
+
+    .qexp small { display: inline; margin-left: .2rem; }
+
+    .qsubs { grid-template-columns: 1fr; }
+    .qsub-name { white-space: normal; }
+
+    .qgroup-head { padding: .55rem .7rem; }
+    .qgroup-body { padding: .1rem .7rem .5rem; }
+    .qgroup-head h3 { font-size: .88rem; }
+}

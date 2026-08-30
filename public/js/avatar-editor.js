@@ -41,6 +41,11 @@
         var stage = document.getElementById('avatarStage');
         var preview = document.getElementById('avatarPreview');
         var placeholder = document.getElementById('avatarPlaceholder');
+        var adjustBtn = document.getElementById('avatarAdjust');
+        var hint = document.querySelector('.avatar-hint');
+        // Η φωτογραφία που είναι ΟΝΤΩΣ αποθηκευμένη στον server — σημείο
+        // επαναφοράς όταν ο οδηγός ακυρώσει μια προσαρμογή.
+        var savedAvatar = adjustBtn ? (adjustBtn.dataset.current || '') : '';
 
         if (!input) { return; }
 
@@ -56,6 +61,7 @@
             r.onload = function (e) {
                 if (preview) { preview.src = e.target.result; preview.style.display = ''; }
                 if (placeholder) { placeholder.style.display = 'none'; }
+                showAdjust(e.target.result);
             };
             r.readAsDataURL(file);
         }
@@ -78,26 +84,47 @@
             state.y = Math.min(0, Math.max(STAGE_SIZE - h, state.y));
         }
 
+        /**
+         * Ανοίγει τον επεξεργαστή πάνω σε μια πηγή εικόνας (data: URL ή blob: URL).
+         * Χωριστό από το openEditor(file) γιατί η ΥΠΑΡΧΟΥΣΑ φωτογραφία δεν είναι
+         * αρχείο — έρχεται από τον server.
+         */
+        function openEditorFromSrc(src, onFail) {
+            img.onload = function () {
+                if (!img.naturalWidth) { if (onFail) { onFail(); } return; }
+                // Αρχική κλίμακα: η μικρότερη που καλύπτει όλο το τετράγωνο.
+                state.baseScale = Math.max(STAGE_SIZE / img.naturalWidth, STAGE_SIZE / img.naturalHeight);
+                state.scale = state.baseScale;
+                state.x = (STAGE_SIZE - img.naturalWidth * state.scale) / 2;
+                state.y = (STAGE_SIZE - img.naturalHeight * state.scale) / 2;
+                zoom.value = 100;
+                editor.hidden = false;
+                draw();
+            };
+            // Χαλασμένο ή μη αναγνώσιμο αρχείο: δεν κολλάει σιωπηλά ο επεξεργαστής.
+            img.onerror = function () { if (onFail) { onFail(); } };
+            img.src = src;
+        }
+
         function openEditor(file) {
             var r = new FileReader();
             r.onload = function (e) {
-                img.onload = function () {
-                    // Αρχική κλίμακα: η μικρότερη που καλύπτει όλο το τετράγωνο.
-                    state.baseScale = Math.max(STAGE_SIZE / img.naturalWidth, STAGE_SIZE / img.naturalHeight);
-                    state.scale = state.baseScale;
-                    state.x = (STAGE_SIZE - img.naturalWidth * state.scale) / 2;
-                    state.y = (STAGE_SIZE - img.naturalHeight * state.scale) / 2;
-                    zoom.value = 100;
-                    editor.hidden = false;
-                    draw();
-                };
-                img.src = e.target.result;
+                openEditorFromSrc(e.target.result, function () {
+                    showPreviewOnly(file);   // ό,τι κι αν γίνει, το ανέβασμα προχωρά
+                });
             };
             r.readAsDataURL(file);
         }
 
         function closeEditor() {
             editor.hidden = true;
+        }
+
+        /** Το κουμπί «Προσαρμογή» έχει νόημα μόνο όταν υπάρχει εικόνα στον κύκλο. */
+        function showAdjust(src) {
+            if (!adjustBtn) { return; }
+            adjustBtn.dataset.current = src || '';
+            adjustBtn.hidden = false;
         }
 
         // ── Είσοδος αρχείου ──────────────────────────────────────────────
@@ -112,7 +139,56 @@
             }
         });
 
-        if (!canEdit) { return; }
+        // Χωρίς επεξεργαστή δεν έχει νόημα να φαίνεται κουμπί που δεν κάνει τίποτα.
+        if (!canEdit) {
+            if (adjustBtn) { adjustBtn.hidden = true; }
+            return;
+        }
+
+        // ── «Προσαρμογή» στην ΥΠΑΡΧΟΥΣΑ φωτογραφία ───────────────────────
+        /*
+         * Η εικόνα κατεβαίνει με fetch → blob → object URL αντί να μπει
+         * κατευθείαν στο <img>. Λόγος: το canvas «μολύνεται» (tainted) από
+         * εικόνα άλλης προέλευσης και το toBlob() πετάει SecurityError. Τα
+         * uploads σερβίρονται μέσω CDN, οπότε δεν είναι δεδομένο ότι μένουν
+         * στο ίδιο origin· το fetch same-origin επιστρέφει καθαρά bytes.
+         */
+        if (adjustBtn) {
+            adjustBtn.addEventListener('click', function () {
+                var src = adjustBtn.dataset.current;
+                if (!src) { return; }
+
+                adjustBtn.disabled = true;
+                var done = function () { adjustBtn.disabled = false; };
+                // Αν η αποθηκευμένη εικόνα δεν φορτώνει (σβήστηκε από τον
+                // δίσκο, 404 από το CDN), ο οδηγός πρέπει να το μάθει —
+                // όχι να πατά ένα κουμπί που «δεν κάνει τίποτα».
+                var failed = function () {
+                    done();
+                    if (hint) {
+                        hint.textContent = 'Η αποθηκευμένη φωτογραφία δεν φορτώθηκε. Ανεβάστε νέα.';
+                        hint.classList.add('avatar-hint-active');
+                    }
+                };
+
+                fetch(src, { credentials: 'same-origin' })
+                    .then(function (r) {
+                        if (!r.ok) { throw new Error('http ' + r.status); }
+                        return r.blob();
+                    })
+                    .then(function (blob) {
+                        var url = URL.createObjectURL(blob);
+                        openEditorFromSrc(url, failed);
+                        done();
+                    })
+                    .catch(function () {
+                        // Εφεδρικά: απευθείας από το <img> — αν μολυνθεί το canvas
+                        // το πιάνει το try/catch της «Εφαρμογής».
+                        openEditorFromSrc(src, failed);
+                        done();
+                    });
+            });
+        }
 
         // ── Μετακίνηση (ποντίκι + αφή) ───────────────────────────────────
         function startDrag(x, y) { state.dragging = true; state.lastX = x; state.lastY = y; }
@@ -173,24 +249,61 @@
                 img.naturalHeight * state.scale * k
             );
 
-            out.toBlob(function (blob) {
-                if (!blob) { closeEditor(); return; }
-                try {
-                    var file = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
-                    var dt = new DataTransfer();
-                    dt.items.add(file);
-                    input.files = dt.files;
-                } catch (e) {
-                    // Αν αποτύχει, μένει το αρχικό αρχείο — τίποτα δεν χάνεται.
-                }
-                if (preview) { preview.src = out.toDataURL('image/jpeg', 0.9); preview.style.display = ''; }
+            var finish = function (dataUrl) {
+                if (preview) { preview.src = dataUrl; preview.style.display = ''; }
                 if (placeholder) { placeholder.style.display = 'none'; }
+                showAdjust(dataUrl);   // η προσαρμοσμένη γίνεται η νέα «τρέχουσα»
                 closeEditor();
-            }, 'image/jpeg', 0.9);
+                if (hint) {
+                    hint.textContent = 'Η φωτογραφία προσαρμόστηκε — πατήστε «Αποθήκευση Αλλαγών» για να καταχωρηθεί.';
+                    hint.classList.add('avatar-hint-active');
+                }
+            };
+
+            try {
+                out.toBlob(function (blob) {
+                    if (!blob) { closeEditor(); return; }
+                    try {
+                        var file = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
+                        var dt = new DataTransfer();
+                        dt.items.add(file);
+                        input.files = dt.files;
+                    } catch (e) {
+                        // Αν αποτύχει, μένει το αρχικό αρχείο — τίποτα δεν χάνεται.
+                    }
+                    finish(out.toDataURL('image/jpeg', 0.9));
+                }, 'image/jpeg', 0.9);
+            } catch (e) {
+                // SecurityError από μολυσμένο canvas (εικόνα άλλης προέλευσης):
+                // δεν αλλάζουμε τίποτα, αλλά το λέμε αντί να «μη γίνεται κάτι».
+                closeEditor();
+                if (hint) {
+                    hint.textContent = 'Η προσαρμογή δεν ήταν δυνατή. Ανεβάστε ξανά τη φωτογραφία.';
+                    hint.classList.add('avatar-hint-active');
+                }
+            }
         });
 
         cancelBtn.addEventListener('click', function () {
             input.value = '';   // ακύρωση = καμία αλλαγή φωτογραφίας
+            // Το κουμπί ξαναδείχνει την ΑΠΟΘΗΚΕΥΜΕΝΗ εικόνα, όχι αυτήν που
+            // μόλις ακυρώθηκε — αλλιώς η επόμενη «Προσαρμογή» θα δούλευε
+            // πάνω σε φωτογραφία που ο οδηγός απέρριψε.
+            if (adjustBtn) {
+                if (savedAvatar) {
+                    adjustBtn.dataset.current = savedAvatar;
+                    adjustBtn.hidden = false;
+                } else {
+                    adjustBtn.hidden = true;
+                }
+            }
+            if (preview && !savedAvatar) {
+                preview.removeAttribute('src');
+                preview.style.display = 'none';
+                if (placeholder) { placeholder.style.display = ''; }
+            } else if (preview && savedAvatar) {
+                preview.src = savedAvatar;
+            }
             closeEditor();
         });
     });

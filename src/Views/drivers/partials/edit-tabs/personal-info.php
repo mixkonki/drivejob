@@ -29,7 +29,22 @@
                                     </span>
                                 </label>
                                 <input type="file" id="profile_image" name="profile_image" accept="image/jpeg, image/png, image/gif" class="avatar-file-input">
-                                <p class="avatar-hint">JPEG/PNG/GIF έως 2MB</p>
+
+                                <?php /* 30/08 — ΔΙΟΡΘΩΣΗ ΑΝΑΚΑΛΥΨΙΜΟΤΗΤΑΣ.
+                                   Ο επεξεργαστής άνοιγε ΜΟΝΟ όταν επιλεγόταν νέο αρχείο:
+                                   λειτουργία αόρατη, και η ήδη ανεβασμένη φωτογραφία δεν
+                                   μπορούσε να ξανα-καδραριστεί καθόλου. Το κουμπί είναι
+                                   ορατό όταν υπάρχει εικόνα και ανοίγει τον επεξεργαστή
+                                   πάνω στην ΥΠΑΡΧΟΥΣΑ φωτογραφία, χωρίς νέο ανέβασμα. */ ?>
+                                <div class="avatar-actions">
+                                    <button type="button" class="btn-secondary avatar-adjust-btn" id="avatarAdjust"
+                                            data-current="<?php echo $hasAvatar ? BASE_URL . htmlspecialchars($driverData['profile_image'], ENT_QUOTES, 'UTF-8') : ''; ?>"
+                                            <?php echo $hasAvatar ? '' : 'hidden'; ?>>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+                                        Προσαρμογή
+                                    </button>
+                                </div>
+                                <p class="avatar-hint">JPEG/PNG/GIF έως 2MB — πατήστε «Προσαρμογή» για μεγέθυνση και κεντράρισμα στον κύκλο.</p>
                             </div>
 
                             <div class="profile-hero-fields">

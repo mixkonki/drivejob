@@ -714,6 +714,34 @@ main .container > h1 {
 
 .avatar-editor[hidden] { display: none !important; }
 
+/* Το ορατό κουμπί «Προσαρμογή» κάτω από τον κύκλο (30/08): χωρίς αυτό
+   η λειτουργία ήταν αόρατη — άνοιγε μόνο σε νέο ανέβασμα αρχείου. */
+.avatar-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: .5rem;
+}
+
+.avatar-adjust-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: .35rem;
+    padding: .35rem .7rem !important;
+    font-size: .8rem !important;
+    line-height: 1.2;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.avatar-adjust-btn[hidden] { display: none !important; }
+.avatar-adjust-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.avatar-adjust-btn:disabled { opacity: .55; cursor: default; }
+
+.avatar-hint-active {
+    color: #b3261e !important;
+    font-weight: 600;
+}
+
 .avatar-editor-box {
     background: #fff;
     border-radius: 12px;
