@@ -248,6 +248,101 @@ class AdminController extends BaseController
         $this->redirect(BASE_URL . 'admin/dashboard');
     }
 
+    /*
+     * ══════════════════════════════════════════════════════════════════
+     *  ΚΑΤΑΛΟΓΟΙ ΤΙΜΩΝ (30/08/2026)
+     * ══════════════════════════════════════════════════════════════════
+     *
+     * Οι λίστες που βλέπουν οι οδηγοί (ειδικές άδειες κ.λπ.) ήταν
+     * σκληροκωδικοποιημένες: κάθε νέα κατηγορία της νομοθεσίας απαιτούσε
+     * αλλαγή κώδικα και deploy. Τώρα τις συντηρεί ο διαχειριστής.
+     *
+     * Κανόνας: ΚΑΜΙΑ διαγραφή τιμής που χρησιμοποιείται — μόνο
+     * απενεργοποίηση, ώστε τα προφίλ των οδηγών να μη μείνουν με ορφανούς
+     * κωδικούς (ο έλεγχος γίνεται στο LookupModel).
+     */
+
+    /** GET /admin/lookups[/{domain}] — διαχείριση καταλόγων. */
+    public function lookups($domain = null)
+    {
+        $domain = $domain ?? ($_GET['domain'] ?? 'special_license');
+        if (!isset(\Drivejob\Models\LookupModel::DOMAINS[$domain])) {
+            $domain = 'special_license';
+        }
+
+        $lookupModel = new \Drivejob\Models\LookupModel($this->pdo);
+        $domains = \Drivejob\Models\LookupModel::DOMAINS;
+        $values = $lookupModel->all($domain, false); // και ανενεργές
+
+        // Πόσοι οδηγοί χρησιμοποιούν κάθε τιμή — ώστε ο διαχειριστής να
+        // βλέπει τι θα επηρεάσει πριν αποσύρει μια κατηγορία.
+        foreach ($values as &$value) {
+            $value['usage_count'] = $lookupModel->usageCount($domain, $value['code']);
+        }
+        unset($value);
+
+        include ROOT_DIR . '/src/Views/admin/lookups.php';
+    }
+
+    /** POST /admin/lookups/{domain}/save — προσθήκη ή ενημέρωση τιμής. */
+    public function saveLookup($domain)
+    {
+        $this->requireCsrf('admin/lookups/' . $domain);
+
+        $lookupModel = new \Drivejob\Models\LookupModel($this->pdo);
+        $id = (int) ($_POST['id'] ?? 0);
+        $label = (string) ($_POST['label'] ?? '');
+        $shortLabel = (string) ($_POST['short_label'] ?? '');
+        $sortOrder = (int) ($_POST['sort_order'] ?? 0);
+
+        $result = $id > 0
+            ? $lookupModel->update($id, $label, $shortLabel, $sortOrder)
+            : $lookupModel->create($domain, (string) ($_POST['code'] ?? ''), $label, $shortLabel, $sortOrder);
+
+        if ($result['ok']) {
+            Session::set('success_message', $id > 0 ? 'Η τιμή ενημερώθηκε.' : 'Η τιμή προστέθηκε.');
+        } else {
+            Session::set('error_message', $result['error'] ?? 'Δεν ήταν δυνατή η αποθήκευση.');
+        }
+
+        $this->redirect(BASE_URL . 'admin/lookups/' . $domain);
+    }
+
+    /** POST /admin/lookups/{domain}/toggle/{id} — απόσυρση/επαναφορά. */
+    public function toggleLookup($domain, $id)
+    {
+        $this->requireCsrf('admin/lookups/' . $domain);
+
+        $lookupModel = new \Drivejob\Models\LookupModel($this->pdo);
+        $current = $lookupModel->find((int) $id);
+        $result = $lookupModel->setActive((int) $id, !($current && (int) $current['is_active'] === 1));
+
+        if ($result['ok']) {
+            Session::set('success_message', 'Η κατάσταση της τιμής άλλαξε.');
+        } else {
+            Session::set('error_message', $result['error'] ?? 'Δεν ήταν δυνατή η αλλαγή.');
+        }
+
+        $this->redirect(BASE_URL . 'admin/lookups/' . $domain);
+    }
+
+    /** POST /admin/lookups/{domain}/delete/{id} — μόνο αν δεν χρησιμοποιείται. */
+    public function deleteLookup($domain, $id)
+    {
+        $this->requireCsrf('admin/lookups/' . $domain);
+
+        $lookupModel = new \Drivejob\Models\LookupModel($this->pdo);
+        $result = $lookupModel->delete((int) $id);
+
+        if ($result['ok']) {
+            Session::set('success_message', 'Η τιμή διαγράφηκε.');
+        } else {
+            Session::set('error_message', $result['error'] ?? 'Δεν ήταν δυνατή η διαγραφή.');
+        }
+
+        $this->redirect(BASE_URL . 'admin/lookups/' . $domain);
+    }
+
     /** Έλεγχος CSRF για κάθε POST του admin — μία φορά, εδώ. */
     private function requireCsrf(string $backTo): void
     {

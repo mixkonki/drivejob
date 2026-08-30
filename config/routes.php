@@ -286,6 +286,13 @@ $router->group(['prefix' => 'admin'], function ($router) {
 
     // System Settings
     $router->get('/settings', [\Drivejob\Controllers\Admin\AdminController::class, 'settings'])->name('admin.settings');
+
+    // Κατάλογοι τιμών (ειδικές άδειες κ.λπ.) — τους συντηρεί ο διαχειριστής
+    $router->get('/lookups', [\Drivejob\Controllers\Admin\AdminController::class, 'lookups'])->name('admin.lookups');
+    $router->get('/lookups/{domain}', [\Drivejob\Controllers\Admin\AdminController::class, 'lookups'])->name('admin.lookups.domain');
+    $router->post('/lookups/{domain}/save', [\Drivejob\Controllers\Admin\AdminController::class, 'saveLookup'])->name('admin.lookups.save');
+    $router->post('/lookups/{domain}/toggle/{id}', [\Drivejob\Controllers\Admin\AdminController::class, 'toggleLookup'])->name('admin.lookups.toggle');
+    $router->post('/lookups/{domain}/delete/{id}', [\Drivejob\Controllers\Admin\AdminController::class, 'deleteLookup'])->name('admin.lookups.delete');
     $router->post('/settings', [\Drivejob\Controllers\Admin\AdminController::class, 'settings']);
 
     // Activity Logs

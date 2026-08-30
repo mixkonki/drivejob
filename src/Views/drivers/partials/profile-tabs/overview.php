@@ -377,70 +377,62 @@
                                         </tr>
 
                                         <!-- Ειδικές Άδειες -->
-                                        <tr>
-                                            <td class="qualification-type">
-                                                <span>Ειδικές Άδειες</span>
-                                            </td>
-                                            <td>
-                                                <?php
-                                                // Ελέγχουμε αν υπάρχουν ειδικές άδειες
-                                                if (isset($driverSpecialLicenses) && !empty($driverSpecialLicenses)) :
-                                                ?>
-                                                    <div class="special-licenses-list">
-                                                        <ul>
-                                                            <?php foreach ($driverSpecialLicenses as $specialLicense) : ?>
-                                                                <li>
-                                                                    <strong><?php echo htmlspecialchars(\Drivejob\Helpers\SpecialLicenseTypes::label((string) $specialLicense['license_type']), ENT_QUOTES, 'UTF-8'); ?></strong>
-                                                                    <?php if (!empty($specialLicense['license_number'])) : ?>
-                                                                        - Αρ: <?php echo htmlspecialchars($specialLicense['license_number']); ?>
-                                                                    <?php endif; ?>
-                                                                    <?php if (!empty($specialLicense['details'])) : ?>
-                                                                        <div class="special-license-details">
-                                                                            <?php echo htmlspecialchars($specialLicense['details']); ?>
-                                                                        </div>
-                                                                    <?php endif; ?>
-                                                                </li>
-                                                            <?php endforeach; ?>
-                                                        </ul>
-                                                    </div>
-                                                <?php else : ?>
-                                                    <span class="not-available">Δεν έχουν καταχωρηθεί ειδικές άδειες</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <?php
-                                                // Εμφάνιση της ημερομηνίας λήξης της πρώτης ειδικής άδειας (αν υπάρχει)
-                                                if (isset($driverSpecialLicenses) && !empty($driverSpecialLicenses) && !empty($driverSpecialLicenses[0]['expiry_date'])) :
-                                                ?>
-                                                    <span class="expiry-date"><?php echo date('d/m/Y', strtotime($driverSpecialLicenses[0]['expiry_date'])); ?></span>
-                                                <?php else : ?>
-                                                    <span class="not-available">Δεν έχει οριστεί</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <?php
-                                                // Έλεγχος εγκυρότητας της πρώτης ειδικής άδειας (αν υπάρχει)
-                                                if (isset($driverSpecialLicenses) && !empty($driverSpecialLicenses) && !empty($driverSpecialLicenses[0]['expiry_date'])) :
-                                                    $isExpired = strtotime($driverSpecialLicenses[0]['expiry_date']) < time();
-                                                    $expiresInThreeMonths = !$isExpired && (strtotime($driverSpecialLicenses[0]['expiry_date']) - time()) < 60 * 60 * 24 * 90;
-                                                ?>
-                                                    <span class="status-indicator <?php echo $isExpired ? 'expired' : ($expiresInThreeMonths ? 'expiring-soon' : 'valid'); ?>">
-                                                        <?php
-                                                        if ($isExpired) {
-                                                            echo "Μη έγκυρη";
-                                                        } elseif ($expiresInThreeMonths) {
-                                                            echo "Λήγει σύντομα";
-                                                        } else {
-                                                            echo "Έγκυρη";
-                                                        }
-                                                        ?>
-                                                    </span>
-                                                <?php else : ?>
-                                                    <span class="not-available">-</span>
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-
+                                        <?php
+                                        /*
+                                         * v2 (30/08): ΜΙΑ ΓΡΑΜΜΗ ΑΝΑ ΕΙΔΙΚΗ ΑΔΕΙΑ.
+                                         * Πριν όλες οι ειδικές άδειες στριμώχνονταν σε ένα κελί
+                                         * και η στήλη «Λήξη» έδειχνε την ημερομηνία της ΠΡΩΤΗΣ —
+                                         * μια άδεια ΕΔΧ που έληγε φαινόταν έγκυρη επειδή η
+                                         * επόμενη στη λίστα δεν είχε λήξει. Κάθε άδεια έχει
+                                         * πλέον δική της γραμμή, λήξη και κατάσταση· κενή
+                                         * ημερομηνία σημαίνει «Αορίστου», όχι «δεν ορίστηκε».
+                                         */
+                                        if (!empty($driverSpecialLicenses)) :
+                                            foreach ($driverSpecialLicenses as $specialLicense) :
+                                                $slExpiry = $specialLicense['expiry_date'] ?? null;
+                                                $slTs = $slExpiry ? strtotime($slExpiry) : null;
+                                        ?>
+                                            <tr>
+                                                <td class="qualification-type">
+                                                    <span>Ειδική Άδεια</span>
+                                                </td>
+                                                <td>
+                                                    <strong><?php echo htmlspecialchars(\Drivejob\Helpers\SpecialLicenseTypes::label((string) $specialLicense['license_type']), ENT_QUOTES, 'UTF-8'); ?></strong>
+                                                    <?php if (!empty($specialLicense['license_number'])) : ?>
+                                                        <br><span class="qualification-detail">Αριθμός: <?php echo htmlspecialchars($specialLicense['license_number'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($specialLicense['details'])) : ?>
+                                                        <div class="special-license-details"><?php echo htmlspecialchars($specialLicense['details'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <?php if ($slTs) : ?>
+                                                        <span class="expiry-date"><?php echo date('d/m/Y', $slTs); ?></span>
+                                                    <?php else : ?>
+                                                        <span class="expiry-date">Αορίστου</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <?php if ($slTs) :
+                                                        $isExpired = $slTs < time();
+                                                        $expiresInThreeMonths = !$isExpired && ($slTs - time()) < 60 * 60 * 24 * 90;
+                                                    ?>
+                                                        <span class="status-indicator <?php echo $isExpired ? 'expired' : ($expiresInThreeMonths ? 'expiring-soon' : 'valid'); ?>">
+                                                            <?php echo $isExpired ? 'Μη έγκυρη' : ($expiresInThreeMonths ? 'Λήγει σύντομα' : 'Έγκυρη'); ?>
+                                                        </span>
+                                                    <?php else : ?>
+                                                        <span class="status-indicator valid">Έγκυρη</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; else : ?>
+                                            <tr>
+                                                <td class="qualification-type"><span>Ειδικές Άδειες</span></td>
+                                                <td><span class="not-available">Δεν έχουν καταχωρηθεί ειδικές άδειες</span></td>
+                                                <td><span class="not-available">-</span></td>
+                                                <td><span class="not-available">-</span></td>
+                                            </tr>
+                                        <?php endif; ?>
 
                                     </tbody>
                                 </table>

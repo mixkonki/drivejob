@@ -122,26 +122,31 @@
                         <input type="hidden" id="experience_years" name="experience_years" value="<?php echo old('experience_years', $driverData['experience_years'] ?? ''); ?>">
                         </div><!-- /.form-section Προσωπικά -->
 
-                        <script>
-                        // Ζωντανή προεπισκόπηση avatar: με την επιλογή αρχείου η νέα
-                        // φωτογραφία φαίνεται αμέσως στον κύκλο (πριν την αποθήκευση).
-                        (function () {
-                            var input = document.getElementById('profile_image');
-                            if (!input) return;
-                            input.addEventListener('change', function () {
-                                var f = this.files && this.files[0];
-                                if (!f || !f.type.match(/^image\//)) return;
-                                var img = document.getElementById('avatarPreview');
-                                var ph = document.getElementById('avatarPlaceholder');
-                                var r = new FileReader();
-                                r.onload = function (e) {
-                                    if (img) { img.src = e.target.result; img.style.display = ''; }
-                                    if (ph) { ph.style.display = 'none'; }
-                                };
-                                r.readAsDataURL(f);
-                            });
-                        })();
-                        </script>
+                        <?php /* Προσαρμογή φωτογραφίας (30/08): ο χρήστης μεγεθύνει και
+                           μετακινεί την εικόνα μέσα στον κύκλο πριν την αποθήκευση.
+                           Το αποτέλεσμα κόβεται σε τετράγωνο 512×512 στο canvas και
+                           μπαίνει ΠΙΣΩ στο ίδιο file input — ο server δεν αλλάζει
+                           καθόλου, και ανεβαίνει μικρότερο αρχείο. */ ?>
+                        <div id="avatarEditor" class="avatar-editor" hidden>
+                            <div class="avatar-editor-box">
+                                <h4>Προσαρμογή φωτογραφίας</h4>
+                                <p class="form-hint">Σύρετε την εικόνα για να την τοποθετήσετε και χρησιμοποιήστε τον διακόπτη για μεγέθυνση.</p>
+                                <div class="avatar-stage" id="avatarStage">
+                                    <canvas id="avatarCanvas" width="320" height="320"></canvas>
+                                    <div class="avatar-mask"></div>
+                                </div>
+                                <div class="avatar-zoom">
+                                    <span>Σμίκρυνση</span>
+                                    <input type="range" id="avatarZoom" min="100" max="300" value="100">
+                                    <span>Μεγέθυνση</span>
+                                </div>
+                                <div class="avatar-editor-actions">
+                                    <button type="button" class="btn-primary" id="avatarApply">Εφαρμογή</button>
+                                    <button type="button" class="btn-secondary" id="avatarCancel">Ακύρωση</button>
+                                </div>
+                            </div>
+                        </div>
+                        <?= \Drivejob\Helpers\Asset::js('js/avatar-editor.js', true) ?>
 
                         <?php // Στοιχεία Επικοινωνίας: ίδια καρτέλα, δική τους ενότητα ?>
                         <?php include __DIR__ . '/contact-info.php'; ?>

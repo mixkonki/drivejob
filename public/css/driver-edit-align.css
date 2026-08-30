@@ -684,3 +684,85 @@ main .container > h1 {
     margin-left: auto;
     flex-shrink: 0;
 }
+
+/* ── Επεξεργαστής φωτογραφίας προφίλ (30/08) ─────────────────────────
+   Ο χρήστης μεγεθύνει και τοποθετεί την εικόνα μέσα στον κύκλο πριν
+   την αποθήκευση — δεν κόβεται πια αυθαίρετα το κέντρο. */
+.avatar-editor {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(17, 24, 39, .6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.avatar-editor[hidden] { display: none !important; }
+
+.avatar-editor-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.2rem 1.3rem;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+}
+
+.avatar-editor-box h4 { margin: 0 0 .3rem; font-size: 1rem; }
+
+.avatar-stage {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+    aspect-ratio: 1;
+    margin: .8rem auto;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none; /* αλλιώς το drag κυλά τη σελίδα στο κινητό */
+}
+
+.avatar-stage:active { cursor: grabbing; }
+.avatar-stage canvas { display: block; width: 100%; height: 100%; }
+
+/* Ο κύκλος-οδηγός: ό,τι μένει έξω θα κοπεί */
+.avatar-mask {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: 0 0 0 999px rgba(255, 255, 255, .55) inset;
+    border-radius: 50%;
+    border: 2px solid rgba(179, 38, 30, .8);
+}
+
+.avatar-zoom {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .78rem;
+    color: #6b7280;
+}
+
+.avatar-zoom input[type="range"] { flex: 1; accent-color: #b3261e; }
+
+.avatar-editor-actions {
+    display: flex;
+    gap: .6rem;
+    margin-top: .9rem;
+}
+
+.avatar-editor-actions button { flex: 1; }
+
+/* Ειδικές άδειες: το «χωρίς λήξη» κάτω από το πεδίο ημερομηνίας */
+.edit-profile-form .sl-no-expiry-label {
+    display: flex !important;
+    align-items: center;
+    gap: .4rem;
+    font-weight: 400 !important;
+    font-size: .8rem !important;
+    color: #6b7280;
+    margin-top: .35rem;
+    cursor: pointer;
+}

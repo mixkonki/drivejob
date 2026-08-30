@@ -31,9 +31,14 @@
                                         <label>Τύπος Άδειας</label>
                                         <select name="special_license_type[]" class="sl-type" required>
                                             <option value="">Επιλέξτε τύπο</option>
-                                            <?php foreach (\Drivejob\Helpers\SpecialLicenseTypes::TYPES as $code => $label) : ?>
-                                                <option value="<?php echo $code; ?>" <?php echo $selected === $code ? 'selected' : ''; ?>><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></option>
+                                            <?php foreach (\Drivejob\Helpers\SpecialLicenseTypes::options() as $code => $label) : ?>
+                                                <option value="<?php echo htmlspecialchars((string) $code, ENT_QUOTES, 'UTF-8'); ?>" <?php echo $selected === $code ? 'selected' : ''; ?>><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></option>
                                             <?php endforeach; ?>
+                                            <?php /* Αν ο διαχειριστής απέσυρε τον τύπο που έχει ήδη ο
+                                               οδηγός, τον κρατάμε ορατό ώστε να μη χαθεί στο save. */ ?>
+                                            <?php if ($selected !== '' && !isset(\Drivejob\Helpers\SpecialLicenseTypes::options()[$selected])) : ?>
+                                                <option value="<?php echo htmlspecialchars($selected, ENT_QUOTES, 'UTF-8'); ?>" selected><?php echo htmlspecialchars(\Drivejob\Helpers\SpecialLicenseTypes::label($selected), ENT_QUOTES, 'UTF-8'); ?></option>
+                                            <?php endif; ?>
                                         </select>
                                     </div>
 
@@ -42,9 +47,23 @@
                                         <input type="text" name="special_license_number[]" value="<?php echo htmlspecialchars((string) ($license['license_number'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
                                     </div>
 
+                                    <?php
+                                    // Κενή ημερομηνία = αορίστου διάρκειας (π.χ. ΠΕΕ). Το
+                                    // δηλώνουμε ρητά με checkbox αντί να το αφήνουμε στην
+                                    // τύχη ενός κενού πεδίου — feedback Κώστα 30/08.
+                                    $slNoExpiry = empty($license['expiry_date']) && !empty($license);
+                                    ?>
                                     <div class="form-group">
                                         <label>Ημερομηνία Λήξης</label>
-                                        <input type="date" name="special_license_expiry[]" value="<?php echo htmlspecialchars((string) ($license['expiry_date'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?php /* ΠΟΤΕ disabled: τα disabled πεδία ΔΕΝ στέλνονται και
+                                           τα παράλληλα arrays (type[]/expiry[]) ξεσυγχρονίζονται —
+                                           η λήξη της μιας άδειας θα κατέληγε σε άλλη. Το πεδίο
+                                           απλώς κρύβεται και στέλνεται κενό. */ ?>
+                                        <input type="date" name="special_license_expiry[]" class="sl-expiry" value="<?php echo htmlspecialchars((string) ($license['expiry_date'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" <?php echo $slNoExpiry ? 'style="display:none;"' : ''; ?>>
+                                        <label class="sl-no-expiry-label">
+                                            <input type="checkbox" class="sl-no-expiry" <?php echo $slNoExpiry ? 'checked' : ''; ?>>
+                                            <span>Χωρίς λήξη (αορίστου)</span>
+                                        </label>
                                     </div>
                                 </div>
 
@@ -89,6 +108,20 @@
                                 if (type && hint) {
                                     type.addEventListener('change', function () {
                                         hint.style.display = this.value === 'other' ? '' : 'none';
+                                    });
+                                }
+                                // «Χωρίς λήξη»: κρύβει το πεδίο και το στέλνει κενό (=NULL).
+                                // Το πεδίο μένει enabled ώστε τα arrays να μη χάσουν θέση.
+                                var noExp = item.querySelector('.sl-no-expiry');
+                                var exp = item.querySelector('.sl-expiry');
+                                if (noExp && exp) {
+                                    noExp.addEventListener('change', function () {
+                                        if (this.checked) {
+                                            exp.value = '';
+                                            exp.style.display = 'none';
+                                        } else {
+                                            exp.style.display = '';
+                                        }
                                     });
                                 }
                             }
