@@ -12,8 +12,10 @@
                             </div>
 
                             <div id="driving_license_tab" class="license-details-tab <?php echo (empty($driverLicenseTypes)) ? 'hidden' : ''; ?>">
-                                <!-- Εικόνες διπλώματος και σκανάρισμα -->
-                                <div class="license-visual">
+                                <?php /* 25/08: εικόνες διπλώματος ως κλικαμπλ κάρτες με
+                                   προεπισκόπηση (ίδιο μοτίβο με το avatar) — το κλικ πάνω
+                                   στην κάρτα ανοίγει τον επιλογέα αρχείου. */ ?>
+                                <div class="doc-upload-grid">
                                     <?php
                                     $licenseImages = [
                                         ['id' => 'license_front_image', 'label' => 'Εμπρόσθια Όψη Διπλώματος', 'scan_id' => 'scan-license-front'],
@@ -21,45 +23,54 @@
                                     ];
 
                                     foreach ($licenseImages as $image) :
+                                        $hasImg = !empty($driverData[$image['id']]);
                                     ?>
-                                        <div class="form-group">
-                                            <label for="<?php echo $image['id']; ?>"><?php echo $image['label']; ?></label>
-                                            <?php if (isset($driverData[$image['id']]) && $driverData[$image['id']]) : ?>
-                                                <div class="current-image">
-                                                    <img src="<?php echo BASE_URL . htmlspecialchars($driverData[$image['id']]); ?>" alt="<?php echo $image['label']; ?>">
-                                                    <p>Τρέχουσα εικόνα</p>
-                                                </div>
-                                            <?php endif; ?>
-                                            <input type="file" id="<?php echo $image['id']; ?>" name="<?php echo $image['id']; ?>" accept="image/jpeg, image/png, image/gif">
+                                        <div class="doc-upload">
+                                            <span class="doc-upload-title"><?php echo $image['label']; ?></span>
+                                            <label class="doc-drop <?php echo $hasImg ? 'has-image' : ''; ?>" for="<?php echo $image['id']; ?>" title="Κλικ για επιλογή εικόνας">
+                                                <img class="doc-preview"
+                                                     src="<?php echo $hasImg ? BASE_URL . htmlspecialchars($driverData[$image['id']]) : ''; ?>"
+                                                     alt="<?php echo $image['label']; ?>"
+                                                     <?php echo $hasImg ? '' : 'style="display:none;"'; ?>
+                                                     onerror="this.style.display='none';var p=this.parentElement.querySelector('.doc-placeholder');if(p)p.style.display='';">
+                                                <span class="doc-placeholder" <?php echo $hasImg ? 'style="display:none;"' : ''; ?>>
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                                    Κλικ για προσθήκη εικόνας
+                                                </span>
+                                                <span class="doc-change-overlay">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                                    Αλλαγή
+                                                </span>
+                                            </label>
+                                            <input type="file" id="<?php echo $image['id']; ?>" name="<?php echo $image['id']; ?>" accept="image/jpeg, image/png, image/gif" class="doc-file-input">
                                             <button type="button" id="<?php echo $image['scan_id']; ?>" class="btn-scan">
-                                                <img src="<?= \Drivejob\Helpers\Asset::url('img/scan_icon.png') ?>" alt="Scan" class="scan-icon">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
                                                 Σκανάρισμα με OCR
                                             </button>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
 
-                                <!-- Βασικές πληροφορίες άδειας -->
+                                <!-- Βασικές πληροφορίες άδειας: μία γραμμή, 3 στήλες -->
                                 <div class="license-basic-info">
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label for="license_number">Αριθμός Άδειας Οδήγησης</label>
                                             <input type="text" id="license_number" name="license_number" value="<?php echo old('license_number', $driverData['license_number'] ?? ''); ?>" placeholder="π.χ. 123456789">
-                                            <p class="form-hint">Εισάγετε τον αριθμό που αναγράφεται στο πεδίο 5 της άδειας οδήγησης</p>
+                                            <p class="form-hint">Πεδίο 5 της άδειας</p>
                                         </div>
 
                                         <div class="form-group">
-                                            <label for="license_document_expiry">Ημερομηνία Λήξης Εντύπου Άδειας</label>
+                                            <label for="license_document_expiry">Λήξη Εντύπου Άδειας</label>
                                             <input type="date" id="license_document_expiry" name="license_document_expiry" value="<?php echo old('license_document_expiry', $driverData['license_document_expiry'] ?? ''); ?>">
-                                            <p class="form-hint">Εισάγετε την ημερομηνία που αναγράφεται στο πεδίο 4β της άδειας οδήγησης</p>
+                                            <p class="form-hint">Πεδίο 4β της άδειας</p>
                                         </div>
-                                    </div>
 
-                                    <!-- Κωδικοί στήλης 12 του διπλώματος -->
-                                    <div class="form-group">
-                                        <label for="license_codes">Κωδικοί Περιορισμών/Πληροφοριών (Στήλη 12)</label>
-                                        <input type="text" id="license_codes" name="license_codes" value="<?php echo old('license_codes', $driverData['license_codes'] ?? ''); ?>" placeholder="π.χ. 01.01, 78, 95">
-                                        <p class="form-hint">Εισάγετε τους κωδικούς που αναγράφονται στη στήλη 12 του διπλώματος, χωρισμένους με κόμμα</p>
+                                        <div class="form-group">
+                                            <label for="license_codes">Κωδικοί Περιορισμών (Στήλη 12)</label>
+                                            <input type="text" id="license_codes" name="license_codes" value="<?php echo old('license_codes', $driverData['license_codes'] ?? ''); ?>" placeholder="π.χ. 01.01, 78, 95">
+                                            <p class="form-hint">Χωρισμένοι με κόμμα</p>
+                                        </div>
                                     </div>
                                 </div>
 

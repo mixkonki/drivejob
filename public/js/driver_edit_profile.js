@@ -271,3 +271,30 @@ function calculateAge(birthDate) {
     
     return age;
 }
+
+/*
+ * Προεπισκόπηση εικόνων εγγράφων (25/08): κάθε .doc-upload κάρτα
+ * (δίπλωμα, ADR, άδεια χειριστή, κάρτα ταχογράφου) δείχνει αμέσως τη
+ * νέα εικόνα μόλις επιλεγεί αρχείο — πριν την αποθήκευση.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.doc-upload').forEach(function (card) {
+        var input = card.querySelector('.doc-file-input');
+        var img = card.querySelector('.doc-preview');
+        var ph = card.querySelector('.doc-placeholder');
+        var drop = card.querySelector('.doc-drop');
+        if (!input || !img) return;
+        input.addEventListener('change', function () {
+            var f = this.files && this.files[0];
+            if (!f || !/^image\//.test(f.type)) return;
+            var r = new FileReader();
+            r.onload = function (e) {
+                img.src = e.target.result;
+                img.style.display = '';
+                if (ph) ph.style.display = 'none';
+                if (drop) drop.classList.add('has-image');
+            };
+            r.readAsDataURL(f);
+        });
+    });
+});

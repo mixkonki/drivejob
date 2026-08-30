@@ -362,6 +362,110 @@ main .container > h1 {
 }
 .edit-profile-form .legal-status-line input { accent-color: #b3261e; flex-shrink: 0; }
 
+/* ── Κάρτες εικόνων εγγράφων (δίπλωμα, ADR, άδεια χειριστή, κάρτες) ────
+   Ίδιο μοτίβο με το avatar: κλικ στην κάρτα = επιλογή αρχείου, ζωντανή
+   προεπισκόπηση (JS στο driver_edit_profile.js), «Αλλαγή» στο hover. */
+.edit-profile-form .doc-upload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.1rem;
+    margin-bottom: 1.1rem;
+}
+
+.edit-profile-form .doc-upload {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    min-width: 0;
+}
+
+.edit-profile-form .doc-upload-title {
+    font-size: .85rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.edit-profile-form .doc-drop {
+    position: relative;
+    display: block;
+    max-width: 440px; /* σε φαρδιές οθόνες η κάρτα δεν γίνεται τεράστια */
+    aspect-ratio: 16 / 10; /* αναλογία κάρτας/διπλώματος */
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px dashed #d1d5db;
+    background: #f9fafb;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: border-color .15s ease;
+}
+
+.edit-profile-form .doc-drop:hover { border-color: #b3261e; }
+.edit-profile-form .doc-drop.has-image { border-style: solid; border-color: #e5e7eb; }
+
+.edit-profile-form .doc-drop .doc-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.edit-profile-form .doc-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    font-size: .82rem;
+}
+.edit-profile-form .doc-placeholder svg { width: 30px; height: 30px; }
+
+.edit-profile-form .doc-change-overlay {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(17, 24, 39, .65);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    padding: .3rem 0 .35rem;
+    opacity: 0;
+    transition: opacity .15s ease;
+}
+.edit-profile-form .doc-drop.has-image:hover .doc-change-overlay { opacity: 1; }
+.edit-profile-form .doc-change-overlay svg { width: 14px; height: 14px; }
+
+.edit-profile-form .doc-file-input {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+/* Κουμπί OCR: διακριτικό outline αντί για το παλιό πράσινο */
+.edit-profile-form .btn-scan {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    border-radius: 7px;
+    padding: .5rem .8rem;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease;
+}
+.edit-profile-form .btn-scan:hover { border-color: #b3261e; color: #b3261e; }
+.edit-profile-form .btn-scan svg { width: 16px; height: 16px; }
+
 /* Ειδοποιήσεις ανανέωσης (RenewalAlerts): εμφανίζονται ΜΟΝΟ όταν
    πλησιάζει/πέρασε η λήξη — πορτοκαλί «λήγει», κόκκινο «έληξε». */
 .renewal-alert {
