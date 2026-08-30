@@ -356,21 +356,23 @@ class CertificationModel extends BaseModel
             $table = 'driver_tachograph_cards';
 
             if ($existingCard) {
-                // Ενημέρωση υπάρχουσας εγγραφής
-                $sql = "UPDATE $table SET card_number = ?, expiry_date = ? WHERE driver_id = ?";
+                // Ενημέρωση υπάρχουσας εγγραφής (issue_date = πεδίο 4α της κάρτας)
+                $sql = "UPDATE $table SET card_number = ?, issue_date = ?, expiry_date = ? WHERE driver_id = ?";
                 $stmt = $this->pdo->prepare($sql);
                 return $stmt->execute([
                     $tachographData['card_number'],
+                    $tachographData['issue_date'] ?: null,
                     $tachographData['expiry_date'] ?: null,
                     $driverId
                 ]);
             } else {
                 // Δημιουργία νέας εγγραφής
-                $sql = "INSERT INTO $table (driver_id, card_number, expiry_date) VALUES (?, ?, ?)";
+                $sql = "INSERT INTO $table (driver_id, card_number, issue_date, expiry_date) VALUES (?, ?, ?, ?)";
                 $stmt = $this->pdo->prepare($sql);
                 return $stmt->execute([
                     $driverId,
                     $tachographData['card_number'],
+                    $tachographData['issue_date'] ?: null,
                     $tachographData['expiry_date'] ?: null
                 ]);
             }

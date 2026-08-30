@@ -26,17 +26,19 @@
                                         <div class="form-group">
                                             <label for="adr_certificate_number">Αριθμός Πιστοποιητικού ADR</label>
                                             <input type="text" id="adr_certificate_number" name="adr_certificate_number" value="<?php echo old('adr_certificate_number', $driverADR['certificate_number'] ?? ''); ?>" placeholder="π.χ. GR1234567">
+                                            <p class="form-hint">Πεδίο 1 της κάρτας (νέου τύπου, από 24/06/2019)</p>
                                         </div>
 
                                         <div class="form-group">
-                                            <label for="adr_certificate_expiry">Ημερομηνία Λήξης</label>
+                                            <label for="adr_certificate_expiry">Ισχύει Έως</label>
                                             <input type="date" id="adr_certificate_expiry" name="adr_certificate_expiry" value="<?php echo old('adr_certificate_expiry', $driverADR ? $driverADR['expiry_date'] : ''); ?>">
-                                            <p class="form-hint">Το πιστοποιητικό ADR ανανεώνεται κάθε 5 έτη, και η ανανέωση μπορεί να γίνει κατά τον τελευταίο χρόνο πριν τη λήξη.</p>
+                                            <p class="form-hint">Πεδίο 7 — ισχύς 5 έτη, ανανέωση τον τελευταίο χρόνο</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <h4>Κατηγορίες Πιστοποιητικού ADR</h4>
+                                <p class="form-info">Οι κατηγορίες Π αντιστοιχούν στα πεδία 8–9 της κάρτας: κλάσεις σε συσκευασίες (πεδίο 8) και σε βυτία (πεδίο 9).</p>
                                 <div class="adr-categories">
                                     <?php
                                     $adrCategories = [

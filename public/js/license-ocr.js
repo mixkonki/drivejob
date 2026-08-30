@@ -386,6 +386,7 @@
             docLabel: 'της κάρτας ταχογράφου',
             numberField: 'tachograph_card_number',
             expiryField: 'tachograph_card_expiry',
+            issueField: 'tachograph_card_issue', // 4α — ημερομηνία έκδοσης
             // 5β = αριθμός κάρτας οδηγού (πανευρωπαϊκή διάταξη πεδίων)
             numberPattern: /5\s*[bβ][.:\s]{0,3}([A-Z0-9]{8,20})/i,
             // 5α = αριθμός ΔΙΠΛΩΜΑΤΟΣ του κατόχου → έλεγχος ταυτοπροσωπίας
@@ -415,19 +416,39 @@
         return SCAN_PROFILES[0];
     }
 
-    /** Όλες οι ημερομηνίες του κειμένου· η πιο μακρινή μελλοντική = λήξη. */
-    function extractExpiry(text) {
+    function fmtDate(d) {
+        var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
+
+    function collectDates(text) {
         var re = /(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{4})/g;
-        var m, best = null;
-        var today = new Date();
+        var m, out = [];
         while ((m = re.exec(text)) !== null) {
             var d = new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10));
-            if (isNaN(d) || d.getFullYear() < 2000 || d.getFullYear() > 2060) { continue; }
-            if (d > today && (!best || d > best)) { best = d; }
+            if (!isNaN(d) && d.getFullYear() >= 2000 && d.getFullYear() <= 2060) { out.push(d); }
         }
-        if (!best) { return null; }
-        var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
-        return best.getFullYear() + '-' + pad(best.getMonth() + 1) + '-' + pad(best.getDate());
+        return out;
+    }
+
+    /** Η πιο μακρινή μελλοντική ημερομηνία = λήξη. */
+    function extractExpiry(text) {
+        var today = new Date(), best = null;
+        collectDates(text).forEach(function (d) {
+            if (d > today && (!best || d > best)) { best = d; }
+        });
+        return best ? fmtDate(best) : null;
+    }
+
+    /** Η πιο πρόσφατη ΠΑΡΕΛΘΟΥΣΑ ημερομηνία = έκδοση (4α). Αγνοεί πολύ
+        παλιές (γεννήσεις): κρατά μόνο ό,τι είναι μέσα στην τελευταία 6ετία. */
+    function extractIssue(text) {
+        var today = new Date(), best = null;
+        var floor = new Date(today.getFullYear() - 6, today.getMonth(), today.getDate());
+        collectDates(text).forEach(function (d) {
+            if (d <= today && d >= floor && (!best || d > best)) { best = d; }
+        });
+        return best ? fmtDate(best) : null;
     }
 
     /** Γενικός αριθμός εγγράφου: το πιο μακρύ αλφαριθμητικό με ≥6 ψηφία. */
@@ -458,6 +479,14 @@
         }
         if (expiry && fillIfEmpty(profile.expiryField, expiry)) {
             lines.push('Λήξη: <strong>' + expiry.split('-').reverse().join('/') + '</strong> — συμπληρώθηκε');
+        } else if (expiry) {
+            lines.push('Λήξη: <strong>' + expiry.split('-').reverse().join('/') + '</strong> (το πεδίο είχε ήδη τιμή — δεν άλλαξε)');
+        }
+        if (profile.issueField) {
+            var issue = extractIssue(text);
+            if (issue && fillIfEmpty(profile.issueField, issue)) {
+                lines.push('Έκδοση (4α): <strong>' + issue.split('-').reverse().join('/') + '</strong> — συμπληρώθηκε');
+            }
         }
 
         // Έλεγχος ταυτοπροσωπίας: το 5α της κάρτας ΠΡΕΠΕΙ να ταιριάζει με

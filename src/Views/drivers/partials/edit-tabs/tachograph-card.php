@@ -20,17 +20,26 @@
                                 include __DIR__ . '/_doc-upload.php';
                                 ?>
 
-                                <!-- Βασικές πληροφορίες κάρτας ταχογράφου -->
+                                <?php /* Πεδία κατά ΚΥΑ οικ.12527/1159/2014: 5β αριθμός κάρτας,
+                                   4α έκδοση, 4β λήξη (5ετία, ανανέωση έως 2 μήνες πριν). */ ?>
                                 <div class="license-basic-info">
                                     <div class="form-row">
                                         <div class="form-group">
-                                            <label for="tachograph_card_number">Αριθμός Κάρτας Ταχογράφου</label>
-                                            <input type="text" id="tachograph_card_number" name="tachograph_card_number" value="<?php echo old('tachograph_card_number', $driverTachograph['card_number'] ?? ''); ?>" placeholder="π.χ. GR1234567890">
+                                            <label for="tachograph_card_number">Αριθμός Κάρτας Οδηγού</label>
+                                            <input type="text" id="tachograph_card_number" name="tachograph_card_number" value="<?php echo old('tachograph_card_number', $driverTachograph['card_number'] ?? ''); ?>" placeholder="16 χαρακτήρες">
+                                            <p class="form-hint">Πεδίο 5β της κάρτας</p>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="tachograph_card_issue">Ημερομηνία Έκδοσης</label>
+                                            <input type="date" id="tachograph_card_issue" name="tachograph_card_issue" value="<?php echo old('tachograph_card_issue', $driverTachograph['issue_date'] ?? ''); ?>">
+                                            <p class="form-hint">Πεδίο 4α της κάρτας</p>
                                         </div>
 
                                         <div class="form-group">
                                             <label for="tachograph_card_expiry">Ημερομηνία Λήξης</label>
                                             <input type="date" id="tachograph_card_expiry" name="tachograph_card_expiry" value="<?php echo old('tachograph_card_expiry', $driverTachograph['expiry_date'] ?? ''); ?>">
+                                            <p class="form-hint">Πεδίο 4β — ισχύς 5 έτη</p>
                                         </div>
                                     </div>
                                 </div>

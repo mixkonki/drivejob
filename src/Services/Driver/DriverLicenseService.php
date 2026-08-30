@@ -121,6 +121,7 @@ class DriverLicenseService
             if (isset($formData['tachograph_card']) && $formData['tachograph_card'] == 1) {
                 $tachographData = [
                     'card_number' => $formData['tachograph_card_number'] ?? null,
+                    'issue_date'  => $formData['tachograph_card_issue'] ?? null,
                     'expiry_date' => $formData['tachograph_card_expiry'] ?? null
                 ];
 
