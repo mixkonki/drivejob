@@ -110,29 +110,58 @@
 
 .qrow-icon .qual-icon { width: 17px; height: 17px; display: block; }
 
-.qrow-main { min-width: 0; }
+/*
+ * ΤΙΤΛΟΣ ΚΑΙ ΠΕΡΙΓΡΑΦΗ ΣΤΗΝ ΙΔΙΑ ΓΡΑΜΜΗ — ΟΤΑΝ ΧΩΡΑΝΕ (31/08)
+ *
+ * Πριν: «1η ειδικότητα» και από κάτω «Εργασίες εκσκαφής και εν γένει
+ * χωματουργικές». Δύο γραμμές για κάτι που σε φαρδιά οθόνη χωρά σε μία,
+ * επί τρεις ειδικότητες, επί κάθε καταχώρηση προϋπηρεσίας.
+ *
+ * Το `.qrow-main` γίνεται flex με wrap: ο τίτλος και ο υπότιτλος
+ * μπαίνουν δίπλα-δίπλα όσο χωράνε και διπλώνουν ΜΟΝΑ ΤΟΥΣ όταν στενεύει
+ * η οθόνη — χωρίς κανένα media query. Αυτό είναι που ζητήθηκε: «όταν
+ * αλλάζει το πλάτος να αλλάζει».
+ *
+ * Ό,τι πρέπει ΠΑΝΤΑ να πάει σε δική του γραμμή (λεπτομέρειες,
+ * υποειδικότητες, περιγραφή, κατηγορίες) παίρνει flex-basis: 100%.
+ */
+.qrow-main {
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .1rem .5rem;
+}
 
 .qrow-main h4 {
     margin: 0;
     font-size: .88rem;
     font-weight: 650;
     color: #111827;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     flex-wrap: wrap;
     gap: .4rem;
-    line-height: 1.35;
+    line-height: 1.4;
 }
 
 .qrow-sub {
-    margin: .05rem 0 0;
+    margin: 0;
     font-size: .8rem;
     color: #6b7280;
-    line-height: 1.35;
+    line-height: 1.4;
 }
 
+/* Πάντα σε δική τους γραμμή */
+.qrow-lines,
+.qrow-cats,
+.qrow-desc,
+.qrow-all,
+.qsubs,
+.qrow-empty { flex-basis: 100%; }
+
 .qrow-desc {
-    margin: .2rem 0 0;
+    margin: .15rem 0 0;
     font-size: .8rem;
     color: #4b5563;
     line-height: 1.4;
@@ -141,7 +170,7 @@
 /* Τα μικρά στοιχεία σε ΜΙΑ σειρά με διαχωριστικά — όχι μια γραμμή το
    καθένα, που τέντωνε κάθε καταχώρηση σε τέσσερις σειρές. */
 .qrow-lines {
-    margin: .12rem 0 0;
+    margin: .1rem 0 0;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -276,47 +305,69 @@
 .qbadge--unknown { background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
 .qbadge--none    { background: transparent; color: #9ca3af; border-color: #f3f4f6; }
 
-/* ── Γλώσσες & δεξιότητες ───────────────────────────────────────────── */
-.cv-two {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
-    gap: .8rem 1.6rem;
-    padding: .5rem 0 .2rem;
-}
+/* ══════════════════════════════════════════════════════════════════════
+   ΓΛΩΣΣΕΣ — δική τους ομάδα, στη δεξιά στήλη (31/08)
+   ══════════════════════════════════════════════════════════════════════ */
 
-.cv-langs { list-style: none; margin: 0; padding: 0; }
+.qgroup--lang { --qg: #0e7490; --qg-soft: #f5fdff; }
 
-.cv-langs li {
+.lang-list { list-style: none; margin: 0; padding: .1rem 0; }
+
+.lang-list li {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: .6rem;
-    padding: .22rem 0;
-    font-size: .82rem;
+    padding: .3rem 0;
+    border-top: 1px solid #f4f5f7;
+    font-size: .84rem;
 }
 
-.cv-lang-name { color: #111827; font-weight: 600; }
+.lang-list li:first-child { border-top: 0; }
 
-.cv-lang-level {
-    font-size: .72rem;
+.lang-name { color: #111827; font-weight: 600; }
+
+.lang-level {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .74rem;
     font-weight: 600;
     color: #6b7280;
     white-space: nowrap;
 }
 
-.cv-lang-level--native { color: #047857; }
-.cv-lang-level--fluent { color: #1d4ed8; }
+/* Ράβδος τεσσάρων βημάτων: το επίπεδο φαίνεται πριν διαβαστεί. */
+.lang-bar { display: inline-flex; gap: 2px; }
 
-.cv-skill-group { margin-bottom: .45rem; }
+.lang-bar i {
+    width: 5px;
+    height: 11px;
+    border-radius: 1px;
+    background: #e5e7eb;
+    display: block;
+}
 
-.cv-skill-group-label {
+.lang-bar i.on { background: currentColor; }
+
+.lang-level--native { color: #047857; }
+.lang-level--fluent { color: #1d4ed8; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ΔΕΞΙΟΤΗΤΕΣ — δική τους ομάδα
+   ══════════════════════════════════════════════════════════════════════ */
+
+.skl-group { padding: .35rem 0; border-top: 1px solid #f4f5f7; }
+.skl-group:first-child { border-top: 0; }
+
+.skl-group-label {
     display: block;
     font-size: .72rem;
     color: #9ca3af;
-    margin-bottom: .15rem;
+    margin-bottom: .2rem;
 }
 
-.cv-skill-list { margin: 0; display: flex; flex-wrap: wrap; gap: .22rem; }
+.skl-list { margin: 0; display: flex; flex-wrap: wrap; gap: .22rem; }
 
 /* ══════════════════════════════════════════════════════════════════════
    ΕΙΔΟΠΟΙΗΣΕΙΣ ΛΗΞΕΩΝ (εμφανίζονται ΜΟΝΟ όταν υπάρχουν)
@@ -415,7 +466,6 @@
     .qexp { flex-direction: row; align-items: baseline; gap: .3rem; }
 
     .qsubs { grid-template-columns: 1fr; }
-    .cv-two { grid-template-columns: 1fr; }
 
     .qgroup-head { padding: .5rem .7rem; }
     .qgroup-body { padding: .1rem .7rem .4rem; }
@@ -441,8 +491,12 @@
 
 /* Τα κοινά στοιχεία της ακτίνας — δηλώνονται ΚΑΙ εδώ γιατί η σελίδα
    προβολής δεν φορτώνει το driver-edit-align.css. */
+/* ΤΕΤΡΑΓΩΝΟΣ (31/08): ο κύκλος της ακτίνας είναι κύκλος — σε ορθογώνιο
+   πλαίσιο έμενε πάντα κενό πάνω και κάτω, ή κοβόταν στα πλάγια. Το
+   aspect-ratio τον κρατά τετράγωνο σε κάθε πλάτος στήλης. */
 .wr-map {
-    height: 170px;
+    aspect-ratio: 1;
+    width: 100%;
     border-radius: 10px;
     background: #f3f4f6;
     border: 1px solid #e5e7eb;
