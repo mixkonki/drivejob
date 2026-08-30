@@ -149,6 +149,8 @@ class DriversController extends BaseUserController
             'driverVehicleExperience' => $driverProfile['vehicle_experience'] ?? [],
             'driverTachograph' => $driverProfile['tachograph_cards'][0] ?? null,
             'driverOperator' => $driverProfile['operator_licenses'][0] ?? null,
+            // v2 (25/08): ΟΛΕΣ οι άδειες χειριστή — πολλές ανά κάτοχο
+            'driverOperatorLicenses' => $driverProfile['operator_licenses'] ?? [],
             'driverSpecialLicenses' => $driverProfile['special_licenses'] ?? [],
             'driverADR' => $driverProfile['adr_certificates'][0] ?? null,
             'driverRating' => $driverProfile['rating_details'] ?? null,

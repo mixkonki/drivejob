@@ -1,167 +1,97 @@
 /**
- * Άδειες χειριστή μηχανημάτων έργου — ειδικότητες & υποειδικότητες.
+ * Άδειες χειριστή ΜΕ — v2 (25/08/2026).
  *
- * Ο κατάλογος (ΥΑ 1032/166/2013) έρχεται ΕΤΟΙΜΟΣ από την PHP ως
- * window.djOperatorCatalog = { "1": {"1.1": "Εκσκαφείς...", ...}, ... }.
- * Εδώ ζει η loadSubSpecialities() που το dropdown καλούσε ανέκαθεν —
- * αλλά δεν είχε γραφτεί ποτέ, κι ο πίνακας έμενε για πάντα άδειος.
- *
- * Κατάσταση επιλογών: window.allSelectedSubSpecialities
- *   { "2.7": { checked: true, group: "A" }, ... }
- * (αρχικοποιείται από τη βάση στο inline script του edit-profile).
- * Κάθε αλλαγή σειριοποιείται αμέσως στα κρυφά πεδία που διαβάζει ο
- * server: all_selected_subspecialities (JSON array κωδικών) και
- * all_selected_groups (JSON αντικείμενο κωδικός→ομάδα).
+ * Ξαναγράφτηκε από το μηδέν: το παλιό script υποστήριζε ΜΙΑ ειδικότητα
+ * ανά χειριστή (λάθος μοντέλο) και κρατούσε state σε κρυφά JSON πεδία
+ * που έσβηναν δεδομένα. Τώρα: επαναλαμβανόμενα μπλοκ αδειών (ένα ανά
+ * Ομάδα+Ειδικότητα), απλά πεδία φόρμας op_lic[N][...], και οι
+ * υποειδικότητες renders ζωντανά από τον κατάλογο (window.djOperatorCatalog).
  */
 (function () {
     'use strict';
 
-    const catalog = window.djOperatorCatalog || {};
-
-    function state() {
-        if (!window.allSelectedSubSpecialities) window.allSelectedSubSpecialities = {};
-        return window.allSelectedSubSpecialities;
+    function catalog() {
+        return window.djOperatorCatalog || {};
     }
 
-    /** Σειριοποίηση της πλήρους κατάστασης στα κρυφά πεδία της φόρμας. */
-    function serialize() {
-        const codes = [];
-        const groups = {};
-        Object.keys(state()).forEach(function (code) {
-            const entry = state()[code];
-            if (entry && entry.checked) {
-                codes.push(code);
-                groups[code] = entry.group === 'B' ? 'B' : 'A';
-            }
-        });
-        const codesField = document.getElementById('all_selected_subspecialities');
-        const groupsField = document.getElementById('all_selected_groups');
-        if (codesField) codesField.value = JSON.stringify(codes);
-        if (groupsField) groupsField.value = JSON.stringify(groups);
-        renderSelectedList(codes, groups);
-    }
+    /** Γεμίζει τη λίστα υποειδικοτήτων ενός μπλοκ βάσει της ειδικότητάς του. */
+    function renderSubs(item) {
+        var select = item.querySelector('.op-speciality');
+        var list = item.querySelector('.op-sub-list');
+        if (!select || !list) { return; }
 
-    /** Ζωντανή ενημέρωση της λίστας «Επιλεγμένες Υποειδικότητες». */
-    function renderSelectedList(codes, groups) {
-        const container = document.querySelector('.selected-subspecialities');
-        if (!container) return;
-        const old = container.querySelectorAll('.speciality-group, .selected-list');
-        old.forEach(function (el) { el.remove(); });
+        var idx = item.dataset.idx;
+        var spec = select.value;
+        var subs = catalog()[spec] || {};
 
-        if (!codes.length) {
-            const ul = document.createElement('ul');
-            ul.className = 'selected-list';
-            const li = document.createElement('li');
-            li.className = 'no-items';
-            li.textContent = 'Δεν έχουν επιλεγεί υποειδικότητες';
-            ul.appendChild(li);
-            container.appendChild(ul);
-            return;
-        }
+        var selected = [];
+        try {
+            selected = JSON.parse(item.dataset.selectedSubs || '[]');
+        } catch (e) { selected = []; }
 
-        codes.sort();
-        const bySpec = {};
-        codes.forEach(function (code) {
-            const spec = code.split('.')[0];
-            (bySpec[spec] = bySpec[spec] || []).push(code);
-        });
-
-        Object.keys(bySpec).sort().forEach(function (spec) {
-            const div = document.createElement('div');
-            div.className = 'speciality-group';
-            const h = document.createElement('h6');
-            h.textContent = spec + ' - ' + ((window.djOperatorSpecialityNames || {})[spec] || 'Ειδικότητα ' + spec);
-            div.appendChild(h);
-            const ul = document.createElement('ul');
-            ul.className = 'selected-list';
-            bySpec[spec].forEach(function (code) {
-                const li = document.createElement('li');
-                const name = (catalog[spec] || {})[code] || code;
-                li.innerHTML = '<span class="subspeciality-id"></span> <span class="subspeciality-name"></span> <span class="subspeciality-group"></span>';
-                li.children[0].textContent = code;
-                li.children[1].textContent = name;
-                li.children[2].textContent = 'Ομάδα ' + (groups[code] || 'A');
-                ul.appendChild(li);
-            });
-            div.appendChild(ul);
-            container.appendChild(div);
-        });
-    }
-
-    /** Γεμίζει τον πίνακα υποειδικοτήτων για την επιλεγμένη ειδικότητα. */
-    window.loadSubSpecialities = function (specialityId) {
-        const container = document.getElementById('subSpecialityContainer');
-        const tbody = document.getElementById('subSpecialitiesTableBody');
-        if (!container || !tbody) return;
-
-        tbody.innerHTML = '';
-        const subs = catalog[specialityId] || {};
-
-        if (!specialityId || !Object.keys(subs).length) {
-            container.style.display = 'none';
-            return;
-        }
-        container.style.display = 'block';
-
+        var html = '';
         Object.keys(subs).forEach(function (code) {
-            const saved = state()[code];
-            const tr = document.createElement('tr');
-
-            const tdCode = document.createElement('td');
-            tdCode.textContent = code;
-
-            const tdName = document.createElement('td');
-            tdName.textContent = subs[code];
-
-            const tdCheck = document.createElement('td');
-            const chk = document.createElement('input');
-            chk.type = 'checkbox';
-            chk.checked = !!(saved && saved.checked);
-            chk.setAttribute('aria-label', 'Επιλογή ' + code);
-            tdCheck.appendChild(chk);
-
-            const tdGroup = document.createElement('td');
-            const sel = document.createElement('select');
-            [['A', 'Α (άνω 120 kW)'], ['B', 'Β (έως 120 kW)']].forEach(function (opt) {
-                const o = document.createElement('option');
-                o.value = opt[0];
-                o.textContent = opt[1];
-                sel.appendChild(o);
-            });
-            sel.value = (saved && saved.group === 'B') ? 'B' : 'A';
-            sel.disabled = !chk.checked;
-            sel.setAttribute('aria-label', 'Ομάδα ' + code);
-            tdGroup.appendChild(sel);
-
-            chk.addEventListener('change', function () {
-                state()[code] = { checked: chk.checked, group: sel.value };
-                sel.disabled = !chk.checked;
-                serialize();
-            });
-            sel.addEventListener('change', function () {
-                state()[code] = { checked: chk.checked, group: sel.value };
-                serialize();
-            });
-
-            tr.appendChild(tdCode);
-            tr.appendChild(tdName);
-            tr.appendChild(tdCheck);
-            tr.appendChild(tdGroup);
-            tbody.appendChild(tr);
+            var checked = selected.indexOf(code) !== -1 ? 'checked' : '';
+            html += '<div class="skill-item">'
+                + '<input type="checkbox" class="skill-checkbox" name="op_lic[' + idx + '][subs][]" value="' + code + '" ' + checked + '>'
+                + '<label class="skill-label"><strong>' + code + '</strong> ' + subs[code] + '</label>'
+                + '</div>';
         });
-    };
+
+        if (!html) {
+            html = spec === '9'
+                ? '<p class="form-hint">Η 9η ειδικότητα καλύπτει μηχανήματα πολλαπλών εργασιών — δεν έχει αριθμημένες υποειδικότητες.</p>'
+                : '<p class="form-hint">Επίλεξε πρώτα ειδικότητα για να δεις τα μηχανήματά της.</p>';
+        }
+
+        list.innerHTML = html;
+    }
+
+    function wireItem(item) {
+        var select = item.querySelector('.op-speciality');
+        if (select) {
+            select.addEventListener('change', function () {
+                // Νέα ειδικότητα = άλλα μηχανήματα: οι παλιές επιλογές δεν ισχύουν.
+                item.dataset.selectedSubs = '[]';
+                renderSubs(item);
+            });
+        }
+
+        item.querySelectorAll('input[name^="op_lic"][name$="[covers_all]"]').forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                var wrap = item.querySelector('.op-sub-wrap');
+                if (wrap) { wrap.style.display = this.value === '1' ? 'none' : ''; }
+            });
+        });
+
+        var remove = item.querySelector('.op-lic-remove');
+        if (remove) {
+            remove.addEventListener('click', function () {
+                item.remove();
+            });
+        }
+
+        renderSubs(item);
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
-        /*
-         * Σειριοποίηση της αποθηκευμένης κατάστασης ΑΜΕΣΩΣ: τα κρυφά
-         * πεδία ξεκινούσαν κενά, οπότε μια αποθήκευση προφίλ χωρίς να
-         * αγγίξεις την καρτέλα χειριστή ΕΣΒΗΝΕ τις υποειδικότητες.
-         */
-        serialize();
+        document.querySelectorAll('.op-lic-item').forEach(wireItem);
 
-        const specialitySelect = document.getElementById('operator_speciality');
-        if (specialitySelect && specialitySelect.value) {
-            window.loadSubSpecialities(specialitySelect.value);
+        var addBtn = document.getElementById('addOpLic');
+        var listEl = document.getElementById('opLicList');
+        var tpl = document.getElementById('opLicTemplate');
+
+        if (addBtn && listEl && tpl) {
+            addBtn.addEventListener('click', function () {
+                var idx = 'n' + Date.now();
+                var holder = document.createElement('div');
+                holder.innerHTML = tpl.innerHTML.replace(/__IDX__/g, idx);
+                var item = holder.querySelector('.op-lic-item');
+                if (!item) { return; }
+                item.dataset.idx = idx;
+                listEl.appendChild(item);
+                wireItem(item);
+            });
         }
     });
 })();

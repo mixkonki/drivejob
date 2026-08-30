@@ -177,110 +177,78 @@ class DriverLicenseService
      * @param array $formData Δεδομένα από τη φόρμα
      * @return bool Επιτυχία ή αποτυχία
      */
+    /**
+     * Άδειες χειριστή ΜΕ v2 (25/08/2026) — ΠΟΛΛΕΣ άδειες ανά χειριστή.
+     *
+     * Από τα πραγματικά βιβλιάρια: κάθε άδεια = Ομάδα (Α/Β) + Ειδικότητα
+     * (1-9) + αριθμός + ημ. χορήγησης, και καλύπτει είτε το σύνολο της
+     * ειδικότητας είτε συγκεκριμένες υποειδικότητες. Ο Αρ. Μητρώου και η
+     * θεώρηση («ισχύς έως») είναι ΚΟΙΝΑ για το βιβλιάριο — η θεώρηση
+     * αποθηκεύεται ίδια σε κάθε γραμμή (expiry_date) ώστε τα υπάρχοντα
+     * σημεία ανάγνωσης (matching, προφίλ) να συνεχίσουν να δουλεύουν.
+     *
+     * Πεδία φόρμας: operator_license (master checkbox),
+     * operator_registry_number, operator_inspection_until,
+     * op_lic[N][speciality|group|number|issue_date|covers_all],
+     * op_lic[N][subs][] (κωδικοί π.χ. "2.7").
+     */
     public function handleOperatorLicense($driverId, $formData)
     {
         try {
-            if (isset($formData['operator_license']) && $formData['operator_license'] == 1) {
-                // Δημιουργία του πίνακα δεδομένων
-                $operatorData = [
-                    'speciality' => $formData['operator_speciality'] ?? null,
-                    'license_number' => $formData['operator_license_number'] ?? null,
-                    'expiry_date' => $formData['operator_license_expiry'] ?? null
-                ];
-
-                // Ενημέρωση ή προσθήκη της άδειας χειριστή
-                $operatorLicenseId = $this->certificationModel->updateDriverOperatorLicense($driverId, $operatorData);
-
-                if ($operatorLicenseId) {
-                    // Διαχείριση υποειδικοτήτων
-                    $this->handleOperatorSubSpecialities($operatorLicenseId, $formData);
-                    return true;
-                }
-
-                return false;
-            } else {
-                // Αν δεν έχει επιλεγεί η άδεια χειριστή, διαγράφουμε τα στοιχεία
+            if (!isset($formData['operator_license']) || $formData['operator_license'] != 1) {
+                // Ο οδηγός δήλωσε ότι ΔΕΝ έχει άδεια χειριστή.
+                $this->certificationModel->updateOperatorRegistryNumber($driverId, null);
                 return $this->certificationModel->deleteDriverOperatorLicense($driverId);
             }
+
+            $inspectionUntil = $formData['operator_inspection_until'] ?? null;
+            $rows = $formData['op_lic'] ?? [];
+            $licenses = [];
+
+            foreach ((array) $rows as $row) {
+                $speciality = trim((string) ($row['speciality'] ?? ''));
+                if (!isset(\Drivejob\Helpers\OperatorSpecialities::SPECIALITIES[$speciality])) {
+                    continue; // κενό/άκυρο block — αγνοείται
+                }
+
+                $group = strtoupper(trim((string) ($row['group'] ?? '')));
+                if (!in_array($group, ['A', 'B'], true)) {
+                    $group = 'A';
+                }
+
+                $coversAll = !empty($row['covers_all']) && $row['covers_all'] == '1';
+
+                // Υποειδικότητες: μόνο έγκυρες ΚΑΙ της ίδιας ειδικότητας.
+                $subs = [];
+                if (!$coversAll) {
+                    foreach ((array) ($row['subs'] ?? []) as $sub) {
+                        $sub = trim((string) $sub);
+                        if (\Drivejob\Helpers\OperatorSpecialities::isValidSub($sub)
+                            && strpos($sub, $speciality . '.') === 0) {
+                            $subs[$sub] = $sub;
+                        }
+                    }
+                }
+
+                $licenses[] = [
+                    'speciality'     => $speciality,
+                    'group_type'     => $group,
+                    'license_number' => trim((string) ($row['number'] ?? '')),
+                    'issue_date'     => $row['issue_date'] ?? null,
+                    'covers_all'     => $coversAll,
+                    'expiry_date'    => $inspectionUntil,
+                    'subs'           => array_values($subs),
+                ];
+            }
+
+            $this->certificationModel->updateOperatorRegistryNumber(
+                $driverId,
+                trim((string) ($formData['operator_registry_number'] ?? '')) ?: null
+            );
+
+            return $this->certificationModel->replaceDriverOperatorLicenses($driverId, $licenses);
         } catch (\Exception $e) {
             Logger::error('Error in handleOperatorLicense: ' . $e->getMessage(), ['context' => 'DriverLicenseService']);
-            return false;
-        }
-    }
-
-    /**
-     * Διαχειρίζεται τις υποειδικότητες της άδειας χειριστή
-     *
-     * @param int $operatorLicenseId ID της άδειας χειριστή
-     * @param array $formData Δεδομένα από τη φόρμα
-     * @return bool Επιτυχία ή αποτυχία
-     */
-    private function handleOperatorSubSpecialities($operatorLicenseId, $formData)
-    {
-        try {
-            // Διαγραφή των υπαρχουσών υποειδικοτήτων
-            $this->certificationModel->deleteDriverOperatorSubSpecialities($operatorLicenseId);
-
-            // Λήψη των επιλεγμένων υποειδικοτήτων και ομάδων από JSON
-            $selectedSubSpecialities = [];
-            $selectedGroups = [];
-
-            // Λήψη από το πεδίο JSON των υποειδικοτήτων
-            if (isset($formData['all_selected_subspecialities']) && !empty($formData['all_selected_subspecialities'])) {
-                try {
-                    $selectedSubSpecialities = json_decode($formData['all_selected_subspecialities'], true);
-                    if (json_last_error() !== JSON_ERROR_NONE) {
-                        throw new \Exception("Σφάλμα JSON υποειδικοτήτων: " . json_last_error_msg());
-                    }
-                } catch (\Exception $e) {
-                    Logger::error("Σφάλμα αποκωδικοποίησης JSON υποειδικοτήτων: " . $e->getMessage(), ['context' => 'OperatorLicense']);
-                    $selectedSubSpecialities = [];
-                }
-            }
-
-            // Λήψη από το πεδίο JSON των ομάδων
-            if (isset($formData['all_selected_groups']) && !empty($formData['all_selected_groups'])) {
-                try {
-                    $selectedGroups = json_decode($formData['all_selected_groups'], true);
-                    if (json_last_error() !== JSON_ERROR_NONE) {
-                        throw new \Exception("Σφάλμα JSON ομάδων: " . json_last_error_msg());
-                    }
-                } catch (\Exception $e) {
-                    Logger::error("Σφάλμα αποκωδικοποίησης JSON ομάδων: " . $e->getMessage(), ['context' => 'OperatorLicense']);
-                    $selectedGroups = [];
-                }
-            }
-
-            // Εναλλακτική μέθοδος λήψης αν η JSON μέθοδος αποτύχει
-            if (empty($selectedSubSpecialities) && isset($formData['operator_sub_specialities'])) {
-                $selectedSubSpecialities = is_array($formData['operator_sub_specialities'])
-                    ? $formData['operator_sub_specialities']
-                    : [$formData['operator_sub_specialities']];
-            }
-
-            // Προσθήκη των επιλεγμένων υποειδικοτήτων
-            if (!empty($selectedSubSpecialities)) {
-                foreach ($selectedSubSpecialities as $subSpeciality) {
-                    // Καθορισμός της ομάδας (A ή B)
-                    $groupType = 'A'; // Προεπιλογή
-
-                    // Από το JSON αντικείμενο ομάδων
-                    if (isset($selectedGroups[$subSpeciality])) {
-                        $groupType = $selectedGroups[$subSpeciality];
-                    }
-                    // Από τα άμεσα πεδία της φόρμας
-                    else if (isset($formData["group_{$subSpeciality}"])) {
-                        $groupType = $formData["group_{$subSpeciality}"];
-                    }
-
-                    // Προσθήκη της υποειδικότητας με την ομάδα της
-                    $this->certificationModel->addDriverOperatorSubSpeciality($operatorLicenseId, $subSpeciality, $groupType);
-                }
-            }
-
-            return true;
-        } catch (\Exception $e) {
-            Logger::error('Error in handleOperatorSubSpecialities: ' . $e->getMessage());
             return false;
         }
     }

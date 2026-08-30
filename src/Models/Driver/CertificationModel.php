@@ -677,6 +677,72 @@ class CertificationModel extends BaseModel
      * @param int $driverId ID του οδηγού
      * @return array Οι άδειες χειριστή μηχανημάτων έργου του οδηγού
      */
+    /**
+     * v2 (25/08/2026): αντικαθιστά ΟΛΕΣ τις άδειες χειριστή του οδηγού με
+     * τη νέα λίστα — μία γραμμή ανά άδεια (ειδικότητα+ομάδα), με τις
+     * υποειδικότητές της. Ένα transaction: ή όλα ή τίποτα.
+     *
+     * @param array $licenses [['speciality','group_type','license_number',
+     *                          'issue_date','covers_all','expiry_date','subs'=>[]], ...]
+     */
+    public function replaceDriverOperatorLicenses($driverId, array $licenses)
+    {
+        try {
+            $this->pdo->beginTransaction();
+
+            $old = $this->pdo->prepare('SELECT id FROM driver_operator_licenses WHERE driver_id = ?');
+            $old->execute([$driverId]);
+            foreach ($old->fetchAll(PDO::FETCH_COLUMN) as $oldId) {
+                $this->deleteDriverOperatorSubSpecialities($oldId);
+            }
+            $this->pdo->prepare('DELETE FROM driver_operator_licenses WHERE driver_id = ?')->execute([$driverId]);
+
+            $ins = $this->pdo->prepare(
+                'INSERT INTO driver_operator_licenses
+                    (driver_id, speciality, group_type, license_number, issue_date, covers_all, expiry_date)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)'
+            );
+
+            foreach ($licenses as $lic) {
+                $ins->execute([
+                    $driverId,
+                    $lic['speciality'],
+                    $lic['group_type'],
+                    $lic['license_number'] ?: null,
+                    $lic['issue_date'] ?: null,
+                    $lic['covers_all'] ? 1 : 0,
+                    $lic['expiry_date'] ?: null,
+                ]);
+                $licenseId = (int) $this->pdo->lastInsertId();
+
+                foreach ($lic['subs'] as $sub) {
+                    $this->addDriverOperatorSubSpeciality($licenseId, $sub, $lic['group_type']);
+                }
+            }
+
+            $this->pdo->commit();
+            return true;
+        } catch (PDOException $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            Logger::error('Error in replaceDriverOperatorLicenses: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /** Αρ. Μητρώου βιβλιαρίου χειριστή — ένα ανά κάτοχο (πίνακας drivers). */
+    public function updateOperatorRegistryNumber($driverId, ?string $registryNumber)
+    {
+        try {
+            $stmt = $this->pdo->prepare('UPDATE drivers SET operator_registry_number = ? WHERE id = ?');
+            return $stmt->execute([$registryNumber ?: null, $driverId]);
+        } catch (PDOException $e) {
+            Logger::error('Error in updateOperatorRegistryNumber: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getDriverOperatorLicenses($driverId)
     {
         try {

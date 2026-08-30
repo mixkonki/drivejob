@@ -33,40 +33,9 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
 <?= \Drivejob\Helpers\Asset::js('js/country-phone-codes.js', false) ?>
 <?= \Drivejob\Helpers\Asset::js('js/vehicle-experience.js', false) ?>
 <?= \Drivejob\Helpers\Asset::js('js/driver-languages.js', true) ?>
-<script>
-    // Αρχικοποίηση δεδομένων από τη βάση
-    window.driverOperatorSubSpecialities = [];
-    window.selectedSubSpecialities = [];
-
-    <?php if (!empty($driverOperatorSubSpecialities)): ?>
-        <?php foreach ($driverOperatorSubSpecialities as $spec): ?>
-            window.driverOperatorSubSpecialities.push({
-                sub_speciality: "<?php echo $spec['sub_speciality']; ?>",
-                group_type: "<?php echo $spec['group_type'] ?? 'A'; ?>",
-                name: "<?php echo $spec['name'] ?? ''; ?>"
-            });
-            window.selectedSubSpecialities.push("<?php echo $spec['sub_speciality']; ?>");
-        <?php endforeach; ?>
-    <?php endif; ?>
-
-    // Μετατροπή των δεδομένων από PHP σε JavaScript
-    document.addEventListener('DOMContentLoaded', function() {
-        // Αρχικοποίηση του global αντικειμένου από τα δεδομένα της βάσης
-        window.allSelectedSubSpecialities = {};
-
-        // Αν υπάρχουν δεδομένα από τη βάση, τα προσθέτουμε
-        if (window.driverOperatorSubSpecialities && window.driverOperatorSubSpecialities.length > 0) {
-            window.driverOperatorSubSpecialities.forEach(spec => {
-                if (spec.sub_speciality) {
-                    window.allSelectedSubSpecialities[spec.sub_speciality] = {
-                        checked: true,
-                        group: spec.group_type || 'A'
-                    };
-                }
-            });
-        }
-    });
-</script>
+<?php /* Το παλιό inline state των υποειδικοτήτων (window.selectedSubSpecialities
+   κλπ) αφαιρέθηκε 25/08: το v2 των αδειών χειριστή δουλεύει με απλά
+   πεδία φόρμας op_lic[N][...] — δες operator-licenses.php/.js */ ?>
 
 <main>
     <div class="container">
