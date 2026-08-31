@@ -32,7 +32,7 @@
 }
 
 .tab-btn.active {
-    background-color: #007bff;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
 }
 
@@ -102,7 +102,7 @@
 }
 
 .btn-primary {
-    background-color: #007bff;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -113,7 +113,7 @@
 }
 
 .btn-primary:hover {
-    background-color: #0069d9;
+    background-color: var(--dj-brand-strong, #8f2b2b);
 }
 
 .btn-secondary {
@@ -173,7 +173,7 @@
 }
 
 .current-file a {
-    color: #007bff;
+    color: var(--dj-brand, #aa3636);
     text-decoration: none;
 }
 
@@ -272,7 +272,7 @@
     justify-content: center;
     width: 30px;
     height: 30px;
-    background-color: #007bff;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
     border-radius: 50%;
     font-weight: bold;
@@ -298,7 +298,7 @@
 .expiry-reminder {
     margin-top: 20px;
     padding: 15px;
-    background-color: #f8f9fa;
+    background-color: var(--dj-surface-alt, #f8f9fa);
     border-left: 4px solid #17a2b8;
     border-radius: 4px;
 }
@@ -343,7 +343,7 @@
 .speciality-group h6 {
     margin-top: 0;
     margin-bottom: 5px;
-    color: #007bff;
+    color: var(--dj-brand, #aa3636);
 }
 
 .selected-list {
@@ -354,7 +354,7 @@
 
 .selected-list li {
     padding: 5px 10px;
-    background-color: #f8f9fa;
+    background-color: var(--dj-surface-alt, #f8f9fa);
     border: 1px solid #ddd;
     border-radius: 4px;
     margin-bottom: 5px;
@@ -641,7 +641,7 @@ main {
 }
 
 .criminal-record-upload .current-file a {
-    color: #007bff;
+    color: var(--dj-brand, #aa3636);
     text-decoration: none;
 }
 

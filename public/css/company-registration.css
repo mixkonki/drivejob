@@ -8,7 +8,7 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     padding: 10px 30px;
 }
 
@@ -147,7 +147,7 @@ body {
     flex: 1;
     background-color: white;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: var(--dj-radius, 10px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
     width: 90%;
@@ -160,7 +160,7 @@ body {
     flex: 1;
     background-color: white;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: var(--dj-radius, 10px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 90%;
     max-width: 500px;
@@ -361,7 +361,7 @@ a:hover {
 /* Ρυθμίσεις κύριου κουμπιού - Δεν χρειάζεται αλλαγή */
 .btn-primary {
     width: 100%;
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
     padding: 10px;
     border: none;

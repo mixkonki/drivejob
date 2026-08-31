@@ -101,7 +101,7 @@
 }
 
 .criminal-record-upload .current-file a {
-    color: #007bff;
+    color: var(--dj-brand, #aa3636);
     text-decoration: none;
 }
 

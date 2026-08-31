@@ -167,7 +167,7 @@ h1 {
 }
 
 .listing-type.job_offer {
-    background-color: #007bff;
+    background-color: var(--dj-info, #1d4ed8);
 }
 
 .listing-type.job_search {
