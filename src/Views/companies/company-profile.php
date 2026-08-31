@@ -471,7 +471,14 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                 <!-- Messages Widget -->
                 <div class="sidebar-section">
                     <h3><i class="fas fa-envelope"></i> Μηνύματα</h3>
-                    <p class="text-muted mb-3">Έχετε <strong>3</strong> νέα μηνύματα</p>
+                    <?php /* Ήταν σκληρογραμμένο «3» — μακέτα. Τώρα: πραγματικός
+                             μετρητής αδιάβαστων από τις συνομιλίες (01/09/2026). */ ?>
+                    <?php $unreadMsg = (int) ($companyStats['unread_messages'] ?? 0); ?>
+                    <?php if ($unreadMsg > 0) : ?>
+                        <p class="text-muted mb-3">Έχετε <strong><?php echo $unreadMsg; ?></strong> αδιάβαστ<?php echo $unreadMsg === 1 ? 'ο μήνυμα' : 'α μηνύματα'; ?></p>
+                    <?php else : ?>
+                        <p class="text-muted mb-3">Κανένα νέο μήνυμα.</p>
+                    <?php endif; ?>
                     <a href="<?php echo BASE_URL; ?>companies/messages" class="btn btn-secondary">
                         Προβολή Μηνυμάτων
                     </a>

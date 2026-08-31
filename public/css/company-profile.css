@@ -60,6 +60,19 @@
     display: flex;
     gap: 10px;
     margin-top: 15px;
+    /* Χωρίς wrap, τα 4 κουμπιά (≈500px) πλάταιναν όλη τη στήλη και στο
+       κινητό το κεντράρισμα έκοβε το προφίλ ΑΡΙΣΤΕΡΑ (01/09/2026). */
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Το markup έχει bootstrap-ικές .row/.col χωρίς Bootstrap — απλά divs.
+   Ποτέ πιο φαρδιά από τον γονιό τους. */
+.profile-header .row,
+.profile-header .col,
+.profile-header .col-auto {
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* Μηνύματα επιτυχίας και σφάλματος */

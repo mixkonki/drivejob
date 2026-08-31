@@ -150,12 +150,14 @@ class CompaniesController extends BaseUserController
                   WHERE jl.company_id = :c3 AND ja.status = :hired)   AS hired_drivers,
                 (SELECT COUNT(*) FROM job_applications ja
                     JOIN job_listings jl ON jl.id = ja.job_listing_id
-                  WHERE jl.company_id = :c4 AND ja.status = :pending) AS pending_applications'
+                  WHERE jl.company_id = :c4 AND ja.status = :pending) AS pending_applications,
+                (SELECT COALESCE(SUM(company_unread_count), 0) FROM conversations
+                  WHERE company_id = :c5 AND status = :active)        AS unread_messages'
         );
         $stats->execute([
             ':c1' => $companyId, ':c2' => $companyId,
-            ':c3' => $companyId, ':c4' => $companyId,
-            ':hired' => 'hired', ':pending' => 'pending',
+            ':c3' => $companyId, ':c4' => $companyId, ':c5' => $companyId,
+            ':hired' => 'hired', ':pending' => 'pending', ':active' => 'active',
         ]);
 
         $companyStats = $stats->fetch(\PDO::FETCH_ASSOC) ?: [
@@ -163,6 +165,7 @@ class CompaniesController extends BaseUserController
             'total_applications' => 0,
             'hired_drivers' => 0,
             'pending_applications' => 0,
+            'unread_messages' => 0,
         ];
 
         // Φόρτωση του view

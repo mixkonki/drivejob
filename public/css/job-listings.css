@@ -878,3 +878,64 @@ h1 {
 .job-listing-card:hover {
     box-shadow: 0 4px 12px rgba(15, 23, 42, .10);
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   «Οι Αγγελίες μου/μας» (Company & Driver my-listings) — 01/09/2026.
+   Το markup αυτών των views (listing-card / meta-item / listing-stats)
+   δεν είχε ΠΟΤΕ αντίστοιχους κανόνες εδώ — τα εικονίδια PNG έβγαιναν
+   σε φυσικό μέγεθος (οθόνη γεμάτη αυτοκίνητα). Τώρα ντύνεται με την
+   ίδια γλώσσα με τις υπόλοιπες κάρτες αγγελιών.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.listings-actions { margin-bottom: 1.1rem; }
+
+.listings-container { display: flex; flex-direction: column; gap: 1rem; }
+
+.listing-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .06);
+    transition: box-shadow .15s ease;
+}
+.listing-card:hover { box-shadow: 0 4px 12px rgba(15, 23, 42, .10); }
+
+.listing-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: .8rem; flex-wrap: wrap; margin-bottom: .6rem;
+}
+.listing-header h2 { margin: 0; font-size: 1.1rem; }
+.listing-header h2 a { color: #aa3636; text-decoration: none; }
+.listing-header h2 a:hover { text-decoration: underline; }
+
+.listing-meta {
+    display: flex; flex-wrap: wrap; gap: .3rem 1.3rem; margin-bottom: .6rem;
+}
+.meta-item {
+    display: flex; align-items: center; gap: .4rem;
+    color: #4b5563; font-size: .88rem;
+}
+.meta-item img { width: 18px; height: 18px; object-fit: contain; }
+
+.listing-description { color: #6b7280; font-size: .9rem; line-height: 1.55; margin-bottom: .7rem; }
+
+.listing-status { font-size: .88rem; margin-bottom: .5rem; }
+.listing-status .status-label { color: #6b7280; }
+.listing-status .status-value.active { color: #15803d; font-weight: 600; }
+.listing-status .status-value.inactive { color: #b91c1c; font-weight: 600; }
+
+.listing-stats { display: flex; gap: 1.5rem; margin-bottom: .8rem; font-size: .88rem; }
+.listing-stats .stat-label { color: #6b7280; }
+.listing-stats .stat-value { font-weight: 600; color: #1f2937; }
+
+.listing-actions {
+    display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;
+    border-top: 1px solid #f1f5f9; padding-top: .8rem;
+}
+
+.no-listings {
+    background: #fff; border: 1px dashed #d1d5db; border-radius: 10px;
+    padding: 2.5rem 1.5rem; text-align: center; color: #6b7280;
+}
+.no-listings p { margin: 0 0 .9rem; }

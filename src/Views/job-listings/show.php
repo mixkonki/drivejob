@@ -21,7 +21,12 @@ require_once ROOT_DIR . '/src/Views/partials/header.php';
             </div>
         <?php endif; ?>
 
-        <div class="job-listing-detail">
+        <?php /* Ήταν class="job-listing-detail" — ΣΥΓΚΡΟΥΣΗ με τον κανόνα
+                 flex των μικρών γραμμών-εικονιδίων της λίστας (.job-listing-detail
+                 {display:flex}): όλη η σελίδα γινόταν μία flex σειρά και ο
+                 τίτλος στριμωχνόταν δίπλα στο περιεχόμενο. Το CSS της σελίδας
+                 προβολής περιμένει -detail-page / -content (01/09/2026). */ ?>
+        <div class="job-listing-detail-page">
             <div class="job-listing-header">
                 <h1><?php echo htmlspecialchars($listing['title']); ?></h1>
                 <div class="job-listing-meta">
@@ -52,7 +57,7 @@ require_once ROOT_DIR . '/src/Views/partials/header.php';
                 </div>
             </div>
 
-            <div class="job-listing-info">
+            <div class="job-listing-content">
                 <div class="job-listing-main">
                     <div class="job-listing-section">
                         <h2>Περιγραφή</h2>
@@ -124,25 +129,18 @@ require_once ROOT_DIR . '/src/Views/partials/header.php';
                                 <li>
                                     <strong>Τύπος Οχήματος:</strong>
                                     <?php
-                                    $vehicleTypeLabels = [
-                                        'car' => 'Αυτοκίνητο',
-                                        'van' => 'Βαν',
-                                        'truck' => 'Φορτηγό',
-                                        'bus' => 'Λεωφορείο',
-                                        'machinery' => 'Μηχάνημα Έργου'
-                                    ];
-
-                                    if (is_string($listing['vehicle_type'])) {
-                                        $types = explode(',', $listing['vehicle_type']);
-                                        $typeLabels = [];
-                                        foreach ($types as $type) {
-                                            $type = trim($type);
-                                            $typeLabels[] = isset($vehicleTypeLabels[$type]) ? $vehicleTypeLabels[$type] : $type;
+                                    /* Είχε δικό του 5-τιμο λεξικό (car/van/truck/bus/
+                                       machinery) ενώ η φόρμα γράφει πλέον τους πλήρεις
+                                       κωδικούς του VehicleTypes — το truck_articulated
+                                       έβγαινε ΩΜΟ στη σελίδα. Μία πηγή αλήθειας (01/09). */
+                                    $vehicleLabels = [];
+                                    foreach (explode(',', (string) $listing['vehicle_type']) as $type) {
+                                        $type = trim($type);
+                                        if ($type !== '') {
+                                            $vehicleLabels[] = \Drivejob\Helpers\VehicleTypes::label($type);
                                         }
-                                        echo implode(', ', $typeLabels);
-                                    } else {
-                                        echo isset($vehicleTypeLabels[$listing['vehicle_type']]) ? $vehicleTypeLabels[$listing['vehicle_type']] : $listing['vehicle_type'];
                                     }
+                                    echo htmlspecialchars(implode(', ', $vehicleLabels), ENT_QUOTES, 'UTF-8');
                                     ?>
                                 </li>
                             <?php endif; ?>
