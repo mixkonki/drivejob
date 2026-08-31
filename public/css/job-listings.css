@@ -823,3 +823,58 @@ h1 {
         text-align: center;
     }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Ανανέωση όψης (01/09/2026) — μαζί με την καθολική γραμματοσειρά
+   του styles.css. Στο ΤΕΛΟΣ του αρχείου ώστε να κερδίζει στο cascade
+   ό,τι παλιότερο έχει ίδια ειδικότητα.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Η λίστα σε αναγνώσιμο πλάτος — όχι κάρτες απ' άκρη σ' άκρη σε 27". */
+main > .container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1rem 2rem;
+    box-sizing: border-box;
+}
+
+h1 {
+    text-align: left;
+    font-size: 1.6rem;
+    margin: 1.5rem 0 1rem;
+    color: #1f2937;
+}
+
+.search-filters {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+}
+
+.search-filters select,
+.search-filters input[type="text"] {
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    padding: .5rem .6rem;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.filter-group label {
+    font-size: .88rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.job-listing-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .06);
+    transition: box-shadow .15s ease;
+}
+
+.job-listing-card:hover {
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .10);
+}

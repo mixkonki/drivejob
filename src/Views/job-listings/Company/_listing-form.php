@@ -425,6 +425,7 @@ $jobCategory = $val('job_category');
     .listing-form fieldset {
         border: 1px solid #e5e7eb; border-radius: 10px;
         padding: 1.25rem 1.25rem 1rem; margin-bottom: 1.25rem;
+        background: #fff; box-shadow: 0 1px 3px rgba(15, 23, 42, .06);
     }
     .listing-form legend {
         padding: 0 .5rem; font-weight: 600; font-size: 1.05rem; color: #111827;
