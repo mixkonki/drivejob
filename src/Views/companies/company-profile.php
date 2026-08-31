@@ -169,15 +169,23 @@ include ROOT_DIR . '/src/Views/partials/header.php';
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 1.25rem 1.75rem;
+        gap: 1rem 1.25rem;
         width: 100%;
     }
-    .profile-header .col { flex: 1 1 260px; }
+    .profile-header .col { flex: 1 1 180px; }
     .profile-header .col-auto { flex: 0 0 auto; }
     .profile-header .profile-actions { justify-content: flex-start; }
     .profile-stats-header {
         margin-top: 0;
         min-width: 300px;
+        /* Χωρίς όριο, τα 4 κουμπιά σε μία σειρά πλάταιναν το πάνελ ~660px
+           και το έριχναν ΚΑΤΩ από το λογότυπο — με όριο, αναδιπλώνονται
+           2×2 και το πάνελ κάθεται δεξιά όπως στου οδηγού. */
+        max-width: 430px;
+    }
+    .profile-actions--panel {
+        margin-top: 18px;
+        justify-content: center !important;
     }
     .profile-stats { gap: 1.5rem; }
 
@@ -308,7 +316,29 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         </p>
                     <?php endif; ?>
 
-                    <div class="profile-actions">
+                </div>
+
+                <div class="col-auto">
+                    <div class="profile-stats-header">
+                        <h3 class="mb-3">Στατιστικά</h3>
+                        <ul class="profile-stats">
+                            <li>
+                                <span class="stat-value"><?php echo $companyStats['active_jobs'] ?? 0; ?></span>
+                                <span class="stat-label">Ενεργές Αγγελίες</span>
+                            </li>
+                            <li>
+                                <span class="stat-value"><?php echo $companyStats['total_applications'] ?? 0; ?></span>
+                                <span class="stat-label">Αιτήσεις</span>
+                            </li>
+                            <li>
+                                <span class="stat-value"><?php echo $companyStats['hired_drivers'] ?? 0; ?></span>
+                                <span class="stat-label">Προσλήψεις</span>
+                            </li>
+                        </ul>
+                        <?php /* Τα κύρια κουμπιά ΜΕΣΑ στο πάνελ, όπως το
+                           «Στατιστικά Προφίλ» του οδηγού — η μεσαία στήλη
+                           μένει καθαρή για όνομα/έδρα (01/09). */ ?>
+                        <div class="profile-actions profile-actions--panel">
                         <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn btn-primary">
                             <i class="fas fa-edit"></i> Επεξεργασία Προφίλ
                         </a>
@@ -339,25 +369,6 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                             <i class="fas fa-envelope"></i> Μηνύματα
                         </a>
                     </div>
-                </div>
-
-                <div class="col-auto">
-                    <div class="profile-stats-header">
-                        <h3 class="mb-3">Στατιστικά</h3>
-                        <ul class="profile-stats">
-                            <li>
-                                <span class="stat-value"><?php echo $companyStats['active_jobs'] ?? 0; ?></span>
-                                <span class="stat-label">Ενεργές Αγγελίες</span>
-                            </li>
-                            <li>
-                                <span class="stat-value"><?php echo $companyStats['total_applications'] ?? 0; ?></span>
-                                <span class="stat-label">Αιτήσεις</span>
-                            </li>
-                            <li>
-                                <span class="stat-value"><?php echo $companyStats['hired_drivers'] ?? 0; ?></span>
-                                <span class="stat-label">Προσλήψεις</span>
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </div>

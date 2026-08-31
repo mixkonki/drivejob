@@ -26,11 +26,11 @@
 .cv-topbar h1 {
     margin: 0;
     font-size: 1.35rem;
-    color: #1f2937;
+    color: var(--dj-ink, #1f2937);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.cv-topbar-note { margin: .2rem 0 0; font-size: .84rem; color: #6b7280; }
+.cv-topbar-note { margin: .2rem 0 0; font-size: .84rem; color: var(--dj-muted, #6b7280); }
 
 .cv-topbar-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 
@@ -47,7 +47,7 @@
 
 .cv-btn-primary { background: #b3261e; color: #fff; }
 .cv-btn-primary:hover { background: #92201a; }
-.cv-btn-ghost { background: #fff; color: #374151; border-color: #d1d5db; }
+.cv-btn-ghost { background: #fff; color: var(--dj-ink-soft, #374151); border-color: #d1d5db; }
 .cv-btn-ghost:hover { background: #f9fafb; }
 
 /* ── Διάταξη ───────────────────────────────────────────────────────── */
@@ -64,8 +64,8 @@
 
 .cv-card {
     background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
+    border: 1px solid var(--dj-line, #e5e7eb);
+    border-radius: var(--dj-radius, 10px);
     padding: .9rem 1rem;
     margin-bottom: .8rem;
 }
@@ -74,7 +74,7 @@
     margin: 0 0 .15rem;
     font-size: .95rem;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--dj-ink, #1f2937);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -162,7 +162,7 @@
 .cv-toggle input:checked + .cv-toggle-track .cv-toggle-knob { transform: translateX(15px); }
 .cv-toggle input:focus-visible + .cv-toggle-track { box-shadow: 0 0 0 3px rgba(179, 38, 30, .2); }
 
-.cv-toggle-label { font-size: .85rem; color: #374151; }
+.cv-toggle-label { font-size: .85rem; color: var(--dj-ink-soft, #374151); }
 .cv-toggle-label small { display: block; font-size: .72rem; color: #9ca3af; }
 
 /* ── Κενές ενότητες ────────────────────────────────────────────────── */
@@ -239,7 +239,7 @@
 .cvp-line1, .cvp-line2 {
     margin: .1rem 0;
     font-size: .86rem;
-    color: #6b7280;
+    color: var(--dj-muted, #6b7280);
     display: flex;
     flex-wrap: wrap;
     gap: .1rem .5rem;
@@ -260,7 +260,7 @@
     margin: 1rem 0 .2rem;
     font-size: .92rem;
     line-height: 1.6;
-    color: #374151;
+    color: var(--dj-ink-soft, #374151);
 }
 
 .cvp-summary[hidden] { display: none; }
@@ -312,7 +312,7 @@
 .cvp-meta { font-size: .8rem; color: #9ca3af; }
 .cvp-sub { font-size: .82rem; color: #4b5563; }
 .cvp-desc { font-size: .84rem; color: #4b5563; line-height: 1.45; }
-.cvp-plain { font-size: .86rem; color: #374151; line-height: 1.5; }
+.cvp-plain { font-size: .86rem; color: var(--dj-ink-soft, #374151); line-height: 1.5; }
 
 .cvp-group { margin-bottom: .7rem; }
 
@@ -320,7 +320,7 @@
     margin: .5rem 0 .25rem;
     font-size: .84rem;
     font-weight: 700;
-    color: #374151;
+    color: var(--dj-ink-soft, #374151);
 }
 
 .cvp-group h4 small { font-weight: 400; color: #9ca3af; margin-left: .5rem; }
