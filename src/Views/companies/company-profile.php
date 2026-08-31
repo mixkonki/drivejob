@@ -21,24 +21,23 @@ include ROOT_DIR . '/src/Views/partials/header.php';
        ίδια γλώσσα με το προφίλ οδηγού — κόκκινη ενεργή καρτέλα αντί για
        το ξένο μπλε, ίδιες γωνίες/σκιές/αναλογίες παντού. */
 
-    /* Main layout */
-    .profile-container {
+    /* Διάταξη Επισκόπησης: κύρια στήλη + πλαϊνή ΜΕΣΑ στην καρτέλα,
+       όπως στο προφίλ οδηγού. Οι καρτέλες πιάνουν όλο το πλάτος. */
+    .ov-grid {
         display: flex;
-        gap: 30px;
-        margin-top: 30px;
+        flex-wrap: wrap;
+        gap: 25px;
+        align-items: flex-start;
     }
 
-    .profile-main-content {
-        flex: 1;
+    .ov-main {
+        flex: 1 1 480px;
         min-width: 0;
     }
 
-    .profile-sidebar {
-        /* flex ΟΛΟΚΛΗΡΟ, όχι μόνο width: το company-profile.css δίνει
-           flex-grow:1 στην ίδια κλάση (παλιά διάταξη) και το sidebar
-           «έτρωγε» τον χώρο των καρτελών — η κύρια στήλη κατέληγε 320px. */
-        flex: 0 0 350px;
-        width: 350px;
+    .ov-side {
+        flex: 0 1 350px;
+        min-width: min(300px, 100%);
     }
 
     /* Καρτέλες — πανομοιότυπες με του οδηγού (driver-profile.css). */
@@ -257,13 +256,30 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 
     .quick-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
 
-    @media (max-width: 1200px) {
-        .profile-container {
-            flex-direction: column;
-        }
+    /* Τα btn-outline-* είναι Bootstrap-ικά ονόματα χωρίς Bootstrap —
+       τους δίνουμε όψη διακριτικού κουμπιού στο ύφος του site. */
+    .btn-outline-primary,
+    .btn-outline-info {
+        display: inline-block;
+        padding: .3rem .7rem;
+        border: 1px solid var(--dj-brand);
+        border-radius: var(--dj-radius-sm);
+        color: var(--dj-brand);
+        background: var(--dj-surface);
+        text-decoration: none;
+        font-size: .85rem;
+        white-space: nowrap;
+    }
 
-        .profile-sidebar {
-            width: 100%;
+    .btn-outline-primary:hover,
+    .btn-outline-info:hover {
+        background: var(--dj-brand-soft);
+        text-decoration: none;
+    }
+
+    @media (max-width: 900px) {
+        .ov-side {
+            flex: 1 1 100%;
         }
     }
 </style>
@@ -363,12 +379,11 @@ include ROOT_DIR . '/src/Views/partials/header.php';
             </div>
         <?php endif; ?>
 
-        <!-- Main Content with Sidebar Layout -->
-        <div class="profile-container">
-            <!-- Main Content Area -->
-            <div class="profile-main-content">
-                <!-- Tabs Navigation -->
-                <div class="profile-tabs">
+        <?php /* Αναδιάρθρωση 01/09 (αίτημα Κώστα): οι καρτέλες πιάνουν ΟΛΟ το
+           πλάτος όπως στο προφίλ οδηγού, και η πλαϊνή στήλη (Μηνύματα/
+           Επικοινωνία/Ενέργειες/Χάρτης) ζει ΜΕΣΑ στην Επισκόπηση —
+           ακριβώς όπως η στήλη Επικοινωνία/Περιοχή Εργασίας του οδηγού. */ ?>
+        <div class="profile-tabs">
                     <nav class="tabs-nav">
                         <?php /* Οι καρτέλες «Στόλος & Οδηγοί» και «Υπηρεσίες»
                            ΑΦΑΙΡΕΘΗΚΑΝ (01/09): έδειχναν κάρτες ανύπαρκτων
@@ -386,8 +401,10 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                     </nav>
 
                     <div class="tab-content">
-                        <!-- Overview Tab -->
+                        <!-- Overview Tab: κύρια στήλη + πλαϊνή, όπως στον οδηγό -->
                         <div class="tab-pane active" id="overview">
+                        <div class="ov-grid">
+                        <div class="ov-main">
                             <section class="mb-4">
                                 <h2>Σχετικά με την Εταιρεία</h2>
                                 <div class="profile-about">
@@ -427,6 +444,12 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                                     <?php endif; ?>
                                 </div>
                             </section>
+                        </div><!-- /.ov-main -->
+
+                        <aside class="ov-side">
+                            <?php include __DIR__ . '/partials/_profile-side.php'; ?>
+                        </aside>
+                        </div><!-- /.ov-grid -->
                         </div>
 
                         <!-- Job Listings Tab -->
@@ -512,83 +535,6 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="profile-sidebar">
-                <!-- Messages Widget -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-envelope"></i> Μηνύματα</h3>
-                    <?php /* Ήταν σκληρογραμμένο «3» — μακέτα. Τώρα: πραγματικός
-                             μετρητής αδιάβαστων από τις συνομιλίες (01/09/2026). */ ?>
-                    <?php $unreadMsg = (int) ($companyStats['unread_messages'] ?? 0); ?>
-                    <?php if ($unreadMsg > 0) : ?>
-                        <p class="text-muted mb-3">Έχετε <strong><?php echo $unreadMsg; ?></strong> αδιάβαστ<?php echo $unreadMsg === 1 ? 'ο μήνυμα' : 'α μηνύματα'; ?></p>
-                    <?php else : ?>
-                        <p class="text-muted mb-3">Κανένα νέο μήνυμα.</p>
-                    <?php endif; ?>
-                    <a href="<?php echo BASE_URL; ?>companies/messages" class="btn btn-secondary">
-                        Προβολή Μηνυμάτων
-                    </a>
-                </div>
-
-                <!-- Contact Information -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-info-circle"></i> Στοιχεία Επικοινωνίας</h3>
-                    <ul class="contact-list">
-                        <li>
-                            <i class="fas fa-envelope"></i>
-                            <span><?php echo htmlspecialchars($companyData['email']); ?></span>
-                        </li>
-                        <li>
-                            <i class="fas fa-phone"></i>
-                            <span><?php echo htmlspecialchars($companyData['phone']); ?></span>
-                        </li>
-                        <?php if (isset($companyData['website']) && $companyData['website']) : ?>
-                            <li>
-                                <i class="fas fa-globe"></i>
-                                <a href="<?php echo htmlspecialchars($companyData['website']); ?>" target="_blank"><?php echo htmlspecialchars($companyData['website']); ?></a>
-                            </li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-bolt"></i> Γρήγορες Ενέργειες</h3>
-                    <?php /* 01/09: οι σύνδεσμοι είχαν Bootstrap classes (btn-success,
-                       btn-outline-primary) χωρίς Bootstrap — έβγαιναν μπλε/μωβ σκέτα
-                       links. Το «Αναζήτηση Οδηγών» ΑΦΑΙΡΕΘΗΚΕ προσωρινά: το
-                       /drivers/search επιστρέφει πάντα κενή λίστα (καταγεγραμμένο
-                       σφάλμα) — δεν στέλνουμε τον χρήστη σε χαλασμένη σελίδα. */ ?>
-                    <div class="quick-actions">
-                        <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">
-                            <i class="fas fa-plus"></i> Νέα Αγγελία
-                        </a>
-                        <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn-secondary">
-                            <i class="fas fa-cog"></i> Ρυθμίσεις
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Location Map -->
-                <?php if (isset($companyData['address']) && $companyData['address'] && isset($companyData['city']) && $companyData['city']) : ?>
-                    <div class="sidebar-section">
-                        <h3><i class="fas fa-map-marker-alt"></i> Τοποθεσία</h3>
-                        <div class="profile-map">
-                            <iframe
-                                width="100%"
-                                height="200"
-                                frameborder="0"
-                                scrolling="no"
-                                marginheight="0"
-                                marginwidth="0"
-                                src="https://maps.google.com/maps?q=<?php echo urlencode($companyData['address'] . ', ' . $companyData['city'] . ', ' . $companyData['country']); ?>&output=embed"></iframe>
-                        </div>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
     </div>
 </main>
 
