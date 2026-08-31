@@ -162,6 +162,33 @@ include ROOT_DIR . '/src/Views/partials/header.php';
         margin-bottom: 25px;
     }
 
+    /* Διάταξη κεφαλίδας όπως στον οδηγό (01/09): λογότυπο αριστερά,
+       στοιχεία στη μέση, πάνελ «Στατιστικά» δεξιά. Οι .row/.col είναι
+       bootstrap-ικά ονόματα χωρίς Bootstrap — τους δίνουμε εδώ το flex
+       που περίμεναν, αλλιώς στοιβάζονται κάθετα κι αφήνουν κενό δεξιά. */
+    .profile-header .row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1.25rem 1.75rem;
+        width: 100%;
+    }
+    .profile-header .col { flex: 1 1 260px; }
+    .profile-header .col-auto { flex: 0 0 auto; }
+    .profile-header .profile-actions { justify-content: flex-start; }
+    .profile-stats-header {
+        margin-top: 0;
+        min-width: 300px;
+    }
+    .profile-stats { gap: 1.5rem; }
+
+    @media (max-width: 760px) {
+        .profile-header .row { justify-content: center; text-align: center; }
+        .profile-header .col h1 { text-align: center; }
+        .profile-location { justify-content: center; }
+        .profile-stats-header { width: 100%; min-width: 0; }
+    }
+
     .profile-stats-header {
         background: var(--dj-surface-alt);
         padding: 20px;

@@ -62,7 +62,7 @@ h1 {
 }
 
 .btn-primary {
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
 }
 
@@ -118,7 +118,7 @@ h1 {
 }
 
 .job-listing-header h3 a {
-    color: #aa3636;
+    color: var(--dj-brand, #aa3636);
     text-decoration: none;
 }
 
@@ -137,7 +137,7 @@ h1 {
     /* Εφεδρικό: τύπος χωρίς δικό του χρώμα έβγαινε λευκό σε διάφανο —
        δηλαδή αόρατος. Ο κανόνας πρέπει να είναι ΕΔΩ, πριν από τις
        εξειδικεύσεις· στο τέλος του αρχείου θα τις ακύρωνε όλες. */
-    background-color: #6b7280;
+    background-color: var(--dj-muted, #6b7280);
 }
 
 .job-type.full_time {
@@ -233,9 +233,9 @@ h1 {
 }
 
 .pagination-btn.active {
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
-    border-color: #aa3636;
+    border-color: var(--dj-brand, #aa3636);
 }
 
 /* Φόρμα δημιουργίας/επεξεργασίας αγγελίας */
@@ -571,7 +571,7 @@ h1 {
     color: #777;
     background: #f2f2f2;
     padding: 1px 8px;
-    border-radius: 10px;
+    border-radius: var(--dj-radius, 10px);
     cursor: help;
 }
 
@@ -690,7 +690,7 @@ h1 {
     width: 100%;
     margin: 0;
     font-size: 14px;
-    color: #6b7280;
+    color: var(--dj-muted, #6b7280);
 }
 
 .job-listings-filter-summary a {
@@ -700,7 +700,7 @@ h1 {
 
 /* Η ταυτότητα που δεν έχει ξεκλειδώσει: ορατή ως τέτοια, όχι σαν κανονικό όνομα. */
 .job-listing-company-masked {
-    color: #6b7280;
+    color: var(--dj-muted, #6b7280);
     border-bottom: 1px dotted #9ca3af;
     cursor: help;
 }
@@ -725,7 +725,7 @@ h1 {
 .filter-group select optgroup {
     font-style: normal;
     font-weight: 700;
-    color: #6b7280;
+    color: var(--dj-muted, #6b7280);
 }
 
 .filter-group select option {
@@ -833,7 +833,7 @@ h1 {
 /* Η λίστα σε αναγνώσιμο πλάτος — όχι κάρτες απ' άκρη σ' άκρη σε 27". */
 main > .container {
     width: 100%;
-    max-width: 1000px;
+    max-width: var(--dj-container-narrow, 900px);
     margin: 0 auto;
     padding: 0 1rem 2rem;
     box-sizing: border-box;
@@ -843,20 +843,20 @@ h1 {
     text-align: left;
     font-size: 1.6rem;
     margin: 1.5rem 0 1rem;
-    color: #1f2937;
+    color: var(--dj-ink, #1f2937);
 }
 
 .search-filters {
     background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
+    border: 1px solid var(--dj-line, #e5e7eb);
+    border-radius: var(--dj-radius, 10px);
     padding: 1rem 1.25rem;
 }
 
 .search-filters select,
 .search-filters input[type="text"] {
     border: 1px solid #d1d5db;
-    border-radius: 7px;
+    border-radius: var(--dj-radius-sm, 7px);
     padding: .5rem .6rem;
     background: #fff;
     box-sizing: border-box;
@@ -865,18 +865,18 @@ h1 {
 .filter-group label {
     font-size: .88rem;
     font-weight: 500;
-    color: #374151;
+    color: var(--dj-ink-soft, #374151);
 }
 
 .job-listing-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, .06);
+    border: 1px solid var(--dj-line, #e5e7eb);
+    border-radius: var(--dj-radius, 10px);
+    box-shadow: var(--dj-shadow);
     transition: box-shadow .15s ease;
 }
 
 .job-listing-card:hover {
-    box-shadow: 0 4px 12px rgba(15, 23, 42, .10);
+    box-shadow: var(--dj-shadow-hover);
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -893,20 +893,20 @@ h1 {
 
 .listing-card {
     background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
+    border: 1px solid var(--dj-line, #e5e7eb);
+    border-radius: var(--dj-radius, 10px);
     padding: 1.1rem 1.25rem;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, .06);
+    box-shadow: var(--dj-shadow);
     transition: box-shadow .15s ease;
 }
-.listing-card:hover { box-shadow: 0 4px 12px rgba(15, 23, 42, .10); }
+.listing-card:hover { box-shadow: var(--dj-shadow-hover); }
 
 .listing-header {
     display: flex; justify-content: space-between; align-items: flex-start;
     gap: .8rem; flex-wrap: wrap; margin-bottom: .6rem;
 }
 .listing-header h2 { margin: 0; font-size: 1.1rem; }
-.listing-header h2 a { color: #aa3636; text-decoration: none; }
+.listing-header h2 a { color: var(--dj-brand, #aa3636); text-decoration: none; }
 .listing-header h2 a:hover { text-decoration: underline; }
 
 .listing-meta {
@@ -918,16 +918,16 @@ h1 {
 }
 .meta-item img { width: 18px; height: 18px; object-fit: contain; }
 
-.listing-description { color: #6b7280; font-size: .9rem; line-height: 1.55; margin-bottom: .7rem; }
+.listing-description { color: var(--dj-muted, #6b7280); font-size: .9rem; line-height: 1.55; margin-bottom: .7rem; }
 
 .listing-status { font-size: .88rem; margin-bottom: .5rem; }
-.listing-status .status-label { color: #6b7280; }
+.listing-status .status-label { color: var(--dj-muted, #6b7280); }
 .listing-status .status-value.active { color: #15803d; font-weight: 600; }
 .listing-status .status-value.inactive { color: #b91c1c; font-weight: 600; }
 
 .listing-stats { display: flex; gap: 1.5rem; margin-bottom: .8rem; font-size: .88rem; }
-.listing-stats .stat-label { color: #6b7280; }
-.listing-stats .stat-value { font-weight: 600; color: #1f2937; }
+.listing-stats .stat-label { color: var(--dj-muted, #6b7280); }
+.listing-stats .stat-value { font-weight: 600; color: var(--dj-ink, #1f2937); }
 
 .listing-actions {
     display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;
@@ -935,7 +935,7 @@ h1 {
 }
 
 .no-listings {
-    background: #fff; border: 1px dashed #d1d5db; border-radius: 10px;
-    padding: 2.5rem 1.5rem; text-align: center; color: #6b7280;
+    background: #fff; border: 1px dashed #d1d5db; border-radius: var(--dj-radius, 10px);
+    padding: 2.5rem 1.5rem; text-align: center; color: var(--dj-muted, #6b7280);
 }
 .no-listings p { margin: 0 0 .9rem; }
