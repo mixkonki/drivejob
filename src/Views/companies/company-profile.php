@@ -17,6 +17,10 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 <?= \Drivejob\Helpers\Asset::js('js/tab-deeplink.js', true) ?>
 
 <style>
+    /* Το job-listings.css (φορτώνεται καθολικά) ορίζει main > .container
+       στο στενό πλάτος λίστας — το προφίλ θέλει το πλήρες (01/09). */
+    main > .container { max-width: var(--dj-container, 1400px); }
+
     /* Ξαναγράφτηκε 01/09/2026 πάνω στο κεντρικό theme.css (design tokens):
        ίδια γλώσσα με το προφίλ οδηγού — κόκκινη ενεργή καρτέλα αντί για
        το ξένο μπλε, ίδιες γωνίες/σκιές/αναλογίες παντού. */
