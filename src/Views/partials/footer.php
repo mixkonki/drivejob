@@ -7,6 +7,8 @@
             <li><a href="<?php echo BASE_URL; ?>terms">Όροι Χρήσης</a></li>
             <li><a href="<?php echo BASE_URL; ?>privacy">Πολιτική Απορρήτου</a></li>
             <li><a href="<?php echo BASE_URL; ?>faq">FAQ</a></li>
+            <li><a href="<?php echo BASE_URL; ?>about">Σχετικά</a></li>
+            <li><a href="<?php echo BASE_URL; ?>contact">Επικοινωνία</a></li>
         </ul>
     </div>
     <div class="footer-right">
