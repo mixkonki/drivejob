@@ -181,9 +181,30 @@ $extraJs = ['drivers_registration.js'];
             </div>
         </div>
 
-        <div class="info-box">
-            <p>Με την εγγραφή σας σήμερα, θα έχετε πρόσβαση σε όλα τα προϊόντα DriveJob. Δεν απαιτείται πιστωτική κάρτα!</p>
+        <?php /* Οφέλη οδηγού αντί για γενικόλογο μήνυμα (01/09 — αίτημα Κώστα). */ ?>
+        <div class="info-box reg-benefits">
+            <h3>Γιατί DriveJob;</h3>
+            <ul>
+                <li><strong>Δωρεάν — για πάντα.</strong> Καμία χρέωση για οδηγούς, ποτέ.</li>
+                <li><strong>Το προφίλ σου γίνεται βιογραφικό.</strong> Καταχωρείς άδειες,
+                    ΠΕΙ, πιστοποιητικά μία φορά — παίρνεις επαγγελματικό βιογραφικό
+                    με ένα κλικ.</li>
+                <li><strong>Βλέπεις τι σου ταιριάζει.</strong> Κάθε αγγελία συγκρίνεται
+                    με τα προσόντα σου — ξέρεις πού καλύπτεις τις απαιτήσεις πριν
+                    κάνεις αίτηση.</li>
+                <li><strong>Δεν χάνεις λήξεις.</strong> Ειδοποιήσεις πριν λήξουν
+                    δίπλωμα, ΠΕΙ, ADR ή κάρτα ταχογράφου.</li>
+                <li><strong>Εσύ ελέγχεις τα στοιχεία σου.</strong> Τηλέφωνο και email
+                    αποκαλύπτονται μόνο σε εταιρεία που σε προεπιλέξει.</li>
+            </ul>
         </div>
+
+        <style>
+            .reg-benefits h3 { margin: 0 0 .8rem; font-size: 1.1rem; color: var(--dj-brand, #aa3636); }
+            .reg-benefits ul { list-style: none; margin: 0; padding: 0; text-align: left; }
+            .reg-benefits li { margin-bottom: .75rem; line-height: 1.5; color: var(--dj-ink-soft, #374151); padding-left: 1.4em; position: relative; }
+            .reg-benefits li::before { content: '✓'; position: absolute; left: 0; color: var(--dj-ok, #15803d); font-weight: 700; }
+        </style>
     </div>
 
     <script>
