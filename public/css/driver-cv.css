@@ -11,7 +11,7 @@
 
 .cv-page { background: #f1f3f5; min-height: 70vh; padding-bottom: 2rem; }
 
-.cv-wrap { max-width: 1180px; margin: 0 auto; padding: 1.2rem 1rem 0; }
+.cv-wrap { max-width: var(--dj-container, 1180px); margin: 0 auto; padding: 1.2rem 1rem 0; }
 
 /* ── Μπάρα τίτλου ──────────────────────────────────────────────────── */
 .cv-topbar {

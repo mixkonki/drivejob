@@ -17,6 +17,10 @@ include ROOT_DIR . '/src/Views/partials/header.php';
 <?= \Drivejob\Helpers\Asset::js('js/tab-deeplink.js', true) ?>
 
 <style>
+    /* Ξαναγράφτηκε 01/09/2026 πάνω στο κεντρικό theme.css (design tokens):
+       ίδια γλώσσα με το προφίλ οδηγού — κόκκινη ενεργή καρτέλα αντί για
+       το ξένο μπλε, ίδιες γωνίες/σκιές/αναλογίες παντού. */
+
     /* Main layout */
     .profile-container {
         display: flex;
@@ -30,25 +34,27 @@ include ROOT_DIR . '/src/Views/partials/header.php';
     }
 
     .profile-sidebar {
+        /* flex ΟΛΟΚΛΗΡΟ, όχι μόνο width: το company-profile.css δίνει
+           flex-grow:1 στην ίδια κλάση (παλιά διάταξη) και το sidebar
+           «έτρωγε» τον χώρο των καρτελών — η κύρια στήλη κατέληγε 320px. */
+        flex: 0 0 350px;
         width: 350px;
-        flex-shrink: 0;
     }
 
-    /* Tabs styling similar to driver profile */
+    /* Καρτέλες — πανομοιότυπες με του οδηγού (driver-profile.css). */
     .profile-tabs {
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background: var(--dj-surface);
+        border-radius: var(--dj-radius);
+        box-shadow: var(--dj-shadow);
+        border: 1px solid var(--dj-line);
         overflow: hidden;
     }
 
     .tabs-nav {
         display: flex;
-        /* Αναδίπλωση αντί για στρίμωγμα: το «Στόλος & Οδηγοί» έσπαγε
-           σε τρεις γραμμές μέσα στο κουμπί του. (01/09) */
         flex-wrap: wrap;
-        background: #f8f9fa;
-        border-bottom: 2px solid #e0e0e0;
+        background: var(--dj-surface-alt);
+        border-bottom: 1px solid var(--dj-line);
         margin: 0;
         padding: 0;
     }
@@ -57,8 +63,8 @@ include ROOT_DIR . '/src/Views/partials/header.php';
         display: inline-block;
         min-width: 1.4em;
         padding: .05rem .35rem;
-        border-radius: 999px;
-        background: #b3261e;
+        border-radius: var(--dj-radius-pill);
+        background: var(--dj-brand);
         color: #fff;
         font-size: .72rem;
         font-weight: 700;
@@ -86,33 +92,44 @@ include ROOT_DIR . '/src/Views/partials/header.php';
     }
 
     .tab-btn {
-        flex: 1;
-        padding: 15px 20px;
+        /* Μικρότερο padding από του οδηγού: εδώ οι καρτέλες ζουν σε στήλη
+           ~440px και με 15px/20px το «Υποψήφιοι» έπεφτε σε δεύτερη σειρά. */
+        padding: 12px 14px;
         background: none;
         border: none;
-        border-bottom: 3px solid transparent;
-        color: #666;
-        font-size: 16px;
+        color: var(--dj-muted);
+        font: inherit;
+        font-size: .95rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
+        position: relative;
+        white-space: nowrap;
+        transition: color .2s ease;
     }
 
     .tab-btn:hover {
-        background: #e9ecef;
-        color: #007bff;
+        color: var(--dj-brand);
+        background: var(--dj-line-soft);
     }
 
     .tab-btn.active {
-        background: white;
-        color: #007bff;
-        border-bottom-color: #007bff;
+        color: var(--dj-brand);
+        font-weight: 600;
+        background: var(--dj-surface);
+    }
+
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--dj-brand);
     }
 
     .tab-content {
-        padding: 30px;
-        min-height: 500px;
+        padding: 25px;
     }
 
     .tab-pane {
@@ -137,17 +154,18 @@ include ROOT_DIR . '/src/Views/partials/header.php';
     }
 
     .profile-header {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        margin-bottom: 30px;
+        background: var(--dj-surface);
+        padding: 25px;
+        border-radius: var(--dj-radius);
+        border: 1px solid var(--dj-line);
+        box-shadow: var(--dj-shadow);
+        margin-bottom: 25px;
     }
 
     .profile-stats-header {
-        background: #f8f9fa;
+        background: var(--dj-surface-alt);
         padding: 20px;
-        border-radius: 8px;
+        border-radius: var(--dj-radius-sm);
         margin-top: 20px;
     }
 
@@ -166,29 +184,30 @@ include ROOT_DIR . '/src/Views/partials/header.php';
     .stat-value {
         font-size: 28px;
         font-weight: bold;
-        color: #007bff;
+        color: var(--dj-brand);
         display: block;
     }
 
     .stat-label {
         font-size: 14px;
-        color: #666;
+        color: var(--dj-muted);
         margin-top: 5px;
     }
 
     /* Sidebar sections */
     .sidebar-section {
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background: var(--dj-surface);
+        border-radius: var(--dj-radius);
+        border: 1px solid var(--dj-line);
+        box-shadow: var(--dj-shadow);
         padding: 20px;
         margin-bottom: 20px;
     }
 
     .sidebar-section h3 {
-        font-size: 18px;
-        margin-bottom: 15px;
-        color: #333;
+        font-size: 1.05rem;
+        margin: 0 0 15px;
+        color: var(--dj-ink);
     }
 
     .contact-list {
@@ -205,7 +224,7 @@ include ROOT_DIR . '/src/Views/partials/header.php';
     }
 
     .contact-list i {
-        color: #007bff;
+        color: var(--dj-brand);
         width: 20px;
     }
 

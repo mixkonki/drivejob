@@ -8,9 +8,9 @@ body {
        οπότε κάθε σελίδα χωρίς δικό της font-family (φόρμα αγγελίας,
        λίστα αγγελιών, μηνύματα) έπεφτε στη serif του browser και έδειχνε
        «χωρίς στυλ». Ίδια στοίβα με driver-cv.css — μία πηγή αλήθειας. */
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #1f2937;
-    background: #f8fafc;
+    font-family: var(--dj-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+    color: var(--dj-ink, #1f2937);
+    background: var(--dj-bg, #f8fafc);
     -webkit-font-smoothing: antialiased;
 }
 

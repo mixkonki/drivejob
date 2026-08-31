@@ -83,6 +83,9 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
     <title>DriveJob - <?php echo isset($pageTitle) ? $pageTitle : 'Καλώς Ήρθατε'; ?></title>
 
     <!-- Σύνδεση με το CSS αρχείο -->
+    <?php /* theme.css ΠΡΩΤΟ — το κεντρικό αρχείο σχεδίασης (design tokens):
+       όλα τα υπόλοιπα CSS διαβάζουν από τα var(--dj-...) που ορίζει. */ ?>
+    <?= \Drivejob\Helpers\Asset::css('css/theme.css') ?>
     <?= \Drivejob\Helpers\Asset::css('css/styles.css') ?>
     <?= \Drivejob\Helpers\Asset::css('css/job-listings.css') ?>
     <?php /* ΜΕΤΑ το styles.css επίτηδες: διορθώνει το header σε ενδιάμεσα
