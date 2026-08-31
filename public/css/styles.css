@@ -33,7 +33,7 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     padding: 10px 20px;
 }
 
@@ -173,7 +173,7 @@ main {
     display: flex;
     align-items: center;
     justify-content: center; /* προσθήκη για καλύτερο κεντράρισμα */
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
     padding: 10px 20px;
     text-decoration: none;
@@ -187,7 +187,7 @@ main {
 }
 
 .buttons .btn-secondary:hover {
-    background-color: #bb4747;
+    background-color: var(--dj-brand-strong, #8f2b2b);
     transform: scale(1.05);
 }
 
@@ -400,7 +400,7 @@ footer .footer-right img:hover {
     padding: 1.1em;
     font-size: 1.2em;
     color: #fff;
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -411,7 +411,7 @@ footer .footer-right img:hover {
 
 
 .login-btn:hover {
-    background-color: #bb4747;
+    background-color: var(--dj-brand-strong, #8f2b2b);
 }
 
 /* Βασικό στυλ για το dropdown μενού */
@@ -458,7 +458,7 @@ footer .footer-right img:hover {
     margin-right: 10px;
     width: 20px;
     text-align: center;
-    color: #aa3636;
+    color: var(--dj-brand, #aa3636);
 }
 
 /* Dropdown divider για διαχωρισμό sections */

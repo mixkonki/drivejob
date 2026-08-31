@@ -187,7 +187,7 @@
 
 .progress {
     height: 100%;
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     border-radius: 4px;
     transition: width 1s ease;
 }
@@ -309,7 +309,7 @@
 }
 
 .job-title {
-    color: #aa3636;
+    color: var(--dj-brand, #aa3636);
     text-decoration: none;
     font-weight: 500;
 }
@@ -339,7 +339,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #f8f9fa;
+    background-color: var(--dj-surface-alt, #f8f9fa);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -413,7 +413,7 @@
 }
 
 .btn-primary {
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
 }
 
@@ -605,7 +605,7 @@
 
 .bar-progress {
     height: 100%;
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     border-radius: 4px;
     transition: width 1s ease;
 }
@@ -916,7 +916,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
     padding: 12px 20px;
     border-radius: 6px;

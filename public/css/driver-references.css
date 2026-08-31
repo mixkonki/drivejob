@@ -9,12 +9,12 @@
 
 .refs-container { max-width: 860px; margin: 0 auto; padding: 1.2rem 1rem 2rem; }
 
-.refs-title { font-size: 1.35rem; margin: 0 0 .4rem; color: #1f2937; }
+.refs-title { font-size: 1.35rem; margin: 0 0 .4rem; color: var(--dj-ink, #1f2937); }
 
 .refs-lead {
     font-size: .88rem;
     line-height: 1.55;
-    color: #6b7280;
+    color: var(--dj-muted, #6b7280);
     margin: 0 0 1.1rem;
 }
 
@@ -38,12 +38,12 @@
     gap: .25rem;
     font-size: .8rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--dj-ink-soft, #374151);
     min-width: 0;
 }
 
 .refs-grid label i { color: #b3261e; font-style: normal; }
-.refs-opt { font-weight: 400; color: #94a3b8; }
+.refs-opt { font-weight: 400; color: var(--dj-faint, #94a3b8); }
 
 .refs-grid input {
     padding: .55rem .7rem;
@@ -59,7 +59,7 @@
     gap: .5rem;
 }
 
-.refs-period-inputs span { font-weight: 400; color: #94a3b8; font-size: .8rem; }
+.refs-period-inputs span { font-weight: 400; color: var(--dj-faint, #94a3b8); font-size: .8rem; }
 .refs-period-inputs input { flex: 1; min-width: 0; }
 
 .refs-actions { margin-top: .9rem; }
@@ -79,7 +79,7 @@
     margin-top: .9rem;
     padding: .8rem .9rem;
     border: 1px dashed #b3261e55;
-    border-radius: 10px;
+    border-radius: var(--dj-radius, 10px);
     background: #fff7f6;
 }
 
@@ -106,7 +106,7 @@
     background: #fff;
 }
 
-.refs-linkbox p { margin: .45rem 0 0; font-size: .78rem; color: #6b7280; }
+.refs-linkbox p { margin: .45rem 0 0; font-size: .78rem; color: var(--dj-muted, #6b7280); }
 
 /* ── Στοιχεία λίστας ────────────────────────────────────────────────── */
 .refs-item {
@@ -129,9 +129,9 @@
     flex: 1;
 }
 
-.refs-item-main strong { font-size: .88rem; color: #1f2937; }
-.refs-item-main span { font-size: .8rem; color: #6b7280; }
-.refs-item-main em { font-size: .74rem; font-style: normal; color: #94a3b8; }
+.refs-item-main strong { font-size: .88rem; color: var(--dj-ink, #1f2937); }
+.refs-item-main span { font-size: .8rem; color: var(--dj-muted, #6b7280); }
+.refs-item-main em { font-size: .74rem; font-style: normal; color: var(--dj-faint, #94a3b8); }
 
 .refs-item-actions { display: flex; gap: .5rem; flex-shrink: 0; }
 
@@ -172,7 +172,7 @@
     padding: 1.4rem 1.5rem;
 }
 
-.refs-card h1 { font-size: 1.25rem; margin: 0 0 .5rem; color: #1f2937; }
+.refs-card h1 { font-size: 1.25rem; margin: 0 0 .5rem; color: var(--dj-ink, #1f2937); }
 .refs-card--ok { border-color: #15803d44; background: #f5fdf7; }
 .refs-card--error { border-color: #b3261e44; background: #fff7f6; }
 
@@ -185,7 +185,7 @@
 .refs-field legend {
     font-size: .92rem;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--dj-ink, #1f2937);
     margin-bottom: .5rem;
     padding: 0;
 }
@@ -223,7 +223,7 @@
 .refs-star em {
     font-size: .62rem;
     font-style: normal;
-    color: #94a3b8;
+    color: var(--dj-faint, #94a3b8);
     text-align: center;
 }
 
@@ -248,10 +248,10 @@
     align-items: center;
     gap: .45rem;
     border: 1px solid #d7dbe0;
-    border-radius: 10px;
+    border-radius: var(--dj-radius, 10px);
     padding: .6rem .9rem;
     font-size: .86rem;
-    color: #374151;
+    color: var(--dj-ink-soft, #374151);
     cursor: pointer;
     flex: 1;
     min-width: min(220px, 100%);
@@ -296,7 +296,7 @@
     margin-top: .8rem;
     font-size: .8rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--dj-ink-soft, #374151);
 }
 
 .refs-comment textarea {
@@ -312,5 +312,5 @@
     margin: .9rem 0 0;
     font-size: .72rem;
     line-height: 1.5;
-    color: #94a3b8;
+    color: var(--dj-faint, #94a3b8);
 }

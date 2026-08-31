@@ -18,7 +18,7 @@
 }
 
 .skills-category {
-    background-color: #f8f9fa;
+    background-color: var(--dj-surface-alt, #f8f9fa);
     border-radius: 8px;
     padding: 15px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -83,7 +83,7 @@
 }
 
 .personal-detail-item {
-    background-color: #f8f9fa;
+    background-color: var(--dj-surface-alt, #f8f9fa);
     padding: 12px;
     border-radius: 6px;
 }
@@ -110,7 +110,7 @@
 }
 
 .language-item {
-    background-color: #f8f9fa;
+    background-color: var(--dj-surface-alt, #f8f9fa);
     padding: 12px;
     border-radius: 6px;
     display: flex;
@@ -162,7 +162,7 @@
 }
 
 .certification-item {
-    background-color: #f8f9fa;
+    background-color: var(--dj-surface-alt, #f8f9fa);
     border-radius: 6px;
     padding: 15px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -248,7 +248,7 @@
 }
 
 .vehicle-experience-item {
-    background-color: #f8f9fa;
+    background-color: var(--dj-surface-alt, #f8f9fa);
     border-radius: 6px;
     padding: 15px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -270,7 +270,7 @@
     background-color: #17a2b8;
     color: white;
     padding: 2px 8px;
-    border-radius: 10px;
+    border-radius: var(--dj-radius, 10px);
     font-size: 0.8em;
     font-weight: 500;
 }
@@ -295,7 +295,7 @@
 }
 
 .btn-primary {
-    background-color: #aa3636;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -401,7 +401,7 @@
     width: 42%;
     font-size: .78rem;
     font-weight: 600;
-    color: #6b7280;
+    color: var(--dj-muted, #6b7280);
     white-space: normal;
     overflow-wrap: anywhere;
 }
@@ -409,7 +409,7 @@
 .pd-table td {
     font-size: .86rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--dj-ink, #1f2937);
     overflow-wrap: anywhere;
 }
 
@@ -440,7 +440,7 @@
 
 .skl-cat {
     border: 1px solid #eef0f2;
-    border-radius: 10px;
+    border-radius: var(--dj-radius, 10px);
     padding: .55rem .7rem .6rem;
     background: #fff;
     min-width: 0;
@@ -535,7 +535,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .04em;
-    color: #94a3b8;
+    color: var(--dj-faint, #94a3b8);
     margin-bottom: .2rem;
 }
 
@@ -567,7 +567,7 @@
 
 .qgroup .certification-header { margin-bottom: .35rem; padding-bottom: .35rem; gap: .5rem; }
 .qgroup .certification-header h4 { font-size: .85rem; min-width: 0; overflow-wrap: anywhere; }
-.qgroup .certification-provider { font-size: .78rem; color: #6b7280; }
+.qgroup .certification-provider { font-size: .78rem; color: var(--dj-muted, #6b7280); }
 .qgroup .certification-dates { gap: .25rem .8rem; font-size: .76rem; }
-.qgroup .certification-dates strong { color: #94a3b8; font-weight: 600; }
+.qgroup .certification-dates strong { color: var(--dj-faint, #94a3b8); font-weight: 600; }
 .qgroup .certification-description { margin-top: .25rem; font-size: .78rem; }
