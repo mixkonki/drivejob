@@ -255,6 +255,8 @@ include ROOT_DIR . '/src/Views/partials/header.php';
         width: 20px;
     }
 
+    .quick-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+
     @media (max-width: 1200px) {
         .profile-container {
             flex-direction: column;
@@ -554,14 +556,16 @@ include ROOT_DIR . '/src/Views/partials/header.php';
                 <!-- Quick Actions -->
                 <div class="sidebar-section">
                     <h3><i class="fas fa-bolt"></i> Γρήγορες Ενέργειες</h3>
-                    <div class="d-grid gap-2">
-                        <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn btn-success">
+                    <?php /* 01/09: οι σύνδεσμοι είχαν Bootstrap classes (btn-success,
+                       btn-outline-primary) χωρίς Bootstrap — έβγαιναν μπλε/μωβ σκέτα
+                       links. Το «Αναζήτηση Οδηγών» ΑΦΑΙΡΕΘΗΚΕ προσωρινά: το
+                       /drivers/search επιστρέφει πάντα κενή λίστα (καταγεγραμμένο
+                       σφάλμα) — δεν στέλνουμε τον χρήστη σε χαλασμένη σελίδα. */ ?>
+                    <div class="quick-actions">
+                        <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">
                             <i class="fas fa-plus"></i> Νέα Αγγελία
                         </a>
-                        <a href="<?php echo BASE_URL; ?>drivers/search" class="btn btn-outline-primary">
-                            <i class="fas fa-search"></i> Αναζήτηση Οδηγών
-                        </a>
-                        <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn btn-primary">
+                        <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn-secondary">
                             <i class="fas fa-cog"></i> Ρυθμίσεις
                         </a>
                     </div>

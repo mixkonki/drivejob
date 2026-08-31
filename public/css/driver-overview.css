@@ -77,11 +77,11 @@
 
 .qgroup-meta {
     font-size: .78rem;
-    color: #6b7280;
+    color: var(--dj-muted, #6b7280);
     white-space: nowrap;
 }
 
-.qgroup-meta strong { color: #374151; }
+.qgroup-meta strong { color: var(--dj-ink-soft, #374151); }
 
 .qgroup-body { padding: .15rem .9rem .45rem; }
 
@@ -152,7 +152,7 @@
 .qrow-sub {
     margin: 0;
     font-size: .8rem;
-    color: #6b7280;
+    color: var(--dj-muted, #6b7280);
     line-height: 1.4;
 }
 
@@ -306,7 +306,7 @@
 
 .qbadge--soon    { background: #fffbeb; color: #b45309; border-color: #fde68a; }
 .qbadge--expired { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-.qbadge--unknown { background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
+.qbadge--unknown { background: #f3f4f6; color: var(--dj-muted, #6b7280); border-color: #e5e7eb; }
 .qbadge--none    { background: transparent; color: #9ca3af; border-color: #f3f4f6; }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -337,7 +337,7 @@
     gap: .35rem;
     font-size: .74rem;
     font-weight: 600;
-    color: #6b7280;
+    color: var(--dj-muted, #6b7280);
     white-space: nowrap;
 }
 
@@ -386,7 +386,7 @@
     padding: .85rem 1rem;
     border: 1px solid #fde68a;
     border-left: 5px solid #d97706;
-    border-radius: 10px;
+    border-radius: var(--dj-radius, 10px);
     background: #fffbeb;
 }
 
@@ -429,7 +429,7 @@
 
 .expiry-item:first-child { border-top: 0; }
 
-.expiry-label { color: #1f2937; font-weight: 600; }
+.expiry-label { color: var(--dj-ink, #1f2937); font-weight: 600; }
 
 .expiry-date { color: #4b5563; white-space: nowrap; }
 .expiry-date em { font-style: normal; color: #b45309; font-weight: 700; }
@@ -493,7 +493,7 @@
     color: #0f766e;
 }
 
-.wr-view-extra { margin: .4rem 0 0; font-size: .8rem; color: #6b7280; }
+.wr-view-extra { margin: .4rem 0 0; font-size: .8rem; color: var(--dj-muted, #6b7280); }
 /* ΧΩΡΙΣ height ΕΔΩ (31/08): το `.wr--view .wr-map` είναι πιο specific
    από το `.wr-map` παρακάτω, οπότε το σταθερό `height: 170px` ΝΙΚΟΥΣΕ το
    `aspect-ratio: 1` και ο χάρτης έμενε ορθογώνιος παρότι το είχαμε
@@ -510,15 +510,15 @@
 .wr-map {
     aspect-ratio: 1;
     width: 100%;
-    border-radius: 10px;
+    border-radius: var(--dj-radius, 10px);
     background: #f3f4f6;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--dj-line, #e5e7eb);
 }
 
 .wr-map:not(.is-ready) { display: none; }
 
 .wr-coverage { margin: .5rem 0 0; font-size: .8rem; line-height: 1.9; color: #4b5563; }
-.wr-cov-title { color: #6b7280; margin-right: .3rem; }
+.wr-cov-title { color: var(--dj-muted, #6b7280); margin-right: .3rem; }
 .wr-cov-all { color: #15803d; font-weight: 600; }
 .wr-cov-none { color: #9ca3af; }
 
@@ -530,7 +530,7 @@
     border-radius: 20px;
     padding: .1rem .5rem;
     margin-right: .22rem;
-    color: #374151;
+    color: var(--dj-ink-soft, #374151);
     font-size: .77rem;
 }
 
@@ -553,7 +553,7 @@
 }
 
 .avail-pill.is-on  { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
-.avail-pill.is-off { background: #f9fafb; color: #6b7280; border-color: #e5e7eb; }
+.avail-pill.is-off { background: #f9fafb; color: var(--dj-muted, #6b7280); border-color: #e5e7eb; }
 
 .avail-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 
@@ -570,7 +570,7 @@
 }
 
 .contact-list svg { width: 15px; height: 15px; color: #9ca3af; flex-shrink: 0; }
-.contact-list a { color: #374151; text-decoration: none; word-break: break-word; }
+.contact-list a { color: var(--dj-ink-soft, #374151); text-decoration: none; word-break: break-word; }
 .contact-list a:hover { color: #b3261e; }
 
 /* Δικαιώματα GDPR: παρόντα, διακριτικά, στο τέλος */
