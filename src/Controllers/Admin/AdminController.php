@@ -237,16 +237,8 @@ class AdminController extends BaseController
         include ROOT_DIR . '/src/Views/admin/activity-logs.php';
     }
 
-    /**
-     * GET /admin/settings — παραπέμπει στο monitoring μέχρι να αποκτήσει
-     * πραγματικό περιεχόμενο. Το παλιό view ήταν αυτόνομη σελίδα Bootstrap
-     * εκτός του admin layout, με κουμπιά που δεν έκαναν τίποτα.
-     */
-    public function settings()
-    {
-        Session::set('error_message', 'Οι ρυθμίσεις δεν είναι διαθέσιμες ακόμη.');
-        $this->redirect(BASE_URL . 'admin/dashboard');
-    }
+    /* settings(): αφαιρέθηκε 05/10/2026 — δεν υπήρχαν ρυθμίσεις, μόνο redirect
+       με «δεν είναι διαθέσιμες». Οι Κατάλογοι τιμών (lookups) είναι οι ρυθμίσεις. */
 
     /*
      * ══════════════════════════════════════════════════════════════════

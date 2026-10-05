@@ -67,9 +67,9 @@ if (defined('ALLOW_INDEXING') && !ALLOW_INDEXING && !headers_sent()) {
             </li>
 
             <li class="admin-nav-item">
-                <a href="<?php echo BASE_URL; ?>admin/settings" class="admin-nav-link <?php echo strpos($_SERVER['REQUEST_URI'], '/admin/settings') !== false ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>admin/lookups" class="admin-nav-link <?php echo strpos($_SERVER['REQUEST_URI'], '/admin/lookups') !== false ? 'active' : ''; ?>">
                     <i class="icon-settings"></i>
-                    <span>Ρυθμίσεις</span>
+                    <span>Κατάλογοι τιμών</span>
                 </a>
             </li>
 
@@ -80,12 +80,8 @@ if (defined('ALLOW_INDEXING') && !ALLOW_INDEXING && !headers_sent()) {
                 </a>
             </li>
 
-            <li class="admin-nav-item">
-                <a href="<?php echo BASE_URL; ?>admin/monitoring/dashboard" class="admin-nav-link <?php echo strpos($_SERVER['REQUEST_URI'], '/admin/monitoring') !== false ? 'active' : ''; ?>">
-                    <i class="icon-monitoring"></i>
-                    <span>System Monitoring</span>
-                </a>
-            </li>
+            <?php /* 05/10: «System Monitoring» αφαιρέθηκε — βιτρίνα χωρίς δεδομένα
+                     (βλ. config/routes.php). «Ρυθμίσεις» → Κατάλογοι τιμών. */ ?>
         </ul>
 
         <div class="admin-nav-footer">
@@ -122,10 +118,7 @@ if (defined('ALLOW_INDEXING') && !ALLOW_INDEXING && !headers_sent()) {
             </div>
 
             <div class="admin-topbar-actions">
-                <button class="admin-notification-btn" onclick="toggleNotifications()">
-                    <i class="icon-bell"></i>
-                    <span class="notification-badge">3</span>
-                </button>
+                <?php /* 05/10: το καμπανάκι με το μόνιμο «3» ήταν ψεύτικο (alert «σύντομα»). Έφυγε. */ ?>
 
                 <a href="<?php echo BASE_URL; ?>" target="_blank" class="admin-view-site">
                     <i class="icon-external"></i>

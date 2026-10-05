@@ -1,3 +1,4 @@
+/* 05/10/2026: μετάβαση σε design tokens (theme.css). Νέα χρώματα ΜΟΝΟ με var(--dj-*). */
 /* Admin Users Management Styles */
 
 .admin-container {
@@ -17,7 +18,7 @@
 
 .admin-header h1 {
     font-size: 28px;
-    color: #333;
+    color: var(--dj-ink, #1f2937);
     margin: 0;
 }
 
@@ -28,9 +29,9 @@
 
 /* Φίλτρα και Αναζήτηση */
 .admin-filters {
-    background: #f8f9fa;
+    background: var(--dj-surface-alt, #f8f9fa);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: var(--dj-radius, 10px);
     margin-bottom: 30px;
 }
 
@@ -56,8 +57,8 @@
 .filter-group select,
 .filter-group input[type="text"] {
     padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px solid var(--dj-line, #e5e7eb);
+    border-radius: var(--dj-radius-sm, 7px);
     font-size: 14px;
     min-width: 150px;
 }
@@ -75,7 +76,7 @@
 .btn {
     padding: 8px 16px;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--dj-radius-sm, 7px);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -87,21 +88,23 @@
 }
 
 .btn-primary {
-    background: #007bff;
+    background: var(--dj-brand, #aa3636);
     color: white;
 }
 
 .btn-primary:hover {
-    background: #0056b3;
+    background: var(--dj-brand-strong, #8f2b2b);
 }
 
 .btn-search {
-    background: #28a745;
+    background: var(--dj-brand, #aa3636);
     color: white;
+    width: auto;
+    align-self: flex-end;
 }
 
 .btn-search:hover {
-    background: #218838;
+    background: var(--dj-brand-strong, #8f2b2b);
 }
 
 .btn-sm {
@@ -139,7 +142,7 @@
 /* Alerts */
 .alert {
     padding: 15px 20px;
-    border-radius: 4px;
+    border-radius: var(--dj-radius-sm, 7px);
     margin-bottom: 20px;
     display: flex;
     align-items: center;
@@ -161,9 +164,9 @@
 /* Table */
 .admin-table-container {
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    overflow: hidden;
+    border-radius: var(--dj-radius, 10px);
+    box-shadow: var(--dj-shadow, 0 2px 4px rgba(0,0,0,0.1));
+    overflow-x: auto; /* 05/10: η στήλη Ενέργειες κοβόταν στα 1400px */
 }
 
 .admin-table {
@@ -172,24 +175,25 @@
 }
 
 .admin-table thead {
-    background: #f8f9fa;
+    background: var(--dj-surface-alt, #f8f9fa);
 }
 
 .admin-table th {
-    padding: 15px;
+    padding: 12px 10px;
+    white-space: nowrap;
     text-align: left;
     font-weight: 600;
-    color: #495057;
-    border-bottom: 2px solid #dee2e6;
+    color: var(--dj-ink-soft, #374151);
+    border-bottom: 2px solid var(--dj-line, #e5e7eb);
 }
 
 .admin-table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--dj-line, #e5e7eb);
 }
 
 .admin-table tbody tr:hover {
-    background: #f8f9fa;
+    background: var(--dj-surface-alt, #f8f9fa);
 }
 
 .admin-table tbody tr:last-child td {
@@ -214,7 +218,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #6c757d;
+    background: var(--dj-muted, #6b7280);
     color: white;
     display: flex;
     align-items: center;
@@ -226,7 +230,7 @@
 /* Badges */
 .badge {
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: var(--dj-radius-sm, 7px);
     font-size: 12px;
     font-weight: 500;
     text-transform: uppercase;
@@ -291,10 +295,10 @@
 
 .pagination-link {
     padding: 8px 16px;
-    background: #007bff;
+    background: var(--dj-brand, #aa3636);
     color: white;
     text-decoration: none;
-    border-radius: 4px;
+    border-radius: var(--dj-radius-sm, 7px);
     display: flex;
     align-items: center;
     gap: 5px;
@@ -302,11 +306,11 @@
 }
 
 .pagination-link:hover {
-    background: #0056b3;
+    background: var(--dj-brand-strong, #8f2b2b);
 }
 
 .pagination-info {
-    color: #6c757d;
+    color: var(--dj-muted, #6b7280);
     font-size: 14px;
 }
 
@@ -365,5 +369,5 @@
 .text-center {
     text-align: center;
     padding: 40px;
-    color: #6c757d;
+    color: var(--dj-muted, #6b7280);
 }

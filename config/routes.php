@@ -322,8 +322,11 @@ $router->group(['prefix' => 'admin'], function ($router) {
     // Analytics & Reports
     $router->get('/analytics', [\Drivejob\Controllers\Admin\AdminController::class, 'analytics'])->name('admin.analytics');
 
-    // System Settings
-    $router->get('/settings', [\Drivejob\Controllers\Admin\AdminController::class, 'settings'])->name('admin.settings');
+    /*
+     * /admin/settings — ΑΦΑΙΡΕΘΗΚΕ (05/10/2026): οδηγούσε σε redirect με μήνυμα
+     * «δεν είναι διαθέσιμες ακόμη». Οι πραγματικές ρυθμίσεις της πλατφόρμας
+     * είναι οι Κατάλογοι τιμών (/admin/lookups) — αυτοί μπήκαν στο μενού.
+     */
 
     // Κατάλογοι τιμών (ειδικές άδειες κ.λπ.) — τους συντηρεί ο διαχειριστής
     $router->get('/lookups', [\Drivejob\Controllers\Admin\AdminController::class, 'lookups'])->name('admin.lookups');
@@ -331,37 +334,25 @@ $router->group(['prefix' => 'admin'], function ($router) {
     $router->post('/lookups/{domain}/save', [\Drivejob\Controllers\Admin\AdminController::class, 'saveLookup'])->name('admin.lookups.save');
     $router->post('/lookups/{domain}/toggle/{id}', [\Drivejob\Controllers\Admin\AdminController::class, 'toggleLookup'])->name('admin.lookups.toggle');
     $router->post('/lookups/{domain}/delete/{id}', [\Drivejob\Controllers\Admin\AdminController::class, 'deleteLookup'])->name('admin.lookups.delete');
-    $router->post('/settings', [\Drivejob\Controllers\Admin\AdminController::class, 'settings']);
 
     // Activity Logs
     $router->get('/activity-logs', [\Drivejob\Controllers\Admin\AdminController::class, 'activityLogs'])->name('admin.activity-logs');
 
-    // System Monitoring
-    $router->group(['prefix' => 'monitoring'], function ($router) {
-        // Dashboard
-        $router->get('/dashboard', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'dashboard'])->name('admin.monitoring.dashboard');
-
-        // Errors
-        $router->get('/errors', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'errors'])->name('admin.monitoring.errors');
-        $router->get('/errors/{period}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'errors'])->name('admin.monitoring.errors.period');
-
-        // Performance
-        $router->get('/performance', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'performance'])->name('admin.monitoring.performance');
-        $router->get('/performance/{period}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'performance'])->name('admin.monitoring.performance.period');
-
-        // Usage
-        $router->get('/usage', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'usage'])->name('admin.monitoring.usage');
-        $router->get('/usage/{period}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'usage'])->name('admin.monitoring.usage.period');
-
-        // Logs
-        $router->get('/logs', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'logs'])->name('admin.monitoring.logs');
-        $router->get('/logs/{type}', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'logs'])->name('admin.monitoring.logs.type');
-        // Το clearLogs αφαιρέθηκε: η μέθοδος δεν υπάρχει στον controller,
-        // και η διαγραφή logs δεν είναι κουμπί — τα logs κόβονται με rotation.
-
-        // Database Backup
-        $router->post('/backup-database', [\Drivejob\Controllers\Admin\SystemMonitoringController::class, 'backupDatabase'])->name('admin.monitoring.backup-database');
-    });
+    /*
+     * ══════════════════════════════════════════════════════════════════
+     *  /admin/monitoring/* — ΑΦΑΙΡΕΘΗΚΕ (05/10/2026)
+     * ══════════════════════════════════════════════════════════════════
+     * Βιτρίνα χωρίς πίσω μέρος: κανένα σημείο του κώδικα δεν έγραφε στους
+     * πίνακες error_logs / performance_logs / usage_logs / system_logs
+     * (0 γραμμές στην παραγωγή), το dashboard έδειχνε μόνιμα μηδενικά, και
+     * οι υποσελίδες errors/performance/usage/logs έριχναν 500 (καλούσαν
+     * μεθόδους που δεν υπήρχαν στο model). Το backup-database καλούσε
+     * mysqldump μέσω exec() — απενεργοποιημένο στο shared hosting.
+     *
+     * Ό,τι χρειάζεται η beta υπάρχει αλλού: bin/health-cli.php (υγεία),
+     * bin/backup-cli.php (backup/επαναφορά), logs/app.log (σφάλματα),
+     * /admin/activity-logs (ενέργειες διαχειριστών).
+     */
 });
 
 // Include API routes

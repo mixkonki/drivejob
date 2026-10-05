@@ -11,11 +11,6 @@
         document.querySelector('.admin-main').classList.toggle('nav-active');
     }
 
-    // Toggle notifications (placeholder)
-    function toggleNotifications() {
-        alert('Το σύστημα ειδοποιήσεων θα υλοποιηθεί σύντομα.');
-    }
-
     // Close mobile nav when clicking outside
     document.addEventListener('click', function(event) {
         const nav = document.querySelector('.admin-nav');

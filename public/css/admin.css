@@ -1,3 +1,4 @@
+/* 05/10/2026: μετάβαση σε design tokens (theme.css). Νέα χρώματα ΜΟΝΟ με var(--dj-*). */
 /* Admin Panel Styles */
 
 /* Reset and Base */
@@ -5,7 +6,7 @@
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background-color: #f5f5f5;
+    background-color: var(--dj-admin-bg, #f3f4f6);
     display: flex;
     min-height: 100vh;
 }
@@ -13,7 +14,7 @@
 /* Admin Navigation */
 .admin-nav {
     width: 260px;
-    background-color: #2c3e50;
+    background-color: var(--dj-admin-nav, #1f2937);
     color: white;
     position: fixed;
     height: 100vh;
@@ -98,7 +99,7 @@
 }
 
 .admin-nav-link.active {
-    background-color: #34495e;
+    background-color: var(--dj-admin-nav-hover, #273449);
     color: white;
 }
 
@@ -109,7 +110,7 @@
     top: 0;
     bottom: 0;
     width: 4px;
-    background-color: #3498db;
+    background-color: var(--dj-brand, #aa3636);
 }
 
 /* Navigation Footer */
@@ -188,11 +189,11 @@
     align-items: center;
     gap: 10px;
     font-size: 14px;
-    color: #666;
+    color: var(--dj-muted, #6b7280);
 }
 
 .admin-breadcrumb a {
-    color: #3498db;
+    color: var(--dj-brand, #aa3636);
     text-decoration: none;
 }
 
@@ -201,7 +202,7 @@
 }
 
 .breadcrumb-separator {
-    color: #999;
+    color: var(--dj-faint, #94a3b8);
 }
 
 .admin-topbar-actions {
@@ -216,19 +217,19 @@
     border: none;
     cursor: pointer;
     padding: 8px;
-    color: #666;
+    color: var(--dj-muted, #6b7280);
     transition: color 0.3s;
 }
 
 .admin-notification-btn:hover {
-    color: #333;
+    color: var(--dj-ink, #1f2937);
 }
 
 .notification-badge {
     position: absolute;
     top: 0;
     right: 0;
-    background: #e74c3c;
+    background: var(--dj-danger, #b91c1c);
     color: white;
     font-size: 11px;
     padding: 2px 6px;
@@ -240,14 +241,14 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #666;
+    color: var(--dj-muted, #6b7280);
     text-decoration: none;
     font-size: 14px;
     transition: color 0.3s;
 }
 
 .admin-view-site:hover {
-    color: #3498db;
+    color: var(--dj-brand, #aa3636);
 }
 
 /* Content Area */
@@ -263,7 +264,7 @@
     gap: 6px;
     padding: 10px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--dj-radius-sm, 7px);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -272,54 +273,54 @@
 }
 
 .btn-primary {
-    background-color: #3498db;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
 }
 
 .btn-primary:hover {
-    background-color: #2980b9;
+    background-color: var(--dj-brand-strong, #8f2b2b);
 }
 
 .btn-info {
-    background-color: #3498db;
+    background-color: var(--dj-brand, #aa3636);
     color: white;
 }
 
 .btn-info:hover {
-    background-color: #2980b9;
+    background-color: var(--dj-brand-strong, #8f2b2b);
 }
 
 .btn-warning {
-    background-color: #f39c12;
+    background-color: var(--dj-warn, #b45309);
     color: white;
 }
 
 .btn-warning:hover {
-    background-color: #e67e22;
+    background-color: var(--dj-warn, #b45309);
 }
 
 .btn-danger {
-    background-color: #e74c3c;
+    background-color: var(--dj-danger, #b91c1c);
     color: white;
 }
 
 .btn-danger:hover {
-    background-color: #c0392b;
+    background-color: var(--dj-danger, #b91c1c);
 }
 
 .btn-search {
-    background-color: #667eea;
+    background-color: var(--dj-ink-soft, #374151);
     color: white;
 }
 
 .btn-search:hover {
-    background-color: #5a67d8;
+    background-color: var(--dj-ink, #1f2937);
 }
 
 /* Alerts */
 .alert {
     padding: 12px 20px;
-    border-radius: 4px;
+    border-radius: var(--dj-radius-sm, 7px);
     margin-bottom: 20px;
     display: flex;
     align-items: center;
