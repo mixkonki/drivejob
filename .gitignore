@@ -56,3 +56,6 @@ phpunit.cache
 
 # Αρχεία χρηστών — ΠΟΤΕ στο git
 /storage/uploads/
+
+# Backups βάσης (bin/backup-cli.php) — ποτέ στο git
+/storage/backups/

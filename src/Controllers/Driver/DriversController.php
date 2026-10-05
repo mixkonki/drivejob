@@ -1811,11 +1811,19 @@ class DriversController extends BaseUserController
 
     public function showRegistrationForm()
     {
-        // Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
+        /*
+         * Συνδεδεμένος χρήστης στη σελίδα εγγραφής (05/10/2026): μέχρι τώρα
+         * γύριζε σιωπηλά στην αρχική και ο Κώστας το διάβασε ως «η σελίδα δεν
+         * ανοίγει». Τώρα πηγαίνει στο προφίλ του με εξήγηση — και αν θέλει
+         * δεύτερο λογαριασμό, του λέμε τι να κάνει.
+         */
         if (Session::has('user_id')) {
-            // Ανακατεύθυνση στην αρχική σελίδα
-            header('Location: ' . BASE_URL);
-            exit();
+            $role = Session::get('role') ?: Session::get('user_role');
+            $this->redirectWithMessage(
+                BASE_URL . ($role === 'company' ? 'companies/profile' : 'drivers/profile'),
+                'Είστε ήδη συνδεδεμένος. Για να δημιουργήσετε νέο λογαριασμό, αποσυνδεθείτε πρώτα.',
+                'info'
+            );
         }
 
         // Φόρτωση του view
@@ -1997,10 +2005,17 @@ class DriversController extends BaseUserController
                          d.available_for_work, d.rating, d.rating_count,
                          d.preferred_job_type, d.willing_to_relocate,
                          d.adr_certificate,
-                         GROUP_CONCAT(DISTINCT dl.license_type ORDER BY dl.license_type SEPARATOR ', ') AS licenses
+                         (SELECT GROUP_CONCAT(DISTINCT dl.license_type ORDER BY dl.license_type SEPARATOR ', ')
+                            FROM driver_licenses dl WHERE dl.driver_id = d.id) AS licenses
                   FROM drivers d
-                  LEFT JOIN driver_licenses dl ON dl.driver_id = d.id
                   WHERE d.is_active = 1";
+        /*
+         * 05/10/2026: οι άδειες έρχονται με υποερώτημα αντί για JOIN + GROUP BY d.id.
+         * Το GROUP BY με μη-αθροιστικές στήλες (city, rating…) απορρίπτεται όταν
+         * ο server τρέχει με ONLY_FULL_GROUP_BY — τοπικά δούλευε, στην παραγωγή
+         * το catch κατάπινε το σφάλμα και η λίστα έβγαινε ΚΕΝΗ. Χωρίς GROUP BY
+         * δεν εξαρτόμαστε από το sql_mode.
+         */
 
         $params = [];
 
@@ -2026,7 +2041,7 @@ class DriversController extends BaseUserController
             $params[] = $license;
         }
 
-        $query .= ' GROUP BY d.id ORDER BY d.available_for_work DESC, d.rating DESC, d.created_at DESC LIMIT 30';
+        $query .= ' ORDER BY d.available_for_work DESC, d.rating DESC, d.created_at DESC LIMIT 30';
 
         try {
             $stmt = $this->pdo->prepare($query);

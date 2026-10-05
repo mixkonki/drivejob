@@ -86,11 +86,19 @@ class CompaniesController extends BaseUserController
 
     public function showRegistrationForm()
     {
-        // Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
+        /*
+         * Συνδεδεμένος χρήστης στη σελίδα εγγραφής (05/10/2026): μέχρι τώρα
+         * γύριζε σιωπηλά στην αρχική και ο Κώστας το διάβασε ως «η σελίδα δεν
+         * ανοίγει». Τώρα πηγαίνει στο προφίλ του με εξήγηση — και αν θέλει
+         * δεύτερο λογαριασμό, του λέμε τι να κάνει.
+         */
         if (Session::has('user_id')) {
-            // Ανακατεύθυνση στην αρχική σελίδα
-            header('Location: ' . BASE_URL);
-            exit();
+            $role = Session::get('role') ?: Session::get('user_role');
+            $this->redirectWithMessage(
+                BASE_URL . ($role === 'company' ? 'companies/profile' : 'drivers/profile'),
+                'Είστε ήδη συνδεδεμένος. Για να δημιουργήσετε νέο λογαριασμό, αποσυνδεθείτε πρώτα.',
+                'info'
+            );
         }
 
         // Φόρτωση του view

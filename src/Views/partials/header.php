@@ -165,9 +165,15 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
 
                 // Όταν αλλάξει ο ελεγκτής, φορτώνουμε μία φορά ώστε ο χρήστης
                 // να δει αμέσως τη νέα έκδοση αντί να μείνει στην παλιά.
+                //
+                // 05/10/2026: ΜΟΝΟ αν υπήρχε ήδη ελεγκτής (δηλ. ενημέρωση). Στην
+                // πρώτη εγκατάσταση ο worker έκανε claim() και η σελίδα
+                // ξαναφορτωνόταν αμέσως — ο πρώτος επισκέπτης έχανε ό,τι
+                // μήνυμα (flash) ή ό,τι είχε αρχίσει να γράφει σε φόρμα.
+                var hadController = !!navigator.serviceWorker.controller;
                 var refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', function () {
-                    if (refreshing) return;
+                    if (refreshing || !hadController) return;
                     refreshing = true;
                     window.location.reload();
                 });
@@ -521,3 +527,4 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
             endif; ?>
         </div>
     </header>
+    <?php include __DIR__ . '/_flash.php'; ?>

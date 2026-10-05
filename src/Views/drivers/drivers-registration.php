@@ -169,15 +169,7 @@ $extraJs = ['drivers_registration.js'];
                 </form>
 
                 <p class="login-link">Έχετε ήδη λογαριασμό; <a href="<?= BASE_URL ?>auth/login">Συνδεθείτε</a></p>
-
-                <hr class="divider">
-
-                <div class="google-signup">
-                    <button class="btn-google">
-                        <img src="<?= \Drivejob\Helpers\Asset::url('img/google_icon.png') ?>" alt="Google Logo">
-                        Συνδεθείτε με την Google
-                    </button>
-                </div>
+                <?php /* 05/10: αφαιρέθηκε το κουμπί «Συνδεθείτε με την Google» — δεν είχε handler/route (νεκρό για τη beta). */ ?>
             </div>
         </div>
 

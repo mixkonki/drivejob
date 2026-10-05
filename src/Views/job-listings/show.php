@@ -320,7 +320,14 @@ require_once ROOT_DIR . '/src/Views/partials/header.php';
                                 <?php if (isset($hasApplied) && $hasApplied): ?>
                                     <button class="btn-secondary" disabled>Έχετε ήδη υποβάλει αίτηση</button>
                                 <?php else: ?>
-                                    <a href="<?php echo BASE_URL; ?>job-applications/create/<?php echo $listing['id']; ?>" class="btn-primary">Υποβολή Αίτησης</a>
+                                    <?php /* 05/10/2026: το κουμπί έδειχνε σε /job-applications/create/{id} που ΔΕΝ υπάρχει (404).
+                                             Η αίτηση γίνεται με POST στο apply/{id}, όπως στη σελίδα ταιριασμάτων. */ ?>
+                                    <form action="<?php echo BASE_URL; ?>job-applications/apply/<?php echo $listing['id']; ?>" method="POST" class="apply-form">
+                                        <?php echo \Drivejob\Core\CSRF::tokenField(); ?>
+                                        <label for="apply-message" class="apply-form__label">Μήνυμα προς την εταιρία <span>(προαιρετικό)</span></label>
+                                        <textarea id="apply-message" name="message" rows="3" maxlength="1000" class="apply-form__text" placeholder="Λίγα λόγια για το γιατί σας ενδιαφέρει η θέση…"></textarea>
+                                        <button type="submit" class="btn-primary">Υποβολή Αίτησης</button>
+                                    </form>
                                 <?php endif; ?>
                             <?php elseif (isset($userRole) && $userRole === 'company' && isset($listing['listing_type']) && $listing['listing_type'] === 'job_search'): ?>
                                 <a href="<?php echo BASE_URL; ?>job-offers/create/<?php echo $listing['id']; ?>" class="btn-primary">Αποστολή Προσφοράς</a>

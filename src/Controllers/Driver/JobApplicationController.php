@@ -85,7 +85,7 @@ class JobApplicationController extends BaseJobApplicationController
         if (!isset($_POST['csrf_token']) || !$this->validateCsrfToken($_POST['csrf_token'])) {
             Logger::error('CSRF token validation failed in job application');
             Session::set('error_message', 'Άκυρο αίτημα. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings/' . $id);
+            header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
             exit();
         }
 
@@ -100,7 +100,8 @@ class JobApplicationController extends BaseJobApplicationController
             }
 
             // Έλεγχος αν η αγγελία είναι ενεργή και εγκεκριμένη
-            if (!$listing['is_active'] || !$listing['is_approved']) {
+            // 05/10: η is_approved λείπει από παλιότερα σχήματα — απουσία = εγκεκριμένη.
+            if (!$listing['is_active'] || !($listing['is_approved'] ?? 1)) {
                 Session::set('error_message', 'Η αγγελία δεν είναι διαθέσιμη για αιτήσεις');
                 header('Location: ' . BASE_URL . 'job-listings');
                 exit;
@@ -109,7 +110,7 @@ class JobApplicationController extends BaseJobApplicationController
             // Έλεγχος αν η αγγελία είναι από εταιρεία (όχι από οδηγό)
             if (empty($listing['company_id'])) {
                 Session::set('error_message', 'Δεν μπορείτε να υποβάλετε αίτηση σε αυτή την αγγελία');
-                header('Location: ' . BASE_URL . 'job-listings/' . $id);
+                header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
                 exit;
             }
 
@@ -119,7 +120,7 @@ class JobApplicationController extends BaseJobApplicationController
 
             if ($existingApplication) {
                 Session::set('error_message', 'Έχετε ήδη υποβάλει αίτηση για αυτή την αγγελία');
-                header('Location: ' . BASE_URL . 'job-listings/' . $id);
+                header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
                 exit;
             }
 
@@ -145,7 +146,7 @@ class JobApplicationController extends BaseJobApplicationController
                     ]);
                 } else {
                     Session::set('error_message', 'Υπήρξε ένα πρόβλημα κατά το ανέβασμα του βιογραφικού.');
-                    header('Location: ' . BASE_URL . 'job-listings/' . $id);
+                    header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
                     exit();
                 }
             }
@@ -198,7 +199,7 @@ class JobApplicationController extends BaseJobApplicationController
                 ]);
 
                 Session::set('success_message', 'Η αίτησή σας υποβλήθηκε με επιτυχία.');
-                header('Location: ' . BASE_URL . 'job-listings/' . $id);
+                header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
                 exit();
             } else {
                 Logger::error('Job application failed', [
@@ -207,7 +208,7 @@ class JobApplicationController extends BaseJobApplicationController
                 ]);
 
                 Session::set('error_message', 'Υπήρξε ένα σφάλμα κατά την υποβολή της αίτησης. Παρακαλώ δοκιμάστε ξανά.');
-                header('Location: ' . BASE_URL . 'job-listings/' . $id);
+                header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
                 exit();
             }
         } catch (DatabaseException $e) {
@@ -219,7 +220,7 @@ class JobApplicationController extends BaseJobApplicationController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings/' . $id);
+            header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
             exit();
         } catch (\Exception $e) {
             Logger::error('Exception in job application', [
@@ -230,7 +231,7 @@ class JobApplicationController extends BaseJobApplicationController
             ]);
 
             Session::set('error_message', 'Υπήρξε ένα σφάλμα συστήματος. Παρακαλώ δοκιμάστε ξανά.');
-            header('Location: ' . BASE_URL . 'job-listings/' . $id);
+            header('Location: ' . BASE_URL . 'job-listings/show/' . $id);
             exit();
         }
     }
