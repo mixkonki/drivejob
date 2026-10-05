@@ -229,7 +229,16 @@ class Notifier
         }
 
         // Κανάλι 2: email — μόνο αν το γεγονός το δικαιολογεί.
-        if ($emailIntro === null || $this->email === null) {
+        if ($emailIntro === null) {
+            return;
+        }
+        if ($this->email === null) {
+            // 05/10: ΠΟΤΕ σιωπηλά. Στην παραγωγή «δεν ήρθαν email» και τα logs
+            // δεν έλεγαν τίποτα — δεν ξέραμε αν δεν στάλθηκαν ή αν χάθηκαν.
+            Logger::warning('Ειδοποίηση χωρίς email: SMTP_HOST μη ορισμένο σε αυτό το περιβάλλον', [
+                'type' => $type,
+                'user_id' => $userId,
+            ]);
             return;
         }
 
@@ -253,7 +262,17 @@ class Notifier
                 . '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">'
                 . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '</a></p>';
 
-            $this->email->send($address, $title . ' — DriveJob', $body);
+            $sent = $this->email->send($address, $title . ' — DriveJob', $body);
+            // Το EmailService επιστρέφει false (και γράφει error_log) αντί να πετάξει —
+            // καταγράφουμε και τα δύο αποτελέσματα ώστε το app.log να έχει την αλήθεια.
+            if ($sent) {
+                Logger::info('Email ειδοποίησης εστάλη', ['type' => $type, 'to' => $address]);
+            } else {
+                Logger::error('Email ειδοποίησης ΔΕΝ εστάλη (ο SMTP αρνήθηκε ή απέτυχε)', [
+                    'type' => $type,
+                    'to' => $address,
+                ]);
+            }
         } catch (\Throwable $e) {
             Logger::error('Αποτυχία αποστολής email ειδοποίησης', [
                 'type' => $type,

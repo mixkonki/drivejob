@@ -51,6 +51,10 @@
         <a href="<?php echo BASE_URL; ?>job-listings/create" class="btn-primary">
             <i class="fas fa-plus"></i> Νέα Αγγελία
         </a>
+        <?php /* 05/10: επέστρεψε — η αναζήτηση δούλευε κενή λόγω ONLY_FULL_GROUP_BY, διορθώθηκε. */ ?>
+        <a href="<?php echo BASE_URL; ?>drivers/search" class="btn-secondary">
+            <i class="fas fa-search"></i> Αναζήτηση Οδηγών
+        </a>
         <a href="<?php echo BASE_URL; ?>companies/edit-profile" class="btn-secondary">
             <i class="fas fa-cog"></i> Ρυθμίσεις
         </a>

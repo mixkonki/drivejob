@@ -456,6 +456,10 @@ $userRole = Session::has('user_role') ? Session::get('user_role') : '';
                                 <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="" />
                                 Μηνύματα
                             </a>
+                            <a href="<?php echo BASE_URL; ?>drivers/search">
+                                <img src="<?= \Drivejob\Helpers\Asset::url('img/profile_icon.png') ?>" alt="" />
+                                Αναζήτηση Οδηγών
+                            </a>
                             <a href="<?php echo BASE_URL; ?>companies/edit-profile">
                                 <img src="<?= \Drivejob\Helpers\Asset::url('img/experience_icon.png') ?>" alt="" />
                                 Επεξεργασία Προφίλ
